@@ -1,0 +1,159 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}{% if item %}Edit Item{% else %}Add Item{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% if item %}Edit Item{% else %}Add New Item{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="" id="addItemForm" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- First Row: Basic Information and Pricing Information -->
+                        <div class="row mb-4">
+                            <!-- Basic Information Section -->
+                            <div class="col-md-6">
+                                <div class="card border-primary h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Basic Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="code" class="form-label">Item Code <span class="text-muted">(optional)</span></label>
+                                            <input type="text" class="form-control" id="code" name="code" placeholder="Enter unique item code" value="{% if item %}{{ item.code }}{% endif %}" maxlength="50">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Item Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter item name" value="{% if item %}{{ item.name }}{% endif %}" required>
+                                            <div class="invalid-feedback">
+                                                Please enter the item name.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="company" class="form-label">Company <span class="text-muted">(optional)</span></label>
+                                            <input type="text" class="form-control" id="company" name="company" placeholder="Enter company name" value="{% if item %}{{ item.company }}{% endif %}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">Category <span class="text-muted">(optional)</span></label>
+                                            <input type="text" class="form-control" id="category" name="category" placeholder="Enter item category (e.g., Electronics, Food)" value="{% if item %}{{ item.category }}{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Section -->
+                            <div class="col-md-6">
+                                <div class="card border-success h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="card-title mb-0"><i class="bi bi-cash"></i> Pricing Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="buying_price" class="form-label">Buying Price <span class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" class="form-control" id="buying_price" name="buying_price" placeholder="Enter buying price" min="0" value="{% if item %}{{ item.buying_price }}{% endif %}" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a valid buying price.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="selling_price" class="form-label">Selling Price <span class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" placeholder="Enter selling price" min="0" value="{% if item %}{{ item.selling_price }}{% endif %}" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a valid selling price.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="mrp" class="form-label">MRP <span class="text-muted">(optional)</span></label>
+                                            <input type="number" step="0.01" class="form-control" id="mrp" name="mrp" placeholder="Enter Maximum Retail Price" min="0" value="{% if item %}{{ item.mrp }}{% else %}0{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Second Row: Stock Information and Image Section -->
+                        <div class="row mb-4">
+                            <!-- Stock Information Section -->
+                            <div class="col-md-6">
+                                <div class="card border-warning h-100">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="card-title mb-0"><i class="bi bi-box-seam"></i> Stock Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="stock_quantity" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" placeholder="Enter initial stock quantity" min="0" value="{% if item %}{{ item.stock_quantity }}{% else %}0{% endif %}" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a valid stock quantity.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="pcs_count" class="form-label">Pieces Count <span class="text-muted">(optional)</span></label>
+                                            <input type="number" class="form-control" id="pcs_count" name="pcs_count" placeholder="Enter pieces per unit" min="0" value="{% if item %}{{ item.pcs_count }}{% else %}0{% endif %}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Section -->
+                            <div class="col-md-6">
+                                <div class="card border-info h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="card-title mb-0"><i class="bi bi-image"></i> Item Image</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="image" class="form-label">Upload Image <span class="text-muted">(optional)</span></label>
+                                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                            {% if item.image %}
+                                            <div class="mt-2">
+                                                <img src="{{ item.image.url }}" alt="Current image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                                <p class="text-muted mt-2">Current image will be replaced if you upload a new one.</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-outline-primary me-2" id="submitBtn">{% if item %}Update Item{% else %}Add Item{% endif %}</button>
+                            <a href="{% url 'milk_agency:items_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        const form = document.getElementById('addItemForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('input', () => {
+            if (form.checkValidity() && form.name.value.trim() !== '' && form.buying_price.value.trim() !== '' && form.selling_price.value.trim() !== '' && form.stock_quantity.value.trim() !== '') {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        });
+
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}View Bill - {{ bill.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Bill Details - {{ bill.invoice_number }}</h3>
+        <div>
+            <a href="{% url 'milk_agency:bills_dashboard' %}" class="btn btn-outline-info">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bill Header -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Bill Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Invoice Number:</strong></td>
+                            <td>{{ bill.invoice_number }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Invoice Date:</strong></td>
+                            <td>{{ bill.invoice_date }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer:</strong></td>
+                            <td>{{ bill.customer.name }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer Phone:</strong></td>
+                            <td>{{ bill.customer.phone|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer Address:</strong></td>
+                            <td>{{ bill.customer.area|default:"N/A" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bill Summary -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Bill Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Total Amount:</strong></td>
+                            <td class="text-end">₹{{ bill.total_amount }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Opening Due:</strong></td>
+                            <td class="text-end">₹{{ bill.op_due_amount }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Last Paid:</strong></td>
+                            <td class="text-end">₹{{ bill.last_paid }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Current Due:</strong></td>
+                            <td class="text-end">
+                                <span class="{% if current_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    ₹{{ current_due|floatformat:2 }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill Items -->
+    <div class="card shadow mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Bill Items ({{ bill_items.count }} items)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Price/Unit</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bill_items %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹{{ item.price_per_unit }}</td>
+                            <td>
+                                {% if item.discount > 0 %}
+                                    ₹{{ item.discount }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>₹{{ item.total_amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-dark">
+                            <td colspan="5" class="text-end"><strong>Total:</strong></td>
+                            <td><strong>₹{{ bill.total_amount }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

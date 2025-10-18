@@ -1,0 +1,185 @@
+{% extends 'milk_agency/home/base.html' %}
+{% load static %}
+
+{% block title %}Stock Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- Update Stock Button -->
+    <div class="mb-3 text-end">
+        <a href="{% url 'milk_agency:update_stock' %}" class="btn btn-primary">
+            <i class="bi bi-pencil-square"></i> Update Stock
+        </a>
+    </div>
+
+
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Items</h5>
+                    <h3 id="total-items">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Stock Value</h5>
+                    <h3 id="total-stock-value">₹ -</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock Items</h5>
+                    <h3 id="low-stock-count">-</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">30-Day Movement</h5>
+                    <small>In: <span id="stock-in">-</span> | Out: <span id="stock-out">-</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top 10 Items by Stock Value</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topItemsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Category-wise Stock Value</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Stock Overview -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Current Stock Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="stockOverviewTable">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Current Stock</th>
+                                    <th>Selling Price</th>
+                                    <th>Stock Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Fetch data from API
+fetch("{% url 'milk_agency:stock_data_api' %}")
+    .then(response => response.json())
+    .then(data => {
+        updateSummaryCards(data.summary);
+        renderTopItemsChart(data.top_items);
+        renderCategoryChart(data.category_data);
+        renderStockOverviewTable(data.all_items);
+    })
+    .catch(error => console.error('Error loading stock data:', error));
+
+function updateSummaryCards(summary) {
+    document.getElementById('total-items').textContent = summary.total_items;
+    document.getElementById('total-stock-value').textContent = '₹ ' + summary.total_stock_value.toLocaleString('en-IN');
+    document.getElementById('low-stock-count').textContent = summary.low_stock_count;
+    document.getElementById('stock-in').textContent = summary.stock_in_30d;
+    document.getElementById('stock-out').textContent = summary.stock_out_30d;
+}
+
+function renderTopItemsChart(topItems) {
+    const ctx = document.getElementById('topItemsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: topItems.map(item => item.name),
+            datasets: [{
+                label: 'Stock Value (₹)',
+                data: topItems.map(item => item.stock_value),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+function renderCategoryChart(categoryData) {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(cat => cat.company || 'Unknown'),
+            datasets: [{
+                data: categoryData.map(cat => cat.total_value),
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function renderStockOverviewTable(allItems) {
+    const tbody = document.querySelector('#stockOverviewTable tbody');
+    allItems.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.stock_quantity}</td>
+            <td>₹ ${item.selling_price}</td>
+            <td>₹ ${(item.stock_quantity * item.selling_price).toLocaleString('en-IN')}</td>
+        `;
+    });
+}
+</script>
+{% endblock %}

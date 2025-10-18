@@ -1,0 +1,284 @@
+{% extends "milk_agency/home/base.html" %}
+{% load static %}
+{% block title %}Reports Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-0">{{ page_obj.paginator.count }}</h5>
+                            <small>Total Invoices</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-receipt fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-0">₹{{ total_amount|floatformat:2 }}</h5>
+                            <small>Total Amount</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-cash-stack fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-0">{{ page_obj.paginator.num_pages }}</h5>
+                            <small>Total Pages</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-file-earmark-text fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="input-group w-25">
+                        <span class="input-group-text" id="search-icon"><i class="bi bi-search"></i></span>
+                        <input type="search" class="form-control" placeholder="Search Invoices" aria-label="Search Invoices" id="invoiceSearchInput" value="{{ search_query }}" />
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" id="clearFiltersBtn">
+                        <i class="bi bi-x-circle"></i> Clear Filters
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" value="{{ start_date|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" value="{{ end_date|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="customerFilter" class="form-label">Customer</label>
+                            <select class="form-select" id="customerFilter" name="customer">
+                                <option value="all" {% if selected_customer == 'all' %}selected{% endif %}>All Customers</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}" {% if selected_customer == customer.id|stringformat:"s" %}selected{% endif %}>{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Invoices Table -->
+                    <div class="table-responsive text-center">
+                        <table class="table table-striped table-hover align-middle" id="invoicesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}sort=invoice_number&order={% if sort_by == 'invoice_number' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                            Invoice No
+                                            {% if sort_by == 'invoice_number' %}
+                                                {% if sort_order == 'asc' %}
+                                                    <i class="bi bi-chevron-up"></i>
+                                                {% else %}
+                                                    <i class="bi bi-chevron-down"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}sort=customer&order={% if sort_by == 'customer' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                            Customer
+                                            {% if sort_by == 'customer' %}
+                                                {% if sort_order == 'asc' %}
+                                                    <i class="bi bi-chevron-up"></i>
+                                                {% else %}
+                                                    <i class="bi bi-chevron-down"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}sort=invoice_date&order={% if sort_by == 'invoice_date' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                            Date
+                                            {% if sort_by == 'invoice_date' %}
+                                                {% if sort_order == 'asc' %}
+                                                    <i class="bi bi-chevron-up"></i>
+                                                {% else %}
+                                                    <i class="bi bi-chevron-down"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}sort=total_amount&order={% if sort_by == 'total_amount' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                            Total Amount
+                                            {% if sort_by == 'total_amount' %}
+                                                {% if sort_order == 'asc' %}
+                                                    <i class="bi bi-chevron-up"></i>
+                                                {% else %}
+                                                    <i class="bi bi-chevron-down"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in invoices %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ invoice.invoice_number }}</td>
+                                    <td>{{ invoice.customer.name }}</td>
+                                    <td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+                                    <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                                    <td>
+                                        <a href="{% url 'milk_agency:invoice_pdf_viewer' invoice.id %}" class="btn btn-outline-warning">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if invoice.whatsapp_url %}
+                                        <a href="{{ invoice.whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success whatsapp-share-btn" title="Share on WhatsApp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                        {% else %}
+                                        <button class="btn btn-outline-success whatsapp-share-btn" disabled title="WhatsApp URL not available">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center">No invoices found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Invoice pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&order={{ sort_order }}&{% endif %}page=1">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&order={{ sort_order }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if selected_customer %}customer={{ selected_customer }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    <!-- Export buttons removed -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for filtering -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date range filtering
+    document.getElementById('startDate').addEventListener('change', filterInvoices);
+    document.getElementById('endDate').addEventListener('change', filterInvoices);
+    document.getElementById('customerFilter').addEventListener('change', filterInvoices);
+
+    function filterInvoices() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const customer = document.getElementById('customerFilter').value;
+        const searchQuery = document.getElementById('invoiceSearchInput').value.trim();
+
+        let url = "{% url 'milk_agency:reports_dashboard' %}";
+        let params = new URLSearchParams();
+
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (customer && customer !== 'all') params.append('customer', customer);
+        if (searchQuery) params.append('search', searchQuery);
+
+        if (params.toString()) {
+            url += '?' + params.toString();
+        } else {
+            // If no parameters, go to base URL to show default current date
+            url = "{% url 'milk_agency:reports_dashboard' %}";
+        }
+
+        window.location.href = url;
+    }
+
+    // Search functionality
+    document.getElementById('invoiceSearchInput').addEventListener('input', function() {
+        // On input, submit the form with debounce to trigger server-side search
+        clearTimeout(this._timeout);
+        const input = this;
+        this._timeout = setTimeout(function() {
+            filterInvoices();
+        }, 500);
+    });
+
+    // Clear filters button
+    document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('customerFilter').value = 'all';
+        document.getElementById('invoiceSearchInput').value = '';
+        // Clear URL parameters and go to base URL to show default current date
+        window.location.href = "{% url 'milk_agency:reports_dashboard' %}";
+    });
+});
+</script>
+{% endblock %}

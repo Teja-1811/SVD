@@ -1,0 +1,81 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}{% if customer %}Update Customer{% else %}Add Customer{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="party_name" class="form-label">Customer Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="party_name" name="party_name" placeholder="Enter Party Name" required value="{{ customer.name|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="shop_name" class="form-label">Shop Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="shop_name" name="shop_name" placeholder="Enter Shop Name" value="{{ customer.shop_name|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="retailer_id" class="form-label">Retailer ID</span></label>
+                    <input type="text" class="form-control" id="retailer_id" name="retailer_id" placeholder="Enter Retailer ID" value="{{ customer.retailer_id|default:'' }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="phone" class="form-label">Phone Number <small class="text-danger">*</small></label>
+                    <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number" value="{{ customer.phone|default:'' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="milk_commission" class="form-label">Milk Commission <small class="text-muted">(optional)</small></label>
+                    <input type="number" class="form-control" id="milk_commission" name="milk_commission" placeholder="Enter Milk Commission" step="0.01" value="{{ customer.milk_commission|default:0 }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="curd_commission" class="form-label">Curd Commission <small class="text-muted">(optional)</small></label>
+                    <input type="number" class="form-control" id="curd_commission" name="curd_commission" placeholder="Enter Curd Commission" step="0.01" value="{{ customer.curd_commission|default:0 }}">
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div id="addressCollapse">
+                <div class="card card-body">
+                    <h5>Shipping Address</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="flat_number" class="form-label">Flat / Building Number</label>
+                            <input type="text" class="form-control" id="flat_number" name="flat_number" placeholder="" value="{{ customer.flat_number|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="area" class="form-label">Area / Locality</label>
+                            <input type="text" class="form-control" id="area" name="area" placeholder="" value="{{ customer.area }}">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <label for="pin_code" class="form-label">PIN Code</label>
+                            <input type="text" class="form-control" id="pin_code" name="pin_code" placeholder="" value="{{ customer.pin_code|default:'534427' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city" placeholder="" value="{{ customer.city|default:'GGL' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-control" id="state" name="state" placeholder="" value="{{ customer.state|default:'AP' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+        {% if customer %}Update{% else %}Add{% endif %}
+    </button>
+</form>
+{% endblock %}

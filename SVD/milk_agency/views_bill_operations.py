@@ -1,0 +1,145 @@
+import os
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.contrib import messages
+from decimal import Decimal
+from .models import Bill, BillItem, Item, Customer
+from .utils import process_bill_items
+
+def view_bill(request, bill_id):
+    bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
+    bill_items = BillItem.objects.filter(bill=bill).select_related('item')
+
+    # Calculate current_due as Opening Due + Total Amount
+    current_due = bill.op_due_amount + bill.total_amount
+
+    context = {
+        'bill': bill,
+        'bill_items': bill_items,
+        'current_due': current_due
+    }
+    return render(request, 'milk_agency/bills/view_bill.html', context)
+
+def get_bill_details_ajax(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    bill_items = BillItem.objects.filter(bill=bill).select_related('item')
+
+    data = {
+        'bill': {
+            'id': bill.id,
+            'invoice_number': bill.invoice_number,
+            'customer_name': bill.customer.name,
+            'invoice_date': bill.invoice_date.strftime('%Y-%m-%d'),
+            'total_amount': float(bill.total_amount),
+            'op_due_amount': float(bill.op_due_amount),
+            'last_paid': float(bill.last_paid),
+            'current_due': float(bill.customer.due),
+            'profit': float(bill.profit)
+        },
+        'items': [{
+            'item_name': item.item.name,
+            'quantity': item.quantity,
+            'price_per_unit': float(item.price_per_unit),
+            'discount': float(item.discount),
+            'total_amount': float(item.total_amount)
+        } for item in bill_items]
+    }
+
+    return JsonResponse(data)
+
+def edit_bill(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    bill_items = BillItem.objects.filter(bill=bill)
+
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer')
+        item_ids = request.POST.getlist('items')
+        quantities = request.POST.getlist('quantities')
+        discounts = request.POST.getlist('discounts')
+
+        if not customer_id:
+            messages.error(request, 'Customer is required.')
+            return redirect('milk_agency:edit_bill', bill_id=bill_id)
+
+        try:
+            customer = Customer.objects.get(id=customer_id)
+        except Customer.DoesNotExist:
+            messages.error(request, 'Customer not found.')
+            return redirect('milk_agency:edit_bill', bill_id=bill_id)
+
+        # Restore stock quantities from old bill items
+        for bill_item in bill_items:
+            bill_item.item.stock_quantity += bill_item.quantity
+            bill_item.item.save()
+
+        # Delete old bill items
+        bill_items.delete()
+
+        # Update bill customer if changed
+        changed = bill.customer != customer
+        if changed:
+            old_customer = bill.customer
+            old_customer.due -= bill.total_amount + bill.op_due_amount
+            old_customer.save()
+            bill.customer = customer
+            bill.save()
+            bill.op_due_amount = customer.due
+        else:
+            bill.op_due_amount = customer.due - bill.total_amount
+
+        try:
+            total_bill, total_profit = process_bill_items(bill, item_ids, quantities, discounts)
+        except (Item.DoesNotExist, ValueError):
+            messages.error(request, 'Invalid items or quantities.')
+            return redirect('milk_agency:edit_bill', bill_id=bill_id)
+
+        # Update total_amount and profit based on items
+        bill.total_amount = total_bill
+        bill.profit = total_profit
+        bill.save()
+
+        # Update customer due after bill update
+        customer.due = bill.total_amount + bill.op_due_amount
+        customer.save()
+
+        # Manually trigger monthly purchase update after bill edit
+        from .customer_monthly_purchase_calculator import CustomerMonthlyPurchaseCalculator
+        bill_date = bill.invoice_date
+        year = bill_date.year
+        month = bill_date.month
+        CustomerMonthlyPurchaseCalculator.calculate_customer_monthly_purchase(customer, year, month)
+
+        # Regenerate PDF after bill update
+        try:
+            # Delete old PDF if exists
+            if bill.pdf_file and os.path.exists(bill.pdf_file.path):
+                os.remove(bill.pdf_file.path)
+
+            from .pdf_utils import PDFGenerator
+            pdf_generator = PDFGenerator()
+            pdf_path = pdf_generator.generate_invoice_pdf(bill)
+            if os.path.exists(pdf_path):
+                bill.pdf_file = pdf_path
+                bill.save()
+                messages.success(request, 'PDF regenerated successfully.')
+            else:
+                raise Exception('PDF file not saved')
+        except Exception as pdf_error:
+            # PDF regeneration failed, delete bill and revert changes
+            bill.delete()
+            messages.error(request, f'PDF regeneration failed: {str(pdf_error)}. Bill changes reverted.')
+            return redirect('milk_agency:edit_bill', bill_id=bill_id)
+
+        messages.success(request, 'Bill updated successfully.')
+        return redirect('milk_agency:bills_dashboard')
+
+    # GET request - display edit form
+    customers = Customer.objects.all()
+    items = Item.objects.all()
+
+    return render(request, 'milk_agency/bills/edit_bill.html', {
+        'bill': bill,
+        'bill_items': bill_items,
+        'customers': customers,
+        'items': items
+    })

@@ -1,0 +1,227 @@
+{% extends 'customer_portal/base.html' %}
+{% load static %}
+
+{% block title %}Update Profile - Customer Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 70px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Update Profile</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ customer.name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ customer.phone }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="shop_name" class="form-label">Shop Name</label>
+                                <input type="text" class="form-control" id="shop_name" name="shop_name" value="{{ customer.shop_name|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="retailer_id" class="form-label">Retailer ID</label>
+                                <input type="text" class="form-control" id="retailer_id" name="retailer_id" value="{{ customer.retailer_id|default:'' }}" readonly>
+                                <small class="text-muted">This is auto-assigned and cannot be changed.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="area" class="form-label">Area</label>
+                                <input type="text" class="form-control" id="area" name="area" value="{{ customer.area|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" name="city" value="{{ customer.city|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state" value="{{ customer.state|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="pin_code" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ customer.pin_code|default:'' }}" pattern="\d{6}" title="Pin code must be 6 digits">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h6 class="mb-3">Change Password</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="current_password" name="current_password">
+                                    <span class="input-group-text" id="toggle-current-password">
+                                        <i class="bi bi-eye" id="eye-current"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="new_password" name="new_password" minlength="8">
+                                    <span class="input-group-text" id="toggle-new-password">
+                                        <i class="bi bi-eye" id="eye-new"></i>
+                                    </span>
+                                </div>
+                                <small class="text-muted">Minimum 8 characters</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="8">
+                                    <span class="input-group-text" id="toggle-confirm-password">
+                                        <i class="bi bi-eye" id="eye-confirm"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{% url 'customer_portal:home' %}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const currentPassword = document.getElementById('current_password');
+
+    // Live validation for new password length
+    newPassword.addEventListener('input', function() {
+        const value = this.value;
+        const feedback = document.createElement('small');
+        feedback.id = 'new-password-feedback';
+        feedback.className = value.length >= 8 ? 'text-success' : 'text-danger';
+        feedback.textContent = value.length >= 8 ? 'Password is strong enough' : 'Password must be at least 8 characters';
+        
+        // Remove existing feedback
+        const existingFeedback = document.getElementById('new-password-feedback');
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
+        
+        this.parentNode.appendChild(feedback);
+        this.classList.toggle('is-invalid', value.length < 8);
+        this.classList.toggle('is-valid', value.length >= 8);
+    });
+
+    // Live validation for confirm password match
+    confirmPassword.addEventListener('input', function() {
+        const newPass = newPassword.value;
+        const confirmPass = this.value;
+        const feedback = document.createElement('small');
+        feedback.id = 'confirm-password-feedback';
+        feedback.className = newPass === confirmPass ? 'text-success' : 'text-danger';
+        feedback.textContent = newPass === confirmPass ? 'Passwords match' : "Passwords don't match";
+        
+        // Remove existing feedback
+        const existingFeedback = document.getElementById('confirm-password-feedback');
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
+        
+        this.parentNode.appendChild(feedback);
+        this.classList.toggle('is-invalid', newPass !== confirmPass && confirmPass.length > 0);
+        this.classList.toggle('is-valid', newPass === confirmPass && confirmPass.length > 0);
+    });
+
+    // Toggle password visibility functions
+    function togglePasswordVisibility(inputId, eyeId) {
+        const input = document.getElementById(inputId);
+        const eye = document.getElementById(eyeId);
+        const toggle = document.getElementById('toggle-' + inputId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            eye.classList.remove('bi-eye');
+            eye.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            eye.classList.remove('bi-eye-slash');
+            eye.classList.add('bi-eye');
+        }
+    }
+
+    document.getElementById('toggle-current-password').addEventListener('click', function() {
+        togglePasswordVisibility('current_password', 'eye-current');
+    });
+
+    document.getElementById('toggle-new-password').addEventListener('click', function() {
+        togglePasswordVisibility('new_password', 'eye-new');
+    });
+
+    document.getElementById('toggle-confirm-password').addEventListener('click', function() {
+        togglePasswordVisibility('confirm_password', 'eye-confirm');
+    });
+
+    // On submit validation (fallback)
+    form.addEventListener('submit', function(e) {
+        const newPass = newPassword.value.trim();
+        const confirmPass = confirmPassword.value.trim();
+        const currentPass = currentPassword.value.trim();
+
+        // If no password change is intended (new_password empty), allow submission
+        if (!newPass) {
+            return true;
+        }
+
+        // Check if current password is entered
+        if (!currentPass) {
+            alert('Please enter your current password to change it.');
+            e.preventDefault();
+            return false;
+        }
+
+        // Check new password length
+        if (newPass.length < 8) {
+            alert('New password must be at least 8 characters long.');
+            e.preventDefault();
+            return false;
+        }
+
+        // Check if new password and confirm match
+        if (newPass !== confirmPass) {
+            alert("New password and confirm password do not match.");
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
+});
+</script>
+{% endblock %}

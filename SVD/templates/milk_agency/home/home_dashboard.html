@@ -1,0 +1,191 @@
+{% extends "milk_agency/home/base.html" %}
+{% load mathfilters %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background-color: #f8f9fa; min-height: 100vh;">
+
+    <!-- Today's Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-primary shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-primary" style="font-size: 1rem;">
+                                <i class="fas fa-shopping-cart mr-2"></i>Today's Sales
+                            </div>
+                            <div class="h3 mb-0 font-weight-bold text-dark">₹{{ today_sales|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-warning shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-warning" style="font-size: 1rem;">
+                                <i class="fas fa-money-bill-wave mr-2"></i>Total Due
+                            </div>
+                            <div class="h3 mb-0 font-weight-bold text-dark">₹{{ total_due|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-info" style="font-size: 0.9rem;">
+                                <i class="fas fa-boxes mr-2"></i>Total Stock Items
+                            </div>
+                            <div class="h4 mb-0 font-weight-bold text-dark">{{ total_stock_items }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-success" style="font-size: 0.9rem;">
+                                <i class="fas fa-rupee-sign mr-2"></i>Total Stock Value
+                            </div>
+                            <div class="h4 mb-0 font-weight-bold text-dark">₹{{ total_stock_value|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-danger" style="font-size: 0.9rem;">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Low Stock Items
+                            </div>
+                            <div class="h4 mb-0 font-weight-bold text-dark">{{ low_stock_items }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow-sm h-100 bg-white rounded">
+                <div class="card-body text-center py-4">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col">
+                            <div class="text-uppercase mb-2 font-weight-bold text-secondary" style="font-size: 0.9rem;">
+                                <i class="fas fa-times-circle mr-2"></i>Out of Stock
+                            </div>
+                            <div class="h4 mb-0 font-weight-bold text-dark">{{ out_of_stock_items }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Stock Details Tables by Company -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Stock Details</h6>
+                    <!-- Filter Form -->
+                    <form method="get" class="form-inline d-flex">
+                        <div class="form-group mr-2 me-2">
+                            <select name="company" class="form-control form-control-sm">
+                                <option value="">Select Company</option>
+                                {% for company in companies %}
+                                    <option value="{{ company }}" {% if request.GET.company == company %}selected{% endif %}>
+                                        {{ company }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-2 me-2">
+                            <select name="category" class="form-control form-control-sm">
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+                                        {{ category }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary btn-sm mr-2 me-2">Filter</button>
+                        <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for company, items in stock_by_company.items %}
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ company }} Stock Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive text-center">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Crates</th>
+                                    <th>Packets</th>
+                                    <th>Stock Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>
+                                        {% if item.pcs_count > 0 %}
+                                            {{ item.stock_quantity|div:item.pcs_count|floatformat:0 }}
+                                        {% else %}
+                                            {{ item.stock_quantity }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.pcs_count > 0 %}
+                                            {{ item.stock_quantity|mod:item.pcs_count }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </td>
+                                    <td>₹{{ item.stock_value|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}General Store - SVD Agencies{% endblock %}</title>
+    <link rel="icon" href="{% static 'SVD.png' %}" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0d1a3a">
+      <div class="container-fluid">
+        <a class="navbar-brand text-decoration-underline" href="{% url 'general_store:home' %}">
+          <img src="{% static 'SVD.png' %}" alt="Logo" style="height: 80px; margin-right: 8px" />General Store
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'general_store:product_list' %}">
+                <i class="bi bi-box-seam"></i> Products
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'add_product' or request.resolver_match.url_name == 'edit_product' %}active{% endif %}" href="{% url 'general_store:add_product' %}">
+                <i class="bi bi-plus-circle"></i> Add Product
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'sales_list' %}active{% endif %}" href="{% url 'general_store:sales_list' %}">
+                <i class="bi bi-receipt"></i> Sales
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'add_sale' %}active{% endif %}" href="{% url 'general_store:add_sale' %}">
+                <i class="bi bi-cart-plus"></i> Add Sale
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/milk_agency/">
+                <i class="bi bi-cow"></i> Milk Agency
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'customer_portal:logout' %}">
+                <i class="bi bi-box-arrow-right"></i> Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <header class="text-white">
+      <div class="mb-0 d-flex justify-content-between align-items-center" style="background-color: #0d1a3a">
+        <p class="m-auto">Date : <strong id="date"></strong></p>
+        <p class="m-auto">Time : <strong id="time"></strong></p>
+      </div>
+    </header>
+    <main class="container mt-5">
+      {% block content %}{% endblock %}
+    </main>
+    {% block extra_js %}{% endblock %}
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('date').textContent = now.toLocaleDateString();
+            document.getElementById('time').textContent = now.toLocaleTimeString();
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html>

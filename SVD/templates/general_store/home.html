@@ -1,0 +1,71 @@
+{% extends 'general_store/base.html' %}
+{% block title %}General Store Dashboard - SVD Agencies{% endblock %}
+{% block content %}
+        <h2 class="text-center mb-4">General Store Dashboard</h2>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-box-seam fs-1 text-primary"></i>
+                        <h5 class="card-title">Total Products</h5>
+                        <p class="card-text fs-3">{{ total_products }}</p>
+                        <a href="{% url 'general_store:product_list' %}" class="btn btn-primary">View Products</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-receipt fs-1 text-success"></i>
+                        <h5 class="card-title">Total Sales</h5>
+                        <p class="card-text fs-3">{{ total_sales }}</p>
+                        <a href="{% url 'general_store:sales_list' %}" class="btn btn-success">View Sales</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-currency-rupee fs-1 text-warning"></i>
+                        <h5 class="card-title">Total Revenue</h5>
+                        <p class="card-text fs-3">₹{{ total_revenue }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                        <h5 class="card-title">Low Stock Items</h5>
+                        <p class="card-text fs-3">{{ low_stock_products|length }}</p>
+                        {% if low_stock_products %}
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#lowStockModal">View</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+{% block extra_js %}
+    <!-- Low Stock Modal -->
+    <div class="modal fade" id="lowStockModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Low Stock Products</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        {% for product in low_stock_products %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ product.name }}
+                            <span class="badge bg-danger rounded-pill">{{ product.stock_quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

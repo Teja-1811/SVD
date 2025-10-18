@@ -1,0 +1,297 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}CashBook{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>CashBook Dashboard</h2>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#expenseModal" title="Add a new expense entry">
+                <i class="bi bi-cash-coin me-1"></i>Add Expense
+            </button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='{% url 'milk_agency:expenses_list' %}'" title="View the list of all expenses">
+                <i class="bi bi-list"></i> View Expenses List
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #4e73df; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);" title="Total cash available in hand (calculated from note counts)">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Total Cash In Hand
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ total_cash_in|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #36b9cc; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);" title="Current balance in your bank account">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Bank Balance
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ bank_balance|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-university fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #e74a3b; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);" title="Total amount owed by all customers">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Customer Dues
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ total_customer_dues|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #1cc88a; background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);" title="Net available cash after deducting all dues">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Net Available Cash
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ net_cash|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-balance-scale fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #f6c23e; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);" title="Total expenses for today">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Current Month Expenses
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ total_cash_out|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #e83e8c; background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);" title="Total profit for the current month from all bills">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Current Monthly Profit
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ monthly_profit|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 my-4">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #e83e8c; background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);" title="Net profit for the current month (profit from bills minus expenses)">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Current Month Net Profit
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ net_profit|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Dues Card -->
+    <div class="row mb-4">
+        
+    </div>
+
+    <!-- Company Dues Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-left-warning shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Company Dues</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for company in company_dues %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-warning">{{ company.company }}</h5>
+                                    <h4 class="text-danger">₹{{ company.total_due|floatformat:2 }}</h4>
+                                    <small class="text-muted">Last updated: {{ company.last_updated }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h5 class="text-warning">Total Company Dues: ₹{{ total_company_dues|floatformat:2 }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash In Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Cash In</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'milk_agency:save_cash_in' %}">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="c500" class="form-label">₹500 Notes</label>
+                        <input type="number" class="form-control" id="c500" name="c500" min="0" value="{{ cash_entry.c500 }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="c200" class="form-label">₹200 Notes</label>
+                        <input type="number" class="form-control" id="c200" name="c200" min="0" value="{{ cash_entry.c200 }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="c100" class="form-label">₹100 Notes</label>
+                        <input type="number" class="form-control" id="c100" name="c100" min="0" value="{{ cash_entry.c100 }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="c50" class="form-label">₹50 Notes</label>
+                        <input type="number" class="form-control" id="c50" name="c50" min="0" value="{{ cash_entry.c50 }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Update Cash In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cash Out Entries -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Cash Out (Expenses)</h6>
+        </div>
+        <div class="card-body">
+            {% if cash_out_entries %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in cash_out_entries %}
+                        <tr>
+                            <td>₹{{ entry.amount|floatformat:2 }}</td>
+                            <td>{{ entry.category|title }}</td>
+                            <td>{{ entry.description }}</td>
+                            <td>{{ entry.date|date:"d M Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No cash out entries for the current month.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bank Balance Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Bank Balance</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'milk_agency:save_bank_balance' %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="number" step="0.01" min="0" class="form-control" name="amount" value="{{ bank_balance }}">
+                    <button class="btn btn-info" type="submit">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="expenseModalLabel">Add Expense</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'milk_agency:save_expense' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="amount" name="amount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="petrol">Petrol</option>
+                                <option value="food">Food</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Customer Data{% endblock %}
+
+{% block head %}
+<style>
+/* Print-specific styles for customer cards */
+@media print {
+    /* Hide non-essential elements */
+    nav, header, .message-container-top-right, .d-flex.justify-content-between.mb-3,
+    .mb-3 .row, .btn, form, .freeze-btn, .btn-outline-warning, .btn-outline-success {
+        display: none !important;
+    }
+
+    /* Preserve body layout */
+    body {
+        margin: 0 !important;
+        padding: 15mm !important;
+        background: white !important;
+        font-family: Arial, sans-serif !important;
+    }
+
+    /* Customer cards grid for print */
+    .row {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+        margin: 0 !important;
+    }
+
+    .col-lg-4.col-md-6.mb-4 {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* Customer card styling for print */
+    .card {
+        border: 2px solid #000 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        background: white !important;
+        page-break-inside: avoid !important;
+    }
+
+    .card-body {
+        padding: 15px !important;
+    }
+
+    .card-title {
+        font-size: 16px !important;
+        font-weight: bold !important;
+        margin-bottom: 10px !important;
+        color: #000 !important;
+    }
+
+    .card-text {
+        font-size: 11px !important;
+        margin-bottom: 4px !important;
+        line-height: 1.3 !important;
+    }
+
+    .card-text strong {
+        font-weight: bold !important;
+    }
+
+    /* Print header */
+    .print-header {
+        display: block !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 10px !important;
+    }
+
+    .print-header h2 {
+        font-size: 20px !important;
+        font-weight: bold !important;
+        margin: 0 !important;
+    }
+
+    .print-header p {
+        font-size: 12px !important;
+        margin: 5px 0 0 0 !important;
+    }
+
+    /* Page settings */
+    @page {
+        margin: 15mm;
+        size: A4 portrait;
+    }
+
+    /* Handle frozen customer cards */
+    .bg-light {
+        background-color: #f8f9fa !important;
+        border: 2px solid #6c757d !important;
+    }
+}
+
+/* Screen-specific styles */
+@media screen {
+    .print-only {
+        display: none;
+    }
+
+    .print-btn {
+        background-color: #17a2b8 !important;
+        border-color: #17a2b8 !important;
+    }
+
+    .print-btn:hover {
+        background-color: #138496 !important;
+        border-color: #117a8b !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Print Header (hidden on screen, visible when printing) -->
+<div class="print-header print-only">
+    <h2>Sri Vijaya Durga Milk Agencies</h2>
+    <p>Customer Information Report - Generated on <span id="print-date">{{ "now"|date:"d M Y" }}</span></p>
+</div>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Customer Management</h2>
+        <a href="{% url 'milk_agency:add_customer' %}" class="btn btn-outline-primary">
+            <i class="bi bi-person-plus"></i> Add Customer
+        </a>
+    </div>
+
+    <!-- Area and Name Filter Form -->
+    <div class="mb-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label for="areaFilter" class="col-form-label">Filter by Area:</label>
+            </div>
+            <div class="col-auto">
+                <select id="areaFilter" class="form-select">
+                    <option value="">All Areas</option>
+                    {% for area in areas %}
+                    <option value="{{ area }}" {% if area == selected_area %}selected{% endif %}>{{ area }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label for="nameFilter" class="col-form-label">Customer Name:</label>
+            </div>
+            <div class="col-auto">
+                <select id="nameFilter" class="form-select">
+                    <option value="">All Customers</option>
+                    {% for name in names %}
+                    <option value="{{ name }}" {% if name == selected_name %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="button" id="filterBtn" class="btn btn-primary">Filter</button>
+                <button type="button" id="clearBtn" class="btn btn-secondary ms-2">Clear</button>
+            </div>
+            <div class="col-auto">
+                <div class="px-3 py-1 rounded btn btn-outline-success">
+                    <strong>Total Active Customers : {{ active_customers_count }}</strong>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="px-3 py-1 rounded btn btn-outline-danger">
+                    <strong>Total Inactive Customers : {{ inactive_customers_count }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for customer in customers %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card {% if customer.frozen %}bg-light{% endif %} shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ customer.name }}{% if customer.frozen %} (Frozen){% endif %}</h5>
+                    <p class="card-text mb-1"><strong>Shop Name:</strong> {{ customer.shop_name|default:"-" }}</p>
+                    <p class="card-text mb-1"><strong>Retailer ID:</strong> {{ customer.retailer_id|default:"-" }}</p>
+                    <p class="card-text mb-1"><strong>Address:</strong> {{ customer.flat_number }},
+                        {% if customer.area %} {{ customer.area }}{% endif %}
+                        {% if customer.city %}, {{ customer.city }}{% endif %}
+                        {% if customer.state %}, {{ customer.state }}{% endif %}-
+                        {% if customer.pin_code %} {{ customer.pin_code }}{% endif %}
+                    </p>
+                    <p class="card-text mb-1"><strong>Phone:</strong> {{ customer.phone }}</p>
+                    <p class="card-text mb-1"><strong>Milk Commission:</strong> {{ customer.milk_commission|default:0 }}</p>
+                    <p class="card-text mb-1"><strong>Curd Commission:</strong> {{ customer.curd_commission|default:0 }}</p>
+                    <p class="card-text mb-2 text-success"><strong>Last Paid:</strong> {{ customer.last_paid_balance|default:0|floatformat:2 }}</p>
+                    <p class="card-text mb-2 text-danger"><strong>Balance:</strong> ₹{{ customer.due|default:0|floatformat:2 }}</p>
+
+                    <!-- Balance Update Form -->
+                    <form method="post" action="{% url 'milk_agency:update_customer_balance' customer.id %}" class="mb-3">
+                        {% csrf_token %}
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control form-control-sm" name="balance"
+                                   placeholder="Update Last Paid Balance" value="0" required>
+                            <button type="submit" class="btn btn-outline-primary btn-sm" title="Update Balance">
+                                <i class="bi bi-check-circle"></i> Update
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'milk_agency:edit_customer' customer.id %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <button class="btn btn-sm btn-outline-{% if customer.frozen %}success{% else %}danger{% endif %} freeze-btn"
+                                title="{% if customer.frozen %}Unfreeze{% else %}Freeze{% endif %}"
+                                data-customer-id="{{ customer.id }}"
+                                data-csrf-token="{{ csrf_token }}">
+                            <i class="bi bi-{% if customer.frozen %}unlock{% else %}lock{% endif %}"></i> {% if customer.frozen %}Unfreeze{% else %}Freeze{% endif %}
+                        </button>
+                        <a href="https://wa.me/{{ customer.phone }}?text=Hello%20{{ customer.name|urlencode }}%2C%0A%0AHere%20is%20your%20account%20summary%3A%0A%0ADue%3A%20Rs.%20{{ customer.due|default:0|floatformat:2 }}%0A%0AThank%20you%20for%20your%20business!"
+                            class="btn btn-sm btn-outline-success"
+                            title="Share Balance via WhatsApp"
+                            target="_blank">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">No customers found.</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Hidden forms for freeze/unfreeze actions -->
+    {% for customer in customers %}
+    <form method="post" action="{% url 'milk_agency:freeze_customer' customer.id %}" class="d-none" id="freeze-form-{{ customer.id }}">
+        {% csrf_token %}
+    </form>
+    {% endfor %}
+</div>
+
+            <script>
+                // JavaScript to handle freeze/unfreeze button clicks and filtering with AJAX
+                document.addEventListener('DOMContentLoaded', function() {
+                    const areaFilter = document.getElementById('areaFilter');
+                    const nameFilter = document.getElementById('nameFilter');
+                    const filterBtn = document.getElementById('filterBtn');
+                    const clearBtn = document.getElementById('clearBtn');
+                    const customerContainer = document.querySelector('.row');
+
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    function fetchCustomers() {
+                        const area = areaFilter.value;
+                        const name = nameFilter.value;
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('area', area);
+                        url.searchParams.set('name', name);
+
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            customerContainer.innerHTML = '';
+                            if (data.customers.length === 0) {
+                                customerContainer.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">No customers found.</div></div>';
+                                return;
+                            }
+                            data.customers.forEach(customer => {
+                                const colDiv = document.createElement('div');
+                                colDiv.className = 'col-lg-4 col-md-6 mb-4';
+                                colDiv.innerHTML = `
+                                    <div class="card ${customer.frozen ? 'bg-light' : ''} shadow-sm">
+                                        <div class="card-body">
+                                            <h5 class="card-title fw-bold">${customer.name}${customer.frozen ? ' (Frozen)' : ''}</h5>
+                                            <p class="card-text mb-1"><strong>Shop Name:</strong> ${customer.shop_name || '-'}</p>
+                                            <p class="card-text mb-1"><strong>Retailer ID:</strong> ${customer.retailer_id || '-'}</p>
+                                            <p class="card-text mb-1"><strong>Address:</strong> ${customer.address}</p>
+                                            <p class="card-text mb-1"><strong>Phone:</strong> ${customer.phone}</p>
+                                            <p class="card-text mb-1"><strong>Milk Commission:</strong> ${customer.milk_commission || 0}</p>
+                                            <p class="card-text mb-1"><strong>Curd Commission:</strong> ${customer.curd_commission || 0}</p>
+                                            <p class="card-text mb-2"><strong>Balance:</strong> ₹${(customer.balance || 0).toFixed(2)}</p>
+
+                                            <!-- Balance Update Form -->
+                                            <form method="post" action="/milk_agency/customer-data/update-balance/${customer.id}/" class="mb-3">
+                                                <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">₹</span>
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" name="balance"
+                                                           placeholder="Update Last Paid Balance" value="${customer.last_paid_balance || 0}" required>
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm" title="Update Balance">
+                                                        <i class="bi bi-check-circle"></i> Update
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                            <div class="d-flex justify-content-between">
+                                                <a href="/milk_agency/edit-customer/${customer.id}/" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-${customer.frozen ? 'success' : 'danger'} freeze-btn"
+                                                        title="${customer.frozen ? 'Unfreeze' : 'Freeze'}"
+                                                        data-customer-id="${customer.id}">
+                                                    <i class="bi bi-${customer.frozen ? 'unlock' : 'lock'}"></i> ${customer.frozen ? 'Unfreeze' : 'Freeze'}
+                                                </button>
+                                                <a href="https://wa.me/${customer.phone}?text=Hello%20${encodeURIComponent(customer.name)}%2C%0A%0AHere%20is%20your%20account%20summary%3A%0A%0ADue%3A%20Rs.%20${(customer.balance || 0).toFixed(2)}%0A%0AThank%20you%20for%20your%20business!"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    title="Share Balance via WhatsApp"
+                                                    target="_blank">
+                                                    <i class="bi bi-whatsapp"></i> WhatsApp
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                customerContainer.appendChild(colDiv);
+                            });
+                            attachFreezeEventListeners();
+                        })
+                        .catch(error => {
+                            console.error('Error fetching customers:', error);
+                        });
+                    }
+
+                    function attachFreezeEventListeners() {
+                        document.querySelectorAll('.freeze-btn').forEach(button => {
+                            button.addEventListener('click', function(event) {
+                                event.preventDefault();
+                                const customerId = this.getAttribute('data-customer-id');
+                                const csrftoken = getCookie('csrftoken');
+                                fetch(`/milk_agency/customer/freeze/${customerId}/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': csrftoken,
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                    },
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        // Reload the page after freeze/unfreeze
+                                        window.location.reload();
+                                    } else {
+                                        alert('Failed to update customer status.');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error freezing/unfreezing customer:', error);
+                                });
+                            });
+                        });
+                    }
+
+                    filterBtn.addEventListener('click', fetchCustomers);
+                    clearBtn.addEventListener('click', () => {
+                        areaFilter.value = '';
+                        nameFilter.value = '';
+                        fetchCustomers();
+                    });
+
+                    // Initial attach freeze event listeners
+                    attachFreezeEventListeners();
+                });
+            </script>
+{% endblock %}

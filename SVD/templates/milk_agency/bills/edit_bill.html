@@ -1,0 +1,196 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Edit Bill - {{ bill.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>Edit Bill - {{ bill.invoice_number }}</h2>
+    <form method="post" action="{% url 'milk_agency:edit_bill' bill.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="customer" value="{{ bill.customer.id }}">
+
+        <!-- Customer Details Display -->
+        <div class="mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Customer Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ bill.customer.name }}</p>
+                            <p><strong>Phone:</strong> {{ bill.customer.phone|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Address:</strong> {{ bill.customer.flat_number }}, {{ bill.customer.area }}, {{ bill.customer.city }}, {{ bill.customer.state }} - {{ bill.customer.pin_code }}</p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="items-container">
+            <h4>Items</h4>
+            {% for item in bill_items %}
+            <div class="item-row mb-2 d-flex gap-2 align-items-center">
+                <select name="items" class="form-select item-select" required>
+                    {% for i in items %}
+                    <option value="{{ i.id }}" {% if i.id == item.item.id %}selected{% endif %}>{{ i.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="quantities" class="form-control quantity-input" min="0" value="{{ item.quantity }}" required>
+                <input type="number" name="discounts" class="form-control discount-input" min="0" step="0.01" value="{{ item.discount }}">
+                <button type="button" class="btn btn-danger btn-sm remove-item-btn">Remove</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-secondary mb-3" id="add-item-btn">Add Item</button>
+
+        <!-- Due Amount Display -->
+        <div class="mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Bill Summary</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Opening Due:</strong> ₹<span id="opening-due">{{ bill.op_due_amount|floatformat:2 }}</span></p>
+                            <p><strong>Items Total:</strong> ₹<span id="items-total">0.00</span></p>
+                            <p><strong>Paid Amount:</strong> ₹<span id="paid-amount">{{ bill.last_paid|floatformat:2 }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-primary"><strong>Current Due Amount:</strong> ₹<span id="current-due">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Bill</button>
+        <a href="{% url 'milk_agency:bills_dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+// Store items data for price lookup
+const itemsData = {};
+{% for item in items %}
+itemsData[{{ item.id }}] = {
+    name: "{{ item.name }}",
+    price: {{ item.selling_price|floatformat:2 }}
+};
+{% endfor %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addItemBtn = document.getElementById('add-item-btn');
+    const itemsContainer = document.getElementById('items-container');
+    const openingDue = parseFloat(document.getElementById('opening-due').textContent) || 0;
+
+    // Function to calculate and update totals
+    function updateTotals() {
+        let itemsTotal = 0;
+
+        // Calculate items total
+        document.querySelectorAll('.item-row').forEach(row => {
+            const itemSelect = row.querySelector('.item-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            const discountInput = row.querySelector('.discount-input');
+
+            if (itemSelect && quantityInput) {
+                const itemId = itemSelect.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const discount = parseFloat(discountInput.value) || 0;
+
+                if (itemId && itemsData[itemId]) {
+                    const price = itemsData[itemId].price;
+                    const itemTotal = (quantity * price) - (discount * quantity);
+                    itemsTotal += itemTotal;
+                }
+            }
+        });
+
+        const totalPaid = {{ bill.last_paid|floatformat:2 }};
+
+        // Calculate current due
+        const currentDue = itemsTotal + openingDue - totalPaid;
+
+        // Update display
+        document.getElementById('items-total').textContent = itemsTotal.toFixed(2);
+        document.getElementById('paid-amount').textContent = totalPaid.toFixed(2);
+        document.getElementById('current-due').textContent = currentDue.toFixed(2);
+
+        // Color coding for due amount
+        const currentDueElement = document.getElementById('current-due');
+        if (currentDue > 0) {
+            currentDueElement.style.color = '#dc3545'; // Red for due
+        } else if (currentDue < 0) {
+            currentDueElement.style.color = '#28a745'; // Green for credit
+        } else {
+            currentDueElement.style.color = '#007bff'; // Blue for zero
+        }
+    }
+
+    // Initial calculation
+    updateTotals();
+
+    // Event listeners for dynamic updates
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('quantity-input') ||
+            e.target.classList.contains('discount-input')) {
+            updateTotals();
+        }
+    });
+
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('item-select')) {
+            updateTotals();
+        }
+    });
+
+    addItemBtn.addEventListener('click', function() {
+        const itemRow = document.createElement('div');
+        itemRow.classList.add('item-row', 'mb-2', 'd-flex', 'gap-2', 'align-items-center');
+        itemRow.innerHTML = `
+            <select name="items" class="form-select item-select" required>
+                {% for i in items %}
+                <option value="{{ i.id }}">{{ i.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="quantities" class="form-control quantity-input" min="0" value="0" required>
+            <input type="number" name="discounts" class="form-control discount-input" min="0" step="0.01" value="0">
+            <button type="button" class="btn btn-danger btn-sm remove-item-btn">Remove</button>
+        `;
+        itemsContainer.appendChild(itemRow);
+
+        // Add event listeners to new elements
+        itemRow.querySelector('.quantity-input').addEventListener('input', updateTotals);
+        itemRow.querySelector('.discount-input').addEventListener('input', updateTotals);
+        itemRow.querySelector('.item-select').addEventListener('change', updateTotals);
+
+        itemRow.querySelector('.remove-item-btn').addEventListener('click', function() {
+            itemRow.remove();
+            updateTotals();
+        });
+    });
+
+    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            btn.closest('.item-row').remove();
+            updateTotals();
+        });
+    });
+
+    // Add event listeners to existing elements
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', updateTotals);
+    });
+    document.querySelectorAll('.discount-input').forEach(input => {
+        input.addEventListener('input', updateTotals);
+    });
+    document.querySelectorAll('.item-select').forEach(select => {
+        select.addEventListener('change', updateTotals);
+    });
+});
+</script>
+{% endblock %}

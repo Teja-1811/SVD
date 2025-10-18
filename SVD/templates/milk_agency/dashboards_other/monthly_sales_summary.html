@@ -1,0 +1,260 @@
+{% extends "milk_agency/home/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Monthly Sales Summary - {% endblock %}
+
+{% block head %}
+<style>
+/* Screen styles */
+@media screen {
+    #printButton {
+        cursor: pointer !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .print-only { display: none; }
+}
+
+/* Print styles for main page if needed */
+@media print {
+    body {
+        margin: 0;
+        padding: 15mm;
+        font-family: Arial, sans-serif;
+        background: white;
+    }
+
+    #customer-card {
+        display: block !important;
+        width: 100% !important;
+        box-shadow: none !important;
+    }
+
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 12px !important;
+    }
+
+    th, td {
+        border: 1px solid #000 !important;
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+
+    th {
+        background-color: #f8f9fa !important;
+        font-weight: bold !important;
+    }
+
+    nav, header, form, .message-container-top-right {
+        display: none !important;
+    }
+
+    img { max-width: 100px !important; height: auto !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Filters -->
+    <form method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-2">
+                <label for="area">Select Area:</label>
+                <select name="area" id="area" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Areas --</option>
+                    {% for a in areas %}
+                        <option value="{{ a }}" {% if a == selected_area %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="customer">Select Customer:</label>
+                <select name="customer" id="customer" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Customers --</option>
+                    {% for cust in customers %}
+                        <option value="{{ cust.id }}" {% if cust.id|stringformat:"s" == selected_customer %}selected{% endif %}>{{ cust.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="date">Select Month:</label>
+                <input type="month" name="date" id="date" value="{{ selected_date|date:'Y-m' }}" class="form-control" onchange="this.form.submit()">
+            </div>
+        </div>
+    </form>
+
+    {% if selected_customer_obj %}
+    <div class="text-end mb-3">
+        <button id="generateBtn" class="btn btn-primary">Generate</button>
+    </div>
+    {% endif %}
+
+    <!-- Printable Customer Card -->
+    <div id="printableArea">
+        {% if selected_customer_obj %}
+        <div class="card mb-4" id="customer-card">
+            <div style="border: 1px solid #000; border-radius: 0.25rem; margin: 5px;">
+                <div class="card-body p-2">
+                    <p class="fw-bold text-center">Customer Statement for the Period : {{ start_date|date:"d M Y" }} - {{ end_date|date:"d M Y" }}</p>
+
+                    <div class="row align-items-center text-center">
+                        <div class="col-md-7 text-start ms-0 me-5">
+                            <div style="border: 1px solid #000;" class="p-2">
+                                <h6><strong>Sri Vijaya Durga Milk Agencies</strong></h6>
+                                <address class="mb-1">
+                                    <strong>Address : </strong> D.No: 10-92, Gundugolanu, Bhimadolu, Eluru, Andhra Pradesh - 534427
+                                </address>
+                                <p class="mb-1"><strong>Email :</strong> svdagencies12@gmail | <strong>Phone :</strong> 9392890375</p>
+                            </div>
+                            <div style="border: 1px solid #000;" class="p-2">
+                                <h6><strong>{{ selected_customer_obj.name }} | </strong> <strong>Retailer ID:</strong> {{ selected_customer_obj.retailer_id|default:"N/A" }}</h6>
+                                <address class="mb-1">
+                                    <strong>Address:</strong> {{ selected_customer_obj.flat_number|default:"" }}, {{ selected_customer_obj.area|default:"" }}, {{ selected_customer_obj.city|default:"" }}, {{ selected_customer_obj.state|default:"" }} - {{ selected_customer_obj.pin_code|default:"" }}
+                                </address>
+                                <p class="mb-1"><strong>Phone:</strong> {{ selected_customer_obj.phone|default:"N/A" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-1 text-center ms-auto me-auto">
+                            <img src="{% static 'images/SVD1.png' %}" alt="Logo" width="200px" loading="eager">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {% if unique_items %}
+                    <h6>Customer Purchase Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover text-center table-compact">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    {% for item_code in unique_codes %}<th>{{ item_code }}</th>{% endfor %}
+                                    <th>Invoice</th>
+                                    <th>Paid</th>
+                                    <th>Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for date_obj in date_range %}
+                                    {% with date_key=date_obj|date:"Y-m-d" %}
+                                        {% for bill in customer_bills.values %}
+                                            {% if bill.invoice_date|date:"Y-m-d" == date_key and bill.total_amount > 0 %}
+                                                <tr>
+                                                    <td>{{ date_obj|date:"d-m-Y" }}</td>
+                                                    {% for item_code in unique_codes %}
+                                                        <td>{{ customer_items_data|get_item:item_code|get_nested_item:date_key|default:"0" }}</td>
+                                                    {% endfor %}
+
+                                                    <td>₹{{ bill.total_amount|floatformat:2 }}</td>
+                                                    <td>₹{{ bill.paid_amount|floatformat:2 }}</td>
+                                                    <td>₹{{ bill.due_amount|floatformat:2 }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td>Total</td>
+                                    {% for item_code in unique_codes %}
+                                        <td>{{ total_quantity_per_item|get_item:item_code|default:"0" }}</td>
+                                    {% endfor %}
+
+                                    <td>₹{{ total_sales|floatformat:2 }}</td>
+                                    <td>₹{{ paid_amount|floatformat:2 }}</td>
+                                    <td>₹{{ due_amount|floatformat:2 }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Commission Card-->
+                    <h6 class="mt-4">Commission Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover text-center table-compact">
+                            <thead>
+                                <tr>
+                                    <th>Milk Volume</th>
+                                    <th>Curd Volume</th>
+                                    <th>Total Volume</th>                                   
+                                    <th>Commission</th>
+                                    <th>Commission Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ milk_volume|floatformat:2 }}</td>
+                                    <td>{{ curd_volume|floatformat:2 }}</td>
+                                    <td>{{ avg_volume|floatformat:2 }}</td>
+                                    <td>₹{{ commission_rate|floatformat:2 }}</td>
+                                    <td>₹{{ total_commission|floatformat:2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if total_commission != 0 %}
+                    <div class="text-start">
+                        <p class="mb-1"><strong>Final Summary : </strong></p>
+                        <p class="mb-1">Due : ₹{{ due_amount|floatformat:2 }}</p>
+                        <p class="mb-1">Commission : ₹{{ total_commission|floatformat:2 }}</p>
+                        <p class="mb-1">Remaining Due : ₹{{ remaining_due|floatformat:2}}</p>
+                    </div>
+                    {% else %}
+                        <p class="mb-1"><strong>Final Summary : </strong></p>
+                        <p class="mb-1">Due : ₹{{ due_amount|floatformat:2 }}</p>
+                    {% endif %}
+
+                    <!-- Notes and Signature -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <div class="text-start">
+                            <p class="mb-1"><strong>Note:</strong></p>
+                            <p class="mb-1 fw-bold">Commission applies only to milk and curd packets with an average sale of minimum 25 liters per month.</p>
+                        </div>
+                        <div class="text-center me-5">
+                            <img src="{% static 'images/N. Ramesh.png' %}" alt="Signature" class="img-fluid" style="max-height: 50px;">
+                            <p class="mb-1">Authorised Signatory</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#generateBtn').click(function() {
+        var customerId = '{{ selected_customer_obj.id }}';
+        var remainingDue = '{{ remaining_due }}';
+        $.ajax({
+            url: '{% url "milk_agency:update_remaining_due" %}',
+            type: 'POST',
+            data: {
+                'customer_id': customerId,
+                'remaining_due': remainingDue,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function() {
+                alert('Error updating balance.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

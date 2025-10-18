@@ -1,0 +1,341 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Generate Bill{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <form method="post" action="{% url 'milk_agency:generate_bill' %}">
+        {% csrf_token %}
+
+        <!-- Filters and Customer Selection Row -->
+        <div class="row mb-3">
+            <!-- Area Filter -->
+            <div class="col-md-3">
+                <label for="area-filter" class="form-label">Filter by Area</label>
+                <select id="area-filter" class="form-select" name="area" onchange="filterByArea()">
+                    <option value="">All Areas</option>
+                    {% for area in areas %}
+                    <option value="{{ area }}" {% if selected_area == area %}selected{% endif %}>{{ area }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Customer Selection -->
+            <div class="col-md-3">
+                <label for="customer-select" class="form-label">Select Customer</label>
+                <select id="customer-select" class="form-select" name="customer" required>
+                    <option value="">-- Select a customer --</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}" data-balance="{{ customer.balance }}">{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Bill Date -->
+            <div class="col-md-3">
+                <label for="bill-date" class="form-label">Bill Date</label>
+                <input type="date" id="bill-date" name="bill_date" class="form-control"
+                       value="{% if current_date %}{{ current_date|date:'Y-m-d' }}{% endif %}" required>
+            </div>
+
+            <!-- Company Filter -->
+            <div class="col-md-3">
+                <label for="company-filter" class="form-label">Filter by Company</label>
+                <select id="company-filter" class="form-select" name="company" onchange="filterByCompany()">
+                    <option value="">All Companies</option>
+                    {% for company in companies %}
+                    <option value="{{ company }}">{{ company }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-md-3">
+                <label for="category-filter" class="form-label">Filter by Category</label>
+                <select id="category-filter" class="form-select" name="category" onchange="filterByCategory()">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div id="items-container" class="row justify-content-center">
+            <h5>Items</h5>
+            {% for item in items %}
+            <div class="col-md-3 mb-3 item-row" data-price="{{ item.selling_price }}" data-stock-quantity="{{ item.stock_quantity }}" data-category="{{ item.category }}">
+                <div class="card h-100 shadow-sm">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 180px; object-fit: contain;">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{ item.name }} ({{ item.company }})</h6>
+                        <p class="card-text fw-bold">₹{{ item.selling_price }}</p>
+                        <div class="mt-auto">
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <label class="form-label mb-1 fw-bold">Qty</label>
+                                    <div class="input-group input-group-sm">
+                                        <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
+                                        <input type="hidden" name="items" value="{{ item.id }}">
+                                        <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
+                                        <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label mb-1 fw-bold">Disc</label>
+                                    <div class="input-group input-group-sm">
+                                        <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
+                                        <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
+                                        <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span class="fw-bold">Disc Amt:</span>
+                                    <span class="text-danger discount-amount">-₹0.00</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="fw-bold">Total:</span>
+                                    <span class="fw-bold total-amount">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Total Summary -->
+        <div class="row mt-4 p-3 bg-light rounded">
+            <div class="col-md-6">
+                <h5>Total Discount: <span id="total-discount" class="text-danger">₹0.00</span></h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <h5>Total Amount: <span id="total-amount-display" class="text-success fw-bold">₹0.00</span></h5>
+            </div>
+        </div>
+
+        <div class="mb-3" style="display:none;">
+            <label for="total-amount" class="form-label">Total Amount</label>
+            <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-outline-primary">Generate Bill</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the new input fields
+    const customerSelect = document.getElementById('customer-select');
+    const customerDueInput = document.getElementById('customer-due');
+    // const amountReceivedInput = document.getElementById('amount-received');
+    // const remainingDueInput = document.getElementById('remaining-due');
+    const totalAmountInput = document.getElementById('total-amount');
+
+    function updateTotal(row) {
+        const stockQuantity = parseInt(row.dataset.stockQuantity || 0); // Get stock quantity from data attribute
+        const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
+        const price = parseFloat(row.dataset.price || 0);
+        const discountInput = parseFloat(row.querySelector('.discount-input')?.value || 0);
+        const discountAmount = discountInput * quantity;
+        row.querySelector('.discount-amount').textContent = '-₹' + discountAmount.toFixed(2);
+        row.querySelector('.discount-amount').dataset.discount = discountAmount;
+        const total = (price * quantity) - discountAmount;
+        row.querySelector('.total-amount').textContent = '₹' + total.toFixed(2);
+        updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+        let grandTotal = 0;
+        let grandDiscount = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            const totalText = row.querySelector('.total-amount').textContent || '';
+            const totalValue = parseFloat(totalText.replace('₹', '')) || 0;
+            grandTotal += totalValue;
+
+            const discountText = row.querySelector('.discount-amount').dataset.discount || '0';
+            grandDiscount += parseFloat(discountText);
+        });
+
+        // Update displays
+        document.getElementById('total-discount').textContent = '₹' + grandDiscount.toFixed(2);
+        document.getElementById('total-amount-display').textContent = '₹' + grandTotal.toFixed(2);
+
+        // Total amount is just the items total, not including previous due
+        totalAmountInput.value = '₹' + grandTotal.toFixed(2);
+        // updateRemainingDue();
+    }
+
+    // function updateRemainingDue() {
+    //     const totalAmount = parseFloat(totalAmountInput.value.replace('₹', '')) || 0;
+    //     const amountReceived = parseFloat(amountReceivedInput.value) || 0;
+    //     // Removed customerBalance from remaining due calculation as per feedback
+    //     const remainingDue = totalAmount - amountReceived;
+    //     remainingDueInput.value = '₹' + remainingDue.toFixed(2);
+    // }
+
+    // Update customer due when customer is selected
+    customerSelect.addEventListener('change', function() {
+        // updateCustomerDue();
+    });
+
+    // Update remaining due when amount received changes
+    // amountReceivedInput.addEventListener('input', function() {
+    //     updateRemainingDue();
+    //     updateCustomerDue();
+    // });
+
+    // function updateCustomerDue() {
+    //     const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+    //     const customerBalance = parseFloat(selectedOption.dataset.balance) || 0;
+    //     const remainingDue = parseFloat(remainingDueInput.value.replace('₹', '')) || 0;
+    //     customerDueInput.value = '₹' + customerBalance.toFixed(2);
+    // }
+
+    document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('.item-row');
+            updateTotal(row);
+        });
+    });
+
+    document.querySelectorAll('.plus-qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.item-row');
+            const qtyInput = row.querySelector('.quantity-input');
+            qtyInput.value = parseInt(qtyInput.value) + 1;
+            updateTotal(row);
+        });
+    });
+
+    document.querySelectorAll('.minus-qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.item-row');
+            const qtyInput = row.querySelector('.quantity-input');
+            if (parseInt(qtyInput.value) > 0) {
+                qtyInput.value = parseInt(qtyInput.value) - 1;
+                updateTotal(row);
+            }
+        });
+    });
+
+    document.querySelectorAll('.plus-discount-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.item-row');
+            const discountInput = row.querySelector('.discount-input');
+            let currentValue = parseFloat(discountInput.value) || 0;
+            if (currentValue < 0.1) {
+                currentValue = 0;
+            }
+            discountInput.value = (currentValue + 0.1).toFixed(1);
+            updateTotal(row);
+        });
+    });
+
+    document.querySelectorAll('.minus-discount-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.item-row');
+            const discountInput = row.querySelector('.discount-input');
+            let currentValue = parseFloat(discountInput.value) || 0;
+            if (currentValue > 0.1) {
+                discountInput.value = (currentValue - 0.1).toFixed(1);
+                updateTotal(row);
+            }
+        });
+    });
+
+    // Initialize totals for all rows
+    document.querySelectorAll('.item-row').forEach(row => updateTotal(row));
+});
+
+// Function to filter by area
+function filterByArea() {
+    const areaSelect = document.getElementById('area-filter');
+    const selectedArea = areaSelect.value;
+
+    // Update URL with area parameter
+    const url = new URL(window.location);
+    if (selectedArea) {
+        url.searchParams.set('area', selectedArea);
+    } else {
+        url.searchParams.delete('area');
+    }
+
+    // Reload the page with the new area filter
+    window.location.href = url.toString();
+}
+
+// Function to apply all filters
+function applyFilters() {
+    const companySelect = document.getElementById('company-filter');
+    const categorySelect = document.getElementById('category-filter');
+    const selectedCompany = companySelect.value;
+    const selectedCategory = categorySelect.value;
+
+    // Get all item rows
+    const itemRows = document.querySelectorAll('.item-row');
+
+    // Store current quantities before filtering
+    const quantities = {};
+    itemRows.forEach(row => {
+        const itemId = row.querySelector('input[name="items"]').value;
+        const quantity = row.querySelector('.quantity-input').value;
+        const discount = row.querySelector('.discount-input').value;
+        quantities[itemId] = { quantity, discount };
+    });
+
+    // Filter items based on selected company and category
+    itemRows.forEach(row => {
+        const companyName = row.querySelector('h6').textContent.match(/\((.*?)\)/)[1];
+        const itemCategory = row.dataset.category;
+
+        let showItem = true;
+
+        // Apply company filter
+        if (selectedCompany !== '' && companyName !== selectedCompany) {
+            showItem = false;
+        }
+
+        // Apply category filter
+        if (selectedCategory !== '' && itemCategory !== selectedCategory) {
+            showItem = false;
+        }
+
+        row.style.display = showItem ? 'block' : 'none';
+    });
+
+    // Restore quantities after filtering
+    setTimeout(() => {
+        document.querySelectorAll('.item-row').forEach(row => {
+            const itemId = row.querySelector('input[name="items"]').value;
+            if (quantities[itemId]) {
+                row.querySelector('.quantity-input').value = quantities[itemId].quantity;
+                row.querySelector('.discount-input').value = quantities[itemId].discount;
+
+                // Update totals for visible rows
+                if (row.style.display !== 'none') {
+                    updateTotal(row);
+                }
+            }
+        });
+        updateGrandTotal();
+    }, 0);
+}
+
+// Function to filter by company
+function filterByCompany() {
+    applyFilters();
+}
+
+// Function to filter by category
+function filterByCategory() {
+    applyFilters();
+}
+</script>
+{% endblock %}

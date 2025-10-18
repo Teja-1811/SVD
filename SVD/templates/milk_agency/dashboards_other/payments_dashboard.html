@@ -1,0 +1,166 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Payments Dashboard{% endblock %}
+
+{% block content %}
+<style>
+.table td, .table th {
+    vertical-align: middle;
+}
+.table-hover tbody tr:hover {
+    background-color: #f0f8ff; /* Light blue hover */
+}
+input.form-control-sm {
+    height: 28px;
+    font-size: 0.85rem;
+}
+</style>
+
+<div class="container-fluid py-3">
+    <!-- Month/Year Filter -->
+    <form method="get" class="row g-2 mb-2">
+        <div class="col-md-1">
+            <select name="year" class="form-select form-select-sm">
+                {% for y in years %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <select name="month" class="form-select form-select-sm">
+                {% for m_num, m_name in months %}
+                    <option value="{{ m_num }}" {% if m_num == selected_month %}selected{% endif %}>
+                        {{ m_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Filter</button>
+        </div>
+        <!-- Grand Totals -->
+        <div class="col-md-3 text-center">
+            <div class="bg-danger text-white p-1 rounded">
+                <strong>Total Invoice : ₹{{ grand_total_invoice|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="bg-success text-white p-1 rounded">
+                <strong>Total Paid : ₹{{ grand_total_paid|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="bg-warning text-dark p-1 rounded">
+                <strong>Due : ₹{{ grand_total_due|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Payments Form -->
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Centered Save Button -->
+        <div class="text-center mb-3">
+            <button type="submit" class="btn btn-outline-success btn-sm px-4">
+                💾 Save All
+            </button>
+        </div>
+
+        <div class="row g-3">
+            {% for payment in payments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">{{ payment.company }}</h6>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">Invoice</th>
+                                        <th class="text-center">Paid</th>
+                                        <th class="text-center">Txn ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in payment.records %}
+                                    <tr>
+                                        <td class="text-center fw-bold">{{ p.date|date:"d" }}</td>
+                                        <td>
+                                            <input type="number"
+                                                step="0.01"
+                                                name="invoice_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
+                                                class="form-control form-control-sm border-0 rounded-0 text-center"
+                                                value="{{ p.invoice_amount|default_if_none:'' }}">
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                step="0.01"
+                                                name="paid_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
+                                                class="form-control form-control-sm border-0 rounded-0 text-center"
+                                                value="{{ p.paid_amount|default_if_none:'' }}">
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                name="txn_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
+                                                class="form-control form-control-sm border-0 rounded-0 text-center"
+                                                value="{{ p.txn_id }}">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="card-footer text-center fw-bold py-2 small">
+                        Total Invoice: ₹{{ payment.total_invoice|floatformat:2 }} |
+                        Total Paid: ₹{{ payment.total_paid|floatformat:2 }} |
+                        Remaining: ₹{{ payment.remaining_due|floatformat:2 }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- JS for Date Filtering -->
+<script>
+document.querySelectorAll('.apply-filter').forEach(button => {
+    button.addEventListener('click', function() {
+        const company = this.getAttribute('data-company');
+        const startDate = document.querySelector(`.start-date[data-company="${company}"]`).value;
+        const endDate = document.querySelector(`.end-date[data-company="${company}"]`).value;
+        const rows = document.querySelectorAll(`#table-${company} tbody tr`);
+
+        rows.forEach(row => {
+            const rowDate = row.getAttribute('data-date');
+            let show = true;
+
+            if (startDate && rowDate < startDate) show = false;
+            if (endDate && rowDate > endDate) show = false;
+
+            row.style.display = show ? '' : 'none';
+        });
+    });
+});
+
+document.querySelectorAll('.clear-filter').forEach(button => {
+    button.addEventListener('click', function() {
+        const company = this.getAttribute('data-company');
+        document.querySelector(`.start-date[data-company="${company}"]`).value = '';
+        document.querySelector(`.end-date[data-company="${company}"]`).value = '';
+        document.querySelectorAll(`#table-${company} tbody tr`).forEach(row => {
+            row.style.display = '';
+        });
+    });
+});
+</script>
+{% endblock %}

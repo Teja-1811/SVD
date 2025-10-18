@@ -1,0 +1,74 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Expenses List{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Expenses List</h2>
+        <a href="{% url 'milk_agency:cashbook' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>Back to CashBook
+        </a>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total Expenses
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ total_expenses|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Expenses</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense.date|date:"d M Y" }}</td>
+                            <td>
+                                <span class="badge bg-{% if expense.category == 'petrol' %}warning{% elif expense.category == 'food' %}success{% else %}secondary{% endif %}">
+                                    {{ expense.category|title }}
+                                </span>
+                            </td>
+                            <td class="text-end">₹{{ expense.amount|floatformat:2 }}</td>
+                            <td>{{ expense.description|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No expenses found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

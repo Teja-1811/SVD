@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dodla Dairy Products - Premium Quality Dairy Excellence{% endblock %}
+
+{% block content %}
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <img src="{% static 'images/Dodla/logo.png' %}" alt="Dodla Logo" class="brand-logo">
+                <h1>Dodla Dairy Products</h1>
+                <p>Premium quality dairy products with traditional taste and modern packaging. Experience the freshness and richness of Dodla's extensive range of dairy products, crafted with care for your family's health and satisfaction.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Milk Products Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Fresh Milk Collection</h2>
+                <p>Pure, fresh, and nutritious milk varieties to meet your daily dairy needs</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/FCM.png' %}" alt="Dodla Full Cream Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Full Cream Milk</h3>
+                            <p class="product-description">Rich and creamy full cream milk with 6% fat content, perfect for tea, coffee, and cooking. Provides essential nutrients and great taste for the whole family.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>6% Fat Content</li>
+                                <li><i class="bi bi-check-circle"></i>Rich & Creamy</li>
+                                <li><i class="bi bi-check-circle"></i>Pasteurized & Safe</li>
+                                <li><i class="bi bi-check-circle"></i>Available in Multiple Sizes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/flm.png' %}" alt="Dodla Fresh Low Fat Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Fresh Low Fat Milk</h3>
+                            <p class="product-description">Healthier option with lower fat content while maintaining the natural goodness and taste. Ideal for health-conscious consumers who want nutrition without compromise.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Low Fat Content</li>
+                                <li><i class="bi bi-check-circle"></i>High Nutrition</li>
+                                <li><i class="bi bi-check-circle"></i>Great Taste</li>
+                                <li><i class="bi bi-check-circle"></i>Daily Freshness</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/STM-Gold.png' %}" alt="Dodla Standardized Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Standardized Milk</h3>
+                            <p class="product-description">Perfectly balanced milk with standardized fat content, ensuring consistent quality and taste in every pack. Reliable choice for everyday use.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Standardized Quality</li>
+                                <li><i class="bi bi-check-circle"></i>Consistent Taste</li>
+                                <li><i class="bi bi-check-circle"></i>Nutritious</li>
+                                <li><i class="bi bi-check-circle"></i>Family Size Packs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Long-Life-tm.png' %}" alt="Dodla Long Life Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Long Life Milk</h3>
+                            <p class="product-description">UHT processed milk with extended shelf life, perfect for storage and emergency needs. Maintains nutritional value and taste for longer periods.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Extended Shelf Life</li>
+                                <li><i class="bi bi-check-circle"></i>UHT Processed</li>
+                                <li><i class="bi bi-check-circle"></i>No Preservatives</li>
+                                <li><i class="bi bi-check-circle"></i>Emergency Stock</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/UHT-Double-Toned-Milk.webp' %}" alt="Dodla Double Toned Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Double Toned Milk</h3>
+                            <p class="product-description">Light and healthy milk option with reduced fat content, perfect for calorie-conscious consumers while maintaining essential nutrients and great taste.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Reduced Fat</li>
+                                <li><i class="bi bi-check-circle"></i>Health Conscious</li>
+                                <li><i class="bi bi-check-circle"></i>Essential Nutrients</li>
+                                <li><i class="bi bi-check-circle"></i>Great Taste</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </section>
+
+    <!-- Curd & Yogurt Section -->
+    <section class="section" style="background: var(--cream);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Fresh Curd & Yogurt</h2>
+                <p>Traditional taste with modern convenience - our range of curd and yogurt products</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Curd.png' %}" alt="Dodla Fresh Curd" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Fresh Curd</h3>
+                            <p class="product-description">Traditional homemade taste with thick, creamy texture. Made from pure milk using traditional fermentation process for authentic flavor and health benefits.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Thick & Creamy</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Taste</li>
+                                <li><i class="bi bi-check-circle"></i>Probiotic Rich</li>
+                                <li><i class="bi bi-check-circle"></i>Daily Fresh</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Curd-cup.png' %}" alt="Dodla Curd Cup" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Curd Cup</h3>
+                            <p class="product-description">Convenient single-serve curd cups, perfect for on-the-go consumption. Same great taste and quality in a portable, mess-free packaging.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Single Serve</li>
+                                <li><i class="bi bi-check-circle"></i>Portable</li>
+                                <li><i class="bi bi-check-circle"></i>Mess-free</li>
+                                <li><i class="bi bi-check-circle"></i>Perfect Portion</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Curd-bucket-tm.png' %}" alt="Dodla Curd Bucket" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Curd Bucket</h3>
+                            <p class="product-description">Family-size curd buckets for home consumption. Economic packaging with the same premium quality and taste, perfect for daily family needs.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Family Size</li>
+                                <li><i class="bi bi-check-circle"></i>Economic</li>
+                                <li><i class="bi bi-check-circle"></i>Fresh Daily</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Taste</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </section>
+
+    <!-- Butter Milk & Lassi Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Refreshing Beverages</h2>
+                <p>Cool, refreshing, and healthy traditional beverages for every occasion</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/buter-milk-packet.png' %}" alt="Dodla Butter Milk" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Butter Milk</h3>
+                            <p class="product-description">Traditional buttermilk with authentic taste and cooling properties. Made from fresh curd, it's naturally rich in probiotics and perfect for digestion.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Traditional Recipe</li>
+                                <li><i class="bi bi-check-circle"></i>Probiotic Rich</li>
+                                <li><i class="bi bi-check-circle"></i>Cooling Effect</li>
+                                <li><i class="bi bi-check-circle"></i>Healthy Drink</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Sweet-Lassi.png' %}" alt="Dodla Sweet Lassi" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Sweet Lassi</h3>
+                            <p class="product-description">Delicious sweet lassi made from fresh curd and natural sweeteners. A perfect blend of taste and nutrition, ideal for breakfast or as a healthy snack.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Natural Sweetness</li>
+                                <li><i class="bi bi-check-circle"></i>Nutritious</li>
+                                <li><i class="bi bi-check-circle"></i>Perfect for Breakfast</li>
+                                <li><i class="bi bi-check-circle"></i>Healthy Snack</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ghee & Traditional Products Section -->
+    <section class="section" style="background: var(--cream);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Pure Ghee & Traditional Products</h2>
+                <p>Authentic traditional products made with pure ingredients and traditional methods</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Ghee.webp' %}" alt="Dodla Pure Ghee" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Pure Cow Ghee</h3>
+                            <p class="product-description">100% pure cow ghee made from fresh cream using traditional methods. Rich in aroma, taste, and nutritional benefits, perfect for cooking and traditional recipes.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>100% Pure Cow Ghee</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Method</li>
+                                <li><i class="bi bi-check-circle"></i>Rich Aroma</li>
+                                <li><i class="bi bi-check-circle"></i>Nutritional Benefits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Cow-Ghee.webp' %}" alt="Dodla Cow Ghee" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Premium Cow Ghee</h3>
+                            <p class="product-description">Premium quality cow ghee with superior taste and aroma. Carefully processed to retain all natural goodness and traditional flavor that enhances every dish.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Premium Quality</li>
+                                <li><i class="bi bi-check-circle"></i>Superior Taste</li>
+                                <li><i class="bi bi-check-circle"></i>Natural Goodness</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Flavor</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Doodh-Peda.png' %}" alt="Dodla Doodh Peda" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Doodh Peda</h3>
+                            <p class="product-description">Traditional Indian sweet made from pure milk and natural ingredients. Soft, delicious, and made fresh daily using time-honored recipes passed down through generations.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Traditional Recipe</li>
+                                <li><i class="bi bi-check-circle"></i>Pure Milk Base</li>
+                                <li><i class="bi bi-check-circle"></i>Fresh Daily</li>
+                                <li><i class="bi bi-check-circle"></i>Natural Ingredients</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Junnu.png' %}" alt="Dodla Junnu" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Junnu (Colostrum Pudding)</h3>
+                            <p class="product-description">Traditional delicacy made from colostrum milk, known for its exceptional nutritional value and unique taste. A rare and precious traditional product.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>High Nutrition</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Delicacy</li>
+                                <li><i class="bi bi-check-circle"></i>Rare Product</li>
+                                <li><i class="bi bi-check-circle"></i>Health Benefits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/paneer-1.png' %}" alt="Dodla Paneer" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Fresh Paneer</h3>
+                            <p class="product-description">Soft and fresh paneer made from pure milk. Perfect for various Indian dishes, gravies, and snacks. Maintains texture and taste when cooked.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Soft & Fresh</li>
+                                <li><i class="bi bi-check-circle"></i>Pure Milk</li>
+                                <li><i class="bi bi-check-circle"></i>Perfect for Cooking</li>
+                                <li><i class="bi bi-check-circle"></i>Daily Fresh</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card animate-on-scroll">
+                        <img src="{% static 'images/Dodla/Soan-Papdi.png' %}" alt="Dodla Soan Papdi" class="product-image">
+                        <div class="product-content">
+                            <h3 class="product-title">Soan Papdi</h3>
+                            <p class="product-description">Crispy and flaky traditional sweet made with pure ghee and fine ingredients. A perfect blend of texture and taste that melts in your mouth.</p>
+                            <ul class="product-features">
+                                <li><i class="bi bi-check-circle"></i>Crispy & Flaky</li>
+                                <li><i class="bi bi-check-circle"></i>Pure Ghee</li>
+                                <li><i class="bi bi-check-circle"></i>Traditional Sweet</li>
+                                <li><i class="bi bi-check-circle"></i>Melts in Mouth</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <span class="stat-number">25+</span>
+                        <span class="stat-label">Years of Excellence</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <span class="stat-number">15+</span>
+                        <span class="stat-label">Product Varieties</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Natural Products</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Quality Assurance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% endblock %}
