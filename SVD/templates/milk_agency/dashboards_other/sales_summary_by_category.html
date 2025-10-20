@@ -1,0 +1,192 @@
+{% extends "milk_agency/home/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Sales Summary by Category{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Sales Summary by Category</h2>
+
+    <!-- Time Period Tabs -->
+    <ul class="nav nav-tabs mb-4" id="periodTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if period == 'overall' %}active{% endif %}" href="?period=overall{% if selected_customer %}&customer={{ selected_customer }}{% endif %}" role="tab">Overall</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if period == 'today' %}active{% endif %}" href="?period=today{% if selected_customer %}&customer={{ selected_customer }}{% endif %}" role="tab">Today</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if period == 'week' %}active{% endif %}" href="?period=week{% if selected_customer %}&customer={{ selected_customer }}{% endif %}" role="tab">Current Week</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if period == 'month' %}active{% endif %}" href="?period=month{% if selected_customer %}&customer={{ selected_customer }}{% endif %}" role="tab">Current Month</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if period == 'year' %}active{% endif %}" href="?period=year{% if selected_customer %}&customer={{ selected_customer }}{% endif %}" role="tab">Current Year</a>
+        </li>
+    </ul>
+
+
+    <form method="get" id="filtersForm" class="row g-2 mb-3">
+        <input type="hidden" name="period" value="{{ period }}">
+        <div class="col-auto">
+            <select name="customer" id="customerFilter" class="form-select form-select-sm">
+                <option value="">All Customers</option>
+                {% for cust in customers %}
+                    <option value="{{ cust.id }}" {% if selected_customer and selected_customer == cust.id %}selected{% endif %}>{{ cust.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+    </form>
+
+   <div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6>Category-wise Volume Trend</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryTrendChart" width="800" height="320"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Comparison summary card -->
+        <div class="card mb-3">
+            <div class="card-header"><h6>Comparison Summary</h6></div>
+            <div class="card-body">
+                <p>Total Volume (Selected): <strong>{{ total_volume }} L</strong></p>
+                <p>Comparison Volume: <strong>{{ total_compare_volume }} L</strong></p>
+                <p>Difference: <strong>{{ diff_volume }} L</strong>
+                    {% if diff_percent is not None %} ({{ diff_percent }}%) {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Year-wise bar -->
+        <div class="card">
+            <div class="card-header"><h6>Year-wise Total Sales (L)</h6></div>
+            <div class="card-body">
+                <canvas id="yearBarChart" width="320" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table beside graphs -->
+<div class="card mb-4">
+    <div class="card-header"><h6>Category-wise Summary Table</h6></div>
+    <div class="card-body">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Volume (L)</th>
+                    <th>Compare Volume (L)</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td>{{ cat }}</td>
+                    <td>{{ data_by_category|get_item:cat|floatformat:3 }}</td>
+                    <td>{{ compare_data_by_category|get_item:cat|floatformat:3 }}</td>
+                    <td>{{ amount_by_category|get_item:cat|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const trendByCategory = JSON.parse('{{ trend_by_category_json|escapejs }}');
+const dataByCategory = JSON.parse('{{ data_by_category_json|escapejs }}');
+const compareDataByCategory = JSON.parse('{{ compare_data_by_category_json|escapejs }}');
+const yearTotals = JSON.parse('{{ year_totals_json|escapejs }}');
+const categories = {{ categories|safe }};
+
+// Helper: prepare labels (dates) from first category (they should all share same labels)
+let labels = [];
+if (categories.length && trendByCategory[categories[0]]) {
+    labels = trendByCategory[categories[0]].map(obj => obj.date);
+}
+
+// Build dataset list for categoryTrendChart
+const datasets = [];
+const colors = [
+  '#36A2EB','#FF6384','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#8BC34A','#E91E63'
+];
+
+categories.forEach((cat, idx) => {
+    const vols = (trendByCategory[cat] || []).map(obj => obj.volume);
+    datasets.push({
+        label: cat,
+        data: vols,
+        borderColor: colors[idx % colors.length],
+        backgroundColor: 'rgba(0,0,0,0.03)',
+        fill: false,
+        tension: 0.15
+    });
+});
+
+const ctx = document.getElementById('categoryTrendChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true, position: 'bottom' },
+            title: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Volume (L)' }
+            },
+            x: {
+                title: { display: true, text: 'Period' }
+            }
+        }
+    }
+});
+
+// Year-wise bar
+const yearLabels = Object.keys(yearTotals);
+const yearValues = Object.values(yearTotals);
+
+const yearCtx = document.getElementById('yearBarChart').getContext('2d');
+new Chart(yearCtx, {
+    type: 'bar',
+    data: {
+        labels: yearLabels,
+        datasets: [{
+            label: 'Total Volume (L)',
+            data: yearValues,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Volume (L)' } }
+        }
+    }
+});
+</script>
+
+{% endblock %}

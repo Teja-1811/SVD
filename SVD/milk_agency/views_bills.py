@@ -3,10 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Bill, BillItem, Customer, Item
-from io import BytesIO
 from num2words import num2words
 from decimal import Decimal
 from datetime import datetime
@@ -78,7 +76,6 @@ def generate_bill(request):
 
         try:
             with transaction.atomic():
-                messages.info(request, f'Starting bill creation for customer {customer.name}')
                 # Create a new bill
                 bill = Bill.objects.create(
                     customer=customer,
@@ -88,7 +85,6 @@ def generate_bill(request):
                     op_due_amount=customer.due,
                     profit=Decimal(0)
                 )
-                messages.info(request, f'Bill created with ID {bill.id}')
 
                 total_amount = Decimal(0)
                 total_profit = Decimal(0)
@@ -129,8 +125,6 @@ def generate_bill(request):
 
                     total_amount += item_total
                     total_profit += profit
-
-                messages.info(request, f'Total amount calculated: {total_amount}')
                 if total_amount == 0:
                     bill.delete()
                     messages.error(request, 'At least one item is required')
@@ -141,42 +135,14 @@ def generate_bill(request):
                 bill.profit = total_profit
                 bill.last_paid = customer.last_paid_balance
                 bill.save()
-                messages.info(request, f'Bill updated and saved')
 
                 # Update customer balance to totalbill + op_due
                 customer.due = bill.total_amount + bill.op_due_amount
                 customer.last_paid_balance = Decimal(0)  # Reset last paid balance after applying to bill
                 customer.save()
                 # Manually trigger monthly purchase update after bill edit
-                from .customer_monthly_purchase_calculator import CustomerMonthlyPurchaseCalculator
-                bill_date = bill.invoice_date
-                year = bill_date.year
-                month = bill_date.month
-                CustomerMonthlyPurchaseCalculator.calculate_customer_monthly_purchase(customer, year, month)
+                # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
                 messages.info(request, f'Customer updated')
-                # Generate PDF after saving bill
-                messages.info(request, 'Starting PDF generation')
-                try:
-                    pdf_generator = PDFGenerator()
-                    pdf_path = pdf_generator.generate_invoice_pdf(bill)
-                    if os.path.exists(pdf_path):
-                        messages.info(request, 'PDF generated and file saved successfully')
-                    else:
-                        raise Exception('PDF file not saved')
-                except Exception as pdf_error:
-                    # PDF generation failed, delete bill and revert changes
-
-                    # Revert stock changes
-                    for item, qty in updated_items:
-                        item.stock_quantity += qty
-                        item.save()
-                    # Revert customer due
-                    customer.due = customer.due - bill.total_amount - bill.op_due_amount
-                    customer.last_paid_balance = bill.last_paid
-                    customer.save()
-                    bill.delete()
-                    messages.error(request, f'PDF generation failed: {str(pdf_error)}. Bill not saved.')
-                    return redirect('milk_agency:generate_bill')
 
             messages.success(request, f'Bill {invoice_number} generated successfully!')
             return redirect('milk_agency:view_bill', bill_id=bill.id)
@@ -266,18 +232,7 @@ def generate_bill_from_order(order):
             customer.last_paid_balance = Decimal(0)
             customer.save()
 
-            # Trigger monthly purchase update
-            from .customer_monthly_purchase_calculator import CustomerMonthlyPurchaseCalculator
-            bill_date = bill.invoice_date
-            year = bill_date.year
-            month = bill_date.month
-            CustomerMonthlyPurchaseCalculator.calculate_customer_monthly_purchase(customer, year, month)
-
-            # Generate PDF
-            pdf_generator = PDFGenerator()
-            pdf_path = pdf_generator.generate_invoice_pdf(bill)
-            if not os.path.exists(pdf_path):
-                raise Exception('PDF file not saved')
+            # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
 
             return bill
     except Exception as e:

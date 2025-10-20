@@ -15,3 +15,19 @@ def get_nested_item(item_dict, date_key):
     if item_dict is None:
         return 0
     return item_dict.get(date_key, 0)
+
+@register.filter
+def multiply(value, arg):
+    """Multiply value by arg"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
+
+@register.filter
+def sub(value, arg):
+    """Subtract arg from value"""
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return 0

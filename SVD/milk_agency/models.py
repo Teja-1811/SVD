@@ -236,6 +236,25 @@ class CustomerMonthlyPurchase(models.Model):
     def __str__(self):
         return f"{self.customer.name} - {self.month}/{self.year} - Milk: {self.milk_volume}L, Curd: {self.curd_volume}L"
 
+class CustomerMonthlyCommission(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='monthly_commissions')
+    year = models.IntegerField()
+    month = models.IntegerField()
+    milk_volume = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Average daily milk volume")
+    curd_volume = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Average daily curd volume")
+    total_volume = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Average daily total volume")
+    milk_commission_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Commission rate for milk per liter")
+    curd_commission_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Commission rate for curd per liter")
+    commission_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total commission amount for the month")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('customer', 'year', 'month')
+        ordering = ['-year', '-month']
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.month}/{self.year} - Commission: ₹{self.commission_amount}"
+
 class Expense(models.Model):
     CATEGORY_CHOICES = [
         ('petrol', 'Petrol'),

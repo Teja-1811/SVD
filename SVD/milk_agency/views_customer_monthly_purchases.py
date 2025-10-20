@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime
 from .models import Customer, CustomerMonthlyPurchase
-from .customer_monthly_purchase_calculator import CustomerMonthlyPurchaseCalculator
+# CustomerMonthlyPurchaseCalculator removed - functionality no longer available
 
 def customer_monthly_purchases_dashboard(request):
     """

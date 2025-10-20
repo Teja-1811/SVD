@@ -40,6 +40,12 @@
                             <a href="{% url 'milk_agency:edit_bill' bill.id %}" class="btn btn-sm btn-outline-warning" title="Edit Bill">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="btn btn-sm btn-outline-success" title="Download PDF">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                            <a href="{% url 'milk_agency:delete_bill' bill.id %}" class="btn btn-sm btn-outline-danger" title="Delete Bill">
+                                <i class="bi bi-trash"></i>
+                            </a>
                         </td>
                     </tr>
                     {% empty %}

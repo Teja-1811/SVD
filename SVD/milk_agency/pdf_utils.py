@@ -53,7 +53,7 @@ class PDFGenerator:
         buffer.close()
 
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename=invoice_{bill.invoice_number}.pdf'
+        response['Content-Disposition'] = f'attachment; filename=invoice_{bill.invoice_number}.pdf'
         response.write(pdf)
 
         return response
@@ -170,7 +170,7 @@ class PDFGenerator:
             c.drawString(x_positions[0], y, f"{idx:02d}")
             c.drawString(x_positions[1], y, item.item.name)
             c.drawString(x_positions[2], y, f"{item.item.mrp:.2f}")
-            c.drawString(x_positions[3], y, f"{item.price_per_unit:.2f}/PCS")
+            c.drawString(x_positions[3], y, f"{item.price_per_unit:.2f}")
 
             if item.discount > 0:
                 discount_percent = (item.discount / item.price_per_unit) * 100 if item.price_per_unit else 0

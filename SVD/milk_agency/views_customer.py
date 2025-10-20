@@ -77,15 +77,27 @@ def add_customer(request, customer_id=None):
 def customer_data(request):
     # Get filter parameters
     area_filter = request.GET.get('area')
-    name_filter = request.GET.get('name')
+    id_filter = request.GET.get('id')
 
-    customers = Customer.objects.all().order_by('name')
-
-    # Apply filters
+    # Strip whitespace
     if area_filter:
+        area_filter = area_filter.strip()
+    if id_filter:
+        id_filter = id_filter.strip()
+
+    customers = Customer.objects.filter(is_superuser=False).order_by('id')
+
+    # Apply filters correctly
+    if area_filter and area_filter != "All":
         customers = customers.filter(area__icontains=area_filter)
-    if name_filter:
-        customers = customers.filter(name__icontains=name_filter)
+
+    if id_filter and id_filter != "All":
+        # Check if it's a number (ID filter)
+        if id_filter.isdigit():
+            customers = customers.filter(id=id_filter)
+        else:
+            # If name filter is text, use name filter
+            customers = customers.filter(name__icontains=id_filter)
 
     # Calculate total balance for each customer
     for customer in customers:
@@ -102,26 +114,34 @@ def customer_data(request):
                 'name': customer.name,
                 'shop_name': customer.shop_name or '-',
                 'retailer_id': customer.retailer_id or '-',
-                'address': f"{customer.flat_number}, {customer.area or ''} {customer.city or ''} {customer.state or ''}-{customer.pin_code or ''}".strip(', '),
                 'phone': customer.phone,
-                # Removed commission fields
+                'last_paid_balance': customer.last_paid_balance or 0,
                 'balance': customer.due or 0,
                 'frozen': customer.frozen,
             })
-        return JsonResponse({'customers': customer_data})
+        # Get filtered areas and ids based on current customers (after applying filters)
+        filtered_areas = customers.exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
+        filtered_ids = list(customers.values_list('id', 'name').order_by('id'))
+        filtered_names = customers.values('id', 'name').order_by('name')
+        return JsonResponse({
+            'customers': customer_data,
+            'areas': list(filtered_areas),
+            'names': list(filtered_names)
+        })
+
 
     # Get data for filter dropdowns
-    areas = Customer.objects.exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
-    names = Customer.objects.values_list('name', flat=True).distinct().order_by('name')
-    active_customers_count = Customer.objects.filter(frozen=False).count()
-    inactive_customers_count = Customer.objects.filter(frozen=True).count()
+    areas = Customer.objects.filter(is_superuser=False).exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
+    names = list(Customer.objects.filter(is_superuser=False).values_list('id', 'name').order_by('name'))
+    active_customers_count = Customer.objects.filter(frozen=False, is_superuser=False).count()
+    inactive_customers_count = Customer.objects.filter(frozen=True, is_superuser=False).count()
 
     context = {
         'customers': customers,
         'areas': areas,
         'names': names,
         'selected_area': area_filter,
-        'selected_name': name_filter,
+        'selected_id': id_filter,
         'active_customers_count': active_customers_count,
         'inactive_customers_count': inactive_customers_count,
     }
@@ -135,11 +155,30 @@ def update_customer_balance(request, customer_id):
         balance = request.POST.get('balance', 0)
         try:
             balance_decimal = Decimal(balance)
-            # No recent bill found, update only customer due and last_paid_balance
-            customer.due -= balance_decimal
-            customer.last_paid_balance = balance_decimal
-            customer.save()
-            messages.success(request, f'Balance updated for {customer.name} without a recent bill')
+            # Find the most recent bill for the customer in the current month
+            from django.utils import timezone
+            current_month = timezone.now().month
+            current_year = timezone.now().year
+            recent_bill = Bill.objects.filter(
+                customer=customer,
+                invoice_date__year=current_year,
+                invoice_date__month=current_month
+            ).order_by('-id').first()
+            if recent_bill:
+                # Update the most recent bill's last_paid
+                recent_bill.last_paid += balance_decimal
+                # Recalculate the customer's remaining due
+                customer.due = recent_bill.total_amount + recent_bill.op_due_amount - recent_bill.last_paid
+                customer.last_paid_balance = balance_decimal
+                recent_bill.save()
+                customer.save()
+                messages.success(request, f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}')
+            else:
+                # No recent bill found, update only customer due and last_paid_balance
+                customer.due -= balance_decimal
+                customer.last_paid_balance = balance_decimal
+                customer.save()
+                messages.success(request, f'Balance updated for {customer.name} without a recent bill')
         except ValueError:
             messages.error(request, 'Invalid balance value')
 

@@ -4,7 +4,8 @@ from django.utils import timezone
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from .models import Bill, Customer, Item, CashbookEntry, DailySalesSummary
+from .models import Bill, Customer, Item, CashbookEntry
+from .views_sales_summary import sales_summary_by_category
 
 @login_required
 @never_cache
@@ -99,10 +100,3 @@ def home(request):
 
 
 
-def dodla_products(request):
-    """View for Dodla dairy products page"""
-    return render(request, 'dodla_products.html')
-
-def jersey_products(request):
-    """View for Jersey dairy products page"""
-    return render(request, 'jersey_products.html')

@@ -5,6 +5,7 @@ from django.contrib import messages
 from decimal import Decimal
 from .models import Bill, BillItem, Item, Customer
 from .utils import process_bill_items
+from django.contrib.auth.decorators import login_required
 
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
@@ -103,32 +104,7 @@ def edit_bill(request, bill_id):
         customer.save()
 
         # Manually trigger monthly purchase update after bill edit
-        from .customer_monthly_purchase_calculator import CustomerMonthlyPurchaseCalculator
-        bill_date = bill.invoice_date
-        year = bill_date.year
-        month = bill_date.month
-        CustomerMonthlyPurchaseCalculator.calculate_customer_monthly_purchase(customer, year, month)
-
-        # Regenerate PDF after bill update
-        try:
-            # Delete old PDF if exists
-            if bill.pdf_file and os.path.exists(bill.pdf_file.path):
-                os.remove(bill.pdf_file.path)
-
-            from .pdf_utils import PDFGenerator
-            pdf_generator = PDFGenerator()
-            pdf_path = pdf_generator.generate_invoice_pdf(bill)
-            if os.path.exists(pdf_path):
-                bill.pdf_file = pdf_path
-                bill.save()
-                messages.success(request, 'PDF regenerated successfully.')
-            else:
-                raise Exception('PDF file not saved')
-        except Exception as pdf_error:
-            # PDF regeneration failed, delete bill and revert changes
-            bill.delete()
-            messages.error(request, f'PDF regeneration failed: {str(pdf_error)}. Bill changes reverted.')
-            return redirect('milk_agency:edit_bill', bill_id=bill_id)
+        # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
 
         messages.success(request, 'Bill updated successfully.')
         return redirect('milk_agency:bills_dashboard')
@@ -143,3 +119,33 @@ def edit_bill(request, bill_id):
         'customers': customers,
         'items': items
     })
+
+@login_required
+def delete_bill(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    bill_items = BillItem.objects.filter(bill=bill)
+
+    if request.method == 'POST':
+        # Restore stock quantities
+        for bill_item in bill_items:
+            bill_item.item.stock_quantity += bill_item.quantity
+            bill_item.item.save()
+
+        # Update customer due
+        customer = bill.customer
+        customer.due -= bill.total_amount + bill.op_due_amount
+        customer.save()
+
+        # Delete bill items and bill
+        bill_items.delete()
+        bill.delete()
+
+        messages.success(request, f'Bill {bill.invoice_number} deleted successfully.')
+        return redirect('milk_agency:bills_dashboard')
+
+    # GET request - show confirmation page
+    context = {
+        'bill': bill,
+        'bill_items': bill_items
+    }
+    return render(request, 'milk_agency/bills/delete_bill.html', context)

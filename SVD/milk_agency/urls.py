@@ -4,41 +4,23 @@ from . import views_customer
 from . import views_items
 from . import views_bills
 from . import views_bill_operations
-from . import views_reports
+
 from . import views_cashbook
 from . import views_stock_dashboard
 from . import views_companies
-from . import views_sales_analytics
 from . import views_payments
-from . import views_category_sales
 from . import views_customer_monthly_purchases
 from . import views_orders_dashboard
+from . import views_sales_summary
+from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
-from .monthly_sales_view import monthly_sales_summary, update_remaining_due
+
 
 app_name = 'milk_agency'
 
 urlpatterns = [
     # Home/Dashboard URLs
     path('', views.home, name='home'),
-
-    # Sales Analytics URLs
-    path('sales-dashboard/', views_sales_analytics.sales_dashboard, name='sales_dashboard'),
-    path('api/sales/weekly/', views_sales_analytics.get_weekly_sales, name='weekly_sales_api'),
-    path('api/sales/monthly/', views_sales_analytics.get_monthly_sales, name='monthly_sales_api'),
-    path('api/sales/yearly/', views_sales_analytics.get_yearly_sales, name='yearly_sales_api'),
-    path('api/sales/overall/', views_sales_analytics.get_overall_sales, name='overall_sales_api'),
-    
-
-    # Category Sales Statistics URLs
-    path('category-sales-dashboard/', views_category_sales.category_sales_dashboard, name='category_sales_dashboard'),
-    path('api/category-sales/today/', views_category_sales.get_today_category_sales, name='today_category_sales_api'),
-    path('api/category-sales/week/', views_category_sales.get_week_category_sales, name='week_category_sales_api'),
-    path('api/category-sales/month/', views_category_sales.get_month_category_sales, name='month_category_sales_api'),
-    path('api/category-sales/year/', views_category_sales.get_year_category_sales, name='yearly_category_sales_api'),
-    path('api/category-sales/monthly-history/', views_category_sales.get_monthly_category_history, name='monthly_category_history_api'),
-    path('api/category-sales/yearly-history/', views_category_sales.get_yearly_category_history, name='yearly_category_history_api'),
-    path('api/category-sales/summary/', views_category_sales.get_category_sales_summary, name='category_sales_summary_api'),
 
     # Customer Monthly Purchases URLs
     path('customer-monthly-purchases/', views_customer_monthly_purchases.customer_monthly_purchases_dashboard, name='customer_monthly_purchases_dashboard'),
@@ -64,13 +46,14 @@ urlpatterns = [
     # Bills Modification URLs
     path('view-bill/<int:bill_id>/', views_bill_operations.view_bill, name='view_bill'),
     path('edit-bill/<int:bill_id>/', views_bill_operations.edit_bill, name='edit_bill'),
+    path('delete-bill/<int:bill_id>/', views_bill_operations.delete_bill, name='delete_bill'),
     path('get-bill-details/<int:bill_id>/', views_bill_operations.get_bill_details_ajax, name='get_bill_details_ajax'),
 
     # Reports URLs
-    path('reports/', views_reports.reports_dashboard, name='reports_dashboard'),
-    path('invoice-pdf-viewer/<int:invoice_id>/', views_reports.invoice_pdf_viewer, name='invoice_pdf_viewer'),
     path('monthly-sales-summary/', monthly_sales_summary, name='monthly_sales_summary'),
+    path('generate-monthly-sales-pdf/', generate_monthly_sales_pdf, name='generate_monthly_sales_pdf'),
     path('update-remaining-due/', update_remaining_due, name='update_remaining_due'),
+    path('sales-summary-by-category/', views_sales_summary.sales_summary_by_category, name='sales_summary_by_category'),
 
     # Cashbook URLs
     path('cashbook/', views_cashbook.cashbook, name='cashbook'),
@@ -93,9 +76,7 @@ urlpatterns = [
     # Companies Dashboard URL
     path('companies/', views_companies.companies_dashboard, name='companies_dashboard'),
 
-    # Product Pages
-    path('products/dodla/', views.dodla_products, name='dodla_products'),
-    path('products/jersey/', views.jersey_products, name='jersey_products'),
+    # Product Pages - removed unused product pages
 
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),

@@ -13,8 +13,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-primary" style="font-size: 1rem;">
-                                <i class="fas fa-shopping-cart mr-2"></i>Today's Sales
+                            <div class="text-uppercase mb-2 font-weight-bold text-primary" style="font-size: 1.5rem;">
+                                <i class="bi bi-cart fs-2 me-2"></i>{{ current_date }} Sales
                             </div>
                             <div class="h3 mb-0 font-weight-bold text-dark">₹{{ today_sales|floatformat:2 }}</div>
                         </div>
@@ -28,8 +28,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-warning" style="font-size: 1rem;">
-                                <i class="fas fa-money-bill-wave mr-2"></i>Total Due
+                            <div class="text-uppercase mb-2 font-weight-bold text-warning" style="font-size: 1.5rem;">
+                                <i class="bi bi-cash-stack fs-2 me-2"></i>Total Due
                             </div>
                             <div class="h3 mb-0 font-weight-bold text-dark">₹{{ total_due|floatformat:2 }}</div>
                         </div>
@@ -46,8 +46,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-info" style="font-size: 0.9rem;">
-                                <i class="fas fa-boxes mr-2"></i>Total Stock Items
+                            <div class="text-uppercase mb-2 font-weight-bold text-info" style="font-size: 1.2rem;">
+                                <i class="bi bi-boxes fs-2 me-2"></i>Total Stock Items
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-dark">{{ total_stock_items }}</div>
                         </div>
@@ -61,8 +61,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-success" style="font-size: 0.9rem;">
-                                <i class="fas fa-rupee-sign mr-2"></i>Total Stock Value
+                            <div class="text-uppercase mb-2 font-weight-bold text-success" style="font-size: 1.2rem;">
+                                <i class="bi bi-currency-rupee fs-2 me-2"></i>Total Stock Value
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-dark">₹{{ total_stock_value|floatformat:2 }}</div>
                         </div>
@@ -76,8 +76,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-danger" style="font-size: 0.9rem;">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>Low Stock Items
+                            <div class="text-uppercase mb-2 font-weight-bold text-danger" style="font-size: 1.2rem;">
+                                <i class="bi bi-exclamation-triangle fs-2 me-2"></i>Low Stock Items
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-dark">{{ low_stock_items }}</div>
                         </div>
@@ -91,8 +91,8 @@
                 <div class="card-body text-center py-4">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-secondary" style="font-size: 0.9rem;">
-                                <i class="fas fa-times-circle mr-2"></i>Out of Stock
+                            <div class="text-uppercase mb-2 font-weight-bold text-secondary" style="font-size: 1.2rem;">
+                                <i class="bi bi-dash-circle fs-2 me-2"></i>Out of Stock
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-dark">{{ out_of_stock_items }}</div>
                         </div>

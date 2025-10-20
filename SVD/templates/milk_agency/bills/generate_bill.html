@@ -7,201 +7,248 @@
     <form method="post" action="{% url 'milk_agency:generate_bill' %}">
         {% csrf_token %}
 
-        <!-- Filters and Customer Selection Row -->
-        <div class="row mb-3">
-            <!-- Area Filter -->
-            <div class="col-md-3">
-                <label for="area-filter" class="form-label">Filter by Area</label>
-                <select id="area-filter" class="form-select" name="area" onchange="filterByArea()">
-                    <option value="">All Areas</option>
-                    {% for area in areas %}
-                    <option value="{{ area }}" {% if selected_area == area %}selected{% endif %}>{{ area }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <!-- Top Card: Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Area Filter -->
+                    <div class="col-md-4">
+                        <label for="area-filter" class="form-label">Filter by Area</label>
+                        <select id="area-filter" class="form-select" name="area" onchange="filterByArea()">
+                            <option value="">All Areas</option>
+                            {% for area in areas %}
+                            <option value="{{ area }}" {% if selected_area == area %}selected{% endif %}>{{ area }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <!-- Customer Selection -->
-            <div class="col-md-3">
-                <label for="customer-select" class="form-label">Select Customer</label>
-                <select id="customer-select" class="form-select" name="customer" required>
-                    <option value="">-- Select a customer --</option>
-                    {% for customer in customers %}
-                    <option value="{{ customer.id }}" data-balance="{{ customer.balance }}">{{ customer.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                    <!-- Customer Selection -->
+                    <div class="col-md-4">
+                        <label for="customer-select" class="form-label">Select Customer</label>
+                        <select id="customer-select" class="form-select" name="customer" required>
+                            <option value="">-- Select a customer --</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}" data-balance="{{ customer.balance }}">{{ customer.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <!-- Bill Date -->
-            <div class="col-md-3">
-                <label for="bill-date" class="form-label">Bill Date</label>
-                <input type="date" id="bill-date" name="bill_date" class="form-control"
-                       value="{% if current_date %}{{ current_date|date:'Y-m-d' }}{% endif %}" required>
-            </div>
+                    <!-- Bill Date -->
+                    <div class="col-md-4">
+                        <label for="bill-date" class="form-label">Bill Date</label>
+                        <input type="date" id="bill-date" name="bill_date" class="form-control"
+                               value="{% if current_date %}{{ current_date|date:'Y-m-d' }}{% endif %}" required>
+                    </div>
+                </div>
 
-            <!-- Company Filter -->
-            <div class="col-md-3">
-                <label for="company-filter" class="form-label">Filter by Company</label>
-                <select id="company-filter" class="form-select" name="company" onchange="filterByCompany()">
-                    <option value="">All Companies</option>
-                    {% for company in companies %}
-                    <option value="{{ company }}">{{ company }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <!-- Add Item to Bill Form -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h6>Add Item to Bill</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- Item Selection -->
+                    <div class="col-md-5">
+                        <label for="item-select" class="form-label">Select Item</label>
+                        <select id="item-select" class="form-select">
+                            <option value="">-- Select an item --</option>
+                            {% for item in items %}
+                            <option value="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}">{{ item.name }} ({{ item.company }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <!-- Category Filter -->
-            <div class="col-md-3">
-                <label for="category-filter" class="form-label">Filter by Category</label>
-                <select id="category-filter" class="form-select" name="category" onchange="filterByCategory()">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                    <option value="{{ category }}">{{ category }}</option>
-                    {% endfor %}
-                </select>
+                    <!-- Quantity -->
+                    <div class="col-md-1">
+                        <label for="add-qty" class="form-label">Qty</label>
+                        <input type="number" id="add-qty" class="form-control" min="1" value="1">
+                    </div>
+
+                    <!-- Discount -->
+                    <div class="col-md-1">
+                        <label for="add-disc" class="form-label">Disc</label>
+                        <input type="number" id="add-disc" class="form-control" min="0" value="0" step="0.1">
+                    </div>
+
+                    <!-- Add Button -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" id="add-item-btn" class="btn btn-outline-success">Add Item</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="items-container" class="row justify-content-center">
-            <h5>Items</h5>
-            {% for item in items %}
-            <div class="col-md-3 mb-3 item-row" data-price="{{ item.selling_price }}" data-stock-quantity="{{ item.stock_quantity }}" data-category="{{ item.category }}">
-                <div class="card h-100 shadow-sm">
-                    {% if item.image %}
-                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 180px; object-fit: contain;">
-                    {% endif %}
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title">{{ item.name }} ({{ item.company }})</h6>
-                        <p class="card-text fw-bold">₹{{ item.selling_price }}</p>
-                        <div class="mt-auto">
-                            <div class="row mb-2">
-                                <div class="col-6">
-                                    <label class="form-label mb-1 fw-bold">Qty</label>
-                                    <div class="input-group input-group-sm">
-                                        <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
-                                        <input type="hidden" name="items" value="{{ item.id }}">
-                                        <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
-                                        <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
+        <!-- Bottom Card: Billed Items Data -->
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered text-center" id="billed-items-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Disc</th>
+                            <th>Disc Amount</th>
+                            <th>Total Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billed-items-body">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td><strong id="total-qty">0</strong></td>
+                            <td></td>
+                            <td><strong id="total-disc-amt">₹0.00</strong></td>
+                            <td><strong id="total-amt">₹0.00</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Hidden inputs for form submission -->
+                <div id="hidden-inputs">
+                    {% for item in items %}
+                    <input type="hidden" name="items" value="{{ item.id }}">
+                    <input type="hidden" name="quantities" class="quantity-hidden" data-item-id="{{ item.id }}" value="0">
+                    <input type="hidden" name="discounts" class="discount-hidden" data-item-id="{{ item.id }}" value="0">
+                    {% endfor %}
+                </div>
+
+                <!-- Item selection cards (for input) -->
+                <div id="items-container" class="row justify-content-center" style="display: none;">
+                    {% for item in items %}
+                    <div class="col-md-3 mb-3 item-row" data-price="{{ item.selling_price }}" data-stock-quantity="{{ item.stock_quantity }}" data-category="{{ item.category }}" data-item-id="{{ item.id }}" data-name="{{ item.name }}">
+                        <div class="card h-100 shadow-sm">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 180px; object-fit: contain;">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">{{ item.name }} ({{ item.company }})</h6>
+                                <p class="card-text fw-bold">₹{{ item.selling_price }}</p>
+                                <div class="mt-auto">
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label mb-1 fw-bold">Qty</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
+                                                <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
+                                                <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label mb-1 fw-bold">Disc</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
+                                                <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
+                                                <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label mb-1 fw-bold">Disc</label>
-                                    <div class="input-group input-group-sm">
-                                        <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
-                                        <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
-                                        <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <span class="fw-bold">Disc Amt:</span>
+                                            <span class="text-danger discount-amount">-₹0.00</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="fw-bold">Total:</span>
+                                            <span class="fw-bold total-amount">₹0.00</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6">
-                                    <span class="fw-bold">Disc Amt:</span>
-                                    <span class="text-danger discount-amount">-₹0.00</span>
-                                </div>
-                                <div class="col-6">
-                                    <span class="fw-bold">Total:</span>
-                                    <span class="fw-bold total-amount">₹0.00</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3" style="display:none;">
+                    <label for="total-amount" class="form-label">Total Amount</label>
+                    <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-outline-primary">Generate Bill</button>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-
-        <!-- Total Summary -->
-        <div class="row mt-4 p-3 bg-light rounded">
-            <div class="col-md-6">
-                <h5>Total Discount: <span id="total-discount" class="text-danger">₹0.00</span></h5>
-            </div>
-            <div class="col-md-6 text-end">
-                <h5>Total Amount: <span id="total-amount-display" class="text-success fw-bold">₹0.00</span></h5>
-            </div>
-        </div>
-
-        <div class="mb-3" style="display:none;">
-            <label for="total-amount" class="form-label">Total Amount</label>
-            <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
-        </div>
-        <div class="mb-3">
-            <button type="submit" class="btn btn-outline-primary">Generate Bill</button>
         </div>
     </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the new input fields
-    const customerSelect = document.getElementById('customer-select');
-    const customerDueInput = document.getElementById('customer-due');
-    // const amountReceivedInput = document.getElementById('amount-received');
-    // const remainingDueInput = document.getElementById('remaining-due');
     const totalAmountInput = document.getElementById('total-amount');
+    const billedItemsBody = document.getElementById('billed-items-body');
+    const totalQtyEl = document.getElementById('total-qty');
+    const totalDiscAmtEl = document.getElementById('total-disc-amt');
+    const totalAmtEl = document.getElementById('total-amt');
+
+    function updateTable() {
+        // Clear existing rows
+        billedItemsBody.innerHTML = '';
+
+        let totalQty = 0;
+        let totalDiscAmt = 0;
+        let totalAmt = 0;
+
+        // Get all item rows
+        document.querySelectorAll('.item-row').forEach(row => {
+            const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
+            if (quantity > 0) {
+                const itemId = row.dataset.itemId;
+                const name = row.dataset.name;
+                const price = parseFloat(row.dataset.price || 0);
+                const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+                const discAmt = discount * quantity;
+                const itemTotal = (price * quantity) - discAmt;
+
+                // Add row to table
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${name}</td>
+                    <td>₹${price.toFixed(2)}</td>
+                    <td>${quantity}</td>
+                    <td>${discount.toFixed(1)}</td>
+                    <td>₹${discAmt.toFixed(2)}</td>
+                    <td>₹${itemTotal.toFixed(2)}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm delete-item-btn" data-item-id="${itemId}">Delete</button></td>
+                `;
+                billedItemsBody.appendChild(tr);
+
+                // Update totals
+                totalQty += quantity;
+                totalDiscAmt += discAmt;
+                totalAmt += itemTotal;
+
+                // Update hidden inputs
+                const qtyHidden = document.querySelector(`.quantity-hidden[data-item-id="${itemId}"]`);
+                const discHidden = document.querySelector(`.discount-hidden[data-item-id="${itemId}"]`);
+                if (qtyHidden) qtyHidden.value = quantity;
+                if (discHidden) discHidden.value = discount;
+            }
+        });
+
+        // Update footer totals
+        totalQtyEl.textContent = totalQty;
+        totalDiscAmtEl.textContent = '₹' + totalDiscAmt.toFixed(2);
+        totalAmtEl.textContent = '₹' + totalAmt.toFixed(2);
+        totalAmountInput.value = '₹' + totalAmt.toFixed(2);
+    }
 
     function updateTotal(row) {
-        const stockQuantity = parseInt(row.dataset.stockQuantity || 0); // Get stock quantity from data attribute
-        const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
-        const price = parseFloat(row.dataset.price || 0);
-        const discountInput = parseFloat(row.querySelector('.discount-input')?.value || 0);
-        const discountAmount = discountInput * quantity;
-        row.querySelector('.discount-amount').textContent = '-₹' + discountAmount.toFixed(2);
-        row.querySelector('.discount-amount').dataset.discount = discountAmount;
-        const total = (price * quantity) - discountAmount;
-        row.querySelector('.total-amount').textContent = '₹' + total.toFixed(2);
-        updateGrandTotal();
+        // This function is kept for compatibility but table update is handled by updateTable
     }
 
     function updateGrandTotal() {
-        let grandTotal = 0;
-        let grandDiscount = 0;
-        document.querySelectorAll('.item-row').forEach(row => {
-            const totalText = row.querySelector('.total-amount').textContent || '';
-            const totalValue = parseFloat(totalText.replace('₹', '')) || 0;
-            grandTotal += totalValue;
-
-            const discountText = row.querySelector('.discount-amount').dataset.discount || '0';
-            grandDiscount += parseFloat(discountText);
-        });
-
-        // Update displays
-        document.getElementById('total-discount').textContent = '₹' + grandDiscount.toFixed(2);
-        document.getElementById('total-amount-display').textContent = '₹' + grandTotal.toFixed(2);
-
-        // Total amount is just the items total, not including previous due
-        totalAmountInput.value = '₹' + grandTotal.toFixed(2);
-        // updateRemainingDue();
+        updateTable();
     }
 
-    // function updateRemainingDue() {
-    //     const totalAmount = parseFloat(totalAmountInput.value.replace('₹', '')) || 0;
-    //     const amountReceived = parseFloat(amountReceivedInput.value) || 0;
-    //     // Removed customerBalance from remaining due calculation as per feedback
-    //     const remainingDue = totalAmount - amountReceived;
-    //     remainingDueInput.value = '₹' + remainingDue.toFixed(2);
-    // }
-
-    // Update customer due when customer is selected
-    customerSelect.addEventListener('change', function() {
-        // updateCustomerDue();
-    });
-
-    // Update remaining due when amount received changes
-    // amountReceivedInput.addEventListener('input', function() {
-    //     updateRemainingDue();
-    //     updateCustomerDue();
-    // });
-
-    // function updateCustomerDue() {
-    //     const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-    //     const customerBalance = parseFloat(selectedOption.dataset.balance) || 0;
-    //     const remainingDue = parseFloat(remainingDueInput.value.replace('₹', '')) || 0;
-    //     customerDueInput.value = '₹' + customerBalance.toFixed(2);
-    // }
-
+    // Event listeners for quantity and discount inputs
     document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
         input.addEventListener('input', function() {
-            const row = this.closest('.item-row');
-            updateTotal(row);
+            updateTable();
         });
     });
 
@@ -210,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = this.closest('.item-row');
             const qtyInput = row.querySelector('.quantity-input');
             qtyInput.value = parseInt(qtyInput.value) + 1;
-            updateTotal(row);
+            updateTable();
         });
     });
 
@@ -220,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const qtyInput = row.querySelector('.quantity-input');
             if (parseInt(qtyInput.value) > 0) {
                 qtyInput.value = parseInt(qtyInput.value) - 1;
-                updateTotal(row);
+                updateTable();
             }
         });
     });
@@ -234,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentValue = 0;
             }
             discountInput.value = (currentValue + 0.1).toFixed(1);
-            updateTotal(row);
+            updateTable();
         });
     });
 
@@ -245,13 +292,63 @@ document.addEventListener('DOMContentLoaded', function() {
             let currentValue = parseFloat(discountInput.value) || 0;
             if (currentValue > 0.1) {
                 discountInput.value = (currentValue - 0.1).toFixed(1);
-                updateTotal(row);
+                updateTable();
             }
         });
     });
 
-    // Initialize totals for all rows
-    document.querySelectorAll('.item-row').forEach(row => updateTotal(row));
+    // Add item to bill functionality
+    document.getElementById('add-item-btn').addEventListener('click', function() {
+        const itemSelect = document.getElementById('item-select');
+        const qtyInput = document.getElementById('add-qty');
+        const discInput = document.getElementById('add-disc');
+
+        const itemId = itemSelect.value;
+        const quantity = parseInt(qtyInput.value) || 0;
+        const discount = parseFloat(discInput.value) || 0;
+
+        if (!itemId || quantity <= 0) {
+            alert('Please select an item and enter a valid quantity.');
+            return;
+        }
+
+        // Find the corresponding item row and update its inputs
+        const itemRow = document.querySelector(`.item-row[data-item-id="${itemId}"]`);
+        if (itemRow) {
+            const qtyInputEl = itemRow.querySelector('.quantity-input');
+            const discInputEl = itemRow.querySelector('.discount-input');
+
+            qtyInputEl.value = quantity;
+            discInputEl.value = discount;
+
+            updateTable();
+
+            // Reset form
+            itemSelect.value = '';
+            qtyInput.value = '1';
+            discInput.value = '0';
+        }
+    });
+
+    // Delete item functionality
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-item-btn')) {
+            const itemId = event.target.dataset.itemId;
+            const itemRow = document.querySelector(`.item-row[data-item-id="${itemId}"]`);
+            if (itemRow) {
+                const qtyInputEl = itemRow.querySelector('.quantity-input');
+                const discInputEl = itemRow.querySelector('.discount-input');
+
+                qtyInputEl.value = 0;
+                discInputEl.value = 0;
+
+                updateTable();
+            }
+        }
+    });
+
+    // Initial table update
+    updateTable();
 });
 
 // Function to filter by area
@@ -271,71 +368,5 @@ function filterByArea() {
     window.location.href = url.toString();
 }
 
-// Function to apply all filters
-function applyFilters() {
-    const companySelect = document.getElementById('company-filter');
-    const categorySelect = document.getElementById('category-filter');
-    const selectedCompany = companySelect.value;
-    const selectedCategory = categorySelect.value;
-
-    // Get all item rows
-    const itemRows = document.querySelectorAll('.item-row');
-
-    // Store current quantities before filtering
-    const quantities = {};
-    itemRows.forEach(row => {
-        const itemId = row.querySelector('input[name="items"]').value;
-        const quantity = row.querySelector('.quantity-input').value;
-        const discount = row.querySelector('.discount-input').value;
-        quantities[itemId] = { quantity, discount };
-    });
-
-    // Filter items based on selected company and category
-    itemRows.forEach(row => {
-        const companyName = row.querySelector('h6').textContent.match(/\((.*?)\)/)[1];
-        const itemCategory = row.dataset.category;
-
-        let showItem = true;
-
-        // Apply company filter
-        if (selectedCompany !== '' && companyName !== selectedCompany) {
-            showItem = false;
-        }
-
-        // Apply category filter
-        if (selectedCategory !== '' && itemCategory !== selectedCategory) {
-            showItem = false;
-        }
-
-        row.style.display = showItem ? 'block' : 'none';
-    });
-
-    // Restore quantities after filtering
-    setTimeout(() => {
-        document.querySelectorAll('.item-row').forEach(row => {
-            const itemId = row.querySelector('input[name="items"]').value;
-            if (quantities[itemId]) {
-                row.querySelector('.quantity-input').value = quantities[itemId].quantity;
-                row.querySelector('.discount-input').value = quantities[itemId].discount;
-
-                // Update totals for visible rows
-                if (row.style.display !== 'none') {
-                    updateTotal(row);
-                }
-            }
-        });
-        updateGrandTotal();
-    }, 0);
-}
-
-// Function to filter by company
-function filterByCompany() {
-    applyFilters();
-}
-
-// Function to filter by category
-function filterByCategory() {
-    applyFilters();
-}
 </script>
 {% endblock %}
