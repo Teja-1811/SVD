@@ -109,7 +109,7 @@ body {
     background-clip: text;
     transition: all 0.3s ease;
     position: relative;
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .navbar-brand:hover {

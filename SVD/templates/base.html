@@ -100,6 +100,24 @@
                         <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" class="login-logo mb-3">
                         <p class="text-muted">Welcome back! Please sign in to your account</p>
                     </div>
+                    <!-- Login Message Alert -->
+                    {% if messages %}
+                        <section class="section py-3">
+                            <div class="container-fluid">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-12 col-lg-12">
+                                        {% for message in messages %}
+                                            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show text-center" role="alert">
+                                                <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
+                                                <strong>{% if message.tags == 'error' %}{% endif %}</strong>{{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    {% endif %}
                     <form method="post" action="{% url 'customer_portal:login' %}" class="custom-login-form">
                         {% csrf_token %}
                         <div class="mb-4">
@@ -160,6 +178,12 @@
 
             // Update navbar on load
             updateNavbar();
+
+            // Show login modal if there are messages (e.g., invalid credentials)
+            if (document.querySelector('.alert')) {
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+            }
 
             // Smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {

@@ -1,150 +1,460 @@
+{% extends 'general_store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Add Sale - General Store - SVD Agencies</title>
-    <link rel="icon" href="{% static 'SVD.png' %}" type="image/x-icon" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0d1a3a">
-      <div class="container-fluid">
-        <a class="navbar-brand text-decoration-underline" href="{% url 'general_store:home' %}">
-          <img src="{% static 'SVD.png' %}" alt="Logo" style="height: 80px; margin-right: 8px" />General Store
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link" href="{% url 'general_store:product_list' %}"><i class="bi bi-box-seam"></i> Products</a></li>
-            <li class="nav-item"><a class="nav-link active" href="{% url 'general_store:sales_list' %}"><i class="bi bi-receipt"></i> Sales</a></li>
-          </ul>
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/milk_agency/"><i class="bi bi-cow"></i> Milk Agency</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'customer_portal:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Add New Sale</h3>
+
+{% block title %}Add Sale - General Store - SVD Agencies{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 h-100">
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Top Card: Customer Selection and Bill Date -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 g-md-4">
+                    <!-- Customer Selection -->
+                    <div class="col-12 col-md-6">
+                        <label for="customer-select" class="form-label">Select Customer</label>
+                        <select id="customer-select" class="form-select" name="customer" required>
+                            <option value="">-- Select a customer --</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.phone }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="mt-2">
+                            <a href="{% url 'general_store:add_customer' %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-person-plus"></i> Add New Customer
+                            </a>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="customer" class="form-label">Customer</label>
-                                <select class="form-control" id="customer" name="customer" required>
-                                    <option value="">Select Customer</option>
-                                    {% for customer in customers %}
-                                    <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.phone }})</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div id="items">
-                                <h5>Items</h5>
-                                <div class="item-row mb-3 border p-3">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Product</label>
-                                            <select class="form-control product-select" name="product" required>
-                                                <option value="">Select Product</option>
-                                                {% for product in products %}
-                                                <option value="{{ product.id }}" data-price="{{ product.selling_price }}">{{ product.name }} (₹{{ product.selling_price }})</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label">Quantity</label>
-                                            <input type="number" class="form-control quantity-input" name="quantity" min="1" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label">Discount</label>
-                                            <input type="number" step="0.01" class="form-control discount-input" name="discount" value="0">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label">Total</label>
-                                            <input type="number" step="0.01" class="form-control total-input" readonly>
-                                        </div>
-                                        <div class="col-md-2 d-flex align-items-end">
-                                            <button type="button" class="btn btn-danger remove-item">Remove</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" id="add-item" class="btn btn-secondary mb-3">
-                                <i class="bi bi-plus"></i> Add Item
-                            </button>
-                            <div class="mb-3">
-                                <strong>Total Amount: ₹<span id="grand-total">0.00</span></strong>
-                            </div>
-                            <button type="submit" class="btn btn-success">Create Sale</button>
-                            <a href="{% url 'general_store:sales_list' %}" class="btn btn-secondary">Cancel</a>
-                        </form>
+
+                    <!-- Bill Date -->
+                    <div class="col-12 col-md-6">
+                        <label for="bill-date" class="form-label">Bill Date</label>
+                        <input type="date" id="bill-date" name="bill_date" class="form-control"
+                               value="{% if current_date %}{{ current_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required>
+                    </div>
+                </div>
+
+                <!-- Add Item to Bill Form -->
+                <div class="row mt-3 g-3 g-md-4">
+                    <div class="col-12">
+                        <h6>Add Item to Bill</h6>
+                    </div>
+                </div>
+                <div class="row g-3 g-md-4">
+                    <!-- Item Selection -->
+                    <div class="col-12 col-md-5">
+                        <label for="item-select" class="form-label">Select Product</label>
+                        <select id="item-select" class="form-select">
+                            <option value="">-- Select a product --</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.selling_price }}">{{ product.name }} (₹{{ product.selling_price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="col-6 col-md-1">
+                        <label for="add-qty" class="form-label">Qty</label>
+                        <input type="number" id="add-qty" class="form-control" min="1" value="1">
+                    </div>
+
+                    <!-- Discount -->
+                    <div class="col-6 col-md-1">
+                        <label for="add-disc" class="form-label">Disc</label>
+                        <input type="number" id="add-disc" class="form-control" min="0" value="0" step="0.1">
+                    </div>
+
+                    <!-- Add Button -->
+                    <div class="col-12 col-md-2 d-flex align-items-end">
+                        <button type="button" id="add-item-btn" class="btn btn-outline-success w-100 w-md-auto">Add Item</button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        let itemIndex = 1;
+        <!-- Bottom Card: Billed Items Data -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center" id="billed-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Disc</th>
+                                <th>Disc Amount</th>
+                                <th>Total Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billed-items-body">
+                            <!-- Rows will be dynamically added here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong id="total-qty">0</strong></td>
+                                <td></td>
+                                <td><strong id="total-disc-amt">₹0.00</strong></td>
+                                <td><strong id="total-amt">₹0.00</strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
-        function updateTotal(row) {
-            const productSelect = row.querySelector('.product-select');
-            const quantityInput = row.querySelector('.quantity-input');
+                <!-- Hidden inputs for form submission -->
+                <div id="hidden-inputs">
+                    {% for product in products %}
+                    <input type="hidden" name="products" value="{{ product.id }}">
+                    <input type="hidden" name="quantities" class="quantity-hidden" data-product-id="{{ product.id }}" value="0">
+                    <input type="hidden" name="discounts" class="discount-hidden" data-product-id="{{ product.id }}" value="0">
+                    {% endfor %}
+                </div>
+
+                <!-- Product selection cards (for input) -->
+                <div id="products-container" class="row justify-content-center" style="display: none;">
+                    {% for product in products %}
+                    <div class="col-md-3 mb-3 product-row" data-price="{{ product.selling_price }}" data-stock-quantity="{{ product.stock_quantity }}" data-category="{{ product.category.name }}" data-product-id="{{ product.id }}" data-name="{{ product.name }}">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">{{ product.name }} ({{ product.category.name }})</h6>
+                                <p class="card-text fw-bold">₹{{ product.selling_price }}</p>
+                                <div class="mt-auto">
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label mb-1 fw-bold">Qty</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
+                                                <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
+                                                <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label mb-1 fw-bold">Disc</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
+                                                <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-product-id="{{ product.id }}">
+                                                <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <span class="fw-bold">Disc Amt:</span>
+                                            <span class="text-danger discount-amount">-₹0.00</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="fw-bold">Total:</span>
+                                            <span class="fw-bold total-amount">₹0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3" style="display:none;">
+                    <label for="total-amount" class="form-label">Total Amount</label>
+                    <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-outline-primary">Create Sale</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const totalAmountInput = document.getElementById('total-amount');
+    const billedItemsBody = document.getElementById('billed-items-body');
+    const totalQtyEl = document.getElementById('total-qty');
+    const totalDiscAmtEl = document.getElementById('total-disc-amt');
+    const totalAmtEl = document.getElementById('total-amt');
+
+    function updateTable() {
+        // Clear existing rows
+        billedItemsBody.innerHTML = '';
+
+        let totalQty = 0;
+        let totalDiscAmt = 0;
+        let totalAmt = 0;
+
+        // Get all product rows
+        document.querySelectorAll('.product-row').forEach(row => {
+            const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
+            if (quantity > 0) {
+                const productId = row.dataset.productId;
+                const name = row.dataset.name;
+                const price = parseFloat(row.dataset.price || 0);
+                const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+                const discAmt = discount * quantity;
+                const itemTotal = (price * quantity) - discAmt;
+
+                // Add row to table
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${name}</td>
+                    <td>₹${price.toFixed(2)}</td>
+                    <td>${quantity}</td>
+                    <td>${discount.toFixed(1)}</td>
+                    <td>₹${discAmt.toFixed(2)}</td>
+                    <td>₹${itemTotal.toFixed(2)}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm delete-item-btn" data-product-id="${productId}">Delete</button></td>
+                `;
+                billedItemsBody.appendChild(tr);
+
+                // Update totals
+                totalQty += quantity;
+                totalDiscAmt += discAmt;
+                totalAmt += itemTotal;
+
+                // Update hidden inputs
+                const qtyHidden = document.querySelector(`.quantity-hidden[data-product-id="${productId}"]`);
+                const discHidden = document.querySelector(`.discount-hidden[data-product-id="${productId}"]`);
+                if (qtyHidden) qtyHidden.value = quantity;
+                if (discHidden) discHidden.value = discount;
+            }
+        });
+
+        // Update footer totals
+        totalQtyEl.textContent = totalQty;
+        totalDiscAmtEl.textContent = '₹' + totalDiscAmt.toFixed(2);
+        totalAmtEl.textContent = '₹' + totalAmt.toFixed(2);
+        totalAmountInput.value = '₹' + totalAmt.toFixed(2);
+    }
+
+    // Event listeners for quantity and discount inputs
+    document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
+        input.addEventListener('input', function() {
+            updateTable();
+        });
+    });
+
+    document.querySelectorAll('.plus-qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.product-row');
+            const qtyInput = row.querySelector('.quantity-input');
+            qtyInput.value = parseInt(qtyInput.value) + 1;
+            updateTable();
+        });
+    });
+
+    document.querySelectorAll('.minus-qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.product-row');
+            const qtyInput = row.querySelector('.quantity-input');
+            if (parseInt(qtyInput.value) > 0) {
+                qtyInput.value = parseInt(qtyInput.value) - 1;
+                updateTable();
+            }
+        });
+    });
+
+    document.querySelectorAll('.plus-discount-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.product-row');
             const discountInput = row.querySelector('.discount-input');
-            const totalInput = row.querySelector('.total-input');
-
-            const price = parseFloat(productSelect.selectedOptions[0]?.dataset.price || 0);
-            const quantity = parseInt(quantityInput.value || 0);
-            const discount = parseFloat(discountInput.value || 0);
-
-            const total = (price * quantity) - discount;
-            totalInput.value = total.toFixed(2);
-            updateGrandTotal();
-        }
-
-        function updateGrandTotal() {
-            let grandTotal = 0;
-            document.querySelectorAll('.total-input').forEach(input => {
-                grandTotal += parseFloat(input.value || 0);
-            });
-            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-        }
-
-        document.getElementById('add-item').addEventListener('click', function() {
-            const itemsDiv = document.getElementById('items');
-            const newRow = document.querySelector('.item-row').cloneNode(true);
-            newRow.querySelectorAll('input').forEach(input => input.value = '');
-            newRow.querySelector('.product-select').value = '';
-            itemsDiv.appendChild(newRow);
-            itemIndex++;
+            let currentValue = parseFloat(discountInput.value) || 0;
+            if (currentValue < 0.1) {
+                currentValue = 0;
+            }
+            discountInput.value = (currentValue + 0.1).toFixed(1);
+            updateTable();
         });
+    });
 
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('product-select') || e.target.classList.contains('quantity-input') || e.target.classList.contains('discount-input')) {
-                updateTotal(e.target.closest('.item-row'));
+    document.querySelectorAll('.minus-discount-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.product-row');
+            const discountInput = row.querySelector('.discount-input');
+            let currentValue = parseFloat(discountInput.value) || 0;
+            if (currentValue > 0.1) {
+                discountInput.value = (currentValue - 0.1).toFixed(1);
+                updateTable();
             }
         });
+    });
 
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-item')) {
-                if (document.querySelectorAll('.item-row').length > 1) {
-                    e.target.closest('.item-row').remove();
-                    updateGrandTotal();
-                }
+    // Add item to bill functionality
+    document.getElementById('add-item-btn').addEventListener('click', function() {
+        const itemSelect = document.getElementById('item-select');
+        const qtyInput = document.getElementById('add-qty');
+        const discInput = document.getElementById('add-disc');
+
+        const productId = itemSelect.value;
+        const quantity = parseInt(qtyInput.value) || 0;
+        const discount = parseFloat(discInput.value) || 0;
+
+        if (!productId || quantity <= 0) {
+            alert('Please select a product and enter a valid quantity.');
+            return;
+        }
+
+        // Find the corresponding product row and update its inputs
+        const productRow = document.querySelector(`.product-row[data-product-id="${productId}"]`);
+        if (productRow) {
+            const qtyInputEl = productRow.querySelector('.quantity-input');
+            const discInputEl = productRow.querySelector('.discount-input');
+
+            qtyInputEl.value = quantity;
+            discInputEl.value = discount;
+
+            updateTable();
+
+            // Reset form
+            itemSelect.value = '';
+            qtyInput.value = '1';
+            discInput.value = '0';
+        }
+    });
+
+    // Delete item functionality
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-item-btn')) {
+            const productId = event.target.dataset.productId;
+            const productRow = document.querySelector(`.product-row[data-product-id="${productId}"]`);
+            if (productRow) {
+                const qtyInputEl = productRow.querySelector('.quantity-input');
+                const discInputEl = productRow.querySelector('.discount-input');
+
+                qtyInputEl.value = 0;
+                discInputEl.value = 0;
+
+                updateTable();
             }
-        });
-    </script>
-</body>
-</html>
+        }
+    });
+
+    // Initial table update
+    updateTable();
+});
+</script>
+
+<style>
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+
+    .form-select, .form-control {
+        font-size: 0.9rem;
+    }
+
+    .btn-outline-primary {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+
+    .table th, .table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .product-row .card-body {
+        padding: 1rem;
+    }
+
+    .product-row .card-title {
+        font-size: 0.9rem;
+    }
+
+    .input-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .input-group-sm .form-control {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .fw-bold {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+    .form-select, .form-control {
+        font-size: 0.85rem;
+        height: auto;
+    }
+
+    .btn-outline-primary {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    .table th, .table td {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .product-row .card-body {
+        padding: 0.75rem;
+    }
+
+    .product-row .card-title {
+        font-size: 0.8rem;
+    }
+
+    .input-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .input-group-sm .form-control {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .fw-bold {
+        font-size: 0.8rem;
+    }
+
+    .h6 {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

@@ -76,26 +76,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Login Message Alert -->
-    {% if messages %}
-        <section class="section py-3">
-            <div class="container-fluid">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6">
-                        {% for message in messages %}
-                            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show text-center" role="alert">
-                                <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
-                                <strong>{% if message.tags == 'error' %}Error: {% endif %}</strong>{{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </section>
-    {% endif %}
-
     <!-- Products Section -->
     <section class="section products-section" id="products">
         <div class="container-fluid">
@@ -155,8 +135,9 @@
                 </div>
                 <div class="text-center my-5">
                     <div class="button-container">
-                        <!-- Product pages removed - functionality no longer available -->
-                        <p class="text-muted">Contact us for product details</p>
+                        <a href="{% url 'milk_agency:dodla_products' %}" class="btn btn-primary btn-hero-cta px-4 py-2 fw-semibold">
+                            <i class="bi bi-eye me-2"></i>View All Products
+                        </a>
                     </div>
                 </div>
             </div>

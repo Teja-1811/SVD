@@ -5,126 +5,148 @@
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">{% if item %}Edit Item{% else %}Add New Item{% endif %}</h5>
+        <div class="col-12 col-lg-10 col-xl-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                            <i class="bi bi-plus-circle-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">
+                                {% if item %}Edit Item{% else %}Add New Item{% endif %}
+                            </h3>
+                            <p class="mb-0 opacity-75">Manage item information and pricing</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form method="post" action="" id="addItemForm" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
-                        <!-- First Row: Basic Information and Pricing Information -->
-                        <div class="row mb-4">
-                            <!-- Basic Information Section -->
-                            <div class="col-md-6">
-                                <div class="card border-primary h-100">
-                                    <div class="card-header bg-primary text-white">
-                                        <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Basic Information</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="code" class="form-label">Item Code <span class="text-muted">(optional)</span></label>
-                                            <input type="text" class="form-control" id="code" name="code" placeholder="Enter unique item code" value="{% if item %}{{ item.code }}{% endif %}" maxlength="50">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="name" class="form-label">Item Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter item name" value="{% if item %}{{ item.name }}{% endif %}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter the item name.
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="company" class="form-label">Company <span class="text-muted">(optional)</span></label>
-                                            <input type="text" class="form-control" id="company" name="company" placeholder="Enter company name" value="{% if item %}{{ item.company }}{% endif %}">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="category" class="form-label">Category <span class="text-muted">(optional)</span></label>
-                                            <input type="text" class="form-control" id="category" name="category" placeholder="Enter item category (e.g., Electronics, Food)" value="{% if item %}{{ item.category }}{% endif %}">
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Basic Information Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bi bi-info-circle me-2"></i>Basic Information
+                                </h5>
                             </div>
-
-                            <!-- Pricing Section -->
-                            <div class="col-md-6">
-                                <div class="card border-success h-100">
-                                    <div class="card-header bg-success text-white">
-                                        <h6 class="card-title mb-0"><i class="bi bi-cash"></i> Pricing Information</h6>
+                            <div class="card-body">
+                                <div class="row g-3 g-md-4">
+                                    <div class="col-12 col-md-6">
+                                        <label for="code" class="form-label fw-semibold">Item Code <span class="text-muted">(optional)</span></label>
+                                        <input type="text" class="form-control form-control-lg" id="code" name="code" placeholder="Enter unique item code" value="{% if item %}{{ item.code }}{% endif %}" maxlength="50">
                                     </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="buying_price" class="form-label">Buying Price <span class="text-danger">*</span></label>
-                                            <input type="number" step="0.01" class="form-control" id="buying_price" name="buying_price" placeholder="Enter buying price" min="0" value="{% if item %}{{ item.buying_price }}{% endif %}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a valid buying price.
-                                            </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="name" class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="Enter item name" value="{% if item %}{{ item.name }}{% endif %}" required>
+                                        <div class="invalid-feedback">
+                                            Please enter the item name.
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="selling_price" class="form-label">Selling Price <span class="text-danger">*</span></label>
-                                            <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" placeholder="Enter selling price" min="0" value="{% if item %}{{ item.selling_price }}{% endif %}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a valid selling price.
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="mrp" class="form-label">MRP <span class="text-muted">(optional)</span></label>
-                                            <input type="number" step="0.01" class="form-control" id="mrp" name="mrp" placeholder="Enter Maximum Retail Price" min="0" value="{% if item %}{{ item.mrp }}{% else %}0{% endif %}">
-                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="company" class="form-label fw-semibold">Company <span class="text-muted">(optional)</span></label>
+                                        <input type="text" class="form-control form-control-lg" id="company" name="company" placeholder="Enter company name" value="{% if item %}{{ item.company }}{% endif %}">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="category" class="form-label fw-semibold">Category <span class="text-muted">(optional)</span></label>
+                                        <input type="text" class="form-control form-control-lg" id="category" name="category" placeholder="Enter item category (e.g., Electronics, Food)" value="{% if item %}{{ item.category }}{% endif %}">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Second Row: Stock Information and Image Section -->
-                        <div class="row mb-4">
-                            <!-- Stock Information Section -->
-                            <div class="col-md-6">
-                                <div class="card border-warning h-100">
-                                    <div class="card-header bg-warning text-dark">
-                                        <h6 class="card-title mb-0"><i class="bi bi-box-seam"></i> Stock Information</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="stock_quantity" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" placeholder="Enter initial stock quantity" min="0" value="{% if item %}{{ item.stock_quantity }}{% else %}0{% endif %}" required>
-                                            <div class="invalid-feedback">
-                                                Please enter a valid stock quantity.
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="pcs_count" class="form-label">Pieces Count <span class="text-muted">(optional)</span></label>
-                                            <input type="number" class="form-control" id="pcs_count" name="pcs_count" placeholder="Enter pieces per unit" min="0" value="{% if item %}{{ item.pcs_count }}{% else %}0{% endif %}">
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Pricing Information Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bi bi-cash me-2"></i>Pricing Information
+                                </h5>
                             </div>
-
-                            <!-- Image Section -->
-                            <div class="col-md-6">
-                                <div class="card border-info h-100">
-                                    <div class="card-header bg-info text-white">
-                                        <h6 class="card-title mb-0"><i class="bi bi-image"></i> Item Image</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="image" class="form-label">Upload Image <span class="text-muted">(optional)</span></label>
-                                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                                            {% if item.image %}
-                                            <div class="mt-2">
-                                                <img src="{{ item.image.url }}" alt="Current image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                                                <p class="text-muted mt-2">Current image will be replaced if you upload a new one.</p>
-                                            </div>
-                                            {% endif %}
+                            <div class="card-body">
+                                <div class="row g-3 g-md-4">
+                                    <div class="col-12 col-md-4">
+                                        <label for="buying_price" class="form-label fw-semibold">Buying Price <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control form-control-lg" id="buying_price" name="buying_price" placeholder="Enter buying price" min="0" value="{% if item %}{{ item.buying_price }}{% endif %}" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid buying price.
                                         </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label for="selling_price" class="form-label fw-semibold">Selling Price <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control form-control-lg" id="selling_price" name="selling_price" placeholder="Enter selling price" min="0" value="{% if item %}{{ item.selling_price }}{% endif %}" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid selling price.
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label for="mrp" class="form-label fw-semibold">MRP <span class="text-muted">(optional)</span></label>
+                                        <input type="number" step="0.01" class="form-control form-control-lg" id="mrp" name="mrp" placeholder="Enter Maximum Retail Price" min="0" value="{% if item %}{{ item.mrp }}{% else %}0{% endif %}">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-outline-primary me-2" id="submitBtn">{% if item %}Update Item{% else %}Add Item{% endif %}</button>
-                            <a href="{% url 'milk_agency:items_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <!-- Stock Information Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bi bi-box-seam me-2"></i>Stock Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3 g-md-4">
+                                    <div class="col-12 col-md-6">
+                                        <label for="stock_quantity" class="form-label fw-semibold">Stock Quantity <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control form-control-lg" id="stock_quantity" name="stock_quantity" placeholder="Enter initial stock quantity" min="0" value="{% if item %}{{ item.stock_quantity }}{% else %}0{% endif %}" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid stock quantity.
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="pcs_count" class="form-label fw-semibold">Pieces Count <span class="text-muted">(optional)</span></label>
+                                        <input type="number" class="form-control form-control-lg" id="pcs_count" name="pcs_count" placeholder="Enter pieces per unit" min="0" value="{% if item %}{{ item.pcs_count }}{% else %}0{% endif %}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bi bi-image me-2"></i>Item Image
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="image" class="form-label fw-semibold">Upload Image <span class="text-muted">(optional)</span></label>
+                                        <input type="file" class="form-control form-control-lg" id="image" name="image" accept="image/*">
+                                        {% if item.image %}
+                                        <div class="mt-3">
+                                            <img src="{{ item.image.url }}" alt="Current image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                            <p class="text-muted mt-2">Current image will be replaced if you upload a new one.</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
+                                    <a href="{% url 'milk_agency:items_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                        <i class="bi bi-arrow-left me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        {% if item %}Update Item{% else %}Add Item{% endif %}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -132,6 +154,114 @@
         </div>
     </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+
+    .form-control, .form-control-lg {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .d-flex.justify-content-end {
+        flex-direction: column;
+    }
+
+    .card-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .card-header h3, .card-header h5 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+    .form-control, .form-control-lg {
+        font-size: 0.9rem;
+        padding: 0.625rem;
+        height: auto;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .card-header h3, .card-header h5 {
+        font-size: 1rem;
+    }
+
+    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 {
+        padding: 0.5rem !important;
+        margin-right: 0.75rem !important;
+    }
+
+    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 .fs-4 {
+        font-size: 1.25rem !important;
+    }
+}
+</style>
 
 <script>
     (function() {

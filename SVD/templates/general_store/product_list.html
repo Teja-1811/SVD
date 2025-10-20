@@ -1,87 +1,162 @@
+{% extends 'general_store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Products - General Store - SVD Agencies</title>
-    <link rel="icon" href="{% static 'SVD.png' %}" type="image/x-icon" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0d1a3a">
-      <div class="container-fluid">
-        <a class="navbar-brand text-decoration-underline" href="{% url 'general_store:home' %}">
-          <img src="{% static 'SVD.png' %}" alt="Logo" style="height: 80px; margin-right: 8px" />General Store
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link active" href="{% url 'general_store:product_list' %}"><i class="bi bi-box-seam"></i> Products</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'general_store:add_product' %}"><i class="bi bi-plus-circle"></i> Add Product</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'general_store:sales_list' %}"><i class="bi bi-receipt"></i> Sales</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'general_store:add_sale' %}"><i class="bi bi-cart-plus"></i> Add Sale</a></li>
-          </ul>
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/milk_agency/"><i class="bi bi-cow"></i> Milk Agency</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'customer_portal:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Products</h2>
-            <a href="{% url 'general_store:add_product' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add Product
-            </a>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Buying Price</th>
-                        <th>Selling Price</th>
-                        <th>MRP</th>
-                        <th>Stock</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.category.name }}</td>
-                        <td>₹{{ product.buying_price }}</td>
-                        <td>₹{{ product.selling_price }}</td>
-                        <td>₹{{ product.mrp }}</td>
-                        <td>
-                            {% if product.stock_quantity < 10 %}
-                            <span class="badge bg-danger">{{ product.stock_quantity }}</span>
-                            {% else %}
-                            {{ product.stock_quantity }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-sm btn-warning">
-                                <i class="bi bi-pencil"></i> Edit
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center">No products found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+{% block title %}Products - General Store - SVD Agencies{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 h-100">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <p class="text-muted mb-0">Manage your product inventory</p>
+                </div>
+                <a href="{% url 'general_store:add_product' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Add Product
+                </a>
+            </div>
         </div>
     </div>
-</body>
-</html>
+
+    <!-- Products Table Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="border-0 fw-semibold py-3 px-4">Name</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Category</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Buying Price</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Selling Price</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">MRP</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Stock</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr class="align-middle">
+                                    <td class="py-3 px-4 fw-medium">{{ product.name }}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">₹{{ product.buying_price }}</td>
+                                    <td class="py-3 px-4 fw-semibold text-success">₹{{ product.selling_price }}</td>
+                                    <td class="py-3 px-4">₹{{ product.mrp }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if product.stock_quantity < 10 %}
+                                        <span class="badge bg-danger fs-6 px-3 py-2">{{ product.stock_quantity }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success fs-6 px-3 py-2">{{ product.stock_quantity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-warning btn-sm px-3">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
+                                            <h5>No products found</h5>
+                                            <p class="mb-0">Start by adding your first product to the inventory.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table-responsive {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .d-flex.justify-content-between.align-items-start.align-items-md-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .btn-outline-primary {
+        width: 100%;
+    }
+
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+
+    .table td, .table th {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    .table td, .table th {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .btn-outline-primary {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}

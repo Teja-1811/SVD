@@ -152,9 +152,9 @@ def update_customer_balance(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
 
     if request.method == 'POST':
-        balance = request.POST.get('balance', 0)
+        balance_str = request.POST.get('balance', '0')
         try:
-            balance_decimal = Decimal(balance)
+            balance_decimal = Decimal(balance_str)
             # Find the most recent bill for the customer in the current month
             from django.utils import timezone
             current_month = timezone.now().month
@@ -164,23 +164,46 @@ def update_customer_balance(request, customer_id):
                 invoice_date__year=current_year,
                 invoice_date__month=current_month
             ).order_by('-id').first()
+
             if recent_bill:
                 # Update the most recent bill's last_paid
                 recent_bill.last_paid += balance_decimal
+                # Ensure last_paid doesn't go negative
+                if recent_bill.last_paid < 0:
+                    recent_bill.last_paid = Decimal('0')
                 # Recalculate the customer's remaining due
                 customer.due = recent_bill.total_amount + recent_bill.op_due_amount - recent_bill.last_paid
+                # Update last_paid_balance to the amount just paid
                 customer.last_paid_balance = balance_decimal
                 recent_bill.save()
                 customer.save()
-                messages.success(request, f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}')
+                message = f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}'
             else:
                 # No recent bill found, update only customer due and last_paid_balance
+                # Positive balance reduces due, negative balance increases due
                 customer.due -= balance_decimal
                 customer.last_paid_balance = balance_decimal
                 customer.save()
-                messages.success(request, f'Balance updated for {customer.name} without a recent bill')
-        except ValueError:
-            messages.error(request, 'Invalid balance value')
+                message = f'Balance updated for {customer.name} without a recent bill'
+
+            # Check if AJAX request
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': message,
+                    'new_balance': float(customer.due),
+                    'last_paid': float(customer.last_paid_balance)
+                })
+
+            messages.success(request, message)
+        except (ValueError, TypeError) as e:
+            error_message = f'Invalid balance value: {str(e)}'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message
+                })
+            messages.error(request, error_message)
 
     return redirect('milk_agency:customer_data')
 

@@ -22,6 +22,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="{% static 'milk_agency/css/base_inline.css' %}" />
+    
 
     {% block head %} {% endblock %}
   </head>
@@ -36,7 +37,7 @@
             src="{% static 'images/SVD1.png' %}"
             alt="Logo"
             style="height: 80px; margin-right: 8px"
-          />Milk Agency
+          />SVD Agencies (Milk)
         </a>
 
         <button
@@ -121,15 +122,6 @@
         </div>
       </div>
     </nav>
-    <header class="text-white">
-      <div
-        class="mb-0 d-flex justify-content-between align-items-center"
-        style="background-color: #0d1a3a"
-      >
-        <p class="m-auto">Date : <strong id="date"></strong></p>
-        <p class="m-auto">Time : <strong id="time"></strong></p>
-      </div>
-    </header>
     <!-- Messages positioned at top right corner -->
     {% if messages %}
     <div class="message-container-top-right">
@@ -197,8 +189,6 @@
     <main class="container-fluid my-4" style="width: 99%; margin: auto">
       {% block content %} {% endblock %}
     </main>
-
-    <script src="{% static 'milk_agency/js/base_inline.js' %}"></script>
     <script src="{% static 'milk_agency/js/script.js' %}"></script>
 
     {% block scripts %} {% endblock %}

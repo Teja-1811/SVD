@@ -168,6 +168,22 @@ def reports_dashboard(request):
 
 @never_cache
 @login_required
+def bill_details(request, bill_id):
+    """Display detailed bill information for the logged-in customer"""
+    # Get the bill for the current customer only
+    bill = get_object_or_404(Bill, id=bill_id, customer=request.user)
+
+    # Get bill items using the correct related name 'items'
+    bill_items = bill.items.all().select_related('item')
+
+    context = {
+        'bill': bill,
+        'bill_items': bill_items,
+    }
+    return render(request, 'customer_portal/bill_details.html', context)
+
+@never_cache
+@login_required
 def update_profile(request):
     if request.method == 'POST':
         # Update customer profile

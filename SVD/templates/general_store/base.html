@@ -5,17 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}General Store - SVD Agencies{% endblock %}</title>
-    <link rel="icon" href="{% static 'SVD.png' %}" type="image/x-icon" />
+    <link rel="icon" href="{% static 'images\SVD.png' %}" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0d1a3a">
       <div class="container-fluid">
-        <a class="navbar-brand text-decoration-underline" href="{% url 'general_store:home' %}">
-          <img src="{% static 'SVD.png' %}" alt="Logo" style="height: 80px; margin-right: 8px" />General Store
+        <a class="navbar-brand text-decoration-underline d-flex align-items-center" href="{% url 'general_store:home' %}">
+          <img src="{% static 'images\SVD.png' %}" alt="Logo" class="navbar-logo me-2" />
+          <span class="d-none d-lg-inline">SVD Agencies (General Store)</span>
+          <span class="d-lg-none">SVD General Store</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
@@ -23,13 +25,18 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'general_store:home' %}">
+                <i class="bi bi-house"></i> Home
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'general_store:product_list' %}">
                 <i class="bi bi-box-seam"></i> Products
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'add_product' or request.resolver_match.url_name == 'edit_product' %}active{% endif %}" href="{% url 'general_store:add_product' %}">
-                <i class="bi bi-plus-circle"></i> Add Product
+              <a class="nav-link {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}" href="{% url 'general_store:customer_list' %}">
+                <i class="bi bi-people"></i> Customers
               </a>
             </li>
             <li class="nav-item">
@@ -58,13 +65,7 @@
         </div>
       </div>
     </nav>
-    <header class="text-white">
-      <div class="mb-0 d-flex justify-content-between align-items-center" style="background-color: #0d1a3a">
-        <p class="m-auto">Date : <strong id="date"></strong></p>
-        <p class="m-auto">Time : <strong id="time"></strong></p>
-      </div>
-    </header>
-    <main class="container mt-5">
+    <main class="flex-fill">
       {% block content %}{% endblock %}
     </main>
     {% block extra_js %}{% endblock %}
@@ -77,5 +78,39 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
     </script>
+
+    <style>
+        /* Responsive navbar logo */
+        .navbar-logo {
+            height: 100px;
+            transition: height 0.3s ease;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-logo {
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .navbar-logo {
+                height: 50px;
+            }
+        }
+
+        /* Ensure navbar collapse works properly on mobile */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background-color: #0d1a3a;
+                padding: 1rem;
+                border-radius: 0 0 0.375rem 0.375rem;
+                margin-top: 0.5rem;
+            }
+
+            .navbar-nav .nav-link {
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
 </body>
 </html>

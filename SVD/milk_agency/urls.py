@@ -12,6 +12,7 @@ from . import views_payments
 from . import views_customer_monthly_purchases
 from . import views_orders_dashboard
 from . import views_sales_summary
+from . import views_dodla
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
 
@@ -82,5 +83,8 @@ urlpatterns = [
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),
+
+    # Dodla Products URL
+    path('dodla-products/', views_dodla.dodla_products, name='dodla_products'),
 
 ]

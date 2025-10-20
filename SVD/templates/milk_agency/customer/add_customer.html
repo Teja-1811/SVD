@@ -3,79 +3,229 @@
 {% block title %}{% if customer %}Update Customer{% else %}Add Customer{% endif %}{% endblock %}
 
 {% block content %}
-<form method="post" action="">
-    {% csrf_token %}
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="party_name" class="form-label">Customer Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="party_name" name="party_name" placeholder="Enter Party Name" required value="{{ customer.name|default:'' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="shop_name" class="form-label">Shop Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="shop_name" name="shop_name" placeholder="Enter Shop Name" value="{{ customer.shop_name|default:'' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="retailer_id" class="form-label">Retailer ID</span></label>
-                    <input type="text" class="form-control" id="retailer_id" name="retailer_id" placeholder="Enter Retailer ID" value="{{ customer.retailer_id|default:'' }}" readonly>
-                </div>
-                <div class="col-md-4">
-                    <label for="phone" class="form-label">Phone Number <small class="text-danger">*</small></label>
-                    <div class="input-group">
-                        <span class="input-group-text">+91</span>
-                        <input type="text" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number" value="{{ customer.phone|default:'' }}" required>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <form method="post" action="">
+                {% csrf_token %}
+
+                <!-- Customer Information Card -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-gradient-primary text-white py-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                                <i class="bi bi-person-plus-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0 fw-bold">
+                                    {% if customer %}Update Customer{% else %}Add New Customer{% endif %}
+                                </h3>
+                                <p class="mb-0 opacity-75">Manage customer information</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 g-md-4">
+                            <div class="col-12 col-md-6">
+                                <label for="party_name" class="form-label fw-semibold">Customer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="party_name" name="party_name" placeholder="Enter Party Name" required value="{{ customer.name|default:'' }}">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="shop_name" class="form-label fw-semibold">Shop Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="shop_name" name="shop_name" placeholder="Enter Shop Name" value="{{ customer.shop_name|default:'' }}">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="retailer_id" class="form-label fw-semibold">Retailer ID</label>
+                                <input type="text" class="form-control form-control-lg" id="retailer_id" name="retailer_id" placeholder="Enter Retailer ID" value="{{ customer.retailer_id|default:'' }}" readonly>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="phone" class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">+91</span>
+                                    <input type="text" class="form-control form-control-lg" id="phone" name="phone" placeholder="Enter Phone Number" value="{{ customer.phone|default:'' }}" required>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="milk_commission" class="form-label">Milk Commission <small class="text-muted">(optional)</small></label>
-                    <input type="number" class="form-control" id="milk_commission" name="milk_commission" placeholder="Enter Milk Commission" step="0.01" value="{{ customer.milk_commission|default:0 }}">
+
+                <!-- Shipping Address Card -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-geo-alt me-2"></i>Shipping Address
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 g-md-4">
+                            <div class="col-12 col-md-6">
+                                <label for="flat_number" class="form-label fw-semibold">Flat / Building Number</label>
+                                <input type="text" class="form-control form-control-lg" id="flat_number" name="flat_number" placeholder="Enter Flat/Building Number" value="{{ customer.flat_number|default:'' }}">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="area" class="form-label fw-semibold">Area / Locality</label>
+                                <input type="text" class="form-control form-control-lg" id="area" name="area" placeholder="Enter Area/Locality" value="{{ customer.area }}">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="pin_code" class="form-label fw-semibold">PIN Code</label>
+                                <input type="text" class="form-control form-control-lg" id="pin_code" name="pin_code" placeholder="Enter PIN Code" value="{{ customer.pin_code|default:'534427' }}">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="city" class="form-label fw-semibold">City</label>
+                                <input type="text" class="form-control form-control-lg" id="city" name="city" placeholder="Enter City" value="{{ customer.city|default:'GGL' }}">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="state" class="form-label fw-semibold">State</label>
+                                <input type="text" class="form-control form-control-lg" id="state" name="state" placeholder="Enter State" value="{{ customer.state|default:'AP' }}">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="curd_commission" class="form-label">Curd Commission <small class="text-muted">(optional)</small></label>
-                    <input type="number" class="form-control" id="curd_commission" name="curd_commission" placeholder="Enter Curd Commission" step="0.01" value="{{ customer.curd_commission|default:0 }}">
+
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
+                            <a href="{% url 'milk_agency:customer_data' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                {% if customer %}Update Customer{% else %}Add Customer{% endif %}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div id="addressCollapse">
-                <div class="card card-body">
-                    <h5>Shipping Address</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="flat_number" class="form-label">Flat / Building Number</label>
-                            <input type="text" class="form-control" id="flat_number" name="flat_number" placeholder="" value="{{ customer.flat_number|default:'' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="area" class="form-label">Area / Locality</label>
-                            <input type="text" class="form-control" id="area" name="area" placeholder="" value="{{ customer.area }}">
-                        </div>
-                    </div>
-                    <div class="row g-3 mt-2">
-                        <div class="col-md-4">
-                            <label for="pin_code" class="form-label">PIN Code</label>
-                            <input type="text" class="form-control" id="pin_code" name="pin_code" placeholder="" value="{{ customer.pin_code|default:'534427' }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city" placeholder="" value="{{ customer.city|default:'GGL' }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="state" class="form-label">State</label>
-                            <input type="text" class="form-control" id="state" name="state" placeholder="" value="{{ customer.state|default:'AP' }}">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 
-    <button type="submit" class="btn btn-primary" id="submitBtn">
-        {% if customer %}Update{% else %}Add{% endif %}
-    </button>
-</form>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+
+    .form-control, .form-control-lg {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .d-flex.justify-content-end {
+        flex-direction: column;
+    }
+
+    .card-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .card-header h3, .card-header h5 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+    .form-control, .form-control-lg {
+        font-size: 0.9rem;
+        padding: 0.625rem;
+        height: auto;
+    }
+
+    .input-group, .input-group-lg {
+        font-size: 0.5rem !important; 
+        height: auto;
+    }
+
+    .input-group-lg .form-control {
+        font-size: 1rem;
+        height: auto;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .input-group-text {
+        font-size: 1rem !important;
+        padding: 0.625rem;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .card-header h3, .card-header h5 {
+        font-size: 1rem;
+    }
+
+    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 {
+        padding: 0.5rem !important;
+        margin-right: 0.75rem !important;
+    }
+
+    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 .fs-4 {
+        font-size: 1.25rem !important;
+    }
+}
+</style>
 {% endblock %}

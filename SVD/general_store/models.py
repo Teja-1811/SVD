@@ -18,8 +18,17 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=15, unique=True)
+    address = models.TextField(blank=True, null=True)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.phone})"
+
 class Sale(models.Model):
-    customer = models.ForeignKey('milk_agency.Customer', on_delete=models.CASCADE, related_name='general_store_sales')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='sales')
     invoice_number = models.CharField(max_length=50, unique=True)
     invoice_date = models.DateField(default=timezone.now)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)

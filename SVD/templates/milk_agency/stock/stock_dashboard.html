@@ -4,72 +4,100 @@
 {% block title %}Stock Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-
-    <!-- Update Stock Button -->
-    <div class="mb-3 text-end">
-        <a href="{% url 'milk_agency:update_stock' %}" class="btn btn-primary">
-            <i class="bi bi-pencil-square"></i> Update Stock
-        </a>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold">Stock Dashboard</h2>
+                    <p class="text-muted mb-0">Monitor your inventory and stock levels</p>
+                </div>
+                <a href="{% url 'milk_agency:update_stock' %}" class="btn btn-success btn-lg px-4">
+                    <i class="bi bi-pencil-square me-2"></i>Update Stock
+                </a>
+            </div>
+        </div>
     </div>
 
-
-
     <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Total Items</h5>
-                    <h3 id="total-items">-</h3>
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-box-seam text-primary fs-3"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Total Items</h5>
+                    <h3 class="fw-bold text-primary mb-0" id="total-items">-</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Total Stock Value</h5>
-                    <h3 id="total-stock-value">₹ -</h3>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-cash text-success fs-3"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Total Stock Value</h5>
+                    <h3 class="fw-bold text-success mb-0" id="total-stock-value">₹ -</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Low Stock Items</h5>
-                    <h3 id="low-stock-count">-</h3>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-exclamation-triangle text-warning fs-3"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Low Stock Items</h5>
+                    <h3 class="fw-bold text-warning mb-0" id="low-stock-count">-</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5 class="card-title">30-Day Movement</h5>
-                    <small>In: <span id="stock-in">-</span> | Out: <span id="stock-out">-</span></small>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-arrow-left-right text-info fs-3"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">30-Day Movement</h5>
+                    <div class="small">
+                        <span class="text-success fw-medium">In: <span id="stock-in">-</span></span> |
+                        <span class="text-danger fw-medium">Out: <span id="stock-out">-</span></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Top 10 Items by Stock Value</h5>
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-light border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-bar-chart me-2"></i>Top 10 Items by Stock Value
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <canvas id="topItemsChart" height="200"></canvas>
+                <div class="card-body p-4">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="topItemsChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Category-wise Stock Value</h5>
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-lg h-100">
+                <div class="card-header bg-light border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-pie-chart me-2"></i>Category-wise Stock Value
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <canvas id="categoryChart" height="200"></canvas>
+                <div class="card-body p-4">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -78,19 +106,22 @@
     <!-- Current Stock Overview -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>Current Stock Overview</h5>
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-light border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-table me-2"></i>Current Stock Overview
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="table-responsive">
-                        <table class="table table-striped" id="stockOverviewTable">
-                            <thead>
+                        <table class="table table-hover mb-0" id="stockOverviewTable">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Current Stock</th>
-                                    <th>Selling Price</th>
-                                    <th>Stock Value</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">#</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Item</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Current Stock</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Selling Price</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Stock Value</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -101,6 +132,137 @@
         </div>
     </div>
 </div>
+
+<style>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.table-responsive {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .d-flex.justify-content-between.align-items-start.align-items-lg-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .btn-success {
+        width: 100%;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .chart-container {
+        height: 250px !important;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+        border-radius: 10px;
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+        overflow-y: visible;
+    }
+
+    .table th, .table td {
+        padding: 0.5rem 0.3rem;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .table th:nth-child(1), .table td:nth-child(1) {
+        width: 40px;
+        text-align: center;
+    }
+
+    .table th:nth-child(2), .table td:nth-child(2) {
+        min-width: 120px;
+    }
+
+    .table th:nth-child(3), .table td:nth-child(3) {
+        min-width: 100px;
+    }
+
+    .table th:nth-child(4), .table td:nth-child(4) {
+        min-width: 100px;
+    }
+
+    .table th:nth-child(5), .table td:nth-child(5) {
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .chart-container {
+        height: 200px !important;
+    }
+
+    .table-responsive {
+        font-size: 0.8rem;
+        margin: 0 -5px;
+        overflow-x: auto !important;
+        overflow-y: visible;
+    }
+
+    .table th, .table td {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.75rem;
+    }
+
+    .bg-primary.bg-opacity-10, .bg-success.bg-opacity-10, .bg-warning.bg-opacity-10, .bg-info.bg-opacity-10 {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    .bg-primary.bg-opacity-10 .fs-3, .bg-success.bg-opacity-10 .fs-3, .bg-warning.bg-opacity-10 .fs-3, .bg-info.bg-opacity-10 .fs-3 {
+        font-size: 1.5rem !important;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+    }
+
+    .fw-bold {
+        font-size: 1.5rem;
+    }
+}
+</style>
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -135,14 +297,31 @@ function renderTopItemsChart(topItems) {
                 data: topItems.map(item => item.stock_value),
                 backgroundColor: 'rgba(54, 162, 235, 0.8)',
                 borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 8,
+                borderSkipped: false,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
             }
         }
     });
@@ -159,25 +338,40 @@ function renderCategoryChart(categoryData) {
                 backgroundColor: [
                     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
                     '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0'
-                ]
+                ],
+                borderWidth: 0,
+                hoverBorderWidth: 2,
+                hoverBorderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
         }
     });
 }
 
 function renderStockOverviewTable(allItems) {
     const tbody = document.querySelector('#stockOverviewTable tbody');
-    allItems.forEach(item => {
+    allItems.forEach((item, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.stock_quantity}</td>
-            <td>₹ ${item.selling_price}</td>
-            <td>₹ ${(item.stock_quantity * item.selling_price).toLocaleString('en-IN')}</td>
+            <td class="py-3 px-4 fw-medium">${index + 1}</td>
+            <td class="py-3 px-4 fw-medium">${item.name}</td>
+            <td class="py-3 px-4">
+                <span class="badge bg-primary fs-6 px-2 py-1">${item.stock_quantity}</span>
+            </td>
+            <td class="py-3 px-4 fw-medium">₹ ${item.selling_price}</td>
+            <td class="py-3 px-4 fw-medium">₹ ${(item.stock_quantity * item.selling_price).toLocaleString('en-IN')}</td>
         `;
     });
 }

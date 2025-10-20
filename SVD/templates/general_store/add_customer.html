@@ -1,0 +1,256 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}{% if customer %}Edit{% else %}Add{% endif %} Customer - General Store - SVD Agencies{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 h-100">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                            <i class="bi bi-person-plus-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">
+                                {% if customer %}Edit Customer{% else %}Add New Customer{% endif %}
+                            </h3>
+                            <p class="mb-0 opacity-75">Manage customer information</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Customer Information Section -->
+                        <div class="row g-3 g-md-4">
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                           value="{{ customer.name|default:'' }}" placeholder="Customer Name" required>
+                                    <label for="name">
+                                        <i class="bi bi-person me-2"></i>Customer Name *
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        Please provide a customer name.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="tel" class="form-control form-control-lg" id="phone" name="phone"
+                                           value="{{ customer.phone|default:'' }}" placeholder="Phone Number" required
+                                           pattern="[0-9]{10}">
+                                    <label for="phone">
+                                        <i class="bi bi-telephone me-2"></i>Phone Number *
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        Please provide a valid 10-digit phone number.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <div class="row g-4 mt-2">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control form-control-lg" id="address" name="address"
+                                              rows="4" placeholder="Address" style="min-height: 100px;">{{ customer.address|default:'' }}</textarea>
+                                    <label for="address">
+                                        <i class="bi bi-geo-alt me-2"></i>Address
+                                    </label>
+                                    <div class="form-text text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>Optional field for customer address details
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Balance Section -->
+                        <div class="row g-3 g-md-4 mt-2">
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control form-control-lg" id="balance" name="balance"
+                                           value="{{ customer.balance|default:'0' }}" step="0.01" min="0"
+                                           placeholder="Opening Balance">
+                                    <label for="balance">
+                                        <i class="bi bi-cash me-2"></i>Opening Balance
+                                    </label>
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-lightbulb me-1"></i>Enter any outstanding balance (₹0.00 if none)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row g-3 g-md-4 mt-4">
+                            <div class="col-12">
+                                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
+                                    <a href="{% url 'general_store:customer_list' %}" class="btn btn-outline-secondary btn-lg px-4 w-100 w-sm-auto">
+                                        <i class="bi bi-arrow-left me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-5 w-100 w-sm-auto">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        {% if customer %}Update Customer{% else %}Add Customer{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown) {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border: none;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+
+    .form-floating > .form-control {
+        font-size: 1rem;
+        padding: 1rem 0.75rem;
+    }
+
+    .form-floating > label {
+        font-size: 0.9rem;
+        padding: 1rem 0.75rem;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .d-flex.justify-content-end {
+        flex-direction: column;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .row.g-3.g-md-4 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+    .form-floating > .form-control {
+        font-size: 0.9rem;
+        padding: 0.875rem 0.75rem;
+    }
+
+    .form-floating > label {
+        font-size: 0.85rem;
+        padding: 0.875rem 0.75rem;
+    }
+
+    .form-control, .form-control-lg {
+        height: auto;
+    }
+
+    .btn-outline-secondary, .btn-success {
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .h3 {
+        font-size: 1.5rem;
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+    }
+
+    textarea {
+        min-height: 80px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Phone number validation
+document.getElementById('phone').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '').substring(0, 10);
+});
+</script>
+{% endblock %}

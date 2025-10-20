@@ -1,86 +1,342 @@
+{% extends 'general_store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% if product %}Edit{% else %}Add{% endif %} Product - General Store - SVD Agencies</title>
-    <link rel="icon" href="{% static 'SVD.png' %}" type="image/x-icon" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0d1a3a">
-      <div class="container-fluid">
-        <a class="navbar-brand text-decoration-underline" href="{% url 'general_store:home' %}">
-          <img src="{% static 'SVD.png' %}" alt="Logo" style="height: 80px; margin-right: 8px" />General Store
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link active" href="{% url 'general_store:product_list' %}"><i class="bi bi-box-seam"></i> Products</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'general_store:sales_list' %}"><i class="bi bi-receipt"></i> Sales</a></li>
-          </ul>
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/milk_agency/"><i class="bi bi-cow"></i> Milk Agency</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'customer_portal:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>{% if product %}Edit Product{% else %}Add New Product{% endif %}</h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Product Name</label>
-                                <input type="text" class="form-control" id="name" name="name" value="{{ product.name|default:'' }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Category</label>
-                                <select class="form-control" id="category" name="category" required>
-                                    <option value="">Select Category</option>
-                                    {% for category in categories %}
-                                    <option value="{{ category.id }}" {% if product and product.category == category %}selected{% endif %}>{{ category.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="buying_price" class="form-label">Buying Price</label>
-                                    <input type="number" step="0.01" class="form-control" id="buying_price" name="buying_price" value="{{ product.buying_price|default:'' }}" required>
+
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} Product - General Store - SVD Agencies{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .form-header h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.8rem;
+    }
+
+    .form-body {
+        padding: 2.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .price-inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .price-card:hover {
+        border-color: #667eea;
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .price-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .price-input {
+        border: none;
+        background: transparent;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .price-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-cancel {
+        border: 2px solid #6c757d;
+        background: transparent;
+        color: #6c757d;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .required-star {
+        color: #dc3545;
+        margin-left: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .form-body {
+            padding: 1.5rem;
+        }
+
+        .form-header {
+            padding: 1.5rem;
+        }
+
+        .form-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .price-inputs {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-submit, .btn-cancel {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .d-flex.justify-content-end {
+            flex-direction: column;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .form-floating > .form-control {
+            padding: 1rem 0.75rem;
+        }
+
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .form-body {
+            padding: 1rem;
+        }
+
+        .price-card {
+            padding: 1rem;
+        }
+
+        .price-input {
+            font-size: 1rem;
+        }
+
+        .form-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .form-floating > .form-control {
+            font-size: 0.9rem;
+            padding: 0.875rem 0.75rem;
+        }
+
+    .form-floating > label {
+        font-size: 0.85rem;
+        padding: 0.875rem 0.75rem;
+    }
+
+    .form-control, .form-control-lg {
+        height: auto;
+    }
+
+    .btn-submit, .btn-cancel {
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card form-card">
+                <div class="form-header">
+                    <h3>
+                        <i class="bi bi-plus-circle-fill me-3"></i>
+                        {% if product %}Edit Product{% else %}Add New Product{% endif %}
+                    </h3>
+                </div>
+                <div class="form-body">
+                    <form method="post" id="productForm">
+                        {% csrf_token %}
+
+                        <!-- Product Name -->
+                        <div class="form-group">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-tag me-2"></i>Product Name <span class="required-star">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ product.name|default:'' }}" required placeholder="Enter product name">
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label for="category" class="form-label">
+                                <i class="bi bi-folder me-2"></i>Category <span class="required-star">*</span>
+                            </label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if product and product.category == category %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Price Fields -->
+                        <div class="price-inputs">
+                            <div class="price-card">
+                                <div class="price-label">Buying Price</div>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" step="0.01" min="0" class="form-control price-input" id="buying_price" name="buying_price" value="{{ product.buying_price|default:'' }}" required placeholder="0.00">
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="selling_price" class="form-label">Selling Price</label>
-                                    <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" value="{{ product.selling_price|default:'' }}" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="mrp" class="form-label">MRP</label>
-                                    <input type="number" step="0.01" class="form-control" id="mrp" name="mrp" value="{{ product.mrp|default:'' }}" required>
+                            </div>
+                            <div class="price-card">
+                                <div class="price-label">Selling Price</div>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" step="0.01" min="0" class="form-control price-input" id="selling_price" name="selling_price" value="{{ product.selling_price|default:'' }}" required placeholder="0.00">
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="stock_quantity" class="form-label">Stock Quantity</label>
-                                <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" value="{{ product.stock_quantity|default:'' }}" required>
+                            <div class="price-card">
+                                <div class="price-label">MRP</div>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" step="0.01" min="0" class="form-control price-input" id="mrp" name="mrp" value="{{ product.mrp|default:'' }}" required placeholder="0.00">
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">
+                        </div>
+
+                        <!-- Stock Quantity -->
+                        <div class="form-group">
+                            <label for="stock_quantity" class="form-label">
+                                <i class="bi bi-box-seam me-2"></i>Stock Quantity <span class="required-star">*</span>
+                            </label>
+                            <input type="number" min="0" class="form-control" id="stock_quantity" name="stock_quantity" value="{{ product.stock_quantity|default:'' }}" required placeholder="Enter stock quantity">
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-3 mt-4">
+                            <a href="{% url 'general_store:product_list' %}" class="btn btn-cancel">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-submit">
+                                <i class="bi bi-check-circle-fill me-2"></i>
                                 {% if product %}Update Product{% else %}Add Product{% endif %}
                             </button>
-                            <a href="{% url 'general_store:product_list' %}" class="btn btn-secondary">Cancel</a>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+{% block extra_js %}
+<script>
+    // Form validation and enhancements
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        const buyingPrice = parseFloat(document.getElementById('buying_price').value);
+        const sellingPrice = parseFloat(document.getElementById('selling_price').value);
+        const mrp = parseFloat(document.getElementById('mrp').value);
+
+        if (sellingPrice <= buyingPrice) {
+            e.preventDefault();
+            alert('Selling price must be greater than buying price.');
+            return false;
+        }
+
+        if (mrp < sellingPrice) {
+            e.preventDefault();
+            alert('MRP should not be less than selling price.');
+            return false;
+        }
+    });
+
+    // Auto-format price inputs
+    document.querySelectorAll('.price-input').forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

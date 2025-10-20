@@ -1,0 +1,315 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}Customers - General Store - SVD Agencies{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 h-100">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
+        <div class="mb-3 mb-sm-0">
+            <p class="text-muted mb-0 small">Manage your general store customers</p>
+        </div>
+        <a href="{% url 'general_store:add_customer' %}" class="btn btn-outline-success">
+            <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-2 g-md-3">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-people fs-4 mb-2"></i>
+                    <h6 class="mb-0">{{ customers|length }}</h6>
+                    <small class="d-block">Total Customers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-cash fs-4 mb-2"></i>
+                    <h6 class="mb-0">₹{% widthratio customers|length 1 1000 %}</h6>
+                    <small class="d-block">Avg. Balance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-telephone fs-4 mb-2"></i>
+                    <h6 class="mb-0">{{ customers|length }}</h6>
+                    <small class="d-block">With Phone</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-geo-alt fs-4 mb-2"></i>
+                    <h6 class="mb-0">{{ customers|length }}</h6>
+                    <small class="d-block">With Address</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-light border-0 py-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-list-ul me-2"></i>Customer List
+                </h5>
+                <div class="input-group w-100" style="max-width: 300px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search customers...">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="customersTable">
+                    <thead class="table-primary">
+                        <tr>
+                            <th class="border-0 fw-bold py-3 px-4">
+                                <i class="bi bi-person me-2"></i>Name
+                            </th>
+                            <th class="border-0 fw-bold py-3">
+                                <i class="bi bi-telephone me-2"></i>Phone
+                            </th>
+                            <th class="border-0 fw-bold py-3">
+                                <i class="bi bi-geo-alt me-2"></i>Address
+                            </th>
+                            <th class="border-0 fw-bold py-3">
+                                <i class="bi bi-cash me-2"></i>Balance
+                            </th>
+                            <th class="border-0 fw-bold py-3 text-center">
+                                <i class="bi bi-gear me-2"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr class="customer-row">
+                            <td class="py-3 px-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                        <i class="bi bi-person-fill text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ customer.name }}</div>
+                                        <small class="text-muted">Customer #{{ customer.pk }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">
+                                <span class="badge bg-success px-3 py-2">
+                                    <i class="bi bi-telephone me-1"></i>{{ customer.phone }}
+                                </span>
+                            </td>
+                            <td class="py-3">
+                                {% if customer.address %}
+                                    <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ customer.address }}">
+                                        {{ customer.address|truncatechars:30 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted fst-italic">Not provided</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3">
+                                <span class="fw-bold {% if customer.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    ₹{{ customer.balance }}
+                                </span>
+                                {% if customer.balance > 0 %}
+                                    <small class="text-danger d-block">Outstanding</small>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'general_store:edit_customer' customer.pk %}"
+                                       class="btn btn-outline-primary btn-sm px-3" title="Edit Customer">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-info btn-sm px-3"
+                                            title="View Details" onclick="viewCustomer({{ customer.pk }})">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="bi bi-people display-4 text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Customers Found</h5>
+                                    <p class="text-muted mb-4">Start by adding your first customer to the system.</p>
+                                    <a href="{% url 'general_store:add_customer' %}" class="btn btn-primary">
+                                        <i class="bi bi-person-plus me-2"></i>Add First Customer
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.customer-row:hover {
+    background-color: rgba(0,123,255,0.05);
+}
+
+.btn-group .btn {
+    border-radius: 6px !important;
+    margin: 0 1px;
+}
+
+.empty-state {
+    padding: 3rem 1rem;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.bg-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; }
+.bg-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; }
+.bg-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important; }
+.bg-info { background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important; }
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .d-flex.justify-content-between.align-items-start.align-items-sm-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .btn-outline-success {
+        width: 100%;
+    }
+
+    .input-group {
+        max-width: none !important;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    .table th, .table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .d-flex.align-items-center .bg-primary {
+        display: none;
+    }
+
+    .fw-bold.text-dark {
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+
+    .table th, .table td {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .input-group {
+        width: 100% !important;
+    }
+
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Search functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.customer-row');
+
+    rows.forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const phone = row.cells[1].textContent.toLowerCase();
+        const address = row.cells[2].textContent.toLowerCase();
+
+        if (name.includes(filter) || phone.includes(filter) || address.includes(filter)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// View customer details (placeholder for future enhancement)
+function viewCustomer(customerId) {
+    // For now, just redirect to edit page
+    window.location.href = `/general_store/customers/${customerId}/edit/`;
+}
+</script>
+{% endblock %}
