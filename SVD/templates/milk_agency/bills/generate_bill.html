@@ -48,13 +48,19 @@
                     </div>
                 </div>
                 <div class="row">
+                    <!-- Item Search -->
+                    <div class="col-md-3">
+                        <label for="item-search" class="form-label">Search Items</label>
+                        <input type="text" id="item-search" class="form-control" placeholder="Type to search items...">
+                    </div>
+
                     <!-- Item Selection -->
-                    <div class="col-md-5">
+                    <div class="col-md-2">
                         <label for="item-select" class="form-label">Select Item</label>
                         <select id="item-select" class="form-select">
                             <option value="">-- Select an item --</option>
                             {% for item in items %}
-                            <option value="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}">{{ item.name }} ({{ item.company }})</option>
+                            <option value="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}" data-company="{{ item.company }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.company }})</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -297,6 +303,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Search functionality for item dropdown
+    document.getElementById('item-search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const options = document.querySelectorAll('#item-select option');
+
+        options.forEach(option => {
+            if (option.value === '') return; // Skip the placeholder option
+
+            const itemName = option.textContent.toLowerCase();
+            const company = option.getAttribute('data-company') ? option.getAttribute('data-company').toLowerCase() : '';
+            const category = option.getAttribute('data-category') ? option.getAttribute('data-category').toLowerCase() : '';
+
+            if (itemName.includes(searchTerm) || company.includes(searchTerm) || category.includes(searchTerm)) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    });
+
     // Add item to bill functionality
     document.getElementById('add-item-btn').addEventListener('click', function() {
         const itemSelect = document.getElementById('item-select');
@@ -329,6 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
             discInput.value = '0';
         }
     });
+
+
 
     // Delete item functionality
     document.addEventListener('click', function(event) {

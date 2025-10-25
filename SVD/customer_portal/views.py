@@ -31,6 +31,7 @@ def login_view(request):
                     return redirect('milk_agency:home')
                 else:
                     return redirect('customer_portal:home')
+
             else:
                 # Default Django User (admin/staff)
                 login(request, user)
@@ -158,11 +159,17 @@ def reports_dashboard(request):
         invoice_date__month=month
     ).select_related('customer').order_by('-invoice_date')
 
+    # Calculate total and average amounts
+    total_amount = sum(bill.total_amount for bill in bills) if bills else 0
+    average_amount = total_amount / len(bills) if bills else 0
+
     context = {
         'bills': bills,
         'selected_date': selected_month,
         'current_year': year,
-        'current_month': month
+        'current_month': month,
+        'total_amount': total_amount,
+        'average_amount': average_amount
     }
     return render(request, 'customer_portal/reports_dashboard.html', context)
 
