@@ -42,6 +42,7 @@ urlpatterns = [
     path('customer/', include('customer_portal.urls', namespace='customer_portal')),
     path('general_store/', include('general_store.urls')),
     path('milk_agency/', include('milk_agency.urls', namespace='milk_agency')),
+
     # Removed duplicate customer_portal include to fix namespace conflict and 404 at root
     # path('customer/', include('customer_portal.urls', namespace='customer_portal')),
 

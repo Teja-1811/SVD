@@ -13,6 +13,7 @@ from . import views_customer_monthly_purchases
 from . import views_orders_dashboard
 from . import views_sales_summary
 from . import views_dodla
+
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
 
@@ -86,5 +87,7 @@ urlpatterns = [
 
     # Dodla Products URL
     path('dodla-products/', views_dodla.dodla_products, name='dodla_products'),
+
+
 
 ]

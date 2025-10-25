@@ -168,12 +168,7 @@ def update_customer_balance(request, customer_id):
             if recent_bill:
                 # Update the most recent bill's last_paid
                 recent_bill.last_paid += balance_decimal
-                # Ensure last_paid doesn't go negative
-                if recent_bill.last_paid < 0:
-                    recent_bill.last_paid = Decimal('0')
-                # Recalculate the customer's remaining due
-                customer.due = recent_bill.total_amount + recent_bill.op_due_amount - recent_bill.last_paid
-                # Update last_paid_balance to the amount just paid
+                customer.due = customer.due - balance_decimal
                 customer.last_paid_balance = balance_decimal
                 recent_bill.save()
                 customer.save()

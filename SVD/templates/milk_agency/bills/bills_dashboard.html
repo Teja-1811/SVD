@@ -19,6 +19,40 @@
         </div>
     </div>
 
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="get" id="filterForm" class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="customer" class="form-label fw-semibold">Customer</label>
+                            <select class="form-select" id="customer" name="customer">
+                                <option value="">All Customers</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}" {% if selected_customer == customer.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ customer.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            {% if selected_customer %}
+                            <a href="{% url 'milk_agency:bills_dashboard' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle me-1"></i>Clear Filters
+                            </a>
+                            {% else %}
+                            <div class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i>Filters apply automatically
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bills Table Card -->
     <div class="row">
         <div class="col-12">
@@ -241,5 +275,19 @@
         font-size: 0.8rem;
     }
 }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const customerSelect = document.getElementById('customer');
+
+    // Function to submit form automatically
+    function autoSubmit() {
+        filterForm.submit();
+    }
+
+    // Add event listeners for auto-submit
+    customerSelect.addEventListener('change', autoSubmit);
+});
+</script>
 </style>
 {% endblock %}

@@ -5,15 +5,33 @@ from .models import Item
 
 @login_required
 def items_dashboard(request):
-    items = Item.objects.all().order_by('name')
+    from itertools import groupby
+    from collections import OrderedDict
+
+    items = Item.objects.all().order_by('category', 'name')
 
     # Calculate stock value and margin for each item
     for item in items:
         item.stock_value = item.stock_quantity * item.buying_price
         item.margin = item.selling_price - item.buying_price
 
+    # Group items by category
+    grouped_items = {}
+    for category, group in groupby(items, key=lambda x: (x.category or 'others').lower()):
+        grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
+
+    # Define custom order for categories
+    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'others']
+    ordered_grouped = OrderedDict()
+    for cat in category_order:
+        ordered_grouped[cat] = grouped_items.get(cat, [])
+
+    # Check if there are any items at all
+    total_items = sum(len(items) for items in ordered_grouped.values())
+
     context = {
-        'items': items
+        'grouped_items': ordered_grouped,
+        'total_items': total_items
     }
     return render(request, 'milk_agency/items/items_dashboard.html', context)
 

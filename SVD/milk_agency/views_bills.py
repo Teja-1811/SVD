@@ -14,10 +14,29 @@ from .pdf_utils import PDFGenerator
 
 @login_required
 def bills_dashboard(request):
-    bills = Bill.objects.select_related('customer').order_by('-invoice_date')
+    # Get filter parameters
+    customer_id = request.GET.get('customer', '')
+
+    # Start with base queryset
+    bills = Bill.objects.select_related('customer')
+
+    # Apply filters
+    if customer_id:
+        try:
+            bills = bills.filter(customer_id=int(customer_id))
+        except ValueError:
+            pass  # Invalid customer ID, ignore filter
+
+    # Order by invoice date descending
+    bills = bills.order_by('-invoice_date')
+
+    # Get all customers for the filter dropdown
+    customers = Customer.objects.filter(frozen=False).order_by('name')
 
     context = {
-        'bills': bills
+        'bills': bills,
+        'customers': customers,
+        'selected_customer': customer_id,
     }
     return render(request, 'milk_agency/bills/bills_dashboard.html', context)
 

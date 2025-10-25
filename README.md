@@ -146,6 +146,16 @@ This project is proprietary software for SVD Agencies.
 
 For technical support or questions, please contact the development team.
 
+## Recent Updates
+
+### Version 1.0.1
+- **Production Deployment**: Configured Django for DuckDNS hosting
+  - Updated ALLOWED_HOSTS in settings.py to include domain and IP
+  - Added CSRF_TRUSTED_ORIGINS for the domain
+  - Moved SECRET_KEY to environment variable for security
+  - Ran collectstatic to prepare static files for production
+  - Added production server setup instructions
+
 ## Version
 
-Current version: 1.0.0
+Current version: 1.0.1

@@ -57,6 +57,21 @@ class Customer(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "phone"
     REQUIRED_FIELDS = ["name"]
 
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='customer_groups',
+        blank=True,
+        help_text='The groups this customer belongs to.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='customer_permissions',
+        blank=True,
+        help_text='Specific permissions for this customer.',
+        verbose_name='user permissions',
+    )
+
     class Meta:
         ordering = ["name"]
 
@@ -82,6 +97,9 @@ class Customer(AbstractBaseUser, PermissionsMixin):
             return Decimal('0.0')
 
 
+
+
+
 class Item(models.Model):
     code = models.CharField(max_length=50, unique=True, blank=True, null=True, help_text='Unique item code')
     name = models.CharField(max_length=255)
@@ -105,8 +123,6 @@ class Bill(models.Model):
     op_due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     last_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Last paid amount for this bill")
     profit = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total profit from this bill")
-    pdf_file = models.FileField(upload_to='invoices/', blank=True, null=True)
-    whatsapp_url = models.URLField(blank=True, null=True, help_text="Generated WhatsApp share URL for this bill")
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):

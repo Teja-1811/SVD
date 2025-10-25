@@ -1,0 +1,218 @@
+/* Compact Table Styles */
+.table-compact {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.table-compact th,
+.table-compact td {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+.table-compact th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.table-compact tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-compact tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Compact table with smaller borders */
+.table-compact-borderless th,
+.table-compact-borderless td {
+    border: none;
+    padding: 0.4rem 0.6rem;
+}
+
+.table-compact-borderless th {
+    border-bottom: 1px solid #dee2e6;
+    background-color: transparent;
+}
+
+/* Compact table for data display */
+.table-compact-data {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table-compact-data th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-compact-data td {
+    padding: 0.6rem 1rem;
+    border-color: #f1f3f4;
+    font-size: 0.85rem;
+}
+
+/* Compact table for forms */
+.table-compact-form {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.table-compact-form th,
+.table-compact-form td {
+    border: none;
+    padding: 0.5rem;
+    background-color: transparent;
+}
+
+.table-compact-form th {
+    background-color: transparent;
+    font-weight: 600;
+    color: #495057;
+    width: 30%;
+}
+
+/* Compact table with minimal spacing */
+.table-compact-minimal {
+    font-size: 0.8rem;
+}
+
+.table-compact-minimal th,
+.table-compact-minimal td {
+    padding: 0.3rem 0.5rem;
+}
+
+/* Compact table for mobile */
+@media (max-width: 768px) {
+    .table-compact th,
+    .table-compact td {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .table-compact th {
+        font-size: 0.75rem;
+    }
+}
+
+/* Compact table with alternating row colors */
+.table-compact-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table-compact-striped tbody tr:nth-of-type(even) {
+    background-color: white;
+}
+
+.table-compact-striped tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+/* Compact table for reports */
+.table-compact-report {
+    background-color: white;
+    border: 1px solid #dee2e6;
+}
+
+.table-compact-report th {
+    background-color: #495057;
+    color: white;
+    border-color: #495057;
+}
+
+.table-compact-report td {
+    border-color: #dee2e6;
+}
+
+/* Compact table with condensed header */
+.table-compact-header {
+    margin-bottom: 0.5rem;
+}
+
+.table-compact-header th {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Status indicators for compact tables */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-active {
+    background-color: #28a745;
+}
+
+.status-inactive {
+    background-color: #dc3545;
+}
+
+.status-pending {
+    background-color: #ffc107;
+}
+
+/* Compact table with action buttons */
+.table-compact-actions {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.table-compact-actions .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+    margin: 0 0.1rem;
+}
+
+/* Compact table for customer data */
+.table-compact-customer th:nth-child(1),
+.table-compact-customer td:nth-child(1) {
+    width: 5%;
+}
+
+.table-compact-customer th:nth-child(2),
+.table-compact-customer td:nth-child(2) {
+    width: 20%;
+}
+
+.table-compact-customer th:nth-child(3),
+.table-compact-customer td:nth-child(3) {
+    width: 15%;
+}
+
+.table-compact-customer th:nth-child(4),
+.table-compact-customer td:nth-child(4) {
+    width: 25%;
+}
+
+.table-compact-customer th:nth-child(5),
+.table-compact-customer td:nth-child(5) {
+    width: 15%;
+}
+
+.table-compact-customer th:nth-child(6),
+.table-compact-customer td:nth-child(6) {
+    width: 10%;
+}
+
+.table-compact-customer th:nth-child(7),
+.table-compact-customer td:nth-child(7) {
+    width: 10%;
+}

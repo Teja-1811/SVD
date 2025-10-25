@@ -9,6 +9,7 @@ A comprehensive Django-based web application designed to manage operations for S
 - **General Store**: Product management, sales tracking, and customer records
 - **Customer Portal**: Online ordering, bill viewing, and profile management
 - **Bill Generation**: Automated bill creation with PDF export capabilities
+- **Bills Dashboard**: View and manage all bills with customer filtering
 - **Sales Analytics**: Monthly sales summaries, category-wise reporting, and performance dashboards
 - **Stock Management**: Real-time inventory tracking and stock updates
 - **Cashbook & Payments**: Financial transaction recording and payment tracking
