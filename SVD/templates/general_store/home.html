@@ -4,212 +4,11 @@
 {% block title %}Dashboard - General Store - SVD Agencies{% endblock %}
 
 {% block extra_css %}
-<style>
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.bg-gradient-danger {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-}
-
-.hover-lift {
-    transition: all 0.3s ease;
-}
-
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 1.5rem 4rem rgba(0,0,0,.2)!important;
-}
-
-.hover-shadow:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
-    transform: translateY(-2px);
-    transition: all 0.3s ease;
-}
-
-.display-4 {
-    font-size: 3.5rem;
-    font-weight: 300;
-    line-height: 1.2;
-}
-
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .display-4 {
-        font-size: 2.5rem;
-    }
-
-    .lead {
-        font-size: 1.1rem;
-    }
-
-    .row.g-3.g-md-4.mb-5 .col-lg-3 {
-        margin-bottom: 1.5rem;
-    }
-
-    .card-body.p-4 .d-flex {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .card-body.p-4 .d-flex .bg-primary {
-        margin-bottom: 1rem;
-    }
-
-    .btn-outline-primary {
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-
-    .table th, .table td {
-        padding: 0.5rem 0.25rem;
-    }
-
-    .row.g-3.g-md-4 .col-lg-3 {
-        margin-bottom: 1rem;
-    }
-
-    .btn.w-100 {
-        min-height: 120px;
-        margin-bottom: 1rem;
-    }
-
-    .fs-2 {
-        font-size: 1.5rem !important;
-    }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .display-4 {
-        font-size: 2rem;
-    }
-
-    .lead {
-        font-size: 1rem;
-    }
-
-    .card-body.p-4 {
-        padding: 1.5rem 1rem;
-    }
-
-    .h2.card-title {
-        font-size: 1.5rem;
-    }
-
-    .fs-5 {
-        font-size: 1rem !important;
-    }
-
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-
-    .table th, .table td {
-        padding: 0.4rem 0.2rem;
-    }
-
-    .btn.w-100 {
-        min-height: 100px;
-        padding: 1rem;
-        font-size: 0.9rem;
-    }
-
-    .fs-2 {
-        font-size: 1.25rem !important;
-    }
-
-    .fw-semibold {
-        font-size: 0.9rem;
-    }
-}
-
-.lead {
-    font-size: 1.25rem;
-    font-weight: 300;
-}
-
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.card-header {
-    border: none;
-}
-
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-}
-
-.table-responsive {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.table thead th {
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-}
-</style>
+<link rel="stylesheet" href="{% static 'css/general_store/home.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4 h-100">
-    <!-- Welcome Header -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="text-center">
-                <h1 class="display-4 fw-bold text-primary mb-3">Welcome to General Store</h1>
-                <p class="lead text-muted mb-4">Manage your products, customers, and sales efficiently</p>
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6">
-                        <div class="card shadow-lg border-0 bg-gradient-primary text-white">
-                            <div class="card-body p-4">
-                                <div class="row text-center">
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center justify-content-center mb-2">
-                                            <i class="bi bi-calendar-event fs-3 me-2"></i>
-                                            <div>
-                                                <div class="h5 mb-0" id="date"></div>
-                                                <small class="opacity-75">Date</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center justify-content-center mb-2">
-                                            <i class="bi bi-clock fs-3 me-2"></i>
-                                            <div>
-                                                <div class="h5 mb-0" id="time"></div>
-                                                <small class="opacity-75">Time</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Stats Cards Row -->
     <div class="row g-3 g-md-4 mb-5">
         <!-- Total Products Card -->
@@ -286,6 +85,72 @@
                         <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#lowStockModal">View Details</button>
                     </div>
                     {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-5">
+        <!-- Sales Trend Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white d-flex align-items-center">
+                    <i class="bi bi-graph-up me-2"></i>
+                    <h5 class="mb-0">Today's Sales Trends</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="chart-container">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Revenue Chart -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-white d-flex align-items-center">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    <h5 class="mb-0">Revenue by Category</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Charts Row -->
+    <div class="row mb-5">
+        <!-- Top Products Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white d-flex align-items-center">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    <h5 class="mb-0">Top Selling Products</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="chart-container">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profit Margin Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="bi bi-percent me-2"></i>
+                    <h5 class="mb-0">Profit Margin Trends</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="chart-container">
+                        <canvas id="profitMarginChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -374,6 +239,12 @@
                             </a>
                         </div>
                         <div class="col-lg-3 col-md-6 col-12">
+                            <a href="{% url 'general_store:sales_trends' %}" class="btn btn-outline-info w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-info border-opacity-25 hover-shadow">
+                                <i class="bi bi-graph-up fs-2 mb-3 text-info"></i>
+                                <span class="fw-semibold">Sales Trends</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
                             <a href="{% url 'general_store:product_list' %}" class="btn btn-outline-info w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-info border-opacity-25 hover-shadow">
                                 <i class="bi bi-box-seam fs-2 mb-3 text-info"></i>
                                 <span class="fw-semibold">View Products</span>
@@ -394,15 +265,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function updateDateTime() {
-        const now = new Date();
-        document.getElementById('date').textContent = now.toLocaleDateString();
-        document.getElementById('time').textContent = now.toLocaleTimeString();
-    }
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/chart.js' %}"></script>
+<script src="{% static 'js/general_store/home.js' %}"></script>
 
 <!-- Low Stock Modal -->
 <div class="modal fade" id="lowStockModal" tabindex="-1">

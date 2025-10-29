@@ -1,0 +1,88 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}Delete Sale - General Store - SVD Agencies{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/delete_sale.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold">Delete Sale</h2>
+                    <p class="text-muted mb-0">Invoice: {{ sale.invoice_number }}</p>
+                </div>
+                <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Sales
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Confirm Deletion</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning!</strong> This action cannot be undone. Deleting this sale will:
+                        <ul class="mb-0 mt-2">
+                            <li>Remove the sale record permanently</li>
+                            <li>Restore the stock quantities for all items in this sale</li>
+                            <li>Affect any related financial calculations</li>
+                        </ul>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Sale Details:</h6>
+                            <p><strong>Invoice Number:</strong> {{ sale.invoice_number }}</p>
+                            <p><strong>Customer:</strong> {{ sale.customer.name }}</p>
+                            <p><strong>Date:</strong> {{ sale.invoice_date|date:"M d, Y" }}</p>
+                            <p><strong>Total Amount:</strong> ₹{{ sale.total_amount }}</p>
+                            <p><strong>Due Amount:</strong> ₹{{ sale.due_amount }}</p>
+                            <p><strong>Profit:</strong> ₹{{ sale.profit }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Items in this Sale:</h6>
+                            <ul class="list-group">
+                                {% for item in sale.saleitem_set.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ item.product.name }}
+                                    <span class="badge bg-primary rounded-pill">{{ item.quantity }}</span>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item">No items found</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-lg px-4" onclick="return confirm('Are you sure you want to delete this sale?')">
+                                <i class="bi bi-trash me-2"></i>Delete Sale
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

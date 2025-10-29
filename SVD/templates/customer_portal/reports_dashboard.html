@@ -3,6 +3,14 @@
 
 {% block title %}Reports Dashboard - Customer Portal{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/customer_portal/reports_dashboard.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-4">
     <!-- Header -->
@@ -167,29 +175,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function viewInvoice(billId) {
-    // Open PDF in new tab
-    window.open(`/milk_agency/generate-invoice-pdf/${billId}/`, '_blank');
-}
-
-function downloadInvoice(billId) {
-    // Create a temporary link to download the PDF
-    const link = document.createElement('a');
-    link.href = `/milk_agency/generate-invoice-pdf/${billId}/`;
-    link.download = `invoice_${billId}.pdf`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-</script>
-
-<style>
-.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
-.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
-.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
-</style>
 {% endblock %}

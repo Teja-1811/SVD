@@ -3,6 +3,10 @@
 
 {% block title %}Customers - General Store - SVD Agencies{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/customer_list.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4 h-100">
     <!-- Header Section -->
@@ -162,154 +166,9 @@
     </div>
 </div>
 
-<style>
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-}
 
-.table th {
-    border-top: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.customer-row:hover {
-    background-color: rgba(0,123,255,0.05);
-}
-
-.btn-group .btn {
-    border-radius: 6px !important;
-    margin: 0 1px;
-}
-
-.empty-state {
-    padding: 3rem 1rem;
-}
-
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-}
-
-.bg-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important; }
-.bg-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; }
-.bg-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important; }
-.bg-info { background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important; }
-
-/* Mobile responsiveness improvements */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .d-flex.justify-content-between.align-items-start.align-items-sm-center {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 1rem;
-    }
-
-    .btn-outline-success {
-        width: 100%;
-    }
-
-    .input-group {
-        max-width: none !important;
-    }
-
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-
-    .table th, .table td {
-        padding: 0.5rem 0.25rem;
-    }
-
-    .d-flex.align-items-center .bg-primary {
-        display: none;
-    }
-
-    .fw-bold.text-dark {
-        font-size: 0.9rem;
-    }
-
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .btn-group .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .table-responsive {
-        font-size: 0.8rem;
-    }
-
-    .table th, .table td {
-        padding: 0.4rem 0.2rem;
-    }
-
-    .card-header .d-flex {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 1rem;
-    }
-
-    .input-group {
-        width: 100% !important;
-    }
-
-    .empty-state {
-        padding: 2rem 1rem;
-    }
-
-    .display-4 {
-        font-size: 2rem;
-    }
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// Search functionality
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll('.customer-row');
-
-    rows.forEach(row => {
-        const name = row.cells[0].textContent.toLowerCase();
-        const phone = row.cells[1].textContent.toLowerCase();
-        const address = row.cells[2].textContent.toLowerCase();
-
-        if (name.includes(filter) || phone.includes(filter) || address.includes(filter)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-});
-
-// View customer details (placeholder for future enhancement)
-function viewCustomer(customerId) {
-    // For now, just redirect to edit page
-    window.location.href = `/general_store/customers/${customerId}/edit/`;
-}
-</script>
+<script src="{% static 'js/general_store/customer_list.js' %}"></script>
 {% endblock %}

@@ -46,6 +46,7 @@
         <div class="col-md-3 text-end">
             {% if selected_customer_obj %}
             <a href="{% url 'milk_agency:generate_monthly_sales_pdf' %}?date={{ selected_date|date:'Y-m' }}&area={{ selected_area }}&customer={{ selected_customer }}" class="btn btn-outline-info me-2" title="Download PDF"><i class="bi bi-arrow-down-circle"></i></a>
+            <button class="btn btn-outline-success me-2" onclick="shareMonthlySummaryOnWhatsApp()" title="Share on WhatsApp"><i class="bi bi-whatsapp"></i></button>
             <button id="generateBtn" class="btn btn-outline-success" title="Update"><i class="bi bi-arrow-clockwise"></i></button>
             {% endif %}
         </div>
@@ -210,5 +211,21 @@ $(document).ready(function() {
         });
     });
 });
+
+function shareMonthlySummaryOnWhatsApp() {
+    const customerName = "{{ selected_customer_obj.name }}";
+    const customerPhone = "{{ selected_customer_obj.phone }}";
+    const period = "{{ start_date|date:'d M Y' }} - {{ end_date|date:'d M Y' }}";
+    const totalSales = "{{ total_sales|floatformat:2 }}";
+    const totalCommission = "{{ total_commission|floatformat:2 }}";
+    const remainingDue = "{{ remaining_due|floatformat:2 }}";
+
+    const whatsappMessage = `Dear ${customerName},\n\nMonthly Sales Summary for ${period}\n\nTotal Sales: Rs.${totalSales}\nCommission Earned: Rs.${totalCommission}\nRemaining Due: Rs.${remainingDue}\n\nThank you for your continued business with Sri Vijaya Durga Milk Agencies.\n\nPlace the orders using svdagencies.netlify.app`;
+
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
+
+    window.open(whatsappURL, '_blank');
+}
 </script>
 {% endblock %}

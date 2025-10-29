@@ -1,0 +1,5 @@
+/* Specific styles for sales_list.html */
+
+.table tbody tr:hover {
+    background-color: rgba(40, 167, 69, 0.05);
+}

@@ -1,0 +1,116 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}Edit Sale - General Store - SVD Agencies{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/edit_sale.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/general_store/edit_sale.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold">Edit Sale</h2>
+                    <p class="text-muted mb-0">Invoice: {{ sale.invoice_number }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'general_store:view_sale' sale.id %}" class="btn btn-outline-info btn-lg px-4">
+                        <i class="bi bi-eye me-2"></i>View Sale
+                    </a>
+                    <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sale Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Edit Sale Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="editSaleForm">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="customer" class="form-label fw-semibold">Customer</label>
+                                <select class="form-select" id="customer" name="customer" required>
+                                    {% for customer in customers %}
+                                    <option value="{{ customer.id }}" {% if customer.id == sale.customer.id %}selected{% endif %}>
+                                        {{ customer.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="bill_date" class="form-label fw-semibold">Bill Date</label>
+                                <input type="date" class="form-control" id="bill_date" name="bill_date" value="{{ sale.invoice_date|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Sale Items Section -->
+                        <div id="saleItems">
+                            <h6 class="mb-3">Sale Items</h6>
+                            {% for item in sale_items %}
+                            <div class="sale-item row mb-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label">Product</label>
+                                    <select class="form-select product-select" name="products" required>
+                                        {% for product in products %}
+                                        <option value="{{ product.id }}" {% if product.id == item.product.id %}selected{% endif %}>
+                                            {{ product.name }} (Stock: {{ product.stock_quantity }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-control quantity-input" name="quantities" value="{{ item.quantity }}" min="1" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Discount</label>
+                                    <input type="number" class="form-control discount-input" name="discounts" value="{{ item.discount }}" min="0" step="0.01">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Price per Unit</label>
+                                    <input type="number" class="form-control price-input" value="{{ item.price_per_unit }}" readonly>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger remove-item" title="Remove Item">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-success" id="addItemBtn">
+                                <i class="bi bi-plus-circle me-2"></i>Add Item
+                            </button>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-check-circle me-2"></i>Update Sale
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

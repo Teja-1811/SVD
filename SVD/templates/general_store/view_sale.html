@@ -1,0 +1,181 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}View Sale - General Store - SVD Agencies{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/view_sale.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold">Sale Details</h2>
+                    <p class="text-muted mb-0">Invoice: {{ sale.invoice_number }}</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'general_store:edit_sale' sale.id %}" class="btn btn-outline-warning btn-lg px-4">
+                        <i class="bi bi-pencil me-2"></i>Edit Sale
+                    </a>
+                    <a href="{% url 'general_store:generate_sale_pdf' sale.id %}" class="btn btn-outline-success btn-lg px-4" target="_blank">
+                        <i class="bi bi-download me-2"></i>Download PDF
+                    </a>
+                    <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Information Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="bi bi-receipt me-2"></i>
+                    <h5 class="mb-0">Sale Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1">Invoice Number</label>
+                                <div class="fw-semibold fs-5">{{ sale.invoice_number }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1">Invoice Date</label>
+                                <div class="fw-semibold">{{ sale.invoice_date|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1">Customer</label>
+                                <div class="fw-semibold">{{ sale.customer.name }}</div>
+                                {% if sale.customer.phone %}
+                                <small class="text-muted">{{ sale.customer.phone }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if sale.customer.address %}
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1">Address</label>
+                                <div class="fw-semibold">{{ sale.customer.address }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-success text-white d-flex align-items-center">
+                    <i class="bi bi-cash-coin me-2"></i>
+                    <h5 class="mb-0">Financial Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="financial-summary">
+                        <div class="summary-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Total Amount</span>
+                                <span class="fw-bold fs-5 text-primary">₹{{ sale.total_amount }}</span>
+                            </div>
+                        </div>
+                        <div class="summary-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Due Amount</span>
+                                <span class="fw-bold fs-6 {% if sale.due_amount > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    ₹{{ sale.due_amount }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="summary-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Last Paid</span>
+                                <span class="fw-semibold">₹{{ sale.last_paid|default:0 }}</span>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="summary-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Profit</span>
+                                <span class="fw-bold text-success">₹{{ sale.profit }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Items Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="border-0 fw-semibold py-3 px-4">#</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Product Details</th>
+                                    <th class="border-0 fw-semibold py-3 px-4 text-center">Quantity</th>
+                                    <th class="border-0 fw-semibold py-3 px-4 text-end">Price/Unit</th>
+                                    <th class="border-0 fw-semibold py-3 px-4 text-end">Discount</th>
+                                    <th class="border-0 fw-semibold py-3 px-4 text-end">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sale_items %}
+                                <tr class="align-middle">
+                                    <td class="py-3 px-4">
+                                        <span class="badge bg-light text-dark rounded-pill px-3 py-2">{{ forloop.counter }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="product-info">
+                                            <div class="fw-semibold mb-1">{{ item.product.name }}</div>
+                                            <small class="text-muted">MRP: ₹{{ item.product.mrp }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <span class="badge bg-primary rounded-pill px-3 py-2">{{ item.quantity }}</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-end fw-semibold">₹{{ item.price_per_unit }}</td>
+                                    <td class="py-3 px-4 text-end">
+                                        {% if item.discount > 0 %}
+                                        <span class="text-danger fw-semibold">₹{{ item.discount }}</span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 text-end fw-bold text-primary fs-6">₹{{ item.total_amount }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-cart-x fs-1 mb-3 d-block"></i>
+                                            <h5>No items found</h5>
+                                            <p class="mb-0">This sale has no items.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

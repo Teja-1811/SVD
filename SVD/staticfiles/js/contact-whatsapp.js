@@ -21,13 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Generate WhatsApp message
-            const whatsappMessage = `Contact Form Submission\n\n` +
+            const whatsappMessage = `New Contact Form Inquiry - SVD Milk Agencies\n\n` +
                 `Name: ${name}\n` +
                 `Phone: ${phone}\n` +
                 (email ? `Email: ${email}\n` : '') +
                 `Subject: ${subject}\n\n` +
                 `Message:\n${message}\n\n` +
-                `_Sent from SVD Milk Agencies website_`;
+                `Inquiry received via SVD Milk Agencies website\n` +
+                `We typically respond within 24 hours`;
 
             // Encode the message for URL
             const encodedMessage = encodeURIComponent(whatsappMessage);

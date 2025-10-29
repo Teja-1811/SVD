@@ -27,7 +27,13 @@ from django.shortcuts import render
 
 def index_view(request):
     """Serve the main index/landing page"""
-    return render(request, 'index.html')
+    from milk_agency.models import Item
+    # Get only items that are in stock (stock_quantity > 0)
+    products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
+    context = {
+        'products': products,
+    }
+    return render(request, 'index.html', context)
 
 # Product pages removed - functionality no longer available
 

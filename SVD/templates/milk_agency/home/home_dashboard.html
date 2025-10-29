@@ -1,7 +1,11 @@
 {% extends "milk_agency/home/base.html" %}
-{% load mathfilters %}
+{% load static mathfilters %}
 
 {% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4" style="background-color: #f8f9fa; min-height: 100vh;">

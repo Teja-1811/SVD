@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dodla Products - SVD Milk Agencies{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dodla_products.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb mb-4">
+        <a class="nav-link" href="{% url 'index' %}#home">Home</a>
+        <span class="breadcrumb-item active">Dodla Products</span>
+    </div>
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <img src="{% static 'images/Dodla/logo.png' %}" alt="Dodla Logo" class="me-3 dodla-logo">
+                <div>
+                    <h1 class="h3 mb-1">Dodla Dairy Products</h1>
+                    <p class="text-muted mb-0">Premium quality dairy products from Dodla</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products by Category -->
+    {% for category, products in categorized_products.items %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="mb-3 text-primary border-bottom pb-2">{{ category }}</h4>
+            <div class="row g-3">
+                {% for product in products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="card h-100 border">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}"
+                                         alt="{{ product.name }}"
+                                         class="img-fluid product-image">
+                                {% else %}
+                                    <img src="{% static 'images/Dodla/FCM.png' %}"
+                                         alt="{{ product.name }}"
+                                         class="img-fluid product-image">
+                                {% endif %}
+                            </div>
+                            <h6 class="card-title fw-bold">{{ product.name }}</h6>
+                            <p class="card-text text-muted small">{{ product.description|default:"Premium quality dairy product" }}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                {% if product.mrp %}
+                                <span class="text-muted small">MRP: ₹{{ product.mrp }}</span>
+                                {% endif %}
+                                {% if product.selling_price %}
+                                <span class="text-primary fw-bold">Retailer: ₹{{ product.selling_price }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+

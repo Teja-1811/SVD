@@ -41,6 +41,17 @@ def bills_dashboard(request):
     return render(request, 'milk_agency/bills/bills_dashboard.html', context)
 
 @login_required
+def anonymous_bills_list(request):
+    # Get bills without customers (anonymous bills)
+    bills = Bill.objects.filter(customer__isnull=True).order_by('-invoice_date')
+
+    context = {
+        'bills': bills,
+        'page_title': 'Anonymous Bills',
+    }
+    return render(request, 'milk_agency/bills/anonymous_bills_list.html', context)
+
+@login_required
 def generate_bill(request):
     # Get area filter from request
     selected_area = request.GET.get('area', '')
@@ -67,9 +78,7 @@ def generate_bill(request):
         quantities = request.POST.getlist('quantities')
         discounts = request.POST.getlist('discounts')
 
-        if not customer_id:
-            messages.error(request, 'Customer is required.')
-            return redirect('milk_agency:generate_bill')
+        # customer_id is now optional for anonymous bills
 
         # Validate and parse bill date
         if bill_date:
@@ -82,11 +91,13 @@ def generate_bill(request):
         else:
             bill_date_obj = timezone.now().date()
 
-        try:
-            customer = Customer.objects.get(id=customer_id)
-        except Customer.DoesNotExist:
-            messages.error(request, 'Customer not found.')
-            return redirect('milk_agency:generate_bill')
+        customer = None
+        if customer_id:
+            try:
+                customer = Customer.objects.get(id=customer_id)
+            except Customer.DoesNotExist:
+                messages.error(request, 'Customer not found.')
+                return redirect('milk_agency:generate_bill')
 
         # Generate invoice number
         today = timezone.now().date()
@@ -101,7 +112,7 @@ def generate_bill(request):
                     invoice_number=invoice_number,
                     invoice_date=bill_date_obj,
                     total_amount=Decimal(0),
-                    op_due_amount=customer.due,
+                    op_due_amount=customer.due if customer else Decimal(0),
                     profit=Decimal(0)
                 )
 
@@ -152,16 +163,17 @@ def generate_bill(request):
                 # Update bill totals
                 bill.total_amount = total_amount
                 bill.profit = total_profit
-                bill.last_paid = customer.last_paid_balance
+                bill.last_paid = customer.last_paid_balance if customer else Decimal(0)
                 bill.save()
 
-                # Update customer balance to totalbill + op_due
-                customer.due = bill.total_amount + bill.op_due_amount
-                customer.last_paid_balance = Decimal(0)  # Reset last paid balance after applying to bill
-                customer.save()
-                # Manually trigger monthly purchase update after bill edit
-                # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
-                messages.info(request, f'Customer updated')
+                # Update customer balance only if customer exists
+                if customer:
+                    customer.due = bill.total_amount + bill.op_due_amount
+                    customer.last_paid_balance = Decimal(0)  # Reset last paid balance after applying to bill
+                    customer.save()
+                    # Manually trigger monthly purchase update after bill edit
+                    # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
+                    messages.info(request, f'Customer updated')
 
             messages.success(request, f'Bill {invoice_number} generated successfully!')
             return redirect('milk_agency:view_bill', bill_id=bill.id)

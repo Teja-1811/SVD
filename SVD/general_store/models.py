@@ -28,7 +28,7 @@ class Customer(models.Model):
         return f"{self.name} ({self.phone})"
 
 class Sale(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='sales')
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='sales')
     invoice_number = models.CharField(max_length=50, unique=True)
     invoice_date = models.DateField(default=timezone.now)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -37,7 +37,8 @@ class Sale(models.Model):
     profit = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total profit from this sale")
 
     def __str__(self):
-        return f"Invoice {self.invoice_number} - {self.customer.name}"
+        customer_name = self.customer.name if self.customer else "Anonymous"
+        return f"Invoice {self.invoice_number} - {customer_name}"
 
 class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='items')

@@ -1,0 +1,14 @@
+/* Specific styles for bill_details.html */
+
+.bill-details .card-header {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.bill-details .table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.bill-details .table-responsive {
+    border-radius: 0.375rem;
+}

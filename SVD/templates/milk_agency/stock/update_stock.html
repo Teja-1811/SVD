@@ -1,6 +1,12 @@
 {% extends "milk_agency/home/base.html" %}
+{% load static %}
 
 {% block title %}Update Stock{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/milk_agency/update_stock.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -90,166 +96,4 @@
         </div>
     </div>
 </div>
-
-<style>
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-}
-
-.table-responsive {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.table thead th {
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.05);
-}
-
-/* Mobile responsiveness improvements */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .table-responsive {
-        font-size: 0.85rem;
-        border-radius: 10px;
-        -webkit-overflow-scrolling: touch;
-        overflow-x: auto !important;
-        overflow-y: visible;
-    }
-
-    .table th, .table td {
-        padding: 0.4rem 0.2rem;
-        white-space: nowrap;
-        min-width: 0;
-    }
-
-    .table th:nth-child(1), .table td:nth-child(1) {
-        width: 40px;
-        text-align: center;
-    }
-
-    .table th:nth-child(2), .table td:nth-child(2) {
-        min-width: 120px;
-    }
-
-    .table th:nth-child(3), .table td:nth-child(3) {
-        min-width: 100px;
-    }
-
-    .table th:nth-child(4), .table td:nth-child(4) {
-        min-width: 120px;
-    }
-
-    .badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .fw-semibold {
-        font-size: 0.85rem;
-    }
-
-    .btn-outline-secondary, .btn-success {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .d-flex.justify-content-end {
-        flex-direction: column;
-    }
-
-    .card-header {
-        padding: 1rem 1.5rem;
-    }
-
-    .card-header h3 {
-        font-size: 1.1rem;
-    }
-
-    .alert {
-        padding: 1rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .card-body {
-        padding: 1rem;
-    }
-
-    .table-responsive {
-        font-size: 0.8rem;
-        margin: 0 -5px;
-        overflow-x: auto !important;
-        overflow-y: visible;
-    }
-
-    .table th, .table td {
-        padding: 0.3rem 0.15rem;
-        font-size: 0.75rem;
-    }
-
-    .table th:nth-child(4), .table td:nth-child(4) {
-        min-width: 100px;
-    }
-
-    .btn-outline-secondary, .btn-success {
-        padding: 0.625rem 1rem;
-        font-size: 0.9rem;
-    }
-
-    .form-control, .form-control-lg {
-        font-size: 0.9rem;
-        padding: 0.625rem;
-        height: auto;
-    }
-
-    .card-header {
-        padding: 0.75rem 1rem;
-    }
-
-    .card-header h3 {
-        font-size: 1rem;
-    }
-
-    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 {
-        padding: 0.5rem !important;
-        margin-right: 0.75rem !important;
-    }
-
-    .bg-white.bg-opacity-25.rounded-circle.p-3.me-3 .fs-4 {
-        font-size: 1.25rem !important;
-    }
-
-    .alert {
-        padding: 0.75rem;
-        font-size: 0.85rem;
-    }
-}
-</style>
 {% endblock %}

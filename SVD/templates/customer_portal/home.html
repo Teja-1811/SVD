@@ -3,92 +3,96 @@
 
 {% block title %}Customer Portal - Dashboard{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/customer_portal/home.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4 home-background">
+    <div class="home-content">
     <!-- Welcome Header -->
-    <div class="row mb-4" style="margin-top: 70px;">
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-gradient-primary text-white">
-                <div class="card-body text-center">
-                    <!-- Logo on Top -->
-                    <div class="mb-3">
-                        <div class="bg-white rounded-circle p-0 shadow-sm d-inline-block" style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
-                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" class="img-fluid" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                        </div>
-                    </div>
-                    <!-- Welcome Text Below -->
-                    <h2 class="card-title mb-2">Welcome back, {{ user.name }}! 👋</h2>
-                    <p class="card-text mb-0">Manage your orders, track your account, and stay updated with SVD Agencies</p>
+            <div class="welcome-section">
+                <!-- Logo on Top -->
+                <div class="logo-container">
+                    <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo">
                 </div>
+                <!-- Welcome Text Below -->
+                <h2>Welcome back, {{ user.name }}! 👋</h2>
+                <p>Manage your orders, track your account, and stay updated with SVD Agencies</p>
             </div>
         </div>
     </div>
-    <!-- Account Overview Cards -->
+
+    <!-- Messages -->
+    {% if messages %}
     <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <!-- Account Overview Cards -->
+    <div class="row mb-4 stats-cards">
         <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
-            <div class="card border-left-primary shadow h-100">
+            <div class="card h-100 stats-card-1">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Account Balance</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ user.due|floatformat:2 }}</div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-currency-rupee fs-2 text-primary"></i>
-                        </div>
+                    <div class="card-icon">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Account Balance</div>
+                        <div class="card-value">₹{{ user.due|floatformat:2 }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
-            <div class="card border-left-success shadow h-100">
+            <div class="card h-100 stats-card-2">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Shop Name</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">{{ user.shop_name|default:"Not Set" }}</div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-shop fs-2 text-success"></i>
-                        </div>
+                    <div class="card-icon">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Shop Name</div>
+                        <div class="card-value">{{ user.shop_name|default:"NA" }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
-            <div class="card border-left-info shadow h-100">
+            <div class="card h-100 stats-card-3">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Phone Number</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">{{ user.phone }}</div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-telephone fs-2 text-info"></i>
-                        </div>
+                    <div class="card-icon">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Phone Number</div>
+                        <div class="card-value">{{ user.phone }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
-            <div class="card border-left-warning shadow h-100">
+            <div class="card h-100 stats-card-4">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Account Status</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                {% if user.frozen %}
-                                    <span class="badge bg-danger">Frozen</span>
-                                {% else %}
-                                    <span class="badge bg-success">Active</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-shield-check fs-2 text-warning"></i>
+                    <div class="card-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">Account Status</div>
+                        <div class="card-status {% if user.frozen %}status-frozen{% else %}status-active{% endif %}">
+                            {% if user.frozen %}Frozen{% else %}Active{% endif %}
                         </div>
                     </div>
                 </div>
@@ -99,50 +103,90 @@
 
 
     <!-- Account Details -->
-    <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-12 col-12 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-person text-primary me-2"></i>Account Information</h5>
+    <div class="row justify-content-center">
+        <div class="col-lg-3 col-md-6 col-sm-12 col-12 mb-4">
+            <div class="card h-100 account-details-card">
+                <div class="card-header">
+                    <h5><i class="bi bi-person me-2"></i>Account Information</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-person me-2 text-primary"></i>Customer Name:</td>
-                                <td>{{ user.name }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-telephone me-2 text-info"></i>Phone:</td>
-                                <td>{{ user.phone }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-shop me-2 text-success"></i>Shop Name:</td>
-                                <td>{{ user.shop_name|default:"Not specified" }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-credit-card me-2 text-warning"></i>Retailer ID:</td>
-                                <td>{{ user.retailer_id|default:"Not assigned" }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-geo-alt me-2 text-danger"></i>Location:</td>
-                                <td>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Customer Name</div>
+                                <div class="info-value">{{ user.name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Phone</div>
+                                <div class="info-value">{{ user.phone }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Shop Name</div>
+                                <div class="info-value">{{ user.shop_name|default:"Not specified" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Retailer ID</div>
+                                <div class="info-value">{{ user.retailer_id|default:"Not assigned" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Location</div>
+                                <div class="info-value">
                                     {% if user.area %}{{ user.area }}, {% endif %}
                                     {% if user.city %}{{ user.city }}{% else %}City not specified{% endif %}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-envelope me-2 text-secondary"></i>Pin Code:</td>
-                                <td>{{ user.pin_code|default:"Not specified" }}</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold"><i class="bi bi-flag me-2 text-primary"></i>State:</td>
-                                <td>{{ user.state|default:"Not specified" }}</td>
-                            </tr>
-                        </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">Pin Code</div>
+                                <div class="info-value">{{ user.pin_code|default:"Not specified" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-flag"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-title">State</div>
+                                <div class="info-value">{{ user.state|default:"Not specified" }}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-end mt-3">
-                        <a href="{% url 'customer_portal:update_profile' %}" class="btn btn-primary">
+
+                    <div class="text-end mt-4">
+                        <a href="{% url 'customer_portal:update_profile' %}" class="btn">
                             <i class="bi bi-pencil-square me-2"></i>Update Profile
                         </a>
                     </div>
@@ -150,15 +194,8 @@
             </div>
         </div>
     </div>
+    </div>
 </div>
 
-<style>
-.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
-.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
-.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-</style>
+
 {% endblock %}

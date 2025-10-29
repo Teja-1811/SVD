@@ -1,0 +1,9 @@
+/* Specific styles for customer_orders_dashboard.html */
+
+.customer-orders .category-items-container .card {
+    display: flex;
+}
+
+.customer-orders .category-items-container .card-img-top {
+    object-fit: contain;
+}

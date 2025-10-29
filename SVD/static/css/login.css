@@ -91,6 +91,32 @@
     transform: translateY(-1px);
 }
 
+/* Password toggle button styling */
+.password-toggle {
+    border: 2px solid #e1e5e9;
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    background: #f8f9fa;
+    color: #667eea;
+    padding: 0 15px;
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.password-toggle:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.input-group .password-toggle {
+    border-left: none;
+}
+
 /* Contact Form Styling */
 .contact-form-card {
     background: #fff;

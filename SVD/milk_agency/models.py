@@ -116,7 +116,7 @@ class Item(models.Model):
         return f"{self.code} - {self.name}" if self.code else self.name
 
 class Bill(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='bills')
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='bills')
     invoice_number = models.CharField(max_length=50, unique=True)
     invoice_date = models.DateField(default=timezone.now)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -126,7 +126,8 @@ class Bill(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
-        return f"Invoice {self.invoice_number} - {self.customer.name}"
+        customer_name = self.customer.name if self.customer else "Anonymous"
+        return f"Invoice {self.invoice_number} - {customer_name}"
 
 class BillItem(models.Model):
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='items')

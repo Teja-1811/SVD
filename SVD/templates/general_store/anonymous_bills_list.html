@@ -1,0 +1,99 @@
+{% extends 'general_store/base.html' %}
+{% load static %}
+
+{% block title %}Anonymous Bills - General Store - SVD Agencies{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/sales_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 h-100">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <h2 class="mb-1 fw-bold">Anonymous Bills</h2>
+                    <p class="text-muted mb-0">Bills without customer information (cash sales, walk-ins)</p>
+                </div>
+                <a href="{% url 'general_store:add_sale' %}" class="btn btn-success btn-lg px-4">
+                    <i class="bi bi-cart-plus me-2"></i>Add Sale
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bills Table Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="border-0 fw-semibold py-3 px-4">Invoice Number</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Customer</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Date</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Total Amount</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Due Amount</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Profit</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in sales %}
+                                <tr class="align-middle">
+                                    <td class="py-3 px-4 fw-medium">{{ sale.invoice_number }}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="badge bg-secondary text-white border">{{ sale.customer.name|default:"Anonymous" }}</span>
+                                    </td>
+                                    <td class="py-3 px-4">{{ sale.invoice_date|date:"M d, Y" }}</td>
+                                    <td class="py-3 px-4 fw-semibold text-primary">₹{{ sale.total_amount }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if sale.due_amount > 0 %}
+                                        <span class="badge bg-warning text-dark fs-6 px-3 py-2">₹{{ sale.due_amount }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success fs-6 px-3 py-2">Paid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 fw-semibold text-success">₹{{ sale.profit }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'general_store:view_sale' sale.id %}" class="btn btn-sm btn-outline-info" title="View Sale">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:edit_sale' sale.id %}" class="btn btn-sm btn-outline-warning" title="Edit Sale">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:delete_sale' sale.id %}" class="btn btn-sm btn-outline-danger" title="Delete Sale">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:generate_sale_pdf' sale.id %}" class="btn btn-sm btn-outline-success" title="Download PDF" target="_blank">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-receipt fs-1 mb-3 d-block"></i>
+                                            <h5>No anonymous bills found</h5>
+                                            <p class="mb-0">Anonymous bills will appear here when you create sales without selecting a customer.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

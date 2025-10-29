@@ -3,6 +3,10 @@
 
 {% block title %}Sales - General Store - SVD Agencies{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/general_store/sales_list.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4 h-100">
     <!-- Header Section -->
@@ -35,6 +39,7 @@
                                     <th class="border-0 fw-semibold py-3 px-4">Total Amount</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Due Amount</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Profit</th>
+                                    <th class="border-0 fw-semibold py-3 px-4">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,10 +59,26 @@
                                         {% endif %}
                                     </td>
                                     <td class="py-3 px-4 fw-semibold text-success">₹{{ sale.profit }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'general_store:view_sale' sale.id %}" class="btn btn-sm btn-outline-info" title="View Sale">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:edit_sale' sale.id %}" class="btn btn-sm btn-outline-warning" title="Edit Sale">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:delete_sale' sale.id %}" class="btn btn-sm btn-outline-danger" title="Delete Sale">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            <a href="{% url 'general_store:generate_sale_pdf' sale.id %}" class="btn btn-sm btn-outline-success" title="Download PDF" target="_blank">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="6" class="text-center py-5">
+                                    <td colspan="7" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="bi bi-receipt fs-1 mb-3 d-block"></i>
                                             <h5>No sales found</h5>
@@ -75,91 +96,5 @@
     </div>
 </div>
 
-<style>
-.table-responsive {
-    border-radius: 15px;
-    overflow: hidden;
-}
 
-.table thead th {
-    border-bottom: 2px solid #dee2e6;
-    white-space: nowrap;
-}
-
-.table tbody tr:hover {
-    background-color: rgba(40, 167, 69, 0.05);
-}
-
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-}
-
-.btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-/* Mobile responsiveness improvements */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .d-flex.justify-content-between.align-items-start.align-items-md-center {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 1rem;
-    }
-
-    .btn-success {
-        width: 100%;
-    }
-
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-
-    .table th, .table td {
-        padding: 0.5rem 0.25rem;
-    }
-
-    .badge {
-        font-size: 0.75rem;
-    }
-
-    .fw-semibold {
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-
-    .table th, .table td {
-        padding: 0.4rem 0.2rem;
-    }
-
-    .btn-success {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-    }
-
-    .h2 {
-        font-size: 1.5rem;
-    }
-}
-</style>
 {% endblock %}

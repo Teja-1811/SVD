@@ -69,7 +69,7 @@
                                                     data-csrf-token="{{ csrf_token }}">
                                                 <i class="bi bi-{% if customer.frozen %}unlock-fill{% else %}lock-fill{% endif %}"></i>
                                             </button>
-                                            <a href="https://wa.me/{{ customer.phone }}?text=Hello%20{{ customer.name|urlencode }}%2C%0A%0AHere%20is%20your%20account%20summary%3A%0A%0ADue%3A%20Rs.%20{{ customer.due|default:0|floatformat:2 }}%0A%0AThank%20you%20for%20your%20business!"
+                                            <a href="https://wa.me/{{ customer.phone }}?text=Dear%20{{ customer.name|urlencode }}%2C%0A%0AAccount%20Summary%20-%20SVD%20Milk%20Agencies%0A%0ACurrent%20Balance%20Due%3A%20Rs.{{ customer.due|default:0|floatformat:2 }}%0ALast%20Payment%3A%20Rs.{{ customer.last_paid_balance|default:0|floatformat:2 }}%0A%0AFor%20any%20queries%20or%20payments%2C%20please%20contact%20us.%0A%0AThank%20you%20for%20choosing%20SVD%20Milk%20Agencies!"
                                                 class="btn btn-sm btn-outline-success"
                                                 title="Share Balance via WhatsApp"
                                                 target="_blank">

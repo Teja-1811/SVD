@@ -1,0 +1,32 @@
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: #495057;
+}
+
+.card {
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-image {
+    max-height: 180px;
+    object-fit: contain;
+}
+
+.dodla-logo {
+    width: 60px;
+    height: auto;
+}

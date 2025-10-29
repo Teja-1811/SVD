@@ -1,0 +1,33 @@
+/* Specific styles for update_stock.html */
+
+.update-stock .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.update-stock .table-responsive {
+    font-size: 0.85rem;
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto !important;
+    overflow-y: visible;
+}
+
+.update-stock .table th,
+.update-stock .table td {
+    padding: 0.4rem 0.2rem;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.update-stock .card-header {
+    padding: 1rem 1.5rem;
+}
+
+.update-stock .card-header h3 {
+    font-size: 1.1rem;
+}
+
+.update-stock .alert {
+    padding: 1rem;
+    font-size: 0.9rem;
+}
