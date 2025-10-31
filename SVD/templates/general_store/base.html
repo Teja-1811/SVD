@@ -55,6 +55,16 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'cashbook' %}active{% endif %}" href="{% url 'general_store:cashbook' %}">
+                <i class="bi bi-cash-stack"></i> Cashbook
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'expenses_list' %}active{% endif %}" href="{% url 'general_store:expenses_list' %}">
+                <i class="bi bi-cash-coin"></i> Investments
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'add_sale' %}active{% endif %}" href="{% url 'general_store:add_sale' %}">
                 <i class="bi bi-cart-plus"></i> Add Sale
               </a>

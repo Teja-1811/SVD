@@ -50,3 +50,60 @@ class SaleItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
+
+class BankBalance(models.Model):
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def __str__(self):
+        return f"Bank Balance: ₹{self.amount}"
+
+class CashbookEntry(models.Model):
+    c500 = models.IntegerField(default=0)
+    c200 = models.IntegerField(default=0)
+    c100 = models.IntegerField(default=0)
+    c50 = models.IntegerField(default=0)
+
+class Investment(models.Model):
+    CATEGORY_CHOICES = [
+        ('Kasi Agency', 'Kasi Agency'),
+        ('HUL', 'HUL'),
+        ('ITC', 'ITC'),
+        ('Best Price', 'Best Price'),
+        ('Jio Mart', 'Jio Mart'),
+        ('Coco Cola', 'Coco Cola'),
+        ('Campa', 'Campa'),
+        ('Cigarettes', 'Cigarettes'),
+        ('Petrol', 'Petrol'),
+        ('Others', 'Others'),
+    ]
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.category} - ₹{self.amount} - {self.date}"
+
+class Expense(models.Model):
+    CATEGORY_CHOICES = [
+        ('petrol', 'Petrol'),
+        ('food', 'Food'),
+        ('others', 'Others')
+    ]
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.category} - ₹{self.amount} - {self.date}"

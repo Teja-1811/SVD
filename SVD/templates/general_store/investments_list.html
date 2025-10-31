@@ -1,0 +1,82 @@
+{% extends "general_store/base.html" %}
+
+{% block title %}Investments List{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>All Investments</h2>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-warning" onclick="window.location.href='{% url 'general_store:cashbook' %}'" title="Back to Cashbook">
+                <i class="bi bi-arrow-left me-1"></i>Back to Cashbook
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow h-100 py-2" style="border-left: 4px solid #e74a3b; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                                Total Investments (All Time)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ total_investments|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cash-coin fs-4 text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investments Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Investment Records</h6>
+        </div>
+        <div class="card-body">
+            {% if investments %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investment in investments %}
+                        <tr>
+                            <td>{{ investment.date|date:"d M Y" }}</td>
+                            <td class="text-danger font-weight-bold">₹{{ investment.amount|floatformat:2 }}</td>
+                            <td>
+                                <span class="badge bg-{% if investment.category == 'petrol' %}warning{% elif investment.category == 'food' %}success{% else %}secondary{% endif %}">
+                                    {{ investment.category|title }}
+                                </span>
+                            </td>
+                            <td>{{ investment.description|truncatechars:50|default:"-" }}</td>
+                            <td>{{ investment.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-receipt fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No investments recorded yet</h5>
+                <p class="text-muted">Start adding investments from the Cashbook dashboard.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

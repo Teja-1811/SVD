@@ -6,12 +6,12 @@ A comprehensive Django-based web application designed to manage operations for S
 
 ### Core Modules
 - **Milk Agency Management**: Complete milk product inventory, customer billing, and delivery tracking
-- **General Store**: Product management, sales tracking, and customer records
+- **General Store**: Product management, sales tracking, customer records, and cashbook management
 - **Customer Portal**: Online ordering, bill viewing, and profile management
 - **Bill Generation**: Automated bill creation with PDF export capabilities
 - **Sales Analytics**: Monthly sales summaries, category-wise reporting, and performance dashboards
 - **Stock Management**: Real-time inventory tracking and stock updates
-- **Cashbook & Payments**: Financial transaction recording and payment tracking
+- **Cashbook & Payments**: Financial transaction recording and payment tracking (available in both Milk Agency and General Store)
 - **PDF Reports**: Generate detailed bills and monthly sales reports
 
 ### Technical Features
@@ -94,14 +94,25 @@ SVD/
 ├── SVD/                    # Main Django project
 │   ├── settings.py        # Project settings
 │   ├── urls.py           # Main URL configuration
-│   └── wsgi.py           # WSGI configuration
+│   ├── wsgi.py           # WSGI configuration
+│   ├── asgi.py           # ASGI configuration
+│   └── __pycache__/      # Python cache files
 ├── milk_agency/          # Milk agency app
+│   ├── migrations/       # Database migrations
+│   ├── static/           # App-specific static files
+│   ├── templatetags/     # Custom template tags
+│   └── views_*.py        # Various view modules
 ├── general_store/        # General store app
+│   └── migrations/       # Database migrations
 ├── customer_portal/      # Customer portal app
+│   └── migrations/       # Database migrations
 ├── templates/            # HTML templates
 ├── static/               # Static files (CSS, JS, images)
+├── staticfiles/          # Collected static files for production
 ├── images/               # Uploaded media files
-└── db.sqlite3           # SQLite database
+├── db.sqlite3           # SQLite database
+├── manage.py            # Django management script
+└── requirements.txt     # Python dependencies
 ```
 
 ## Dependencies
@@ -148,6 +159,12 @@ For technical support or questions, please contact the development team.
 
 ## Recent Updates
 
+### Version 1.0.2
+- **UI Enhancements**: Added real-time time and date display to navigation bars
+  - Updated customer_portal navbar with live time and date
+  - Updated milk_agency navbar with live time and date
+  - Enhanced base.js files for both modules with updateDateTime function
+
 ### Version 1.0.1
 - **Production Deployment**: Configured Django for DuckDNS hosting
   - Updated ALLOWED_HOSTS in settings.py to include domain and IP
@@ -158,4 +175,4 @@ For technical support or questions, please contact the development team.
 
 ## Version
 
-Current version: 1.0.1
+Current version: 1.0.2

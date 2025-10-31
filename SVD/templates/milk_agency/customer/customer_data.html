@@ -33,7 +33,6 @@
                                     <th class="border-0 fw-semibold py-3 px-4">Shop Name</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Retailer ID</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Phone</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Last Paid</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Balance Due</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Status</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Actions</th>
@@ -49,7 +48,6 @@
                                         <span class="badge bg-light text-dark border">{{ customer.retailer_id|default:"-" }}</span>
                                     </td>
                                     <td class="py-3 px-4">{{ customer.phone }}</td>
-                                    <td class="py-3 px-4 text-success fw-semibold">₹{{ customer.last_paid_balance|default:0|floatformat:2 }}</td>
                                     <td class="py-3 px-4 text-danger fw-semibold">₹{{ customer.due|default:0|floatformat:2 }}</td>
                                     <td class="py-3 px-4">
                                         {% if customer.frozen %}
@@ -69,7 +67,7 @@
                                                     data-csrf-token="{{ csrf_token }}">
                                                 <i class="bi bi-{% if customer.frozen %}unlock-fill{% else %}lock-fill{% endif %}"></i>
                                             </button>
-                                            <a href="https://wa.me/{{ customer.phone }}?text=Dear%20{{ customer.name|urlencode }}%2C%0A%0AAccount%20Summary%20-%20SVD%20Milk%20Agencies%0A%0ACurrent%20Balance%20Due%3A%20Rs.{{ customer.due|default:0|floatformat:2 }}%0ALast%20Payment%3A%20Rs.{{ customer.last_paid_balance|default:0|floatformat:2 }}%0A%0AFor%20any%20queries%20or%20payments%2C%20please%20contact%20us.%0A%0AThank%20you%20for%20choosing%20SVD%20Milk%20Agencies!"
+                                            <a href="https://wa.me/{{ customer.phone }}?text=Dear%20{{ customer.name|urlencode }}%2C%0A%0AAccount%20Summary%20-%20SVD%20Milk%20Agencies%0A%0ACurrent%20Balance%20Due%3A%20Rs.{{ customer.due|default:0|floatformat:2 }}%0A%0AFor%20any%20queries%20or%20payments%2C%20please%20contact%20us.%0A%0AThank%20you%20for%20choosing%20SVD%20Milk%20Agencies!"
                                                 class="btn btn-sm btn-outline-success"
                                                 title="Share Balance via WhatsApp"
                                                 target="_blank">
@@ -87,7 +85,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="9" class="text-center py-5">
+                                    <td colspan="8" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="bi bi-person-circle fs-1 mb-3 d-block"></i>
                                             <h5>No customers found</h5>
@@ -192,10 +190,6 @@
     }
 
     .table th:nth-child(8), .table td:nth-child(8) {
-        min-width: 50px;
-    }
-
-    .table th:nth-child(9), .table td:nth-child(9) {
         min-width: 160px;
     }
 
@@ -237,7 +231,7 @@
         font-size: 0.75rem;
     }
 
-    .table th:nth-child(9), .table td:nth-child(9) {
+    .table th:nth-child(8), .table td:nth-child(8) {
         min-width: 140px;
     }
 

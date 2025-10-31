@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_cashbook
 
 app_name = 'general_store'
 
@@ -19,4 +20,12 @@ urlpatterns = [
     path('sales/<int:pk>/delete/', views.delete_sale, name='delete_sale'),
     path('sales/<int:pk>/pdf/', views.generate_sale_pdf, name='generate_sale_pdf'),
     path('anonymous-bills/', views.anonymous_bills_list, name='anonymous_bills_list'),
+
+    # Cashbook URLs
+    path('cashbook/', views_cashbook.cashbook, name='cashbook'),
+    path('save_cash_in/', views_cashbook.save_cash_in, name='save_cash_in'),
+    path('save_expense/', views_cashbook.save_expense, name='save_expense'),
+    path('investments-list/', views_cashbook.investments_list, name='investments_list'),
+    path('expenses-list/', views_cashbook.expenses_list, name='expenses_list'),
+    path('save_bank_balance/', views_cashbook.save_bank_balance, name='save_bank_balance'),
 ]

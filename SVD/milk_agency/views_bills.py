@@ -106,6 +106,13 @@ def generate_bill(request):
 
         try:
             with transaction.atomic():
+                # Get last_paid from customer's most recent bill
+                last_paid_from_latest_bill = Decimal(0)
+                if customer:
+                    latest_bill = Bill.objects.filter(customer=customer).order_by('-id').first()
+                    if latest_bill:
+                        last_paid_from_latest_bill = latest_bill.last_paid
+
                 # Create a new bill
                 bill = Bill.objects.create(
                     customer=customer,
@@ -113,6 +120,7 @@ def generate_bill(request):
                     invoice_date=bill_date_obj,
                     total_amount=Decimal(0),
                     op_due_amount=customer.due if customer else Decimal(0),
+                    last_paid=last_paid_from_latest_bill,  # Display only, not used in calculations
                     profit=Decimal(0)
                 )
 
@@ -163,13 +171,12 @@ def generate_bill(request):
                 # Update bill totals
                 bill.total_amount = total_amount
                 bill.profit = total_profit
-                bill.last_paid = customer.last_paid_balance if customer else Decimal(0)
+                # Keep the last_paid from latest bill (set during creation), don't reset to 0
                 bill.save()
 
                 # Update customer balance only if customer exists
                 if customer:
                     customer.due = bill.total_amount + bill.op_due_amount
-                    customer.last_paid_balance = Decimal(0)  # Reset last paid balance after applying to bill
                     customer.save()
                     # Manually trigger monthly purchase update after bill edit
                     # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
@@ -209,6 +216,12 @@ def generate_bill_from_order(order):
             last_bill_today = Bill.objects.filter(created_at__date=today).order_by('-id').first()
             invoice_number = f"INV-{today.strftime('%Y%m%d')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
 
+            # Get last_paid from customer's most recent bill
+            last_paid_from_latest_bill = Decimal(0)
+            latest_bill = Bill.objects.filter(customer=customer).order_by('-id').first()
+            if latest_bill:
+                last_paid_from_latest_bill = latest_bill.last_paid
+
             # Create a new bill
             bill = Bill.objects.create(
                 customer=customer,
@@ -216,6 +229,7 @@ def generate_bill_from_order(order):
                 invoice_date=bill_date_obj,
                 total_amount=Decimal(0),
                 op_due_amount=customer.due,
+                last_paid=last_paid_from_latest_bill,  # Display only, not used in calculations
                 profit=Decimal(0)
             )
 
@@ -255,12 +269,11 @@ def generate_bill_from_order(order):
             # Update bill totals
             bill.total_amount = total_amount
             bill.profit = total_profit
-            bill.last_paid = customer.last_paid_balance
+            # Keep the last_paid from latest bill (set during creation), don't reset to 0
             bill.save()
 
             # Update customer balance
             customer.due = bill.total_amount + bill.op_due_amount
-            customer.last_paid_balance = Decimal(0)
             customer.save()
 
             # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available

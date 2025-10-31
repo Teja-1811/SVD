@@ -115,7 +115,6 @@ def customer_data(request):
                 'shop_name': customer.shop_name or '-',
                 'retailer_id': customer.retailer_id or '-',
                 'phone': customer.phone,
-                'last_paid_balance': customer.last_paid_balance or 0,
                 'balance': customer.due or 0,
                 'frozen': customer.frozen,
             })
@@ -169,15 +168,13 @@ def update_customer_balance(request, customer_id):
                 # Update the most recent bill's last_paid
                 recent_bill.last_paid += balance_decimal
                 customer.due = customer.due - balance_decimal
-                customer.last_paid_balance = balance_decimal
                 recent_bill.save()
                 customer.save()
                 message = f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}'
             else:
-                # No recent bill found, update only customer due and last_paid_balance
+                # No recent bill found, update only customer due
                 # Positive balance reduces due, negative balance increases due
                 customer.due -= balance_decimal
-                customer.last_paid_balance = balance_decimal
                 customer.save()
                 message = f'Balance updated for {customer.name} without a recent bill'
 
@@ -186,8 +183,7 @@ def update_customer_balance(request, customer_id):
                 return JsonResponse({
                     'success': True,
                     'message': message,
-                    'new_balance': float(customer.due),
-                    'last_paid': float(customer.last_paid_balance)
+                    'new_balance': float(customer.due)
                 })
 
             messages.success(request, message)

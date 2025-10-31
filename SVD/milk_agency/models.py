@@ -42,7 +42,6 @@ class Customer(AbstractBaseUser, PermissionsMixin):
 
     # Financial fields
     due = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Customer's current balance")
-    last_paid_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     # Status
     frozen = models.BooleanField(default=False)
