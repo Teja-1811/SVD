@@ -46,7 +46,7 @@ def home(request):
 
     # Revenue by category
     category_revenue = Product.objects.values('category__name').annotate(
-        revenue=Sum('selling_price') * Sum('stock_quantity')  # Approximate revenue potential
+        revenue=Sum('mrp') * Sum('stock_quantity')  # Approximate revenue potential
     ).order_by('-revenue')[:5]
 
     category_labels = [item['category__name'] for item in category_revenue]
@@ -81,22 +81,20 @@ def add_product(request):
         name = request.POST.get('name')
         category_id = request.POST.get('category')
         buying_price = request.POST.get('buying_price')
-        selling_price = request.POST.get('selling_price')
         mrp = request.POST.get('mrp')
         stock_quantity = request.POST.get('stock_quantity')
-        
+
         category = get_object_or_404(Category, id=category_id)
         Product.objects.create(
             name=name,
             category=category,
             buying_price=buying_price,
-            selling_price=selling_price,
             mrp=mrp,
             stock_quantity=stock_quantity
         )
         messages.success(request, 'Product added successfully.')
         return redirect('general_store:product_list')
-    
+
     categories = Category.objects.all()
     return render(request, 'general_store/add_product.html', {'categories': categories})
 
@@ -107,7 +105,6 @@ def edit_product(request, pk):
         product.name = request.POST.get('name')
         category_id = request.POST.get('category')
         product.buying_price = request.POST.get('buying_price')
-        product.selling_price = request.POST.get('selling_price')
         product.mrp = request.POST.get('mrp')
         product.stock_quantity = request.POST.get('stock_quantity')
         product.category = get_object_or_404(Category, id=category_id)
@@ -192,7 +189,7 @@ def add_sale(request):
                     quantity = int(quantities[i])
                     discount = Decimal(discounts[i]) if discounts[i] else 0
 
-                    price_per_unit = product.selling_price
+                    price_per_unit = product.mrp
                     item_total = (price_per_unit * quantity) - discount
 
                     SaleItem.objects.create(
@@ -276,7 +273,7 @@ def edit_sale(request, pk):
                     quantity = int(quantities[i])
                     discount = Decimal(discounts[i]) if discounts[i] else 0
 
-                    price_per_unit = product.selling_price
+                    price_per_unit = product.mrp
                     item_total = (price_per_unit * quantity) - discount
 
                     SaleItem.objects.create(

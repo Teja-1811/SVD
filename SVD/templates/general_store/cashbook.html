@@ -13,6 +13,9 @@
             <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'general_store:expenses_list' %}'" title="View the list of all expenses">
                 <i class="bi bi-list"></i> View Expenses List
             </button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='{% url 'general_store:investments_list' %}'" title="View the list of all investments">
+                <i class="bi bi-list"></i> View Investments List
+            </button>
         </div>
     </div>
 
@@ -92,7 +95,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                                Current Month Expenses
+                                Expenses
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ total_cash_out|floatformat:2 }}</div>
                         </div>
@@ -109,7 +112,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                                Current Monthly Profit
+                                Profit
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ monthly_profit|floatformat:2 }}</div>
                         </div>
@@ -126,7 +129,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                                Current Month Net Profit
+                                Net Profit
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">₹{{ net_profit|floatformat:2 }}</div>
                         </div>
@@ -139,85 +142,65 @@
         </div>
     </div>
 
-    <!-- Cash In Form -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Cash In</h6>
-        </div>
-        <div class="card-body">
-            <form method="post" action="{% url 'general_store:save_cash_in' %}">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="c500" class="form-label">₹500 Notes</label>
-                        <input type="number" class="form-control" id="c500" name="c500" min="0" value="{{ cash_entry.c500 }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="c200" class="form-label">₹200 Notes</label>
-                        <input type="number" class="form-control" id="c200" name="c200" min="0" value="{{ cash_entry.c200 }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="c100" class="form-label">₹100 Notes</label>
-                        <input type="number" class="form-control" id="c100" name="c100" min="0" value="{{ cash_entry.c100 }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="c50" class="form-label">₹50 Notes</label>
-                        <input type="number" class="form-control" id="c50" name="c50" min="0" value="{{ cash_entry.c50 }}">
-                    </div>
+    <!-- Cash In and Bank Balance Side by Side -->
+    <div class="row mb-4">
+        <!-- Cash In Form -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cash In</h6>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Update Cash In</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Cash Out Entries -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-danger">Cash Out (Expenses)</h6>
-        </div>
-        <div class="card-body">
-            {% if cash_out_entries %}
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th>Amount</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in cash_out_entries %}
-                        <tr>
-                            <td>₹{{ entry.amount|floatformat:2 }}</td>
-                            <td>{{ entry.category|title }}</td>
-                            <td>{{ entry.description }}</td>
-                            <td>{{ entry.date|date:"d M Y" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="card-body">
+                    <form method="post" action="{% url 'general_store:save_cash_in' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <label for="c500" class="form-label">₹500 Notes</label>
+                                <input type="number" class="form-control" id="c500" name="c500" min="0" value="{{ cash_entry.c500 }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="c200" class="form-label">₹200 Notes</label>
+                                <input type="number" class="form-control" id="c200" name="c200" min="0" value="{{ cash_entry.c200 }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="c100" class="form-label">₹100 Notes</label>
+                                <input type="number" class="form-control" id="c100" name="c100" min="0" value="{{ cash_entry.c100 }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="c50" class="form-label">₹50 Notes</label>
+                                <input type="number" class="form-control" id="c50" name="c50" min="0" value="{{ cash_entry.c50 }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="c20" class="form-label">₹20 Notes</label>
+                                <input type="number" class="form-control" id="c20" name="c20" min="0" value="{{ cash_entry.c20 }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="c10" class="form-label">₹10 Notes</label>
+                                <input type="number" class="form-control" id="c10" name="c10" min="0" value="{{ cash_entry.c10 }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Update Cash In</button>
+                    </form>
+                </div>
             </div>
-            {% else %}
-            <p>No cash out entries for the current month.</p>
-            {% endif %}
         </div>
-    </div>
 
-    <!-- Bank Balance Form -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-info">Bank Balance</h6>
-        </div>
-        <div class="card-body">
-            <form method="post" action="{% url 'general_store:save_bank_balance' %}">
-                {% csrf_token %}
-                <div class="input-group">
-                    <input type="number" step="0.01" min="0" class="form-control" name="amount" value="{{ bank_balance }}">
-                    <button class="btn btn-info" type="submit">Update</button>
+        <!-- Bank Balance Form -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Bank Balance</h6>
                 </div>
-            </form>
+                <div class="card-body">
+                    <form method="post" action="{% url 'general_store:save_bank_balance' %}">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="number" step="0.01" min="0" class="form-control" name="amount" value="{{ bank_balance }}">
+                            <button class="btn btn-info" type="submit">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 

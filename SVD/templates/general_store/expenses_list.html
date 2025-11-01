@@ -11,10 +11,37 @@
         </a>
     </div>
 
-    <!-- Summary Card -->
+    <!-- Main Content Layout -->
     <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card border-left-danger shadow h-100 py-2">
+        <!-- Left Column: Filters and Summary Cards -->
+        <div class="col-md-4">
+            <!-- Filters -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filter Expenses by Date Range</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-12">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                        </div>
+                        <div class="col-12">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card border-left-danger shadow py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -27,6 +54,18 @@
                             <i class="bi bi-cash-stack fa-2x text-gray-300"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Chart -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Expenses by Category</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="expensesChart" width="400" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -71,4 +110,95 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function resetFilters() {
+    document.getElementById('start_date').value = '';
+    document.getElementById('end_date').value = '';
+    window.location.href = '{% url "general_store:expenses_list" %}';
+}
+
+// Chart.js for expenses trend
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('expensesChart');
+    if (ctx) {
+        const chartLabels = {{ chart_labels|safe }};
+        const chartValues = {{ chart_values|safe }};
+
+        // Define colors for different categories
+        const categoryColors = {
+            'petrol': { bg: 'rgba(255, 193, 7, 0.6)', border: 'rgba(255, 193, 7, 1)' },    // Yellow/Amber
+            'food': { bg: 'rgba(25, 135, 84, 0.6)', border: 'rgba(25, 135, 84, 1)' },      // Green
+            'transport': { bg: 'rgba(13, 110, 253, 0.6)', border: 'rgba(13, 110, 253, 1)' }, // Blue
+            'utilities': { bg: 'rgba(102, 16, 242, 0.6)', border: 'rgba(102, 16, 242, 1)' }, // Purple
+            'maintenance': { bg: 'rgba(255, 87, 34, 0.6)', border: 'rgba(255, 87, 34, 1)' }, // Orange
+            'supplies': { bg: 'rgba(156, 39, 176, 0.6)', border: 'rgba(156, 39, 176, 1)' },  // Magenta
+            'other': { bg: 'rgba(121, 85, 72, 0.6)', border: 'rgba(121, 85, 72, 1)' }       // Brown
+        };
+
+        // Assign colors based on category
+        const backgroundColors = chartLabels.map(label => {
+            const category = label.toLowerCase();
+            return categoryColors[category] ? categoryColors[category].bg : 'rgba(108, 117, 125, 0.6)'; // Default gray
+        });
+
+        const borderColors = chartLabels.map(label => {
+            const category = label.toLowerCase();
+            return categoryColors[category] ? categoryColors[category].border : 'rgba(108, 117, 125, 1)'; // Default gray
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Category Expenses (₹)',
+                    data: chartValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '₹' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value;
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

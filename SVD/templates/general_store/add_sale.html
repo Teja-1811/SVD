@@ -53,7 +53,7 @@
                         <select id="item-select" class="form-select">
                             <option value="">-- Select a product --</option>
                             {% for product in products %}
-                            <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.selling_price }}">{{ product.name }} (₹{{ product.selling_price }})</option>
+                            <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.mrp }}">{{ product.name }} (₹{{ product.mrp }})</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -122,11 +122,11 @@
                 <!-- Product selection cards (for input) -->
                 <div id="products-container" class="row justify-content-center" style="display: none;">
                     {% for product in products %}
-                    <div class="col-md-3 mb-3 product-row" data-price="{{ product.selling_price }}" data-stock-quantity="{{ product.stock_quantity }}" data-category="{{ product.category.name }}" data-product-id="{{ product.id }}" data-name="{{ product.name }}">
+                    <div class="col-md-3 mb-3 product-row" data-price="{{ product.mrp }}" data-stock-quantity="{{ product.stock_quantity }}" data-category="{{ product.category.name }}" data-product-id="{{ product.id }}" data-name="{{ product.name }}">
                         <div class="card h-100 shadow-sm">
                             <div class="card-body d-flex flex-column">
                                 <h6 class="card-title">{{ product.name }} ({{ product.category.name }})</h6>
-                                <p class="card-text fw-bold">₹{{ product.selling_price }}</p>
+                                <p class="card-text fw-bold">₹{{ product.mrp }}</p>
                                 <div class="mt-auto">
                                     <div class="row mb-2">
                                         <div class="col-6">

@@ -159,6 +159,13 @@ For technical support or questions, please contact the development team.
 
 ## Recent Updates
 
+### Version 1.0.3
+- **General Store Model Updates**: Removed selling_price field from Product model and replaced all references with MRP
+  - Updated views.py to use MRP instead of selling_price for pricing calculations
+  - Updated admin.py to remove selling_price from list_display
+  - Updated templates to remove selling_price fields and use MRP
+  - Created and ran migration to remove selling_price field
+
 ### Version 1.0.2
 - **UI Enhancements**: Added real-time time and date display to navigation bars
   - Updated customer_portal navbar with live time and date
@@ -175,4 +182,4 @@ For technical support or questions, please contact the development team.
 
 ## Version
 
-Current version: 1.0.2
+Current version: 1.0.3

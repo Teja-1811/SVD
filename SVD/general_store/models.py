@@ -11,7 +11,6 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     buying_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     mrp = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Maximum Retail Price')
     stock_quantity = models.IntegerField(default=0)
 
@@ -62,6 +61,8 @@ class CashbookEntry(models.Model):
     c200 = models.IntegerField(default=0)
     c100 = models.IntegerField(default=0)
     c50 = models.IntegerField(default=0)
+    c20 = models.IntegerField(default=0)
+    c10 = models.IntegerField(default=0)
 
 class Investment(models.Model):
     CATEGORY_CHOICES = [

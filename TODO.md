@@ -1,1 +1,5 @@
-- [x] Add a summary card for Company Dues in the cashbook template to display total company dues prominently alongside other financial metrics.
+- [x] Remove selling_price field from general_store Product model and replace all references with MRP
+- [x] Update views.py to use MRP instead of selling_price for pricing calculations
+- [x] Update admin.py to remove selling_price from list_display
+- [x] Update templates to remove selling_price fields and use MRP
+- [x] Create and run migration to remove selling_price field

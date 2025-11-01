@@ -208,59 +208,6 @@
         </div>
     </div>
     {% endif %}
-
-    <!-- Quick Actions Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-gradient-primary text-white py-4">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
-                            <i class="bi bi-lightning-charge-fill fs-4"></i>
-                        </div>
-                        <div>
-                            <h4 class="mb-0 fw-bold">Quick Actions</h4>
-                            <p class="mb-0 opacity-75">Common tasks to get you started</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3 g-md-4">
-                        <div class="col-lg-3 col-md-6 col-12">
-                            <a href="{% url 'general_store:add_product' %}" class="btn btn-outline-primary w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-primary border-opacity-25 hover-shadow">
-                                <i class="bi bi-plus-circle fs-2 mb-3 text-primary"></i>
-                                <span class="fw-semibold">Add New Product</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6 col-12">
-                            <a href="{% url 'general_store:add_sale' %}" class="btn btn-outline-success w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-success border-opacity-25 hover-shadow">
-                                <i class="bi bi-cart-plus fs-2 mb-3 text-success"></i>
-                                <span class="fw-semibold">Create New Sale</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6 col-12">
-                            <a href="{% url 'general_store:sales_trends' %}" class="btn btn-outline-info w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-info border-opacity-25 hover-shadow">
-                                <i class="bi bi-graph-up fs-2 mb-3 text-info"></i>
-                                <span class="fw-semibold">Sales Trends</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6 col-12">
-                            <a href="{% url 'general_store:product_list' %}" class="btn btn-outline-info w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-info border-opacity-25 hover-shadow">
-                                <i class="bi bi-box-seam fs-2 mb-3 text-info"></i>
-                                <span class="fw-semibold">View Products</span>
-                            </a>
-                        </div>
-                        <div class="col-lg-3 col-md-6 col-12">
-                            <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-warning w-100 py-4 h-100 d-flex flex-column align-items-center justify-content-center border-2 border-warning border-opacity-25 hover-shadow">
-                                <i class="bi bi-receipt fs-2 mb-3 text-warning"></i>
-                                <span class="fw-semibold">View Sales</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 

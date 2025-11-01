@@ -35,7 +35,6 @@
                                     <th class="border-0 fw-semibold py-3 px-4">Name</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Category</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Buying Price</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Selling Price</th>
                                     <th class="border-0 fw-semibold py-3 px-4">MRP</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Stock</th>
                                     <th class="border-0 fw-semibold py-3 px-4">Actions</th>
@@ -49,8 +48,7 @@
                                         <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
                                     </td>
                                     <td class="py-3 px-4">₹{{ product.buying_price }}</td>
-                                    <td class="py-3 px-4 fw-semibold text-success">₹{{ product.selling_price }}</td>
-                                    <td class="py-3 px-4">₹{{ product.mrp }}</td>
+                                    <td class="py-3 px-4 fw-semibold text-success">₹{{ product.mrp }}</td>
                                     <td class="py-3 px-4">
                                         {% if product.stock_quantity < 10 %}
                                         <span class="badge bg-danger fs-6 px-3 py-2">{{ product.stock_quantity }}</span>
@@ -66,7 +64,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="6" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
                                             <h5>No products found</h5>
