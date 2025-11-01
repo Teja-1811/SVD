@@ -111,34 +111,48 @@
     <!-- Stock Details Tables by Company -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Stock Details</h6>
-                    <!-- Filter Form -->
-                    <form method="get" class="form-inline d-flex">
-                        <div class="form-group mr-2 me-2">
-                            <select name="company" class="form-control form-control-sm">
-                                <option value="">Select Company</option>
-                                {% for company in companies %}
-                                    <option value="{{ company }}" {% if request.GET.company == company %}selected{% endif %}>
-                                        {{ company }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group mr-2 me-2">
-                            <select name="category" class="form-control form-control-sm">
-                                <option value="">Select Category</option>
-                                {% for category in categories %}
-                                    <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
-                                        {{ category }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-outline-primary btn-sm mr-2 me-2">Filter</button>
-                        <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
-                    </form>
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="font-weight-bold text-white mb-0">
+                            <i class="bi bi-box-seam-fill me-2"></i>Stock Details by Company
+                        </h5>
+                        <!-- Filter Form -->
+                        <form method="get" class="d-flex align-items-center">
+                            <div class="input-group me-3">
+                                <span class="input-group-text bg-white border-0">
+                                    <i class="bi bi-building text-primary"></i>
+                                </span>
+                                <select name="company" class="form-select border-0 shadow-sm" style="min-width: 150px;">
+                                    <option value="">All Companies</option>
+                                    {% for company in companies %}
+                                        <option value="{{ company }}" {% if request.GET.company == company %}selected{% endif %}>
+                                            {{ company }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="input-group me-3">
+                                <span class="input-group-text bg-white border-0">
+                                    <i class="bi bi-tags text-success"></i>
+                                </span>
+                                <select name="category" class="form-select border-0 shadow-sm" style="min-width: 150px;">
+                                    <option value="">All Categories</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+                                            {{ category }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-light me-2 shadow-sm">
+                                <i class="bi bi-funnel-fill me-1"></i>
+                            </button>
+                            <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-light shadow-sm">
+                                <i class="bi bi-x-circle me-1"></i>
+                            </a>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -147,40 +161,42 @@
     <div class="row">
         {% for company, items in stock_by_company.items %}
         <div class="col-lg-6 col-md-12 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ company }} Stock Details</h6>
+            <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="bi bi-building-fill me-2"></i>{{ company }} Stock Details
+                    </h6>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive text-center">
-                        <table class="table table-bordered">
-                            <thead>
+                <div class="card-body bg-light">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped border-0" style="border-radius: 10px; overflow: hidden;">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>Item Name</th>
-                                    <th>Crates</th>
-                                    <th>Packets</th>
-                                    <th>Stock Value</th>
+                                    <th class="text-center"><i class="bi bi-tag-fill me-1"></i>Item Name</th>
+                                    <th class="text-center"><i class="bi bi-box-seam me-1"></i>Crates</th>
+                                    <th class="text-center"><i class="bi bi-package me-1"></i>Packets</th>
+                                    <th class="text-center"><i class="bi bi-currency-rupee me-1"></i>Stock Value</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in items %}
-                                <tr>
-                                    <td>{{ item.name }}</td>
-                                    <td>
+                                <tr class="{% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
+                                    <td class="text-center fw-bold">{{ item.name }}</td>
+                                    <td class="text-center">
                                         {% if item.pcs_count > 0 %}
-                                            {{ item.stock_quantity|div:item.pcs_count|floatformat:0 }}
+                                            <span class="badge bg-primary">{{ item.stock_quantity|div:item.pcs_count|floatformat:0 }}</span>
                                         {% else %}
-                                            {{ item.stock_quantity }}
+                                            <span class="badge bg-secondary">{{ item.stock_quantity }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         {% if item.pcs_count > 0 %}
-                                            {{ item.stock_quantity|mod:item.pcs_count }}
+                                            <span class="badge bg-info">{{ item.stock_quantity|mod:item.pcs_count }}</span>
                                         {% else %}
-                                            0
+                                            <span class="badge bg-light text-dark">0</span>
                                         {% endif %}
                                     </td>
-                                    <td>₹{{ item.stock_value|floatformat:2 }}</td>
+                                    <td class="text-center fw-bold text-success">₹{{ item.stock_value|floatformat:2 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Bill, BillItem, Customer, Item
 from num2words import num2words
 from decimal import Decimal
@@ -16,6 +17,8 @@ from .pdf_utils import PDFGenerator
 def bills_dashboard(request):
     # Get filter parameters
     customer_id = request.GET.get('customer', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
 
     # Start with base queryset
     bills = Bill.objects.select_related('customer')
@@ -27,8 +30,35 @@ def bills_dashboard(request):
         except ValueError:
             pass  # Invalid customer ID, ignore filter
 
+    if start_date:
+        try:
+            from datetime import datetime
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            bills = bills.filter(invoice_date__gte=start_date_obj)
+        except ValueError:
+            pass  # Invalid date, ignore filter
+
+    if end_date:
+        try:
+            from datetime import datetime
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            bills = bills.filter(invoice_date__lte=end_date_obj)
+        except ValueError:
+            pass  # Invalid date, ignore filter
+
     # Order by invoice date descending
     bills = bills.order_by('-invoice_date')
+
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(bills, 25)  # Show 25 bills per page
+
+    try:
+        bills = paginator.page(page)
+    except PageNotAnInteger:
+        bills = paginator.page(1)
+    except EmptyPage:
+        bills = paginator.page(paginator.num_pages)
 
     # Get all customers for the filter dropdown
     customers = Customer.objects.filter(frozen=False).order_by('name')
@@ -36,7 +66,9 @@ def bills_dashboard(request):
     context = {
         'bills': bills,
         'customers': customers,
-        'selected_customer': customer_id,
+        'selected_customer': int(customer_id) if customer_id else None,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'milk_agency/bills/bills_dashboard.html', context)
 
@@ -106,13 +138,6 @@ def generate_bill(request):
 
         try:
             with transaction.atomic():
-                # Get last_paid from customer's most recent bill
-                last_paid_from_latest_bill = Decimal(0)
-                if customer:
-                    latest_bill = Bill.objects.filter(customer=customer).order_by('-id').first()
-                    if latest_bill:
-                        last_paid_from_latest_bill = latest_bill.last_paid
-
                 # Create a new bill
                 bill = Bill.objects.create(
                     customer=customer,
@@ -120,7 +145,7 @@ def generate_bill(request):
                     invoice_date=bill_date_obj,
                     total_amount=Decimal(0),
                     op_due_amount=customer.due if customer else Decimal(0),
-                    last_paid=last_paid_from_latest_bill,  # Display only, not used in calculations
+                    last_paid=Decimal(0),  # Set to 0 for new bills
                     profit=Decimal(0)
                 )
 
@@ -145,7 +170,7 @@ def generate_bill(request):
 
                     price_per_unit = item.selling_price
                     item_total = (price_per_unit * quantity) - (discount * quantity)
-                    profit = (price_per_unit - item.buying_price) * quantity
+                    profit = ((price_per_unit - item.buying_price) * quantity) - (discount * quantity)
 
                     BillItem.objects.create(
                         bill=bill,
@@ -216,12 +241,6 @@ def generate_bill_from_order(order):
             last_bill_today = Bill.objects.filter(created_at__date=today).order_by('-id').first()
             invoice_number = f"INV-{today.strftime('%Y%m%d')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
 
-            # Get last_paid from customer's most recent bill
-            last_paid_from_latest_bill = Decimal(0)
-            latest_bill = Bill.objects.filter(customer=customer).order_by('-id').first()
-            if latest_bill:
-                last_paid_from_latest_bill = latest_bill.last_paid
-
             # Create a new bill
             bill = Bill.objects.create(
                 customer=customer,
@@ -229,7 +248,7 @@ def generate_bill_from_order(order):
                 invoice_date=bill_date_obj,
                 total_amount=Decimal(0),
                 op_due_amount=customer.due,
-                last_paid=last_paid_from_latest_bill,  # Display only, not used in calculations
+                last_paid=Decimal(0),  # Set to 0 for new bills
                 profit=Decimal(0)
             )
 

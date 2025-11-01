@@ -11,7 +11,7 @@
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-10 col-xl-8">
+        <div class="col-12">
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-gradient-primary text-white py-4">
                     <div class="d-flex align-items-center">
@@ -27,6 +27,19 @@
                 <div class="card-body p-4">
                     <form method="post" action="{% url 'milk_agency:update_stock' %}">
                         {% csrf_token %}
+
+                        <!-- Company Filter -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="companyFilter" class="form-label fw-semibold">Filter by Company</label>
+                                <select class="form-select form-select-lg" id="companyFilter">
+                                    <option value="all">All Companies</option>
+                                    {% for company in companies %}
+                                    <option value="{{ company }}">{{ company }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
 
                         <!-- Stock Update Instructions -->
                         <div class="alert alert-info border-0 shadow-sm mb-4">
@@ -52,7 +65,7 @@
                                 </thead>
                                 <tbody>
                                     {% for item in items %}
-                                    <tr class="align-middle">
+                                    <tr class="align-middle" data-company="{{ item.company|default:'' }}">
                                         <td class="py-3 px-4 fw-medium">{{ forloop.counter }}</td>
                                         <td class="py-3 px-4 fw-medium">{{ item.name }}</td>
                                         <td class="py-3 px-4">
@@ -96,4 +109,20 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('companyFilter').addEventListener('change', function() {
+    const selectedCompany = this.value;
+    const rows = document.querySelectorAll('tbody tr[data-company]');
+
+    rows.forEach(row => {
+        const company = row.getAttribute('data-company');
+        if (selectedCompany === 'all' || company === selectedCompany) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %}

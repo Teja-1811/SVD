@@ -17,6 +17,7 @@ class MonthlySalesPDFGenerator:
 
     def __init__(self):
         self.width, self.height = landscape(A3)
+        self.margin_bottom = 100  # Minimum space needed at bottom for footer
 
     def generate_monthly_sales_pdf(self, context, request=None):
         """Generate monthly sales summary PDF and return as HTTP response"""
@@ -41,7 +42,6 @@ class MonthlySalesPDFGenerator:
     def _draw_monthly_sales_template(self, c, context):
         """Draw the complete monthly sales summary template with page breaks when content overlaps"""
         width, height = self.width, self.height
-        margin_bottom = 100  # Minimum space needed at bottom for footer
 
         # Draw border
         margin = 30
@@ -59,7 +59,7 @@ class MonthlySalesPDFGenerator:
         y_pos = self._draw_purchase_details_table(c, context, width, y_pos)
 
         # Check if commission details fit on current page
-        if y_pos - 200 < margin_bottom:  # Estimate space needed for commission details
+        if y_pos - 200 < self.margin_bottom:  # Estimate space needed for commission details
             c.showPage()
             # Redraw border on new page
             c.setLineWidth(2)
@@ -73,7 +73,7 @@ class MonthlySalesPDFGenerator:
         y_pos = self._draw_commission_details(c, context, width, y_pos)
 
         # Check if final summary fits on current page
-        if y_pos - 100 < margin_bottom:  # Estimate space needed for final summary
+        if y_pos - 100 < self.margin_bottom:  # Estimate space needed for final summary
             c.showPage()
             # Redraw border on new page
             c.setLineWidth(2)
@@ -87,7 +87,7 @@ class MonthlySalesPDFGenerator:
         y_pos = self._draw_final_summary(c, context, width, y_pos)
 
         # Check if signature and footer fit on current page
-        if y_pos - 150 < margin_bottom:  # Estimate space needed for signature and footer
+        if y_pos - 150 < self.margin_bottom:  # Estimate space needed for signature and footer
             c.showPage()
             # Redraw border on new page
             c.setLineWidth(2)
@@ -220,6 +220,12 @@ class MonthlySalesPDFGenerator:
 
     def _draw_commission_details(self, c, context, width, start_y):
         """Draw commission details using Table class"""
+        if context['avg_volume'] <= 25:
+            # Display average volume instead of commission details
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(40, start_y, f"Average Sale Of this Month: {context['avg_volume']:.2f} Liters")
+            return start_y - 20  # Return adjusted y position
+
         y = start_y
 
         c.setFont("Helvetica-Bold", 10)
@@ -227,7 +233,7 @@ class MonthlySalesPDFGenerator:
         y -= 10
 
         # Prepare table data
-        headers = [f"Total Sale - {context['avg_volume']:.2f}", "Milk", "Curd", "Total Commission (RS)"]
+        headers = [f"Total AVG Sale - {context['avg_volume']:.2f}", "Milk", "Curd", "Total Commission (RS)"]
         data = [headers]
 
         # Volume row
@@ -257,7 +263,7 @@ class MonthlySalesPDFGenerator:
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, -1), 10)
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
 

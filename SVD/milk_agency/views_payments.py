@@ -27,15 +27,12 @@ def payments_dashboard(request):
             while current_day <= last_day:
                 invoice_key = f"invoice_{str(company).lower()}_{current_day}"
                 paid_key = f"paid_{str(company).lower()}_{current_day}"
-                txn_key = f"txn_{str(company).lower()}_{current_day}"
 
                 invoice_raw = request.POST.get(invoice_key, "").strip()
                 paid_raw = request.POST.get(paid_key, "").strip()
-                txn_raw = request.POST.get(txn_key, "").strip()
 
                 invoice_val = None if invoice_raw == "" or float(invoice_raw) == 0 else float(invoice_raw)
                 paid_val = None if paid_raw == "" or float(paid_raw) == 0 else float(paid_raw)
-                txn_val = None if txn_raw == "" else txn_raw
 
                 # Save or update the daily record
                 DailyPayment.objects.update_or_create(
@@ -43,8 +40,7 @@ def payments_dashboard(request):
                     date=current_day,
                     defaults={
                         'invoice_amount': invoice_val,
-                        'paid_amount': paid_val,
-                        'txn_id': txn_val
+                        'paid_amount': paid_val
                     }
                 )
 
@@ -89,7 +85,6 @@ def payments_dashboard(request):
             record = DailyPayment.objects.filter(company=company, date=current_day).first()
             invoice_amount = record.invoice_amount if record and record.invoice_amount is not None else 0
             paid_amount = record.paid_amount if record and record.paid_amount is not None else 0
-            txn_id = record.txn_id if record and record.txn_id else ""
 
             total_invoice += invoice_amount
             total_paid += paid_amount
@@ -98,7 +93,6 @@ def payments_dashboard(request):
                 'date': current_day,
                 'invoice_amount': invoice_amount,
                 'paid_amount': paid_amount,
-                'txn_id': txn_id,
             })
             current_day += timedelta(days=1)
 

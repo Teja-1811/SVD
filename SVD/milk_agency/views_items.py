@@ -21,7 +21,7 @@ def items_dashboard(request):
         grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
 
     # Define custom order for categories
-    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'others']
+    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'others']
     ordered_grouped = OrderedDict()
     for cat in category_order:
         ordered_grouped[cat] = grouped_items.get(cat, [])

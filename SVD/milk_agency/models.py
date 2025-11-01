@@ -150,13 +150,19 @@ class CashbookEntry(models.Model):
     c200 = models.IntegerField(default=0)
     c100 = models.IntegerField(default=0)
     c50 = models.IntegerField(default=0)
+    c20 = models.IntegerField(default=0)
+    c10 = models.IntegerField(default=0)
+    coin20 = models.IntegerField(default=0)
+    coin10 = models.IntegerField(default=0)
+    coin5 = models.IntegerField(default=0)
+    coin2 = models.IntegerField(default=0)
+    coin1 = models.IntegerField(default=0)
 
 class DailyPayment(models.Model):
     company = models.CharField(max_length=255)
     date = models.DateField()
     invoice_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    txn_id = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction ID for the payment")
 
     class Meta:
         unique_together = ('company', 'date')

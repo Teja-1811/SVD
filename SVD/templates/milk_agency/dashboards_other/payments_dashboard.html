@@ -83,7 +83,6 @@ input.form-control-sm {
                                         <th class="text-center">Date</th>
                                         <th class="text-center">Invoice</th>
                                         <th class="text-center">Paid</th>
-                                        <th class="text-center">Txn ID</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -103,12 +102,6 @@ input.form-control-sm {
                                                 name="paid_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
                                                 class="form-control form-control-sm border-0 rounded-0 text-center"
                                                 value="{{ p.paid_amount|default_if_none:'' }}">
-                                        </td>
-                                        <td>
-                                            <input type="text"
-                                                name="txn_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
-                                                class="form-control form-control-sm border-0 rounded-0 text-center"
-                                                value="{{ p.txn_id }}">
                                         </td>
                                     </tr>
                                     {% endfor %}
