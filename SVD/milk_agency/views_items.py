@@ -8,7 +8,11 @@ def items_dashboard(request):
     from itertools import groupby
     from collections import OrderedDict
 
-    items = Item.objects.all().order_by('category', 'name')
+    company_filter = request.GET.get('company')
+    if company_filter:
+        items = Item.objects.filter(company=company_filter).order_by('category', 'name')
+    else:
+        items = Item.objects.all().order_by('category', 'name')
 
     # Calculate stock value and margin for each item
     for item in items:
@@ -21,7 +25,7 @@ def items_dashboard(request):
         grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
 
     # Define custom order for categories
-    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'others']
+    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
     ordered_grouped = OrderedDict()
     for cat in category_order:
         ordered_grouped[cat] = grouped_items.get(cat, [])
@@ -31,7 +35,8 @@ def items_dashboard(request):
 
     context = {
         'grouped_items': ordered_grouped,
-        'total_items': total_items
+        'total_items': total_items,
+        'company_filter': company_filter
     }
     return render(request, 'milk_agency/items/items_dashboard.html', context)
 

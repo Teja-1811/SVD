@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.utils import timezone
-from .models import CashbookEntry, Investment, BankBalance, Customer, Sale, Expense
+from .models import CashbookEntry, Investment, BankBalance, Customer, Sale, Expense, Product
 
 def cashbook(request):
     # Get current date
@@ -48,6 +48,11 @@ def cashbook(request):
     # Calculate net cash (cash in hand + bank balance + customer dues)
     net_cash = total_cash_in + bank_balance + total_customer_dues
 
+    # Calculate total stock value
+    total_stock_value = Product.objects.aggregate(
+        total=Sum(F('stock_quantity') * F('buying_price'))
+    )['total'] or 0
+
     context = {
         'cash_entry': cash_entry,
         'cash_out_entries': cash_out_entries,
@@ -58,7 +63,8 @@ def cashbook(request):
         'current_date': today.strftime('%Y-%m-%d'),
         'total_customer_dues': total_customer_dues,
         'monthly_profit': monthly_profit,
-        'net_profit': net_profit
+        'net_profit': net_profit,
+        'total_stock_value': total_stock_value
     }
     return render(request, 'general_store/cashbook.html', context)
 

@@ -7,13 +7,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>Bill Details - {{ bill.invoice_number }}</h3>
         <div>
-            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="btn btn-outline-primary me-2" download="invoice_{{ bill.invoice_number }}.pdf">
+            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="btn btn-outline-primary me-2 btn-sm col-lg-auto" download="invoice_{{ bill.invoice_number }}.pdf">
                 <i class="bi bi-printer"></i> Print Bill
             </a>
-            <button class="btn btn-outline-success me-2" onclick="shareBillOnWhatsApp()">
+            <button class="btn btn-outline-success me-2 btn-sm col-lg-auto" onclick="shareBillOnWhatsApp()">
                 <i class="bi bi-whatsapp"></i> Share Bill
             </button>
-            <a href="{% url 'milk_agency:bills_dashboard' %}" class="btn btn-outline-info">
+            <a href="{% url 'milk_agency:bills_dashboard' %}" class="btn btn-outline-info btn-sm col-lg-auto">
                 <i class="bi bi-arrow-left"></i> Back to Dashboard
             </a>
         </div>

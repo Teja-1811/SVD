@@ -29,11 +29,13 @@ def update_stock(request):
         for key, value in request.POST.items():
             if key.startswith('stock_') and value:
                 item_id = int(key.replace('stock_', ''))
-                additional_quantity = int(value)
+                crates = int(value)
 
                 try:
                     item = Item.objects.get(id=item_id)
                     old_quantity = item.stock_quantity
+                    # Calculate total units: crates * pcs_count
+                    additional_quantity = crates * (item.pcs_count if item.pcs_count > 0 else 1)
                     item.stock_quantity += additional_quantity
                     item.save()
 
@@ -54,13 +56,30 @@ def update_stock(request):
         return redirect('milk_agency:update_stock')
 
     # GET request - display the form
-    items = Item.objects.all().order_by('name')
+    from itertools import groupby
+    from collections import OrderedDict
+
+    items = Item.objects.all().order_by('category', 'name')
+
+    # Group items by category
+    grouped_items = {}
+    for category, group in groupby(items, key=lambda x: (x.category or 'others').lower()):
+        grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
+
+    # Define custom order for categories
+    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
+    ordered_grouped = OrderedDict()
+    for cat in category_order:
+        ordered_grouped[cat] = grouped_items.get(cat, [])
+
+    # Check if there are any items at all
+    total_items = sum(len(items) for items in ordered_grouped.values())
 
     # Get distinct companies for filtering
     companies = list(Item.objects.exclude(company__isnull=True).exclude(company='').values_list('company', flat=True).distinct())
     companies = list(dict.fromkeys(companies))
 
-    return render(request, 'milk_agency/stock/update_stock.html', {'items': items, 'companies': companies})
+    return render(request, 'milk_agency/stock/update_stock.html', {'grouped_items': ordered_grouped, 'total_items': total_items, 'companies': companies})
 
 @never_cache
 @login_required
@@ -79,7 +98,7 @@ def stock_data_api(request):
 
     # All items with current stock and value
     all_items = Item.objects.values(
-        'id', 'name', 'stock_quantity', 'selling_price'
+        'id', 'name', 'company', 'stock_quantity', 'selling_price'
     )
 
     # Top 10 items by stock value
@@ -89,7 +108,7 @@ def stock_data_api(request):
             output_field=FloatField()
         )
     ).order_by('-stock_value')[:10].values(
-        'id', 'name', 'stock_quantity', 'selling_price', 'stock_value'
+        'id', 'name', 'company', 'stock_quantity', 'selling_price', 'stock_value'
     )
 
     # Stock movement last 30 days

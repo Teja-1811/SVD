@@ -45,9 +45,9 @@
         </div>
         <div class="col-md-3 text-end">
             {% if selected_customer_obj %}
-            <a href="{% url 'milk_agency:generate_monthly_sales_pdf' %}?date={{ selected_date|date:'Y-m' }}&area={{ selected_area }}&customer={{ selected_customer }}" class="btn btn-outline-info me-2" title="Download PDF"><i class="bi bi-arrow-down-circle"></i></a>
-            <button class="btn btn-outline-success me-2" onclick="shareMonthlySummaryOnWhatsApp()" title="Share on WhatsApp"><i class="bi bi-whatsapp"></i></button>
-            <button id="generateBtn" class="btn btn-outline-success" title="Update"><i class="bi bi-arrow-clockwise"></i></button>
+            <a href="{% url 'milk_agency:generate_monthly_sales_pdf' %}?date={{ selected_date|date:'Y-m' }}&area={{ selected_area }}&customer={{ selected_customer }}" class="btn btn-outline-info me-2 btn-sm col-lg-auto" title="Download PDF"><i class="bi bi-arrow-down-circle"></i></a>
+            <button class="btn btn-outline-success me-2 btn-sm col-lg-auto" onclick="shareMonthlySummaryOnWhatsApp()" title="Share on WhatsApp"><i class="bi bi-whatsapp"></i></button>
+            <button id="generateBtn" class="btn btn-outline-success btn-sm col-lg-auto" title="Update"><i class="bi bi-arrow-clockwise"></i></button>
             {% endif %}
         </div>
     </div>

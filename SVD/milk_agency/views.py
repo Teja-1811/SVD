@@ -56,9 +56,23 @@ def home(request):
     today_bills_list = None
 
     # All stock items for table with calculated stock value
+    from django.db.models import Case, When, Value, IntegerField
     all_stock_items = Item.objects.all().annotate(
-        stock_value=F('stock_quantity') * F('buying_price')
-    ).order_by('company', 'name')
+        crates=(F('stock_quantity') / F('pcs_count')),
+        packets=(F('stock_quantity') % F('pcs_count')),
+        stock_value=F('stock_quantity') * F('buying_price'),
+        category_priority=Case(
+            When(category__iexact='milk', then=Value(1)),
+            When(category__iexact='curd', then=Value(2)),
+            When(category__iexact='buckets', then=Value(3)),
+            When(category__iexact='panner', then=Value(4)),
+            When(category__iexact='sweets', then=Value(5)),
+            When(category__iexact='flavoured milk', then=Value(6)),
+            When(category__iexact='ghee', then=Value(7)),
+            default=Value(8),
+            output_field=IntegerField()
+        )
+    ).order_by('company', 'category_priority', 'name')
 
     # Apply filters if provided
     if company_filter:

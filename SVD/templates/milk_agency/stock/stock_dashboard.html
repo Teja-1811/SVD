@@ -165,7 +165,7 @@ function renderTopItemsChart(topItems) {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: topItems.map(item => item.name),
+            labels: topItems.map(item => item.company ? `${item.name} (${item.company})` : item.name),
             datasets: [{
                 label: 'Stock Value (₹)',
                 data: topItems.map(item => item.stock_value),
@@ -240,7 +240,7 @@ function renderStockOverviewTable(allItems) {
         const row = tbody.insertRow();
         row.innerHTML = `
             <td class="py-3 px-4 fw-medium">${index + 1}</td>
-            <td class="py-3 px-4 fw-medium">${item.name}</td>
+            <td class="py-3 px-4 fw-medium">${item.name}${item.company ? ` (${item.company})` : ''}</td>
             <td class="py-3 px-4">
                 <span class="badge bg-primary fs-6 px-2 py-1">${item.stock_quantity}</span>
             </td>

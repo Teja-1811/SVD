@@ -17,7 +17,7 @@
                     <h2 class="mb-1 fw-bold">Sales</h2>
                     <p class="text-muted mb-0">Track your sales transactions</p>
                 </div>
-                <a href="{% url 'general_store:add_sale' %}" class="btn btn-success btn-lg px-4">
+                <a href="{% url 'general_store:add_sale' %}" class="btn btn-success btn-lg px-4 btn-sm col-lg-auto">
                     <i class="bi bi-cart-plus me-2"></i>Add Sale
                 </a>
             </div>
@@ -61,16 +61,16 @@
                                     <td class="py-3 px-4 fw-semibold text-success">₹{{ sale.profit }}</td>
                                     <td class="py-3 px-4">
                                         <div class="btn-group" role="group">
-                                            <a href="{% url 'general_store:view_sale' sale.id %}" class="btn btn-sm btn-outline-info" title="View Sale">
+                                            <a href="{% url 'general_store:view_sale' sale.id %}" class="btn btn-sm btn-outline-info col-lg-auto" title="View Sale">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{% url 'general_store:edit_sale' sale.id %}" class="btn btn-sm btn-outline-warning" title="Edit Sale">
+                                            <a href="{% url 'general_store:edit_sale' sale.id %}" class="btn btn-sm btn-outline-warning col-lg-auto" title="Edit Sale">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="{% url 'general_store:delete_sale' sale.id %}" class="btn btn-sm btn-outline-danger" title="Delete Sale">
+                                            <a href="{% url 'general_store:delete_sale' sale.id %}" class="btn btn-sm btn-outline-danger col-lg-auto" title="Delete Sale">
                                                 <i class="bi bi-trash"></i>
                                             </a>
-                                            <a href="{% url 'general_store:generate_sale_pdf' sale.id %}" class="btn btn-sm btn-outline-success" title="Download PDF" target="_blank">
+                                            <a href="{% url 'general_store:generate_sale_pdf' sale.id %}" class="btn btn-sm btn-outline-success col-lg-auto" title="Download PDF" target="_blank">
                                                 <i class="bi bi-download"></i>
                                             </a>
                                         </div>

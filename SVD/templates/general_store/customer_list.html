@@ -14,7 +14,7 @@
         <div class="mb-3 mb-sm-0">
             <p class="text-muted mb-0 small">Manage your general store customers</p>
         </div>
-        <a href="{% url 'general_store:add_customer' %}" class="btn btn-outline-success">
+        <a href="{% url 'general_store:add_customer' %}" class="btn btn-outline-success btn-sm col-lg-auto">
             <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
         </a>
     </div>
@@ -135,10 +135,10 @@
                             <td class="py-3 text-center">
                                 <div class="btn-group" role="group">
                                     <a href="{% url 'general_store:edit_customer' customer.pk %}"
-                                       class="btn btn-outline-primary btn-sm px-3" title="Edit Customer">
+                                       class="btn btn-outline-primary btn-sm px-3 col-lg-auto" title="Edit Customer">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button type="button" class="btn btn-outline-info btn-sm px-3"
+                                    <button type="button" class="btn btn-outline-info btn-sm px-3 col-lg-auto"
                                             title="View Details" onclick="viewCustomer({{ customer.pk }})">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -152,7 +152,7 @@
                                     <i class="bi bi-people display-4 text-muted mb-3"></i>
                                     <h5 class="text-muted">No Customers Found</h5>
                                     <p class="text-muted mb-4">Start by adding your first customer to the system.</p>
-                                    <a href="{% url 'general_store:add_customer' %}" class="btn btn-primary">
+                                    <a href="{% url 'general_store:add_customer' %}" class="btn btn-primary btn-sm col-lg-auto">
                                         <i class="bi bi-person-plus me-2"></i>Add First Customer
                                     </a>
                                 </div>

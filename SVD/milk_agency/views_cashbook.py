@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField, FloatField
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from .models import CashbookEntry, Expense, BankBalance, MonthlyPaymentSummary, DailyPayment, Customer, Bill
+from .models import CashbookEntry, Expense, BankBalance, MonthlyPaymentSummary, DailyPayment, Customer, Bill, Item
 
 def cashbook(request):
     # Get current date
@@ -16,6 +16,21 @@ def cashbook(request):
 
     # Calculate total cash in from counts
     total_cash_in = (cash_entry.c500 * 500) + (cash_entry.c200 * 200) + (cash_entry.c100 * 100) + (cash_entry.c50 * 50) + (cash_entry.c20 * 20) + (cash_entry.c10 * 10) + (cash_entry.coin20 * 20) + (cash_entry.coin10 * 10) + (cash_entry.coin5 * 5) + (cash_entry.coin2 * 2) + (cash_entry.coin1 * 1)
+
+    # Calculate denomination-wise totals
+    denomination_totals = {
+        'c500': cash_entry.c500 * 500,
+        'c200': cash_entry.c200 * 200,
+        'c100': cash_entry.c100 * 100,
+        'c50': cash_entry.c50 * 50,
+        'c20': cash_entry.c20 * 20,
+        'c10': cash_entry.c10 * 10,
+        'coin20': cash_entry.coin20 * 20,
+        'coin10': cash_entry.coin10 * 10,
+        'coin5': cash_entry.coin5 * 5,
+        'coin2': cash_entry.coin2 * 2,
+        'coin1': cash_entry.coin1 * 1,
+    }
 
     # Get current month expenses as cash out
     current_month = today.month
@@ -66,7 +81,15 @@ def cashbook(request):
     net_profit = monthly_profit - total_cash_out
 
     # Calculate net cash
-    net_cash = total_cash_in + bank_balance + total_customer_dues - total_company_dues
+    net_cash = total_cash_in + bank_balance + total_customer_dues
+
+    # Calculate total stock value
+    total_stock_value = Item.objects.aggregate(
+        total=Sum(F('stock_quantity') * F('buying_price'))
+    )['total'] or 0
+
+    # Calculate remaining amount
+    remaining_amount = net_cash + total_stock_value - net_profit - total_company_dues
 
     context = {
         'cash_entry': cash_entry,
@@ -80,7 +103,10 @@ def cashbook(request):
         'total_company_dues': total_company_dues,
         'total_customer_dues': total_customer_dues,
         'monthly_profit': monthly_profit,
-        'net_profit': net_profit
+        'net_profit': net_profit,
+        'denomination_totals': denomination_totals,
+        'total_stock_value': total_stock_value,
+        'remaining_amount': remaining_amount
     }
     return render(request, 'milk_agency/dashboards_other/cashbook.html', context)
 

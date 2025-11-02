@@ -26,7 +26,7 @@
                             {% endfor %}
                         </select>
                         <div class="mt-2">
-                            <a href="{% url 'general_store:add_customer' %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <a href="{% url 'general_store:add_customer' %}" class="btn btn-sm btn-outline-primary btn-sm col-lg-auto" target="_blank">
                                 <i class="bi bi-person-plus"></i> Add New Customer
                             </a>
                         </div>
@@ -72,7 +72,7 @@
 
                     <!-- Add Button -->
                     <div class="col-12 col-md-2 d-flex align-items-end">
-                        <button type="button" id="add-item-btn" class="btn btn-outline-success w-100 w-md-auto">Add Item</button>
+                        <button type="button" id="add-item-btn" class="btn btn-outline-success w-100 w-md-auto btn-sm col-lg-auto">Add Item</button>
                     </div>
                 </div>
             </div>
@@ -168,7 +168,7 @@
                     <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
                 </div>
                 <div class="mb-3">
-                    <button type="submit" class="btn btn-outline-primary">Create Sale</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm col-lg-auto">Create Sale</button>
                 </div>
             </div>
         </div>

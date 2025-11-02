@@ -72,10 +72,10 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-end gap-3 mt-4">
-                            <a href="{% url 'general_store:product_list' %}" class="btn btn-cancel">
+                            <a href="{% url 'general_store:product_list' %}" class="btn btn-cancel btn-sm col-lg-auto">
                                 <i class="bi bi-x-circle me-2"></i>Cancel
                             </a>
-                            <button type="submit" class="btn btn-submit">
+                            <button type="submit" class="btn btn-submit btn-sm col-lg-auto">
                                 <i class="bi bi-check-circle-fill me-2"></i>
                                 {% if product %}Update Product{% else %}Add Product{% endif %}
                             </button>

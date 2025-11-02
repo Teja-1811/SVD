@@ -85,7 +85,7 @@ def customer_data(request):
     if id_filter:
         id_filter = id_filter.strip()
 
-    customers = Customer.objects.filter(is_superuser=False).order_by('id')
+    customers = Customer.objects.all().order_by('id')
 
     # Apply filters correctly
     if area_filter and area_filter != "All":
@@ -130,8 +130,8 @@ def customer_data(request):
 
 
     # Get data for filter dropdowns
-    areas = Customer.objects.filter(is_superuser=False).exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
-    names = list(Customer.objects.filter(is_superuser=False).values_list('id', 'name').order_by('name'))
+    areas = Customer.objects.all().exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
+    names = list(Customer.objects.all().values_list('id', 'name').order_by('name'))
     active_customers_count = Customer.objects.filter(frozen=False, is_superuser=False).count()
     inactive_customers_count = Customer.objects.filter(frozen=True, is_superuser=False).count()
 

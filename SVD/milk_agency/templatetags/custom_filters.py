@@ -31,3 +31,23 @@ def sub(value, arg):
         return float(value) - float(arg)
     except (ValueError, TypeError):
         return 0
+
+@register.filter
+def div(value, arg):
+    """Divide value by arg"""
+    try:
+        if float(arg) == 0:
+            return 0
+        else:# Integer division for crates
+            crate = float(value) / float(arg)
+            return int(crate)
+    except (ValueError, TypeError):
+        return 0
+
+@register.filter
+def mod(value, arg):
+    """Modulo operation"""
+    try:
+        return int(value) % int(arg)
+    except (ValueError, TypeError):
+        return 0

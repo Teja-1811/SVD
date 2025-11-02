@@ -47,57 +47,71 @@
                                 <i class="bi bi-info-circle-fill fs-4 text-info me-3 mt-1"></i>
                                 <div>
                                     <h6 class="alert-heading fw-bold mb-2">Stock Update Instructions</h6>
-                                    <p class="mb-0">Enter the quantity you want to add to each item's current stock. Enter 0 if you don't want to update that item.</p>
+                                    <p class="mb-0">Enter the number of crates you want to add to each item's current stock. The total units will be calculated automatically (crates × units per crate). Enter 0 if you don't want to update that item.</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Stock Table -->
-                        <div class="table-responsive mb-4">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th class="border-0 fw-semibold py-3 px-4">#</th>
-                                        <th class="border-0 fw-semibold py-3 px-4">Item Name</th>
-                                        <th class="border-0 fw-semibold py-3 px-4">Current Quantity</th>
-                                        <th class="border-0 fw-semibold py-3 px-4">Add Quantity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in items %}
-                                    <tr class="align-middle" data-company="{{ item.company|default:'' }}">
-                                        <td class="py-3 px-4 fw-medium">{{ forloop.counter }}</td>
-                                        <td class="py-3 px-4 fw-medium">{{ item.name }}</td>
-                                        <td class="py-3 px-4">
-                                            <span class="badge bg-primary fs-6 px-3 py-2">{{ item.stock_quantity }}</span>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <input type="number" class="form-control form-control-lg" name="stock_{{ item.id }}" min="0" value="0" placeholder="0" style="max-width: 120px;">
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center py-5">
-                                            <div class="text-muted">
-                                                <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
-                                                <h5>No items found</h5>
-                                                <p class="mb-0">Add some items first to update their stock.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        {% for category, items in grouped_items.items %}
+                        {% if items %}
+                        <div class="category-section mb-5">
+                            <h4 class="category-title mb-4">{{ category|title }}</h4>
+                            <div class="table-responsive mb-4">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th class="border-0 fw-semibold py-3 px-4">#</th>
+                                            <th class="border-0 fw-semibold py-3 px-4">Item Name</th>
+                                            <th class="border-0 fw-semibold py-3 px-4">Units per Crate</th>
+                                            <th class="border-0 fw-semibold py-3 px-4">Current Quantity</th>
+                                            <th class="border-0 fw-semibold py-3 px-4">Crates</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in items %}
+                                        <tr class="align-middle" data-company="{{ item.company|default:'' }}">
+                                            <td class="py-3 px-4 fw-medium">{{ forloop.counter }}</td>
+                                            <td class="py-3 px-4 fw-medium">{{ item.name }}{% if item.company %} ({{ item.company }}){% endif %}</td>
+                                            <td class="py-3 px-4">
+                                                <span class="badge bg-secondary fs-6 px-3 py-2">{{ item.pcs_count }}</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <span class="badge bg-primary fs-6 px-3 py-2">{{ item.stock_quantity }}</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <input type="number" class="form-control form-control-lg" name="stock_{{ item.id }}" min="0" value="0" placeholder="0" style="max-width: 120px;">
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% if total_items == 0 %}
+                        <div class="col-12">
+                            <div class="card border-0 shadow-lg">
+                                <div class="card-body text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
+                                        <h5 class="mb-2">No items found</h5>
+                                        <p class="mb-0">Add some items first to update their stock.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <!-- Action Buttons -->
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
-                                    <a href="{% url 'milk_agency:stock_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                    <a href="{% url 'milk_agency:stock_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4 btn-sm col-lg-auto">
                                         <i class="bi bi-arrow-left me-2"></i>Cancel
                                     </a>
-                                    <button type="submit" class="btn btn-success btn-lg px-5">
+                                    <button type="submit" class="btn btn-success btn-lg px-5 btn-sm col-lg-auto">
                                         <i class="bi bi-check-circle-fill me-2"></i>Update Stock
                                     </button>
                                 </div>

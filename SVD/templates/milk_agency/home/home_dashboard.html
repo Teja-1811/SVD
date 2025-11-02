@@ -145,10 +145,10 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-light me-2 shadow-sm">
+                            <button type="submit" class="btn btn-light me-2 shadow-sm btn-sm col-lg-auto">
                                 <i class="bi bi-funnel-fill me-1"></i>
                             </button>
-                            <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-light shadow-sm">
+                            <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-light shadow-sm btn-sm col-lg-auto">
                                 <i class="bi bi-x-circle me-1"></i>
                             </a>
                         </form>
@@ -179,33 +179,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in items %}
-                                <tr class="{% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
-                                    <td class="text-center fw-bold">{{ item.name }}</td>
-                                    <td class="text-center">
-                                        {% if item.pcs_count > 0 %}
-                                            <span class="badge bg-primary">{{ item.stock_quantity|div:item.pcs_count|floatformat:0 }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ item.stock_quantity }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        {% if item.pcs_count > 0 %}
-                                            <span class="badge bg-info">{{ item.stock_quantity|mod:item.pcs_count }}</span>
-                                        {% else %}
-                                            <span class="badge bg-light text-dark">0</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center fw-bold text-success">₹{{ item.stock_value|floatformat:2 }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    {% for item in items %}
+                                    <tr class="{% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
+                                        <td class="text-center fw-bold">{{ item.name }}</td>
+
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ item.crates|floatformat:0 }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">{{ item.packets|floatformat:0 }}</span>
+                                        </td>
+                                        <td class="text-center fw-bold text-success">
+                                            ₹{{ item.stock_value|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         {% endfor %}
     </div>
-</div>
-{% endblock %}
+    </div>
+    {% endblock %}
