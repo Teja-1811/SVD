@@ -111,7 +111,20 @@ def edit_bill(request, bill_id):
 
     # GET request - display edit form
     customers = Customer.objects.all()
-    items = Item.objects.all()
+    from django.db.models import Case, When, Value, IntegerField
+    items = Item.objects.filter(frozen=False).annotate(
+        category_priority=Case(
+            When(category__iexact='milk', then=Value(1)),
+            When(category__iexact='curd', then=Value(2)),
+            When(category__iexact='buckets', then=Value(3)),
+            When(category__iexact='panner', then=Value(4)),
+            When(category__iexact='sweets', then=Value(5)),
+            When(category__iexact='flavoured milk', then=Value(6)),
+            When(category__iexact='ghee', then=Value(7)),
+            default=Value(8),
+            output_field=IntegerField()
+        )
+    ).order_by('category_priority', 'name')
 
     return render(request, 'milk_agency/bills/edit_bill.html', {
         'bill': bill,

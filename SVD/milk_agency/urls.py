@@ -38,7 +38,7 @@ urlpatterns = [
     path('items/', views_items.items_dashboard, name='items_dashboard'),
     path('add-item/', views_items.add_item, name='add_item'),
     path('edit-item/<int:item_id>/', views_items.edit_item, name='edit_item'),
-    path('delete-item/<int:item_id>/', views_items.delete_item, name='delete_item'),
+    path('freeze-item/<int:item_id>/', views_items.freeze_item, name='freeze_item'),
 
     # Bills URLs
     path('bills/', views_bills.bills_dashboard, name='bills_dashboard'),

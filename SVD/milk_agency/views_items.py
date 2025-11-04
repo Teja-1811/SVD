@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import Item
 
 @login_required
@@ -111,13 +112,37 @@ def add_item(request, item_id=None):
 def edit_item(request, item_id):
     return add_item(request, item_id)
 
+
+
 @login_required
-def delete_item(request, item_id):
+def freeze_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
 
     if request.method == 'POST':
-        item_name = item.name
-        item.delete()
-        messages.success(request, f'Item {item_name} deleted successfully!')
+        # Prevent freezing if item has stock quantity > 0
+        if not item.frozen and item.stock_quantity > 0:
+            error_message = f'Cannot freeze item {item.name} because it has stock quantity {item.stock_quantity}.'
+            messages.error(request, error_message)
+
+            # Check if AJAX request
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message
+                })
+            return redirect('milk_agency:items_dashboard')
+
+        item.frozen = not item.frozen
+        item.save()
+        status = "frozen" if item.frozen else "unfrozen"
+        messages.success(request, f'Item {item.name} has been {status}!')
+
+        # Check if AJAX request
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'frozen': item.frozen,
+                'message': f'Item {item.name} has been {status}!'
+            })
 
     return redirect('milk_agency:items_dashboard')

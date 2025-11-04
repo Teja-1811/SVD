@@ -7,7 +7,7 @@ def dodla_products(request):
     from milk_agency.models import Item
 
     # Get all items from database, ordered by category and name
-    items = Item.objects.all().order_by('category', 'name')
+    items = Item.objects.filter(frozen=False).order_by('category', 'name')
 
     # Group products by category
     categorized_products = {}

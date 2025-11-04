@@ -196,6 +196,7 @@
     {% endif %}
 
     <link rel="stylesheet" href="{% static 'css/milk_agency/base.css' %}">
+    {% csrf_token %}
     <main class="container-fluid my-4 milk-agency" style="width: 99%; margin: auto">
       {% block content %} {% endblock %}
     </main>

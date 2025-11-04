@@ -110,6 +110,7 @@ class Item(models.Model):
     stock_quantity = models.IntegerField(default=0)
     pcs_count = models.IntegerField(default=0, help_text='Number of pieces per unit')
     image = models.ImageField(upload_to='items_saved/', blank=True, null=True)
+    frozen = models.BooleanField(default=False, help_text='If true, item is frozen and not displayed in app except items dashboard')
 
     def __str__(self):
         return f"{self.code} - {self.name}" if self.code else self.name

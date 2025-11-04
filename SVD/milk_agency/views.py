@@ -38,7 +38,7 @@ def home(request):
     total_stock_value = Item.objects.aggregate(
         total=Sum(F('stock_quantity') * F('buying_price'))
     )['total'] or 0
-    total_stock_items = Item.objects.all().count()
+    total_stock_items = Item.objects.filter(frozen=False).count()
     # Removed duplicate calculation of total_stock_value
 
     # Low stock items - items where stock_quantity < pcs_count
@@ -57,7 +57,7 @@ def home(request):
 
     # All stock items for table with calculated stock value
     from django.db.models import Case, When, Value, IntegerField
-    all_stock_items = Item.objects.all().annotate(
+    all_stock_items = Item.objects.filter(frozen=False).annotate(
         crates=(F('stock_quantity') / F('pcs_count')),
         packets=(F('stock_quantity') % F('pcs_count')),
         stock_value=F('stock_quantity') * F('buying_price'),
@@ -86,8 +86,8 @@ def home(request):
         stock_by_company[company] = list(items)
 
     # Get distinct values for dropdowns
-    companies = Item.objects.exclude(company__isnull=True).exclude(company='').values_list('company', flat=True).distinct()
-    categories = Item.objects.exclude(category__isnull=True).exclude(category='').values_list('category', flat=True).distinct()
+    companies = Item.objects.filter(frozen=False).exclude(company__isnull=True).exclude(company='').values_list('company', flat=True).distinct()
+    categories = Item.objects.filter(frozen=False).exclude(category__isnull=True).exclude(category='').values_list('category', flat=True).distinct()
 
     context = {
         'companies': companies,

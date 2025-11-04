@@ -97,7 +97,20 @@ def generate_bill(request):
     else:
         customers = Customer.objects.filter(frozen=False).order_by('name')
     
-    items = Item.objects.all().order_by('name')
+    from django.db.models import Case, When, Value, IntegerField
+    items = Item.objects.filter(frozen=False).annotate(
+        category_priority=Case(
+            When(category__iexact='milk', then=Value(1)),
+            When(category__iexact='curd', then=Value(2)),
+            When(category__iexact='buckets', then=Value(3)),
+            When(category__iexact='panner', then=Value(4)),
+            When(category__iexact='sweets', then=Value(5)),
+            When(category__iexact='flavoured milk', then=Value(6)),
+            When(category__iexact='ghee', then=Value(7)),
+            default=Value(8),
+            output_field=IntegerField()
+        )
+    ).order_by('category_priority', 'name')
     # Get distinct companies for the filter dropdown
     companies = Item.objects.exclude(company__exact='').values_list('company', flat=True).distinct().order_by('company')
     # Get distinct categories for the filter dropdown

@@ -59,7 +59,7 @@ def update_stock(request):
     from itertools import groupby
     from collections import OrderedDict
 
-    items = Item.objects.all().order_by('category', 'name')
+    items = Item.objects.filter(frozen=False).order_by('category', 'name')
 
     # Group items by category
     grouped_items = {}
@@ -76,7 +76,7 @@ def update_stock(request):
     total_items = sum(len(items) for items in ordered_grouped.values())
 
     # Get distinct companies for filtering
-    companies = list(Item.objects.exclude(company__isnull=True).exclude(company='').values_list('company', flat=True).distinct())
+    companies = list(Item.objects.filter(frozen=False).exclude(company__isnull=True).exclude(company='').values_list('company', flat=True).distinct())
     companies = list(dict.fromkeys(companies))
 
     return render(request, 'milk_agency/stock/update_stock.html', {'grouped_items': ordered_grouped, 'total_items': total_items, 'companies': companies})
