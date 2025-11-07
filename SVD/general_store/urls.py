@@ -34,5 +34,7 @@ urlpatterns = [
     path('save_investment/', views_cashbook.save_investment, name='save_investment'),
     path('investments-list/', views_cashbook.investments_list, name='investments_list'),
     path('expenses-list/', views_cashbook.expenses_list, name='expenses_list'),
+    path('edit-expense/<int:pk>/', views_cashbook.edit_expense, name='edit_expense'),
+    path('delete-expense/<int:pk>/', views_cashbook.delete_expense, name='delete_expense'),
     path('save_bank_balance/', views_cashbook.save_bank_balance, name='save_bank_balance'),
 ]

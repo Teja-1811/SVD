@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 from .monthly_sales_pdf_utils import MonthlySalesPDFGenerator
+from .views_sales_summary import extract_liters_from_name
 
 
 @never_cache
@@ -162,45 +163,49 @@ def monthly_sales_summary(request):
     start_date = date(year, month, 1)
     end_date = date(year, month, days_in_month)
 
-    monthly_purchase_data = None
-    if customer:
-        try:
-            monthly_purchase_data = CustomerMonthlyPurchase.objects.get(
-                customer=customer, year=year, month=month
-            )
-        except CustomerMonthlyPurchase.DoesNotExist:
-            monthly_purchase_data = None
-
-    # Calculate commission based on total volume and rate
-    total_commission = Decimal('0')
-    avg_milk = Decimal('0')
-    avg_curd = Decimal('0')
-    avg_volunme = Decimal('0')
-    milk_rate = Decimal('0')
-    curd_rate = Decimal('0')
+    # Calculate volumes directly from bills instead of using CustomerMonthlyPurchase
     total_volume = Decimal('0')
-    if monthly_purchase_data:
-        total_volume = monthly_purchase_data.total_purchase_volume
-        milk_volume = monthly_purchase_data.milk_volume or Decimal('0')
-        curd_volume = monthly_purchase_data.curd_volume or Decimal('0')
-        avg_milk = milk_volume / days_in_month if days_in_month else Decimal('0')
-        avg_curd = curd_volume / days_in_month if days_in_month else Decimal('0')
-        avg_volunme = total_volume / days_in_month if days_in_month else Decimal('0')
+    milk_volume = Decimal('0')
+    curd_volume = Decimal('0')
 
-        # Separate commission rates for milk and curd
-        if avg_volunme >= 25:
-            milk_rate = Decimal('0.25')  # 0.25 per liter for milk
-            curd_rate = Decimal('0.30')  # 0.30 per liter for curd
+    if customer:
+        # Get all bill items for the customer in the selected month
+        bill_items = Bill.objects.filter(
+            customer__retailer_id=customer.retailer_id,
+            invoice_date__year=year,
+            invoice_date__month=month,
+        ).prefetch_related('items__item')
 
-            # Additional commission for liters above 35
-            additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
-            additional_commission = additional_volume * Decimal('1.0') * days_in_month # 1 rupee per liter above 35
+        # Calculate total volumes by item category using extract_liters_from_name
+        for bill in bill_items:
+            for bill_item in bill.items.all():
+                category = bill_item.item.category
+                quantity = bill_item.quantity
+                if category and quantity:
+                    category_lower = category.lower()
+                    liters_per_unit = extract_liters_from_name(bill_item.item.name)
+                    total_liters = Decimal(str(liters_per_unit)) * Decimal(str(quantity))
+                    if category_lower == 'milk':
+                        milk_volume += total_liters
+                    elif category_lower == 'curd':
+                        curd_volume += total_liters
 
-            total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
-        else:
-            milk_rate = Decimal('0.0')
-            curd_rate = Decimal('0.0')
-            total_commission = Decimal('0')
+        total_volume = milk_volume + curd_volume
+
+    # Calculate average daily volumes (already in liters, no need to divide by 1000)
+    avg_milk = milk_volume / days_in_month if milk_volume else Decimal('0')
+    avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
+    avg_volunme = avg_milk + avg_curd
+
+    # Calculate commission based on average daily volume by category
+    milk_rate = Decimal('0.25') if avg_milk >= 25 else Decimal('0.0')
+    curd_rate = Decimal('0.30') if avg_curd >= 25 else Decimal('0.0')
+
+    # Additional commission for total liters above 35 per day if total average >= 25
+    additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
+    additional_commission = additional_volume * Decimal('1.0') * days_in_month if avg_volunme >= 25 else Decimal('0')
+
+    total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
 
     context = {
         'areas': areas,
@@ -222,7 +227,6 @@ def monthly_sales_summary(request):
         'unique_codes': unique_codes,
         'date_range': date_range,
         'total_quantity_per_item': total_quantity_per_item,
-        'monthly_purchase_data': monthly_purchase_data,
         'milk_volume': avg_milk,
         'curd_volume': avg_curd,
         'avg_volume' : avg_volunme,
@@ -386,45 +390,49 @@ def generate_monthly_sales_pdf(request):
     start_date = date(year, month, 1)
     end_date = date(year, month, days_in_month)
 
-    monthly_purchase_data = None
-    if customer:
-        try:
-            monthly_purchase_data = CustomerMonthlyPurchase.objects.get(
-                customer=customer, year=year, month=month
-            )
-        except CustomerMonthlyPurchase.DoesNotExist:
-            monthly_purchase_data = None
-
-    # Calculate commission based on total volume and rate
-    total_commission = Decimal('0')
-    avg_milk = Decimal('0')
-    avg_curd = Decimal('0')
-    avg_volunme = Decimal('0')
-    milk_rate = Decimal('0')
-    curd_rate = Decimal('0')
+    # Calculate volumes directly from bills instead of using CustomerMonthlyPurchase
     total_volume = Decimal('0')
-    if monthly_purchase_data:
-        total_volume = monthly_purchase_data.total_purchase_volume
-        milk_volume = monthly_purchase_data.milk_volume or Decimal('0')
-        curd_volume = monthly_purchase_data.curd_volume or Decimal('0')
-        avg_milk = milk_volume / days_in_month if days_in_month else Decimal('0')
-        avg_curd = curd_volume / days_in_month if days_in_month else Decimal('0')
-        avg_volunme = total_volume / days_in_month if days_in_month else Decimal('0')
+    milk_volume = Decimal('0')
+    curd_volume = Decimal('0')
 
-        # Separate commission rates for milk and curd
-        if avg_volunme >= 25:
-            milk_rate = Decimal('0.25')  # 0.25 per liter for milk
-            curd_rate = Decimal('0.30')  # 0.30 per liter for curd
+    if customer:
+        # Get all bill items for the customer in the selected month
+        bill_items = Bill.objects.filter(
+            customer__retailer_id=customer.retailer_id,
+            invoice_date__year=year,
+            invoice_date__month=month,
+        ).prefetch_related('items__item')
 
-            # Additional commission for liters above 35
-            additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
-            additional_commission = additional_volume * Decimal('1.0') * days_in_month # 1 rupee per liter above 35
+        # Calculate total volumes by item category using extract_liters_from_name
+        for bill in bill_items:
+            for bill_item in bill.items.all():
+                category = bill_item.item.category
+                quantity = bill_item.quantity
+                if category and quantity:
+                    category_lower = category.lower()
+                    liters_per_unit = extract_liters_from_name(bill_item.item.name)
+                    total_liters = Decimal(str(liters_per_unit)) * Decimal(str(quantity))
+                    if category_lower == 'milk':
+                        milk_volume += total_liters
+                    elif category_lower == 'curd':
+                        curd_volume += total_liters
 
-            total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
-        else:
-            milk_rate = Decimal('0.0')
-            curd_rate = Decimal('0.0')
-            total_commission = Decimal('0')
+        total_volume = milk_volume + curd_volume
+
+    # Calculate average daily volumes (already in liters, no need to divide by 1000)
+    avg_milk = milk_volume / days_in_month if milk_volume else Decimal('0')
+    avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
+    avg_volunme = avg_milk + avg_curd
+
+    # Calculate commission based on average daily volume by category
+    milk_rate = Decimal('0.25') if avg_milk >= 25 else Decimal('0.0')
+    curd_rate = Decimal('0.30') if avg_curd >= 25 else Decimal('0.0')
+
+    # Additional commission for total liters above 35 per day if total average >= 25
+    additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
+    additional_commission = additional_volume * Decimal('1.0') * days_in_month if avg_volunme >= 25 else Decimal('0')
+
+    total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
 
     context = {
         'areas': areas,
@@ -446,7 +454,6 @@ def generate_monthly_sales_pdf(request):
         'unique_codes': unique_codes,
         'date_range': date_range,
         'total_quantity_per_item': total_quantity_per_item,
-        'monthly_purchase_data': monthly_purchase_data,
         'milk_volume': avg_milk,
         'curd_volume': avg_curd,
         'avg_volume' : avg_volunme,

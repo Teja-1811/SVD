@@ -60,9 +60,15 @@
                         <select id="item-select" class="form-select">
                             <option value="">-- Select an item --</option>
                             {% for item in items %}
-                            <option value="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}" data-company="{{ item.company }}" data-category="{{ item.category }}">{{ item.name }} ({{ item.company }})</option>
+                            <option value="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.selling_price }}" data-company="{{ item.company }}" data-category="{{ item.category }}" data-stock-quantity="{{ item.stock_quantity }}">{{ item.name }} ({{ item.company }})</option>
                             {% endfor %}
                         </select>
+                    </div>
+
+                    <!-- Available Quantity -->
+                    <div class="col-md-1">
+                        <label class="form-label">Available Qty</label>
+                        <input type="text" id="available-qty" class="form-control" readonly value="0">
                     </div>
 
                     <!-- Quantity -->
@@ -78,7 +84,7 @@
                     </div>
 
                     <!-- Add Button -->
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-1 d-flex align-items-end">
                         <button type="button" id="add-item-btn" class="btn btn-outline-success btn-sm col-lg-auto">Add Item</button>
                     </div>
                 </div>
@@ -323,6 +329,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Update available quantity when item is selected
+    document.getElementById('item-select').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const stockQuantity = selectedOption.getAttribute('data-stock-quantity') || 0;
+        document.getElementById('available-qty').value = stockQuantity;
+    });
+
     // Add item to bill functionality
     document.getElementById('add-item-btn').addEventListener('click', function() {
         const itemSelect = document.getElementById('item-select');
@@ -351,6 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Reset form
             itemSelect.value = '';
+            document.getElementById('available-qty').value = '0';
             qtyInput.value = '1';
             discInput.value = '0';
         }

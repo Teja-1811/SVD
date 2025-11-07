@@ -183,15 +183,89 @@ def save_expense(request):
 
     return redirect('milk_agency:cashbook')
 
-def expenses_list(request):
-    expenses = Expense.objects.all().order_by('-date')
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
-    # Calculate total expenses
+@login_required
+def edit_expense(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        category = request.POST.get('category')
+        description = request.POST.get('description')
+        date = request.POST.get('date')
+
+        try:
+            amount = float(amount)
+
+            expense.amount = amount
+            expense.category = category
+            expense.description = description
+            expense.date = date
+            expense.save()
+
+            messages.success(request, f'Expense updated: ₹{amount} ({category})')
+            return redirect('milk_agency:expenses_list')
+        except ValueError:
+            messages.error(request, 'Invalid amount value')
+
+    return render(request, 'milk_agency/dashboards_other/edit_expense.html', {'expense': expense})
+
+@login_required
+def delete_expense(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        amount = expense.amount
+        category = expense.category
+        expense.delete()
+        messages.success(request, f'Expense deleted: ₹{amount} ({category})')
+        return redirect('milk_agency:expenses_list')
+
+    return render(request, 'milk_agency/dashboards_other/delete_expense.html', {'expense': expense})
+
+def expenses_list(request):
+    # Get filter parameters from request
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # Get current date for default values
+    today = timezone.now().date()
+
+    # Set default filter values if not provided (current month)
+    if not start_date:
+        start_date = today.replace(day=1).strftime('%Y-%m-%d')  # First day of current month
+    if not end_date:
+        # Last day of current month
+        next_month = today.replace(day=28) + timezone.timedelta(days=4)  # This will never fail
+        last_day = next_month - timezone.timedelta(days=next_month.day)
+        end_date = last_day.strftime('%Y-%m-%d')
+
+    # Filter expenses based on date range
+    expenses = Expense.objects.filter(
+        date__range=[start_date, end_date]
+    ).order_by('-date')
+
+    # Calculate total expenses for the filtered period
     total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or 0
+
+    # Prepare chart data: expenses grouped by category
+    from django.db.models import Count
+    chart_data = expenses.values('category').annotate(
+        total=Sum('amount'),
+        count=Count('id')
+    ).order_by('category')
+
+    chart_labels = [item['category'].title() for item in chart_data]
+    chart_values = [float(item['total']) for item in chart_data]
 
     context = {
         'expenses': expenses,
-        'total_expenses': total_expenses
+        'total_expenses': total_expenses,
+        'start_date': start_date,
+        'end_date': end_date,
+        'chart_labels': chart_labels,
+        'chart_values': chart_values,
     }
     return render(request, 'milk_agency/dashboards_other/expenses_list.html', context)
 

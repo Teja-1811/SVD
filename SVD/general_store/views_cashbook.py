@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, F
 from django.utils import timezone
 from .models import CashbookEntry, Investment, BankBalance, Customer, Sale, Expense, Product
@@ -258,3 +259,40 @@ def save_bank_balance(request):
             messages.error(request, 'Invalid amount value')
 
     return redirect('general_store:cashbook')
+
+@login_required
+def edit_expense(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        category = request.POST.get('category')
+        description = request.POST.get('description')
+        date = request.POST.get('date')
+
+        try:
+            amount = float(amount)
+
+            expense.amount = amount
+            expense.category = category
+            expense.description = description
+            expense.date = date
+            expense.save()
+
+            messages.success(request, f'Expense updated: ₹{amount} ({category})')
+            return redirect('general_store:expenses_list')
+        except ValueError:
+            messages.error(request, 'Invalid amount value')
+
+    return render(request, 'general_store/edit_expense.html', {'expense': expense})
+
+@login_required
+def delete_expense(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        amount = expense.amount
+        category = expense.category
+        expense.delete()
+        messages.success(request, f'Expense deleted: ₹{amount} ({category})')
+        return redirect('general_store:expenses_list')
+
+    return render(request, 'general_store/delete_expense.html', {'expense': expense})

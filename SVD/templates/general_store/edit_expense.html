@@ -1,0 +1,63 @@
+{% extends "general_store/base.html" %}
+
+{% block title %}Edit Expense{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Edit Expense</h2>
+        <a href="{% url 'general_store:expenses_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Expenses List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Edit Expense Details</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount *</label>
+                            <input type="number" class="form-control" id="amount" name="amount"
+                                   value="{{ expense.amount }}" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category *</label>
+                            <select class="form-control" id="category" name="category" required>
+                                <option value="petrol" {% if expense.category == 'petrol' %}selected{% endif %}>Petrol</option>
+                                <option value="food" {% if expense.category == 'food' %}selected{% endif %}>Food</option>
+                                <option value="profits" {% if expense.category == 'profits' %}selected{% endif %}>Profits</option>
+                                <option value="others" {% if expense.category == 'others' %}selected{% endif %}>Others</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="3" placeholder="Optional description">{{ expense.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date *</label>
+                            <input type="date" class="form-control" id="date" name="date"
+                                   value="{{ expense.date|date:'Y-m-d' }}" required>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Update Expense
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

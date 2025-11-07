@@ -63,6 +63,8 @@ urlpatterns = [
     path('save_cash_in/', views_cashbook.save_cash_in, name='save_cash_in'),
     path('save_expense/', views_cashbook.save_expense, name='save_expense'),
     path('expenses-list/', views_cashbook.expenses_list, name='expenses_list'),
+    path('edit-expense/<int:pk>/', views_cashbook.edit_expense, name='edit_expense'),
+    path('delete-expense/<int:pk>/', views_cashbook.delete_expense, name='delete_expense'),
     path('save_bank_balance/', views_cashbook.save_bank_balance, name='save_bank_balance'),
 
     # Stock Dashboard URLs
