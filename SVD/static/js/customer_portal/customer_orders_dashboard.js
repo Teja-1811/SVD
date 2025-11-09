@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantity = parseInt(card.querySelector('.quantity-input').value) || 0;
         const price = parseFloat(card.querySelector('.item-price').value) || 0;
         const total = quantity * price;
-        card.querySelector('.total-amount').textContent = `₹${total.toFixed(2)}`;
+        card.querySelector('.total-amount').textContent = `â‚¹${total.toFixed(2)}`;
     }
 
     // Update all card totals and order summary
@@ -69,11 +69,11 @@ document.addEventListener('DOMContentLoaded', function() {
             total += quantity * price;
         });
         if (total > 0) {
-            orderSummary.innerHTML = `<div class="d-flex justify-content-between"><strong>Total:</strong><strong>₹${total.toFixed(2)}</strong></div>`;
+            orderSummary.innerHTML = `<div class="d-flex justify-content-between"><strong>Total:</strong><strong>â‚¹${total.toFixed(2)}</strong></div>`;
         } else {
             orderSummary.innerHTML = '<p class="text-muted">No items selected</p>';
         }
-        totalAmount.textContent = `₹${total.toFixed(2)}`;
+        totalAmount.textContent = `â‚¹${total.toFixed(2)}`;
     }
 
     // Increment quantity

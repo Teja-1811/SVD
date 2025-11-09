@@ -1,4 +1,4 @@
-{% extends 'general_store/base.html' %}
+﻿{% extends 'general_store/base.html' %}
 {% load static %}
 
 {% block title %}Add Sale - General Store - SVD Agencies{% endblock %}
@@ -132,7 +132,7 @@
                                         <div class="col-6">
                                             <label class="form-label mb-1 fw-bold">Qty</label>
                                             <div class="input-group input-group-sm">
-                                                <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
+                                                <button type="button" class="btn btn-outline-primary minus-qty-btn">Ã¢Ë†â€™</button>
                                                 <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
                                                 <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
                                             </div>
@@ -140,7 +140,7 @@
                                         <div class="col-6">
                                             <label class="form-label mb-1 fw-bold">Disc</label>
                                             <div class="input-group input-group-sm">
-                                                <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
+                                                <button type="button" class="btn btn-outline-primary minus-discount-btn">Ã¢Ë†â€™</button>
                                                 <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-product-id="{{ product.id }}">
                                                 <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
                                             </div>
@@ -179,3 +179,6 @@
 {% block extra_js %}
 <script src="{% static 'js/general_store/add_sale.js' %}"></script>
 {% endblock %}
+
+
+

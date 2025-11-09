@@ -44,13 +44,13 @@ function createRevenueProfitChart(labels, revenueData, profitData) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Revenue (₹)',
+                label: 'Revenue (â‚¹)',
                 data: revenueData,
                 backgroundColor: 'rgba(54, 162, 235, 0.8)',
                 borderColor: 'rgb(54, 162, 235)',
                 borderWidth: 1
             }, {
-                label: 'Profit (₹)',
+                label: 'Profit (â‚¹)',
                 data: profitData,
                 backgroundColor: 'rgba(255, 99, 132, 0.8)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -82,7 +82,7 @@ function createRevenueProfitChart(labels, revenueData, profitData) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Amount (₹)'
+                        text: 'Amount (â‚¹)'
                     }
                 }
             }

@@ -6,12 +6,12 @@ function recalculateTotals(cardElement) {
     quantityInputs.forEach(input => {
         const quantity = parseFloat(input.value) || 0;
         const priceText = input.closest('tr').querySelector('td:nth-child(3)').textContent;
-        const price = parseFloat(priceText.replace('₹', '').replace(',', '')) || 0;
+        const price = parseFloat(priceText.replace('â‚¹', '').replace(',', '')) || 0;
         const itemTotal = quantity * price;
 
         // Update item total display
         const itemTotalCell = input.closest('tr').querySelector('.item-total');
-        itemTotalCell.textContent = '₹' + itemTotal.toFixed(2);
+        itemTotalCell.textContent = 'â‚¹' + itemTotal.toFixed(2);
 
         orderTotal += itemTotal;
     });
@@ -20,7 +20,7 @@ function recalculateTotals(cardElement) {
     const orderTotalElement = cardElement.querySelector('.card-body .row.mb-3 .col-sm-6:last-child strong');
     if (orderTotalElement && orderTotalElement.textContent.includes('Total Amount:')) {
         const totalAmountCell = orderTotalElement.nextElementSibling;
-        totalAmountCell.textContent = '₹' + orderTotal.toFixed(2);
+        totalAmountCell.textContent = 'â‚¹' + orderTotal.toFixed(2);
     }
 }
 

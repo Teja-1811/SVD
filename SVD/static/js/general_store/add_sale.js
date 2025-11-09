@@ -28,11 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${name}</td>
-                    <td>₹${price.toFixed(2)}</td>
+                    <td>â‚¹${price.toFixed(2)}</td>
                     <td>${quantity}</td>
                     <td>${discount.toFixed(1)}</td>
-                    <td>₹${discAmt.toFixed(2)}</td>
-                    <td>₹${itemTotal.toFixed(2)}</td>
+                    <td>â‚¹${discAmt.toFixed(2)}</td>
+                    <td>â‚¹${itemTotal.toFixed(2)}</td>
                     <td><button type="button" class="btn btn-danger btn-sm delete-item-btn" data-product-id="${productId}">Delete</button></td>
                 `;
                 billedItemsBody.appendChild(tr);
@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update footer totals
         totalQtyEl.textContent = totalQty;
-        totalDiscAmtEl.textContent = '₹' + totalDiscAmt.toFixed(2);
-        totalAmtEl.textContent = '₹' + totalAmt.toFixed(2);
-        totalAmountInput.value = '₹' + totalAmt.toFixed(2);
+        totalDiscAmtEl.textContent = 'â‚¹' + totalDiscAmt.toFixed(2);
+        totalAmtEl.textContent = 'â‚¹' + totalAmt.toFixed(2);
+        totalAmountInput.value = 'â‚¹' + totalAmt.toFixed(2);
     }
 
     // Event listeners for quantity and discount inputs

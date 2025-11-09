@@ -1,4 +1,4 @@
-{% extends "milk_agency/home/base.html" %}
+﻿{% extends "milk_agency/home/base.html" %}
 
 {% block title %}View Bill - {{ bill.invoice_number }}{% endblock %}
 
@@ -143,7 +143,7 @@ function shareBillOnWhatsApp() {
     const currentDue = "{{ current_due|floatformat:2 }}";
     const customerPhone = "{{ bill.customer.phone }}";
 
-    const whatsappMessage = `Dear ${customerName} (Sri Vijaya Lakshmi Generals),\n\nPlease find attached your invoice ${invoiceNumber} dated ${invoiceDate}.\n\nCurrent Due: Rs.${currentDue}\n\nThank you for your continued business with Sri Vijaya Durga Milk Agencies.\n\nPlace the orders using svdagencies.netlify.app`;
+    const whatsappMessage = `Dear ${customerName} (Sri Vijaya Lakshmi Generals),\n\nPlease find attached your invoice ${invoiceNumber} dated ${invoiceDate}.\n\nCurrent Due: ₹${currentDue}\n\nThank you for your continued business with Sri Vijaya Durga Milk Agencies.\n\nPlace the orders using svdagencies.netlify.app`;
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
@@ -152,3 +152,6 @@ function shareBillOnWhatsApp() {
 }
 </script>
 {% endblock %}
+
+
+

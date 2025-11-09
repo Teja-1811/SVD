@@ -18,14 +18,14 @@ function createSalesTrendChart(labels, salesData, revenueData, profitData) {
                 tension: 0.1,
                 yAxisID: 'y'
             }, {
-                label: 'Revenue (₹)',
+                label: 'Revenue (â‚¹)',
                 data: revenueData,
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 tension: 0.1,
                 yAxisID: 'y1'
             }, {
-                label: 'Profit (₹)',
+                label: 'Profit (â‚¹)',
                 data: profitData,
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -74,7 +74,7 @@ function createSalesTrendChart(labels, salesData, revenueData, profitData) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Amount (₹)'
+                        text: 'Amount (â‚¹)'
                     },
                     grid: {
                         drawOnChartArea: false,
@@ -102,7 +102,7 @@ function createTopProductsChart(labels, quantities, revenues) {
                 borderWidth: 1,
                 yAxisID: 'y'
             }, {
-                label: 'Revenue (₹)',
+                label: 'Revenue (â‚¹)',
                 data: revenues,
                 backgroundColor: 'rgba(255, 99, 132, 0.8)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -146,7 +146,7 @@ function createTopProductsChart(labels, quantities, revenues) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Revenue (₹)'
+                        text: 'Revenue (â‚¹)'
                     },
                     grid: {
                         drawOnChartArea: false,
