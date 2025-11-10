@@ -1,0 +1,26 @@
+/* Specific styles for items_dashboard.html */
+
+.category-title {
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+.items-dashboard .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.items-dashboard .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,.1) !important;
+}
+
+.items-dashboard .card-body {
+    padding: 1rem;
+}
+
+.items-dashboard .card-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}

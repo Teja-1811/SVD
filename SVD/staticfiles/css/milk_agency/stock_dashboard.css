@@ -1,0 +1,16 @@
+/* Specific styles for stock_dashboard.html */
+
+.stock-dashboard .table-responsive {
+    font-size: 0.85rem;
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto !important;
+    overflow-y: visible;
+}
+
+.stock-dashboard .table th,
+.stock-dashboard .table td {
+    padding: 0.5rem 0.3rem;
+    white-space: nowrap;
+    min-width: 0;
+}

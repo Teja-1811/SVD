@@ -7,9 +7,9 @@
     <title>{% block title %}Milk Agency{% endblock %}</title>
     
     <link
-      rel="icon"
+      rel="shortcut icon"
       href="{% static 'images/SVD1.png' %}"
-      type="image/x-icon"
+      type="image/png"
     />
 
     <link
@@ -28,7 +28,7 @@
   </head>
   <body>
     <nav
-      class="navbar navbar-expand-lg navbar-dark"
+      class="navbar navbar-expand-lg fixed-top navbar-dark"
       style="background-color: #0d1a3a"
     >
       <div class="container-fluid">
@@ -198,6 +198,8 @@
     <link rel="stylesheet" href="{% static 'css/milk_agency/base.css' %}">
     {% csrf_token %}
     <main class="container-fluid my-4 milk-agency" style="width: 99%; margin: auto">
+      <br>
+      <br>
       {% block content %} {% endblock %}
     </main>
     <script src="{% static 'milk_agency/js/script.js' %}"></script>

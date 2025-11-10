@@ -28,8 +28,12 @@
                     <form method="post" action="{% url 'milk_agency:update_stock' %}">
                         {% csrf_token %}
 
-                        <!-- Company Filter -->
+                        <!-- Search and Company Filter -->
                         <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="itemSearch" class="form-label fw-semibold">Search Items</label>
+                                <input type="text" class="form-control form-control-lg" id="itemSearch" placeholder="Type to search items...">
+                            </div>
                             <div class="col-md-6">
                                 <label for="companyFilter" class="form-label fw-semibold">Filter by Company</label>
                                 <select class="form-select form-select-lg" id="companyFilter">
@@ -41,22 +45,17 @@
                             </div>
                         </div>
 
-                        <!-- Stock Update Instructions -->
-                        <div class="alert alert-info border-0 shadow-sm mb-4">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-info-circle-fill fs-4 text-info me-3 mt-1"></i>
-                                <div>
-                                    <h6 class="alert-heading fw-bold mb-2">Stock Update Instructions</h6>
-                                    <p class="mb-0">Enter the number of crates you want to add to each item's current stock. The total units will be calculated automatically (crates Ãƒâ€” units per crate). Enter 0 if you don't want to update that item.</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Stock Table -->
                         {% for category, items in grouped_items.items %}
                         {% if items %}
                         <div class="category-section mb-5">
                             <h4 class="category-title mb-4">{{ category|title }}</h4>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="set-all-{{ category }}" placeholder="Set crates for all items in {{ category }}" min="0">
+                                    <button class="btn btn-outline-primary" type="button" onclick="setAllCrates('{{ category }}')">Set All</button>
+                                </div>
+                            </div>
                             <div class="table-responsive mb-4">
                                 <table class="table table-hover mb-0">
                                     <thead class="table-dark">
@@ -66,6 +65,7 @@
                                             <th class="border-0 fw-semibold py-3 px-4">Units per Crate</th>
                                             <th class="border-0 fw-semibold py-3 px-4">Current Quantity</th>
                                             <th class="border-0 fw-semibold py-3 px-4">Crates</th>
+                                            <th class="border-0 fw-semibold py-3 px-4">New Quantity</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -80,7 +80,10 @@
                                                 <span class="badge bg-primary fs-6 px-3 py-2">{{ item.stock_quantity }}</span>
                                             </td>
                                             <td class="py-3 px-4">
-                                                <input type="number" class="form-control form-control-lg" name="stock_{{ item.id }}" min="0" value="0" placeholder="0" style="max-width: 120px;">
+                                                <input type="number" class="form-control form-control-lg" name="stock_{{ item.id }}" min="0" value="0" placeholder="0" style="max-width: 120px;" data-item-id="{{ item.id }}" data-current="{{ item.stock_quantity }}" data-units="{{ item.pcs_count }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Enter number of crates to add">
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <span class="badge bg-success fs-6 px-3 py-2" id="new-quantity-{{ item.id }}">{{ item.stock_quantity }}</span>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -108,6 +111,9 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-end">
+                                    <button type="button" class="btn btn-outline-warning btn-lg px-4 btn-sm col-lg-auto" onclick="clearAllInputs()">
+                                        <i class="bi bi-x-circle me-2"></i>Clear All
+                                    </button>
                                     <a href="{% url 'milk_agency:stock_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4 btn-sm col-lg-auto">
                                         <i class="bi bi-arrow-left me-2"></i>Cancel
                                     </a>
@@ -125,6 +131,22 @@
 </div>
 
 <script>
+// Search functionality
+document.getElementById('itemSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+        const itemName = row.cells[1].textContent.toLowerCase();
+        if (itemName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Company filter
 document.getElementById('companyFilter').addEventListener('change', function() {
     const selectedCompany = this.value;
     const rows = document.querySelectorAll('tbody tr[data-company]');
@@ -136,6 +158,46 @@ document.getElementById('companyFilter').addEventListener('change', function() {
         } else {
             row.style.display = 'none';
         }
+    });
+});
+
+// Live preview of new quantities
+document.addEventListener('input', function(e) {
+    if (e.target.matches('input[name^="stock_"]')) {
+        const input = e.target;
+        const itemId = input.getAttribute('data-item-id');
+        const current = parseInt(input.getAttribute('data-current')) || 0;
+        const units = parseInt(input.getAttribute('data-units')) || 1;
+        const crates = parseInt(input.value) || 0;
+        const newQuantity = current + (crates * units);
+        document.getElementById('new-quantity-' + itemId).textContent = newQuantity;
+    }
+});
+
+// Set all crates for a category
+function setAllCrates(category) {
+    const value = document.getElementById('set-all-' + category).value;
+    const inputs = document.querySelectorAll(`.category-section:has(h4:contains("${category}")) input[name^="stock_"]`);
+    inputs.forEach(input => {
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+}
+
+// Clear all inputs
+function clearAllInputs() {
+    const inputs = document.querySelectorAll('input[name^="stock_"]');
+    inputs.forEach(input => {
+        input.value = 0;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+}
+
+// Tooltips initialization (if Bootstrap tooltips are available)
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
 </script>
