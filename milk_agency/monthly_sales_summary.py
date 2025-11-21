@@ -4,13 +4,35 @@ from django.db.models import Sum
 from datetime import datetime, date, timedelta
 from collections import defaultdict
 from decimal import Decimal
-from .models import DailySalesSummary, Customer, Bill, CustomerMonthlyPurchase, CustomerMonthlyCommission
+from .models import DailySalesSummary, Customer, Bill, CustomerMonthlyCommission
 import calendar
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 from .monthly_sales_pdf_utils import MonthlySalesPDFGenerator
 from .views_sales_summary import extract_liters_from_name
+
+
+def calculate_milk_commission(volume):
+    """Calculate commission for milk based on slabs."""
+    volume = Decimal(str(volume))
+    if volume <= 15:
+        return volume * Decimal('0.2')
+    elif volume <= 30:
+        return Decimal('15') * Decimal('0.2') + (volume - Decimal('15')) * Decimal('0.3')
+    else:
+        return Decimal('15') * Decimal('0.2') + Decimal('15') * Decimal('0.3') + (volume - Decimal('30')) * Decimal('0.35')
+
+
+def calculate_curd_commission(volume):
+    """Calculate commission for curd based on slabs."""
+    volume = Decimal(str(volume))
+    if volume <= 20:
+        return volume * Decimal('0.25')
+    elif volume <= 35:
+        return Decimal('20') * Decimal('0.25') + (volume - Decimal('20')) * Decimal('0.35')
+    else:
+        return Decimal('20') * Decimal('0.25') + Decimal('15') * Decimal('0.35') + (volume - Decimal('35')) * Decimal('0.5')
 
 
 @never_cache
@@ -197,15 +219,15 @@ def monthly_sales_summary(request):
     avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
     avg_volunme = avg_milk + avg_curd
 
-    # Calculate commission based on average daily volume by category
-    milk_rate = Decimal('0.25') if avg_milk >= 25 else Decimal('0.0')
-    curd_rate = Decimal('0.30') if avg_curd >= 25 else Decimal('0.0')
+    # Calculate commissions based on slabs
+    milk_commission = calculate_milk_commission(avg_milk)*days_in_month
+    curd_commission = calculate_curd_commission(avg_curd)*days_in_month
+    total_commission = milk_commission + curd_commission
 
-    # Additional commission for total liters above 35 per day if total average >= 25
-    additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
-    additional_commission = additional_volume * Decimal('1.0') * days_in_month if avg_volunme >= 25 else Decimal('0')
-
-    total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
+    # Calculate effective rates for template compatibility
+    milk_commission_rate = milk_commission / milk_volume if milk_volume else Decimal('0')
+    curd_commission_rate = curd_commission / curd_volume if curd_volume else Decimal('0')
+    commission_rate = total_commission / total_volume if total_volume else Decimal('0')
 
     context = {
         'areas': areas,
@@ -230,9 +252,12 @@ def monthly_sales_summary(request):
         'milk_volume': avg_milk,
         'curd_volume': avg_curd,
         'avg_volume' : avg_volunme,
-        'milk_commission_rate' : milk_rate,
-        'curd_commission_rate' : curd_rate,
+        'milk_commission': milk_commission,
+        'curd_commission': curd_commission,
         'total_commission': total_commission,
+        'commission_rate': commission_rate,
+        'milk_commission_rate': milk_commission_rate,
+        'curd_commission_rate': curd_commission_rate,
         'remaining_due': (due_total - total_commission) if total_commission else due_total,
     }
 
@@ -424,15 +449,10 @@ def generate_monthly_sales_pdf(request):
     avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
     avg_volunme = avg_milk + avg_curd
 
-    # Calculate commission based on average daily volume by category
-    milk_rate = Decimal('0.25') if avg_milk >= 25 else Decimal('0.0')
-    curd_rate = Decimal('0.30') if avg_curd >= 25 else Decimal('0.0')
-
-    # Additional commission for total liters above 35 per day if total average >= 25
-    additional_volume = max(Decimal('0'), avg_volunme - Decimal('35'))
-    additional_commission = additional_volume * Decimal('1.0') * days_in_month if avg_volunme >= 25 else Decimal('0')
-
-    total_commission = (milk_volume * milk_rate) + (curd_volume * curd_rate) + additional_commission
+    # Calculate commissions based on slabs
+    milk_commission = calculate_milk_commission(milk_volume)
+    curd_commission = calculate_curd_commission(curd_volume)
+    total_commission = milk_commission + curd_commission
 
     context = {
         'areas': areas,
@@ -457,8 +477,8 @@ def generate_monthly_sales_pdf(request):
         'milk_volume': avg_milk,
         'curd_volume': avg_curd,
         'avg_volume' : avg_volunme,
-        'milk_commission_rate' : milk_rate,
-        'curd_commission_rate' : curd_rate,
+        'milk_commission': milk_commission,
+        'curd_commission': curd_commission,
         'total_commission': total_commission,
         'remaining_due': (due_total - total_commission) if total_commission else due_total,
     }

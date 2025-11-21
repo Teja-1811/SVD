@@ -84,17 +84,6 @@ class Customer(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.name
 
-    @staticmethod
-    def get_commission_rate(total_volume):
-        """Calculate commission rate in paise per liter based on total volume"""
-        from decimal import Decimal
-        if 25 < total_volume < 50:
-            return Decimal('0.40')
-        elif total_volume >= 50:
-            return Decimal('0.30')
-        else:
-            return Decimal('0.0')
-
 
 
 
@@ -240,24 +229,7 @@ class DailySalesSummary(models.Model):
         self.item_quantities = ','.join(quantities)
         self.item_prices = ','.join(prices)
 
-class CustomerMonthlyPurchase(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='monthly_purchases')
-    year = models.IntegerField()
-    month = models.IntegerField()
-    milk_volume = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total volume of milk purchased")
-    curd_volume = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total volume of curd purchased")
-
-    class Meta:
-        unique_together = ('customer', 'year', 'month')
-        ordering = ['-year', '-month']
-
-    @property
-    def total_purchase_volume(self):
-        """Calculate total purchase volume (milk + curd)"""
-        return self.milk_volume + self.curd_volume
-
-    def __str__(self):
-        return f"{self.customer.name} - {self.month}/{self.year} - Milk: {self.milk_volume}L, Curd: {self.curd_volume}L"
+# CustomerMonthlyPurchase model removed - functionality replaced with direct calculations from Bill and BillItem models
 
 class CustomerMonthlyCommission(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='monthly_commissions')
@@ -277,6 +249,8 @@ class CustomerMonthlyCommission(models.Model):
 
     def __str__(self):
         return f"{self.customer.name} - {self.month}/{self.year} - Commission: ₹{self.commission_amount}"
+
+
 
 class Expense(models.Model):
     CATEGORY_CHOICES = [

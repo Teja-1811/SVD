@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from .models import Bill, BillItem, Item, Customer, CustomerMonthlyPurchase
+from .models import Bill, BillItem, Item, Customer
 
 # Helper: derive liters per single unit from Item.name
 def extract_liters_from_name(item_name, fallback_unit_liters=None):

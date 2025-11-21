@@ -103,8 +103,7 @@ def edit_bill(request, bill_id):
         customer.due = bill.total_amount + bill.op_due_amount
         customer.save()
 
-        # Manually trigger monthly purchase update after bill edit
-        # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
+        # Monthly purchase calculation no longer available - replaced with direct calculations
 
         messages.success(request, 'Bill updated successfully.')
         return redirect('milk_agency:bills_dashboard')

@@ -145,16 +145,10 @@
                                 <td>₹{{ curd_commission_rate|floatformat:2 }}</td>
                             </tr>
                             <tr>
-                                <td>Base Commission Amount (₹)</td>
-                                <td>₹{{ milk_volume|floatformat:2|multiply:milk_commission_rate|floatformat:2 }}</td>
-                                <td>₹{{ curd_volume|floatformat:2|multiply:curd_commission_rate|floatformat:2 }}</td>
+                                <td>Commission Earned (₹)</td>
+                                <td>₹{{ milk_commission|floatformat:2 }}</td>
+                                <td>₹{{ curd_commission|floatformat:2 }}</td>
                             </tr>
-                            {% if avg_volume > 35 %}
-                            <tr class="fw-bold">
-                                <td>Additional Commission (₹/Liter above 35)</td>
-                                <td colspan="2">₹{{ avg_volume|add:-35|multiply:1|floatformat:2 }}</td>
-                            </tr>
-                            {% endif %}
                         </tbody>
                     </table>
                 </div>

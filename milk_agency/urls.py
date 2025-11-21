@@ -24,8 +24,7 @@ urlpatterns = [
     # Home/Dashboard URLs
     path('', views.home, name='home'),
 
-    # Customer Monthly Purchases URLs
-    path('customer-monthly-purchases/', views_customer_monthly_purchases.customer_monthly_purchases_dashboard, name='customer_monthly_purchases_dashboard'),
+    # Customer Monthly Purchases URLs - removed, functionality no longer available
 
     # Customer URLs
     path('add-customer/', views_customer.add_customer, name='add_customer'),

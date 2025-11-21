@@ -216,8 +216,7 @@ def generate_bill(request):
                 if customer:
                     customer.due = bill.total_amount + bill.op_due_amount
                     customer.save()
-                    # Manually trigger monthly purchase update after bill edit
-                    # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
+                    # Monthly purchase calculation no longer available - replaced with direct calculations
                     messages.info(request, f'Customer updated')
 
             messages.success(request, f'Bill {invoice_number} generated successfully!')
