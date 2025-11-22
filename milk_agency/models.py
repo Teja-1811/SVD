@@ -277,3 +277,15 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.category} - ₹{self.amount} - {self.date}"
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    website_link = models.URLField(blank=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

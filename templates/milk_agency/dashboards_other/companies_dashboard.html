@@ -3,116 +3,194 @@
 {% block title %}Companies Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Companies Overview</h5>
-                    <div class="d-flex align-items-center">
-                        <div class="input-group me-2" style="width: 250px;">
-                            <span class="input-group-text" id="search-icon"><i class="bi bi-search"></i></span>
-                            <input type="search" class="form-control" placeholder="Search Companies" aria-label="Search Companies" aria-describedby="search-icon" id="companySearchInput" />
-                        </div>
-                    </div>
+
+<div class="container-fluid py-5">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap">
+        <h2 class="fw-bold mb-3 mb-md-0">Companies</h2>
+        <a href="{% url 'milk_agency:add_company' %}" 
+           class="btn btn-info fw-bold d-flex align-items-center">
+            <i class="bi bi-plus-circle me-2"></i>Add Company
+        </a>
+    </div>
+
+    {% if companies %}
+    <!-- FULL-WIDTH GRID -->
+    <div class="companies-grid">
+        {% for company in companies %}
+        <div class="company-card shadow-lg rounded-4 position-relative overflow-hidden">
+            <!-- Banner -->
+            <div class="banner"></div>
+            <!-- Logo -->
+            <div class="logo-wrapper">
+                {% if company.logo %}
+                <img src="{{ company.logo.url }}" 
+                     class="company-logo shadow-lg" 
+                     alt="{{ company.name }}">
+                {% else %}
+                <div class="company-logo placeholder-logo shadow-lg">
+                    {{ company.name|first|upper }}
                 </div>
-                <div class="card-body">
-                    {% if companies %}
-                        <div class="row" id="companiesContainer">
-                            {% for company in companies %}
-                            <div class="col-lg-4 col-md-6 mb-4 company-card" data-company="{{ company.company|lower }}">
-                                <div class="card h-100 shadow-sm company-card-hover">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="company-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                                                <span class="h4 mb-0">{{ company.company|make_list|first|upper }}</span>
-                                            </div>
-                                            <div>
-                                                <h5 class="card-title mb-1">{{ company.company }}</h5>
-                                                <small class="text-muted">{{ company.item_count }} item{{ company.item_count|pluralize }}</small>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="row text-center">
-                                            <div class="col-6">
-                                                <div class="border-end">
-                                                    <h6 class="text-primary mb-0">{{ company.item_count }}</h6>
-                                                    <small class="text-muted">Items</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div>
-                                                    <h6 class="text-success mb-0">₹{{ company.total_stock_value|floatformat:2 }}</h6>
-                                                    <small class="text-muted">Stock Value</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="mt-3">
-                                            <small class="text-muted">Total Stock: {{ company.total_stock_quantity }} units</small>
-                                            <div class="progress mt-1" style="height: 4px;">
-                                                <div class="progress-bar bg-success" role="progressbar" 
-                                                     style="width: {% if company.total_stock_quantity > 0 %}100{% else %}0{% endif %}%">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer bg-transparent">
-                                        <a href="{% url 'milk_agency:items_dashboard' %}?company={{ company.company|urlencode }}" 
-                                           class="btn btn-outline-primary btn-sm w-100">
-                                            <i class="bi bi-box-arrow-up-right"></i> View Items
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-building text-muted" style="font-size: 3rem;"></i>
-                            <h5 class="mt-3">No companies found</h5>
-                            <p class="text-muted">Add items with company names to see company cards.</p>
-                            <a href="{% url 'milk_agency:add_item' %}" class="btn btn-outline-primary">
-                                <i class="bi bi-plus-circle"></i> Add First Item
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
+                {% endif %}
+            </div>
+            <!-- Text Section -->
+            <div class="p-4 text-center mt-4">
+                <h3 class="fw-bold mb-1">{{ company.name }}</h3>
+
+                {% if company.website_link %}
+                <a href="{{ company.website_link }}" 
+                   class="text-primary small text-decoration-none" 
+                   target="_blank">
+                    Visit Website →
+                </a>
+                {% else %}
+                <p class="text-muted small mb-0">No website available</p>
+                {% endif %}
+            </div>
+            <!-- Buttons -->
+            <div class="btn-section">
+                <a href="{% url 'milk_agency:items_dashboard' %}?company={{ company.name|urlencode }}"
+                   class="btn btn-outline-primary flex-grow-1 rounded-pill d-flex align-items-center justify-content-center gap-2">
+                   <i class="bi bi-box"></i> Items
+                </a>
+
+                <a href="{% url 'milk_agency:edit_company' company.id %}"
+                   class="btn btn-primary flex-grow-1 rounded-pill d-flex align-items-center justify-content-center gap-2">
+                   <i class="bi bi-pencil-square"></i> Edit
+                </a>
             </div>
         </div>
+        {% endfor %}
     </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="bi bi-building fs-1 text-muted"></i>
+        <h4 class="mt-3">No companies found</h4>
+        <p class="text-muted">Add companies to get started.</p>
+        <a href="{% url 'milk_agency:add_company' %}" class="btn btn-outline-primary px-4 rounded-pill">
+            <i class="bi bi-plus-circle"></i> Add Company
+        </a>
+    </div>
+    {% endif %}
+
 </div>
 
 <style>
-.company-card-hover {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+/* GRID */
+.companies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 3rem;
+    width: 100%;
+    padding: 0 20px;
+    justify-items: center;
 }
-.company-card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+
+/* PREMIUM CARD */
+.company-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    transition: all 0.35s ease;
+    max-width: 520px;
+    width: 100%;
 }
-.company-avatar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+.company-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    border-color: rgba(0,0,0,0.15);
+}
+
+/* GRADIENT BANNER */
+.banner {
+    height: 160px;
+    width: 100%;
+    background: linear-gradient(135deg, #6a11cb, #2575fc, #00d4ff);
+    background-size: 200% 200%;
+    animation: bannerGradient 6s ease infinite;
+}
+
+@keyframes bannerGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* EXTRA BIG LOGO – Hero Style (200px) */
+.logo-wrapper {
+    position: absolute;
+    top: 60px;  /* Perfect half over banner and half over white */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 40px;
+    background: #ffffff;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 5;
+}
+
+.company-logo {
+    width: 100%;
+    height: 100%;
+    border-radius: 36px;
+    padding: 16px;
+    object-fit: contain;
+}
+
+
+.logo-wrapper:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+}
+
+/* TEXT AREA */
+.company-card h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-top: 90px;
+    color: #0d0d0d;
+}
+
+.company-card a {
+    font-weight: 500;
+}
+
+/* BUTTON AREA */
+.btn-section {
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 1rem;
+    background: #f7f7f7;
+    border-top: 1px solid #e0e0e0;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+}
+
+/* BUTTONS */
+.btn-section .btn {
+    flex: 1;
+    border-radius: 50px;
+    font-weight: 600;
+    padding: 10px 0;
+    transition: all 0.25s ease;
+}
+
+/* Hover effect for buttons */
+.btn-section .btn:hover {
+    transform: translateY(-3px);
 }
 </style>
 
-<script>
-// Search functionality for company cards
-document.getElementById('companySearchInput').addEventListener('keyup', function() {
-    const searchTerm = this.value.toLowerCase();
-    const cards = document.querySelectorAll('.company-card');
-    
-    cards.forEach(function(card) {
-        const companyName = card.getAttribute('data-company');
-        if (companyName.includes(searchTerm)) {
-            card.style.display = '';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-});
-</script>
 {% endblock %}
-
-
-

@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Count, Sum, F
 from django.urls import reverse
 from django import forms
-from .models import Item, Company
+from .models import Company
 
 class CompanyForm(forms.ModelForm):
     class Meta:
@@ -29,10 +28,3 @@ def edit_company(request, company_id):
     else:
         form = CompanyForm(instance=company)
     return render(request, 'milk_agency/company_form.html', {'form': form, 'form_title': 'Edit Company'})
-
-def companies_dashboard(request):
-    """Display company cards from Company model only."""
-
-    companies = Company.objects.all().order_by('name')
-
-    return render(request, 'milk_agency/dashboards_other/companies_dashboard.html', {'companies': companies})

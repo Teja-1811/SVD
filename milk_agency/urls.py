@@ -4,7 +4,6 @@ from . import views_customer
 from . import views_items
 from . import views_bills
 from . import views_bill_operations
-
 from . import views_cashbook
 from . import views_stock_dashboard
 from . import views_companies
@@ -77,8 +76,10 @@ urlpatterns = [
     # Payments Dashboard URL
     path('payments/', views_payments.payments_dashboard, name='payments_dashboard'),
 
-    # Companies Dashboard URL
+    # Companies Dashboard and Company Forms URLs
     path('companies/', views_companies.companies_dashboard, name='companies_dashboard'),
+    path('companies/add/', views_companies.add_company, name='add_company'),
+    path('companies/edit/<int:company_id>/', views_companies.edit_company, name='edit_company'),
 
     # Product Pages - removed unused product pages
 
