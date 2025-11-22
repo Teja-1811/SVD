@@ -1,27 +1,42 @@
 # SVD Agencies Management System
 
-A comprehensive Django-based web application designed to manage operations for SVD Agencies, a milk distribution and general store business. The system provides tools for customer management, billing, inventory tracking, sales reporting, and customer portal access.
+A comprehensive Django-based web application designed to manage operations for SVD Agencies, a milk distribution and general store business. The system provides tools for customer management, billing, inventory tracking, sales reporting, customer portal access, and order management.
 
 ## Features
 
 ### Core Modules
-- **Milk Agency Management**: Complete milk product inventory, customer billing, and delivery tracking
-- **General Store**: Product management, sales tracking, customer records, and cashbook management
-- **Customer Portal**: Online ordering, bill viewing, and profile management
-- **Bill Generation**: Automated bill creation with PDF export capabilities
-- **Sales Analytics**: Monthly sales summaries, category-wise reporting, and performance dashboards
-- **Stock Management**: Real-time inventory tracking and stock updates
-- **Cashbook & Payments**: Financial transaction recording and payment tracking (available in both Milk Agency and General Store)
-- **PDF Reports**: Generate detailed bills and monthly sales reports
+
+#### Milk Agency Management
+- **Customer Management**: Custom user model with phone-based authentication, customer profiles including shop details, addresses, and financial tracking (due amounts, commission eligibility)
+- **Product Inventory**: Item management with codes, names, companies, categories, pricing (buying/selling/MRP), stock quantities, piece counts, and image uploads
+- **Billing System**: Automated bill generation with invoice numbers, itemized billing, discounts, profit calculations, and commission deductions
+- **Sales Tracking**: Daily and monthly sales summaries, payment tracking, and retailer-wise reporting
+- **Commission Management**: Monthly commission calculations based on milk/curd volumes, with deduction tracking
+- **Financial Management**: Bank balance tracking, cashbook entries (denomination-wise), expenses, and daily/monthly payment summaries
+- **PDF Reports**: Bill generation and monthly sales reports with PDF export
+
+#### General Store Management
+- **Product Management**: Products categorized by type, with buying/MRP pricing, stock tracking
+- **Customer Management**: Customer records with contact details, addresses, and balance tracking
+- **Sales System**: Invoice generation, itemized sales with discounts, profit calculations
+- **Financial Tracking**: Bank balance, cashbook entries, investments, and expenses
+- **Inventory Control**: Real-time stock updates and management
+
+#### Customer Portal
+- **Order Management**: Customer order placement with status tracking (pending, confirmed, processing, delivered, etc.), admin approval workflow
+- **Order Items**: Detailed item requests with quantities, prices, discounts, and admin notes
+- **Profile Management**: Customer profile updates and order history viewing
+- **Bill Access**: View and download bills and statements
 
 ### Technical Features
-- User authentication with custom customer backend
-- Responsive web interface with Bootstrap styling
-- PDF generation using ReportLab
-- Excel export functionality
-- Google API integration for additional services
-- Image upload and management for products
-- Real-time data dashboards
+- **Authentication**: Custom customer backend with phone-based login, staff/admin access
+- **Responsive UI**: Bootstrap-styled web interface with real-time date/time display
+- **PDF Generation**: ReportLab-based PDF creation for bills and reports
+- **Data Export**: Excel export functionality for reports
+- **Media Management**: Image uploads for products with organized storage
+- **Real-time Dashboards**: Performance dashboards with analytics
+- **API Integration**: Google API support for additional services
+- **Database**: SQLite with comprehensive migrations for all models
 
 ## Installation
 
