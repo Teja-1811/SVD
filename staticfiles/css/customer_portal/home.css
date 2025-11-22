@@ -1,0 +1,255 @@
+/* Welcome Section Styles */
+.welcome-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px 5px;
+    text-align: center;
+    border-radius: 15px;
+    box-shadow: none;
+    margin-top: 3%;
+    margin-bottom: 0;
+}
+
+.welcome-section .logo-container {
+    margin-bottom: 10px;
+}
+
+.welcome-section .logo-container img {
+    max-width: 200px;
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    padding:px;
+}
+
+.welcome-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-section p {
+    font-size: 1.2rem;
+    line-height: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    opacity: 0.9;
+}
+
+/* Override Bootstrap card styles if any */
+.welcome-section .card {
+    background: transparent;
+    border: none;
+    color: white;
+}
+
+.welcome-section .card-body {
+    padding: 0;
+}
+
+/* Stats Cards Styles */
+.stats-cards .card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    height: 120px;
+    background: white;
+    color: #333;
+}
+
+.stats-cards .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stats-cards .card-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    height: 100%;
+}
+
+.stats-card-1 {
+    border-left: 8px solid #667eea;
+}
+
+.stats-card-1 .card-icon {
+    color: #667eea;
+}
+
+.stats-card-2 {
+    border-left: 8px solid #f093fb;
+}
+
+.stats-card-2 .card-icon {
+    color: #f093fb;
+}
+
+.stats-card-3 {
+    border-left: 8px solid #4facfe;
+}
+
+.stats-card-3 .card-icon {
+    color: #4facfe;
+}
+
+.stats-card-4 {
+    border-left: 8px solid #43e97b;
+}
+
+.stats-card-4 .card-icon {
+    color: #43e97b;
+}
+
+.stats-cards .card-icon {
+    font-size: 2.5rem;
+    margin-right: 15px;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.stats-cards .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    text-align: center;
+}
+
+.stats-cards .card-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-cards .card-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.stats-cards .card-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 15px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
+}
+
+.status-active {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-frozen {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Account Details Card */
+.account-details-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.account-details-card .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+    padding: 15px 20px;
+}
+
+.account-details-card .card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.account-details-card .card-body {
+    padding: 20px;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.info-content {
+    flex: 1;
+    text-align: center;
+}
+
+.info-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.account-details-card .btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.account-details-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}

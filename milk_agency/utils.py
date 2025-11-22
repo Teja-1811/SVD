@@ -116,3 +116,94 @@ def process_bill_items(bill, item_ids, quantities, discounts):
                 raise
 
     return total_bill, total_profit
+
+
+def calculate_monthly_commissions(year, month):
+    """
+    Calculate monthly commissions for all commissioned customers for the given month.
+    Commissions are calculated for the previous month on the 5th of the current month.
+    """
+    # Get all customers who are commissioned
+    commissioned_customers = Customer.objects.filter(is_commissioned=True)
+
+    for customer in commissioned_customers:
+        # Check if commission already exists for this customer and month
+        existing_commission = CustomerMonthlyCommission.objects.filter(
+            customer=customer,
+            year=year,
+            month=month
+        ).first()
+
+        if existing_commission:
+            # Skip if already calculated
+            continue
+
+        # Calculate volumes from bills in the specified month
+        bills = Bill.objects.filter(
+            customer=customer,
+            invoice_date__year=year,
+            invoice_date__month=month,
+        ).prefetch_related('items__item')
+
+        milk_volume = Decimal('0')
+        curd_volume = Decimal('0')
+
+        for bill in bills:
+            for bill_item in bill.items.all():
+                category = bill_item.item.category
+                quantity = bill_item.quantity
+                if category and quantity:
+                    category_lower = category.lower()
+                    liters_per_unit = extract_liters_from_name(bill_item.item.name)
+                    total_liters = Decimal(str(liters_per_unit)) * Decimal(str(quantity))
+                    if category_lower == 'milk':
+                        milk_volume += total_liters
+                    elif category_lower == 'curd':
+                        curd_volume += total_liters
+
+        total_volume = milk_volume + curd_volume
+
+        # Calculate commissions using the same logic as monthly_sales_summary.py
+        milk_commission = calculate_milk_commission(milk_volume)
+        curd_commission = calculate_curd_commission(curd_volume)
+        total_commission = milk_commission + curd_commission
+
+        # Calculate rates
+        milk_commission_rate = milk_commission / milk_volume if milk_volume else Decimal('0')
+        curd_commission_rate = curd_commission / curd_volume if curd_volume else Decimal('0')
+
+        # Create commission record
+        CustomerMonthlyCommission.objects.create(
+            customer=customer,
+            year=year,
+            month=month,
+            milk_volume=milk_volume,
+            curd_volume=curd_volume,
+            total_volume=total_volume,
+            milk_commission_rate=milk_commission_rate,
+            curd_commission_rate=curd_commission_rate,
+            commission_amount=total_commission,
+            status=False  # Not yet deducted
+        )
+
+
+def calculate_milk_commission(volume):
+    """Calculate commission for milk based on slabs."""
+    volume = Decimal(str(volume))
+    if volume <= 15:
+        return volume * Decimal('0.2')
+    elif volume <= 30:
+        return Decimal('15') * Decimal('0.2') + (volume - Decimal('15')) * Decimal('0.3')
+    else:
+        return Decimal('15') * Decimal('0.2') + Decimal('15') * Decimal('0.3') + (volume - Decimal('30')) * Decimal('0.35')
+
+
+def calculate_curd_commission(volume):
+    """Calculate commission for curd based on slabs."""
+    volume = Decimal(str(volume))
+    if volume <= 20:
+        return volume * Decimal('0.25')
+    elif volume <= 35:
+        return Decimal('20') * Decimal('0.25') + (volume - Decimal('20')) * Decimal('0.35')
+    else:
+        return Decimal('20') * Decimal('0.25') + Decimal('15') * Decimal('0.35') + (volume - Decimal('35')) * Decimal('0.5')

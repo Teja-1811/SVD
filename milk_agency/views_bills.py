@@ -137,9 +137,16 @@ def generate_bill(request):
             bill_date_obj = timezone.now().date()
 
         customer = None
+        commission_to_deduct = None
         if customer_id:
             try:
                 customer = Customer.objects.get(id=customer_id)
+                # Check for pending commission to deduct
+                from .models import CustomerMonthlyCommission
+                commission_to_deduct = CustomerMonthlyCommission.objects.filter(
+                    customer=customer,
+                    status=False
+                ).first()
             except Customer.DoesNotExist:
                 messages.error(request, 'Customer not found.')
                 return redirect('milk_agency:generate_bill')
@@ -209,6 +216,20 @@ def generate_bill(request):
                 # Update bill totals
                 bill.total_amount = total_amount
                 bill.profit = total_profit
+
+                # Apply commission deduction if available
+                if commission_to_deduct and total_amount > 0:
+                    commission_amount = commission_to_deduct.commission_amount
+                    # Deduct commission from bill amount
+                    bill.total_amount = max(Decimal(0), total_amount - commission_amount)
+                    bill.commission_deducted = commission_amount
+                    bill.commission_month = commission_to_deduct.month
+                    bill.commission_year = commission_to_deduct.year
+
+                    # Mark commission as deducted
+                    commission_to_deduct.status = True
+                    commission_to_deduct.save()
+
                 # Keep the last_paid from latest bill (set during creation), don't reset to 0
                 bill.save()
 
@@ -217,7 +238,10 @@ def generate_bill(request):
                     customer.due = bill.total_amount + bill.op_due_amount
                     customer.save()
                     # Monthly purchase calculation no longer available - replaced with direct calculations
-                    messages.info(request, f'Customer updated')
+                    if commission_to_deduct and bill.commission_deducted > 0:
+                        messages.info(request, f'Customer updated. Commission of ₹{bill.commission_deducted} deducted.')
+                    else:
+                        messages.info(request, f'Customer updated')
 
             messages.success(request, f'Bill {invoice_number} generated successfully!')
             return redirect('milk_agency:view_bill', bill_id=bill.id)

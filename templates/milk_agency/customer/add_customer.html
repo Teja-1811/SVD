@@ -45,6 +45,17 @@
                                     <input type="text" class="form-control form-control-lg" id="phone" name="phone" placeholder="Enter Phone Number" value="{{ customer.phone|default:'' }}" required>
                                 </div>
                             </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_commissioned" name="is_commissioned" {% if customer.is_commissioned %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="is_commissioned">
+                                        Is Commissioned
+                                    </label>
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>Check if this customer is eligible for commission calculation
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

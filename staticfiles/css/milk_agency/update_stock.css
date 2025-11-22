@@ -1,0 +1,94 @@
+/* Specific styles for update_stock.html */
+
+.update-stock .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.update-stock .table-responsive {
+    font-size: 0.85rem;
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto !important;
+    overflow-y: visible;
+}
+
+.update-stock .table th,
+.update-stock .table td {
+    padding: 0.4rem 0.2rem;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.update-stock .card-header {
+    padding: 1rem 1.5rem;
+}
+
+.update-stock .card-header h3 {
+    font-size: 1.1rem;
+}
+
+.update-stock .alert {
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .update-stock .table-responsive {
+        font-size: 0.75rem;
+    }
+
+    .update-stock .table th,
+    .update-stock .table td {
+        padding: 0.3rem 0.1rem;
+    }
+
+    .update-stock .form-control {
+        font-size: 0.9rem;
+    }
+
+    .update-stock .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .update-stock .badge {
+        font-size: 0.75rem;
+    }
+
+    /* Stack filters vertically on mobile */
+    .update-stock .row.mb-4 > div {
+        margin-bottom: 1rem;
+    }
+
+    /* Make inputs larger on mobile for easier touch */
+    .update-stock input[type="number"] {
+        min-height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* Highlight search matches */
+.update-stock .table tbody tr.highlighted {
+    background-color: #fff3cd;
+}
+
+/* Better spacing for category sections */
+.update-stock .category-section {
+    margin-bottom: 2rem;
+}
+
+.update-stock .category-title {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Improve input group for set all */
+.update-stock .input-group .form-control {
+    border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.update-stock .input-group .btn {
+    border-radius: 0 0.375rem 0.375rem 0;
+}

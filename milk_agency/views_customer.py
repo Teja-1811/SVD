@@ -24,6 +24,7 @@ def add_customer(request, customer_id=None):
         pin_code = request.POST.get('pin_code')
         city = request.POST.get('city')
         state = request.POST.get('state')
+        is_commissioned = request.POST.get('is_commissioned') == 'on'
         # Removed milk_commission and curd_commission from POST handling
         if customer and customer.city != city:
             retailer_id = "SVD-"+city+retailer_id[-4:]
@@ -39,7 +40,7 @@ def add_customer(request, customer_id=None):
             customer.pin_code = pin_code
             customer.city = city
             customer.state = state
-            customer.password=phone
+            customer.is_commissioned = is_commissioned
             customer.save()
             messages.success(request, f'Customer {customer.name} updated successfully!')
         else:
@@ -61,6 +62,7 @@ def add_customer(request, customer_id=None):
                 pin_code=pin_code,
                 city=city,
                 state=state,
+                is_commissioned=is_commissioned,
                 password=phone  # Set phone number as default password
             )
             messages.success(request, f'Customer {customer.name} added successfully!')

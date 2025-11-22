@@ -4,8 +4,11 @@ from django.utils import timezone
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from .models import Bill, Customer, Item, CashbookEntry
-from .views_sales_summary import sales_summary_by_category
+from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, BillItem
+from .views_sales_summary import sales_summary_by_category, extract_liters_from_name
+from decimal import Decimal
+from datetime import datetime, timedelta
+import calendar
 
 @login_required
 @never_cache
@@ -17,6 +20,22 @@ def home(request):
 
     # Get today's date
     today = timezone.now().date()
+
+    # Automatically calculate monthly commissions if it's the 5th
+    if today.day == 5:
+        # Calculate for previous month
+        previous_month = today.month - 1 if today.month > 1 else 12
+        previous_year = today.year if today.month > 1 else today.year - 1
+
+        # Check if commissions for previous month have already been calculated
+        existing_commissions = CustomerMonthlyCommission.objects.filter(
+            year=previous_year,
+            month=previous_month
+        ).exists()
+
+        if not existing_commissions:
+            from .utils import calculate_monthly_commissions
+            calculate_monthly_commissions(previous_year, previous_month)
 
     # Today's sales data
     today_bills = Bill.objects.filter(invoice_date=today)

@@ -43,6 +43,9 @@ class Customer(AbstractBaseUser, PermissionsMixin):
     # Financial fields
     due = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Customer's current balance")
 
+    # Commission eligibility
+    is_commissioned = models.BooleanField(default=False, help_text="Whether this customer is eligible for commission calculation")
+
     # Status
     frozen = models.BooleanField(default=False)
     last_login = models.DateTimeField(blank=True, null=True)
@@ -112,6 +115,9 @@ class Bill(models.Model):
     op_due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     last_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Last paid amount for this bill")
     profit = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total profit from this bill")
+    commission_deducted = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Commission amount deducted from this bill")
+    commission_month = models.IntegerField(null=True, blank=True, help_text="Month for which commission was deducted")
+    commission_year = models.IntegerField(null=True, blank=True, help_text="Year for which commission was deducted")
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
@@ -241,6 +247,7 @@ class CustomerMonthlyCommission(models.Model):
     milk_commission_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Commission rate for milk per liter")
     curd_commission_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Commission rate for curd per liter")
     commission_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Total commission amount for the month")
+    status = models.BooleanField(default=False, help_text="Whether the commission has been deducted from a bill")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

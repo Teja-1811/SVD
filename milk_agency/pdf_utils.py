@@ -203,6 +203,16 @@ class PDFGenerator:
 
         return y - 40
 
+    def _draw_commission_deduction(self, c, bill, width, start_y):
+        """Draw commission deduction section"""
+        y = start_y - 20
+
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(50, y, f"Commission Deducted for {bill.commission_month}/{bill.commission_year}: ₹{bill.commission_deducted:.2f}")
+        y -= 15
+
+        return y
+
     def _draw_totals(self, c, bill, width, start_y):
         """Draw totals section with left and right columns"""
         y = start_y
