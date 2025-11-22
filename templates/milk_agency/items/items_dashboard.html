@@ -6,6 +6,57 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
 <link rel="stylesheet" href="{% static 'css/milk_agency/items_dashboard.css' %}">
+<style>
+    .company-logo-box {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        width: 75px;       /* FIXED WIDTH */
+        height: 75px;      /* FIXED HEIGHT */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;   /* Prevent overflow */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .company-logo-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain; /* Best clarity without distortion */
+    }
+
+    .company-filter-logo {
+        width: 100px;
+        height: 80px;
+        border-radius: 50%;
+        padding: 5px;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 2px solid #eee;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        transition: 0.2s ease;
+        cursor: pointer;
+    }
+
+    .company-filter-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .company-filter-logo:hover {
+        transform: scale(1.12);
+        border-color: #6c63ff;
+    }
+
+</style>
 {% endblock %}
 
 {% block content %}
@@ -13,31 +64,37 @@
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center">
-                <div>
-                    <h2 class="fw-bold">Items Dashboard{% if company_filter %} - {{ company_filter }}{% endif %}</h2>
-                    {% if company_filter %}
-                    <p class="text-muted mb-0">Showing items from {{ company_filter }}</p>
-                    {% endif %}
-                </div>
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="search" class="form-control" placeholder="Search Items" aria-label="Search Items" id="itemSearchInput" />
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center w-100">
+                <h2 class="fw-bold mb-3 mb-lg-0">Items Dashboard</h2>
+                <!-- RIGHT SIDE: logos + search + add button -->
+                <div class="d-flex align-items-center flex-wrap gap-3 ms-lg-auto">
+                    <!-- COMPANY FILTER ICONS (EXACT LEFT OF SEARCH BAR) -->
+                    <div class="d-flex align-items-center gap-2">
+                        {% for c in companies %}
+                            <a href="?company={{ c.id }}" class="company-filter-logo" title="{{ c.name }}">
+                                {% if c.logo %}
+                                    <img src="{{ c.logo.url }}" alt="{{ c.name }}">
+                                {% else %}
+                                    <span class="company-text-badge">{{ c.name|slice:":1" }}</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
                     </div>
-                    {% if company_filter %}
-                    <a href="{% url 'milk_agency:items_dashboard' %}" class="btn btn-outline-secondary btn-sm col-lg-auto">
-                        <i class="bi bi-arrow-left me-2"></i>View All Items
-                    </a>
-                    {% endif %}
-                    <a href="{% url 'milk_agency:add_item' %}" class="btn btn-outline-success btn-sm col-lg-auto">
-                        <i class="bi bi-plus-circle me-2"></i>Add New Item
+                    <!-- SEARCH BAR (NO SHIFTING) -->
+                    <div class="input-group" style="width: 230px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="search" class="form-control" id="itemSearchInput" placeholder="Search Items">
+                    </div>
+                    <!-- ADD BUTTON (NO OVERLAP) -->
+                    <a href="{% url 'milk_agency:add_item' %}"
+                    class="btn btn-outline-success btn-sm d-flex align-items-center px-3">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Add New Item
                     </a>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Items Grid -->
     {% for category, items in grouped_items.items %}
     {% if items %}
@@ -49,6 +106,11 @@
                 <div class="card h-100 shadow-lg border-0">
                     <!-- Item Image -->
                     <div class="position-relative">
+                        {% if item.company and item.company.logo %}
+                            <div class="company-logo-box">
+                                <img src="{{ item.company.logo.url }}" alt="{{ item.company.name }}">
+                            </div>
+                        {% endif %}
                         {% if item.image %}
                         <img src="/media/{{ item.image }}" alt="{{ item.name }}" class="card-img-top" style="width: 100%; height: 200px; object-fit: contain; border-radius: 15px 15px 0 0;">
                         {% else %}
@@ -201,6 +263,3 @@
     }
 </script>
 {% endblock %}
-
-
-

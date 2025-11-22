@@ -45,8 +45,17 @@
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label for="company" class="form-label fw-semibold">Company <span class="text-muted">(optional)</span></label>
-                                        <input type="text" class="form-control form-control-lg" id="company" name="company" placeholder="Enter company name" value="{% if item %}{{ item.company }}{% endif %}">
+                                        <label class="form-label">Company</label>
+                                        <select name="company" class="form-select" required>
+                                            <option value="" disabled selected>-- Select Company --</option>
+                                            {% for c in companies %}
+                                                <option value="{{ c.id }}"
+                                                    {% if item and item.company_id == c.id %}selected{% endif %}
+                                                >
+                                                    {{ c.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label for="category" class="form-label fw-semibold">Category <span class="text-muted">(optional)</span></label>

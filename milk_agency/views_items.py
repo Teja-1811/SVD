@@ -2,20 +2,25 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import Item
+from .models import Item, Company
 
 @login_required
 def items_dashboard(request):
     from itertools import groupby
     from collections import OrderedDict
 
-    company_filter = request.GET.get('company')
-    if company_filter:
-        items = Item.objects.filter(company=company_filter).order_by('category', 'name')
+    # Get all companies (for clickable logos)
+    companies = Company.objects.all()
+
+    # Filter by company_id if passed
+    company_id = request.GET.get('company')
+
+    if company_id:
+        items = Item.objects.filter(company_id=company_id).order_by('category', 'name')
     else:
         items = Item.objects.all().order_by('category', 'name')
 
-    # Calculate stock value and margin for each item
+    # Calculations
     for item in items:
         item.stock_value = item.stock_quantity * item.buying_price
         item.margin = item.selling_price - item.buying_price
@@ -25,21 +30,17 @@ def items_dashboard(request):
     for category, group in groupby(items, key=lambda x: (x.category or 'others').lower()):
         grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
 
-    # Define custom order for categories
     category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
-    ordered_grouped = OrderedDict()
-    for cat in category_order:
-        ordered_grouped[cat] = grouped_items.get(cat, [])
+    ordered_grouped = OrderedDict((cat, grouped_items.get(cat, [])) for cat in category_order)
 
-    # Check if there are any items at all
     total_items = sum(len(items) for items in ordered_grouped.values())
 
-    context = {
+    return render(request, 'milk_agency/items/items_dashboard.html', {
         'grouped_items': ordered_grouped,
         'total_items': total_items,
-        'company_filter': company_filter
-    }
-    return render(request, 'milk_agency/items/items_dashboard.html', context)
+        'companies': companies,     # For the clickable logos
+    })
+
 
 @login_required
 def add_item(request, item_id=None):
@@ -48,10 +49,12 @@ def add_item(request, item_id=None):
     else:
         item = None
 
+    companies = Company.objects.all()   # <-- added
+
     if request.method == 'POST':
         code = request.POST.get('code')
         name = request.POST.get('name')
-        company = request.POST.get('company')
+        company = request.POST.get('company')   # <-- will be company_id
         category = request.POST.get('category')
         buying_price = request.POST.get('buying_price', 0)
         selling_price = request.POST.get('selling_price', 0)
@@ -59,6 +62,7 @@ def add_item(request, item_id=None):
         stock_quantity = request.POST.get('stock_quantity', 0)
         pcs_count = request.POST.get('pcs_count', 1)
         image = request.FILES.get('image')
+
         try:
             buying_price = float(buying_price)
             selling_price = float(selling_price)
@@ -70,10 +74,10 @@ def add_item(request, item_id=None):
             return redirect('milk_agency:items_dashboard')
 
         if item:
-            # Update existing item
+            # Update
             item.code = code
             item.name = name
-            item.company = company
+            item.company_id = company     # <-- fixed
             item.category = category
             item.buying_price = buying_price
             item.selling_price = selling_price
@@ -85,11 +89,11 @@ def add_item(request, item_id=None):
             item.save()
             messages.success(request, f'Item {item.name} updated successfully!')
         else:
-            # Create new item
+            # Create
             item = Item.objects.create(
                 code=code,
                 name=name,
-                company=company,
+                company_id=company,    # <-- fixed
                 category=category,
                 buying_price=buying_price,
                 selling_price=selling_price,
@@ -104,9 +108,11 @@ def add_item(request, item_id=None):
 
     context = {
         'item': item,
-        'is_edit': item is not None
+        'is_edit': item is not None,
+        'companies': companies   # <-- added
     }
     return render(request, 'milk_agency/items/add_item.html', context)
+
 
 @login_required
 def edit_item(request, item_id):
