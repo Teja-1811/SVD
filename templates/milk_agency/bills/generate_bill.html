@@ -3,7 +3,101 @@
 {% block title %}Generate Bill{% endblock %}
 
 {% block content %}
+
+<style>
+/* ------------------------------
+   RESPONSIVE FIXES (Option C)
+   Keep layout exactly — only make responsive
+---------------------------------*/
+
+/* Ensure cards don't become excessively tall and overflow */
+.card {
+    height: auto !important;
+    overflow: visible;
+}
+
+/* Better spacing for forms on small screens */
+@media (max-width: 768px) {
+    .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+    .form-control, .form-select {
+        padding: 6px 10px;
+        font-size: 0.95rem;
+    }
+    /* Make the add-item controls stack nicely */
+    .row .col-md-3, .row .col-md-2, .row .col-md-1, .row .col-md-4 {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block;
+    }
+    /* Reduce table cell padding on mobile */
+    #billed-items-table th,
+    #billed-items-table td {
+        padding: 6px 6px !important;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    /* Ensure buttons don't overflow */
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 5px 8px;
+    }
+    /* Make add item button full width on mobile */
+    #add-item-btn {
+        width: 100% !important;
+    }
+}
+
+/* Fix table responsiveness on small screens */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+}
+
+/* Slightly tighter desktop spacing */
+@media (min-width: 769px) {
+    #billed-items-table th, #billed-items-table td {
+        padding: 10px 12px;
+    }
+}
+
+/* Make action buttons nicer in the table (optional visual tweak, non-intrusive) */
+.delete-item-btn {
+    padding: 4px 8px;
+}
+
+/* Keep items-container hidden (as requested) but ensure it will layout correctly if shown */
+#items-container .item-row {
+    box-sizing: border-box;
+}
+
+/* Ensure inputs inside cards don't overflow */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Minor aesthetics */
+.table-bordered {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* DESKTOP TWO-COLUMN LAYOUT */
+@media (min-width: 992px) {
+    .generate-bill-wrapper form {
+        display: grid;
+        grid-template-columns: 380px auto;
+        gap: 20px;
+        align-items: flex-start;
+    }
+}
+
+</style>
+
 <div class="container-fluid py-4">
+
     <form method="post" action="{% url 'milk_agency:generate_bill' %}">
         {% csrf_token %}
 
@@ -84,7 +178,7 @@
                     </div>
 
                     <!-- Add Button -->
-                    <div class="col-md-1 d-flex align-items-end">
+                    <div class="col-md-1 d-flex align-items-end mt-3">
                         <button type="button" id="add-item-btn" class="btn btn-outline-success btn-sm col-lg-auto">Add Item</button>
                     </div>
                 </div>
@@ -94,32 +188,34 @@
         <!-- Bottom Card: Billed Items Data -->
         <div class="card">
             <div class="card-body">
-                <table class="table table-bordered text-center" id="billed-items-table">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Price</th>
-                            <th>Qty</th>
-                            <th>Disc</th>
-                            <th>Disc Amount</th>
-                            <th>Total Amount</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="billed-items-body">
-                        <!-- Rows will be dynamically added here -->
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2"><strong>Total</strong></td>
-                            <td><strong id="total-qty">0</strong></td>
-                            <td></td>
-                            <td><strong id="total-disc-amt">₹0.00</strong></td>
-                            <td><strong id="total-amt">₹0.00</strong></td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center" id="billed-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Disc</th>
+                                <th>Disc Amount</th>
+                                <th>Total Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billed-items-body">
+                            <!-- Rows will be dynamically added here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong id="total-qty">0</strong></td>
+                                <td></td>
+                                <td><strong id="total-disc-amt">₹0.00</strong></td>
+                                <td><strong id="total-amt">₹0.00</strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
                 <!-- Hidden inputs for form submission -->
                 <div id="hidden-inputs">
@@ -181,7 +277,7 @@
                     <label for="total-amount" class="form-label">Total Amount</label>
                     <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
                 </div>
-                <div class="mb-3">
+                <div class="mb-3 mt-4 text-end">
                     <button type="submit" class="btn btn-outline-primary btn-sm col-lg-auto">Generate Bill</button>
                 </div>
             </div>
@@ -379,10 +475,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemRow = document.querySelector(`.item-row[data-item-id="${itemId}"]`);
             if (itemRow) {
                 const qtyInputEl = itemRow.querySelector('.quantity-input');
-                const discInputEl = itemRow.querySelector('.discount-input');
+                const discInputEl =
+document.querySelector(`.discount-input[data-item-id="${itemId}"]`);
 
                 qtyInputEl.value = 0;
-                discInputEl.value = 0;
+                if (discInputEl) discInputEl.value = 0;
 
                 updateTable();
             }
@@ -412,6 +509,3 @@ function filterByArea() {
 
 </script>
 {% endblock %}
-
-
-

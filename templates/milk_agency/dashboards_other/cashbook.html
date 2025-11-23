@@ -187,7 +187,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="card border-warning">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title text-warning">{{ company.company }}</h5>
+                                    <h5 class="card-title text-warning">{{ company.company_name }}</h5>
                                     <h4 class="{% if company.total_due > 0 %}text-danger{% else %}text-success{% endif %}">₹{{ company.total_due|floatformat:2 }}</h4>
                                     <small class="text-muted">Last updated: {{ company.last_updated|date:"d M Y" }}</small>
                                 </div>

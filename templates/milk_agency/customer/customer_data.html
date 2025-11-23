@@ -1,397 +1,427 @@
 ﻿{% extends "milk_agency/home/base.html" %}
-
+{% load static %}
 {% block title %}Customers Dashboard{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-4">
-    <!-- Header Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-                <div>
-                    <h2 class="mb-1 fw-bold">Customers Dashboard</h2>
-                    <p class="text-muted mb-0">Manage and track all your customers</p>
-                </div>
-                <a href="{% url 'milk_agency:add_customer' %}" class="btn btn-outline-primary btn-lg px-4 btn-sm col-lg-auto">
-                    <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Customers Table Card -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-lg border-0">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="customersTable">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th class="border-0 fw-semibold py-3 px-4">#</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Name</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Shop Name</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Retailer ID</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Phone</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Balance Due</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Status</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for customer in customers %}
-                                <tr class="align-middle {% if customer.frozen %}table-secondary{% endif %}">
-                                    <td class="py-3 px-4">{{ forloop.counter }}</td>
-                                    <td class="py-3 px-4 fw-medium">{{ customer.name }}</td>
-                                    <td class="py-3 px-4">{{ customer.shop_name|default:"-" }}</td>
-                                    <td class="py-3 px-4">
-                                        <span class="badge bg-light text-dark border">{{ customer.retailer_id|default:"-" }}</span>
-                                    </td>
-                                    <td class="py-3 px-4">{{ customer.phone }}</td>
-                                    <td class="py-3 px-4 text-danger fw-semibold">₹{{ customer.due|default:0|floatformat:2 }}</td>
-                                    <td class="py-3 px-4">
-                                        {% if customer.frozen %}
-                                            <span class="badge bg-danger">Frozen</span>
-                                        {% else %}
-                                            <span class="badge bg-success">Active</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'milk_agency:edit_customer' customer.id %}" class="btn btn-sm btn-outline-info" title="View/Edit Customer">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-{% if customer.frozen %}success{% else %}secondary{% endif %} freeze-btn"
-                                                    title="{% if customer.frozen %}Unfreeze{% else %}Freeze{% endif %} Customer"
-                                                    data-customer-id="{{ customer.id }}"
-                                                    data-csrf-token="{{ csrf_token }}">
-                                                <i class="bi bi-{% if customer.frozen %}unlock-fill{% else %}lock-fill{% endif %}"></i>
-                                            </button>
-                                            <a href="https://wa.me/{{ customer.phone }}?text=Dear%20{{ customer.name|urlencode }}%2C%0A%0AAccount%20Summary%20-%20SVD%20Milk%20Agencies%0A%0ACurrent%20Balance%20Due%3A%20₹{{ customer.due|default:0|floatformat:2 }}%0A%0AFor%20any%20queries%20or%20payments%2C%20please%20contact%20us.%0A%0AThank%20you%20for%20choosing%20SVD%20Milk%20Agencies!"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Share Balance via WhatsApp"
-                                                target="_blank">
-                                                <i class="bi bi-whatsapp"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-primary balance-btn"
-                                                    title="Update Balance"
-                                                    data-customer-id="{{ customer.id }}"
-                                                    data-customer-name="{{ customer.name }}"
-                                                    data-current-balance="{{ customer.due|default:0 }}">
-                                                <i class="bi bi-cash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="8" class="text-center py-5">
-                                        <div class="text-muted">
-                                            <i class="bi bi-person-circle fs-1 mb-3 d-block"></i>
-                                            <h5>No customers found</h5>
-                                            <p class="mb-0">Start by adding your first customer.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-.table-responsive {
-    border-radius: 15px;
-    overflow: hidden;
+/* === Page-specific styles === */
+
+.container-fluid.py-4 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+
+/* Add Customer Button */
+.add-customer-btn {
+  background: linear-gradient(90deg,#0066ff,#3b8dff);
+  color: #fff !important;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(10, 60, 120, .12);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.add-customer-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(10,60,120,.16); }
+
+.add-icon { font-size: 1.1rem; margin-right: .6rem; }
+@media (max-width: 767px) {
+  .add-text { display: none; }
+  .add-icon{ margin-right:0; font-size:1.4rem; }
 }
 
-.table thead th {
-    border-bottom: 2px solid #dee2e6;
-    white-space: nowrap;
+/* Card/Table visuals */
+.card { border-radius: 12px; overflow: hidden; }
+.table-responsive { border-radius: 12px; overflow: hidden; }
+
+/* Mobile card */
+.customer-card-mobile {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-left: 5px solid #0d6efd;
+  box-shadow: 0 8px 22px rgba(8,32,80,0.04);
+  position: relative;
+}
+.card-frozen { border-left-color: #dc3545 !important; }
+.customer-header { font-weight:700; font-size:1rem; margin-bottom:6px; }
+.customer-divider { height:1px; background:#eef0f3; margin:8px 0; }
+.customer-info { font-size:0.92rem; color:#444; line-height:1.45; }
+
+/* Floating action buttons */
+.customer-actions {
+  position:absolute; right:12px; bottom:12px;
+  display:flex; gap:10px;
 }
 
-.table tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.05);
+/* Outline button style */
+.action-btn {
+  width: 35px; height: 35px;
+  border-radius: 12px;
+  background: transparent !important;
+  border: 2px solid #d0d7de !important;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; color: #444 !important;
+  transition: 0.25s ease;
 }
 
-.card {
-    border-radius: 15px;
-    overflow: hidden;
+.action-btn:hover {
+  background: rgba(0,0,0,0.05) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
 }
 
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+/* Individual button colors */
+.info-btn { border-color:#0d6efd !important; color:#0d6efd !important; }
+.info-btn:hover { background:#0d6efd !important; color:#fff !important; }
+
+.freeze-btn { border-color:#6c757d !important; color:#6c757d !important; }
+.freeze-btn:hover { background:#6c757d !important; color:#fff !important; }
+
+.freeze-active { border-color:#198754 !important; color:#198754 !important; }
+.freeze-active:hover { background:#198754 !important; color:#fff !important; }
+
+.whatsapp-btn { border-color:#25d366 !important; color:#25d366 !important; }
+.whatsapp-btn:hover { background:#25d366 !important; color:#fff !important; }
+
+.money-btn { border-color:#0d6efd !important; color:#0d6efd !important; }
+.money-btn:hover { background:#0d6efd !important; color:#fff !important; }
+
+/* highlight animation */
+.updated-highlight {
+  animation: highlightFlash .9s ease;
+}
+@keyframes highlightFlash {
+  0% { background-color: rgba(40,167,69,0.12); }
+  100% { background-color: transparent; }
 }
 
-/* Mobile responsiveness improvements */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .d-flex.justify-content-between.align-items-start.align-items-lg-center {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 1rem;
-    }
-
-    .btn-outline-primary {
-        width: 100%;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-    }
-
-    .table-responsive {
-        font-size: 0.85rem;
-        border-radius: 10px;
-        -webkit-overflow-scrolling: touch;
-        overflow-x: auto !important;
-        overflow-y: visible;
-    }
-
-    .table th, .table td {
-        padding: 0.4rem 0.2rem;
-        white-space: nowrap;
-        min-width: 0;
-    }
-
-    .table th:nth-child(1), .table td:nth-child(1) {
-        width: 40px;
-        text-align: center;
-    }
-
-    .table th:nth-child(2), .table td:nth-child(2) {
-        min-width: 100px;
-    }
-
-    .table th:nth-child(3), .table td:nth-child(3) {
-        min-width: 80px;
-    }
-
-    .table th:nth-child(4), .table td:nth-child(4) {
-        min-width: 70px;
-    }
-
-    .table th:nth-child(5), .table td:nth-child(5) {
-        min-width: 80px;
-    }
-
-    .table th:nth-child(6), .table td:nth-child(6) {
-        min-width: 60px;
-    }
-
-    .table th:nth-child(7), .table td:nth-child(7) {
-        min-width: 70px;
-    }
-
-    .table th:nth-child(8), .table td:nth-child(8) {
-        min-width: 160px;
-    }
-
-    .badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .fw-semibold {
-        font-size: 0.85rem;
-    }
-
-    .btn-group .btn {
-        padding: 0.2rem 0.4rem;
-        font-size: 0.75rem;
-        margin: 0 1px;
-    }
-
-    .btn-group .btn i {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .table-responsive {
-        font-size: 0.8rem;
-        margin: 0 -5px;
-        overflow-x: auto !important;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .table th, .table td {
-        padding: 0.3rem 0.15rem;
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
-
-    .table th:nth-child(8), .table td:nth-child(8) {
-        min-width: 140px;
-    }
-
-    .btn-outline-primary {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.85rem;
-    }
-
-    .h2 {
-        font-size: 1.4rem;
-    }
-
-    .btn-group {
-        gap: 0.1rem;
-    }
-
-    .btn-group .btn {
-        padding: 0.15rem 0.3rem;
-        font-size: 0.7rem;
-        min-width: 28px;
-    }
-
-    .badge {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.4rem;
-    }
-
-    .fw-medium {
-        font-size: 0.8rem;
-    }
-}
 </style>
-
-<!-- Balance Update Modal -->
-<div class="modal fade" id="balanceModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Balance</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="balanceForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Customer: <strong id="modalCustomerName"></strong></label>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Current Balance: ₹<strong id="modalCurrentBalance"></strong></label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="balanceAmount" class="form-label">Update Amount (₹)</label>
-                        <input type="number" step="0.01" class="form-control" id="balanceAmount" placeholder="Enter amount" required>
-                        <div class="form-text">Positive value to add, negative to subtract</div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 btn-sm col-lg-auto">Update Balance</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // JavaScript to handle freeze/unfreeze button clicks and balance update modal
-    document.addEventListener('DOMContentLoaded', function() {
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        // Handle freeze/unfreeze buttons
-        document.querySelectorAll('.freeze-btn').forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                const customerId = this.getAttribute('data-customer-id');
-                const csrftoken = getCookie('csrftoken');
-                fetch(`/milk_agency/customer/freeze/${customerId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert('Failed to update customer status.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error freezing/unfreezing customer:', error);
-                });
-            });
-        });
-
-        // Handle balance update modal
-        document.querySelectorAll('.balance-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const customerId = this.getAttribute('data-customer-id');
-                const customerName = this.getAttribute('data-customer-name');
-                const currentBalance = this.getAttribute('data-current-balance');
-
-                document.getElementById('modalCustomerName').textContent = customerName;
-                document.getElementById('modalCurrentBalance').textContent = parseFloat(currentBalance).toFixed(2);
-
-                const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
-                modal.show();
-
-                // Handle form submission
-                document.getElementById('balanceForm').onsubmit = function(e) {
-                    e.preventDefault();
-                    const amount = parseFloat(document.getElementById('balanceAmount').value);
-                    if (isNaN(amount)) {
-                        alert('Please enter a valid amount.');
-                        return;
-                    }
-
-                    const csrftoken = getCookie('csrftoken');
-                    fetch(`/milk_agency/customer-data/update-balance/${customerId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRFToken': csrftoken,
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        body: `balance=${amount}`
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            modal.hide();
-                            window.location.reload();
-                        } else {
-                            alert('Failed to update balance.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating balance:', error);
-                        alert('Error updating balance.');
-                    });
-                };
-            });
-        });
-    });
-</script>
 {% endblock %}
 
 
 
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Customers Dashboard</h2>
+      <p class="text-muted mb-0">Manage and track all your customers</p>
+    </div>
+
+    <a href="{% url 'milk_agency:add_customer' %}" class="add-customer-btn d-flex align-items-center">
+      <i class="bi bi-person-plus-fill add-icon"></i>
+      <span class="add-text">Add New Customer</span>
+    </a>
+  </div>
+
+  <!-- Desktop Table -->
+  <div class="d-none d-md-block">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="customersTable">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Shop Name</th>
+                <th>Retailer ID</th>
+                <th>Phone</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for customer in customers %}
+              <tr data-customer-id="{{ customer.id }}" class="align-middle {% if customer.frozen %}table-secondary{% endif %}">
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-medium">{{ customer.name }}</td>
+                <td>{{ customer.shop_name|default:"-" }}</td>
+                <td><span class="badge bg-light text-dark border">{{ customer.retailer_id|default:"-" }}</span></td>
+                <td>{{ customer.phone }}</td>
+
+                <!-- BALANCE COLOR LOGIC -->
+                <td class="balance-cell">
+                  ₹<span class="balance-value {% if customer.due > 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ customer.due|default:0|floatformat:2 }}
+                  </span>
+                </td>
+
+                <td class="status-cell">
+                  {% if customer.frozen %}
+                    <span class="badge bg-danger">Frozen</span>
+                  {% else %}
+                    <span class="badge bg-success">Active</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  <div class="btn-group">
+                    <a href="{% url 'milk_agency:edit_customer' customer.id %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+
+                    <button class="btn btn-sm freeze-btn btn-outline-{% if customer.frozen %}success{% else %}secondary{% endif %}"
+                        data-customer-id="{{ customer.id }}">
+                      <i class="bi bi-{% if customer.frozen %}unlock-fill{% else %}lock-fill{% endif %}"></i>
+                    </button>
+
+                    <a href="https://wa.me/{{ customer.phone }}" class="btn btn-sm btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i></a>
+
+                    <button class="btn btn-sm btn-outline-primary balance-btn"
+                        data-customer-id="{{ customer.id }}"
+                        data-customer-name="{{ customer.name|escapejs }}"
+                        data-current-balance="{{ customer.due }}">
+                      <i class="bi bi-cash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MOBILE CARDS -->
+  <div class="d-md-none">
+    {% for customer in customers %}
+    <div class="customer-card-mobile {% if customer.frozen %}card-frozen{% endif %}"
+         data-customer-id="{{ customer.id }}">
+
+      <div class="customer-header">
+        <span class="customer-index">{{ forloop.counter }}.</span>
+        <span>{{ customer.name }}</span>
+      </div>
+
+      <div class="customer-divider"></div>
+
+      <div class="customer-info">
+        <div><strong>Shop:</strong> {{ customer.shop_name|default:"-" }}</div>
+
+        <!-- MOBILE BALANCE COLOR -->
+        <div><strong>Balance:</strong> ₹
+          <span class="mobile-balance {% if customer.due > 0 %}text-danger{% else %}text-success{% endif %}">
+            {{ customer.due|default:0|floatformat:2 }}
+          </span>
+        </div>
+
+        <div><strong>Phone:</strong> {{ customer.phone }}</div>
+      </div>
+
+      <div class="customer-actions">
+        <a href="{% url 'milk_agency:edit_customer' customer.id %}" class="action-btn info-btn">
+          <i class="bi bi-eye"></i>
+        </a>
+
+        <button class="action-btn freeze-btn {% if customer.frozen %}freeze-active{% endif %}"
+                data-customer-id="{{ customer.id }}">
+          <i class="bi bi-{% if customer.frozen %}unlock-fill{% else %}lock-fill{% endif %}"></i>
+        </button>
+
+        <a href="https://wa.me/{{ customer.phone }}" target="_blank" class="action-btn whatsapp-btn">
+          <i class="bi bi-whatsapp"></i>
+        </a>
+
+        <button class="action-btn money-btn balance-btn"
+                data-customer-id="{{ customer.id }}"
+                data-customer-name="{{ customer.name|escapejs }}"
+                data-current-balance="{{ customer.due }}">
+          <i class="bi bi-cash"></i>
+        </button>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+
+<!-- Balance Modal -->
+<div class="modal fade" id="balanceModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Balance</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="balanceForm">
+        {% csrf_token %}
+        <div class="modal-body">
+
+          <label>Customer:</label>
+          <div><strong id="modalCustomerName"></strong></div>
+
+          <label>Current Balance:</label>
+          <div>₹<strong id="modalCurrentBalance">0.00</strong></div>
+
+          <label class="mt-2">Update Amount (₹)</label>
+          <input type="number" step="0.01" class="form-control" id="balanceAmount" required>
+
+          <input type="hidden" id="balanceCustomerId">
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Update</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  function getCookie(name) {
+    const v = `; ${document.cookie}`;
+    const parts = v.split(`; ${name}=`);
+    if (parts.length === 2) return parts[1].split(";")[0];
+  }
+
+  const csrftoken = getCookie("csrftoken");
+
+  // ================================
+  // FREEZE / UNFREEZE (instant update)
+  // ================================
+  document.querySelectorAll(".freeze-btn").forEach(btn => {
+    btn.addEventListener("click", async function () {
+      const id = this.dataset.customerId;
+
+      const res = await fetch(`/milk_agency/customer/freeze/${id}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      const data = await res.json();
+      if (!data.success) return alert("Failed to update");
+
+      const frozen = data.frozen;
+
+      // Desktop row
+      const row = document.querySelector(`tr[data-customer-id="${id}"]`);
+      if (row) {
+        row.querySelector(".status-cell").innerHTML =
+          frozen
+            ? '<span class="badge bg-danger">Frozen</span>'
+            : '<span class="badge bg-success">Active</span>';
+
+        const btn = row.querySelector(".freeze-btn");
+        btn.innerHTML = frozen ? '<i class="bi bi-unlock-fill"></i>' : '<i class="bi bi-lock-fill"></i>';
+        btn.classList.toggle("btn-outline-success", frozen);
+        btn.classList.toggle("btn-outline-secondary", !frozen);
+
+        row.classList.add("updated-highlight");
+        setTimeout(() => row.classList.remove("updated-highlight"), 900);
+      }
+
+      // Mobile card
+      const card = document.querySelector(`.customer-card-mobile[data-customer-id="${id}"]`);
+      if (card) {
+        const btn = card.querySelector(".freeze-btn");
+        card.classList.toggle("card-frozen", frozen);
+        btn.classList.toggle("freeze-active", frozen);
+
+        card.classList.add("updated-highlight");
+        setTimeout(() => card.classList.remove("updated-highlight"), 900);
+      }
+    });
+  });
+
+
+  // =========================================
+  // BALANCE MODAL OPEN
+  // =========================================
+  const modal = new bootstrap.Modal(document.getElementById("balanceModal"));
+
+  document.querySelectorAll(".balance-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+      document.getElementById("modalCustomerName").textContent = this.dataset.customerName;
+      document.getElementById("modalCurrentBalance").textContent =
+        parseFloat(this.dataset.currentBalance).toFixed(2);
+
+      document.getElementById("balanceCustomerId").value = this.dataset.customerId;
+      document.getElementById("balanceAmount").value = "";
+
+      modal.show();
+    });
+  });
+
+
+  // =========================================
+  // BALANCE UPDATE (AJAX + live DOM update)
+  // =========================================
+  document.getElementById("balanceForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const id = document.getElementById("balanceCustomerId").value;
+    const amount = parseFloat(document.getElementById("balanceAmount").value);
+
+    if (isNaN(amount)) return alert("Invalid amount");
+
+    const url = "{% url 'milk_agency:update_customer_balance' 0 %}".replace("0", id);
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": csrftoken,
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: `balance=${encodeURIComponent(amount)}`,
+    });
+
+    const data = await res.json();
+    if (!data.success) return alert("Failed");
+
+    const newBalance = parseFloat(data.new_balance).toFixed(2);
+
+    // Desktop update
+    const row = document.querySelector(`tr[data-customer-id='${id}']`);
+    if (row) {
+      const span = row.querySelector(".balance-value");
+      span.textContent = newBalance;
+
+      // RED if positive, GREEN if zero or negative
+      span.classList.remove("text-danger", "text-success");
+      span.classList.add(newBalance > 0 ? "text-danger" : "text-success");
+
+      row.classList.add("updated-highlight");
+      setTimeout(() => row.classList.remove("updated-highlight"), 900);
+    }
+
+    // Mobile update
+    const mobile = document.querySelector(`.customer-card-mobile[data-customer-id='${id}']`);
+    if (mobile) {
+      const mb = mobile.querySelector(".mobile-balance");
+      mb.textContent = newBalance;
+
+      mb.classList.remove("text-danger", "text-success");
+      mb.classList.add(newBalance > 0 ? "text-danger" : "text-success");
+
+      mobile.classList.add("updated-highlight");
+      setTimeout(() => mobile.classList.remove("updated-highlight"), 900);
+    }
+
+    modal.hide();
+  });
+
+});
+</script>
+{% endblock %}

@@ -4,205 +4,230 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+<style>
+
+    /* Summary Cards */
+    .summary-card {
+        border: 1px solid #e7a1a1ff;
+        border-radius: 14px;
+        background: white;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        padding: 22px;
+        height: 100%;
+        transition: 0.2s ease;
+    }
+    .summary-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Company Box */
+    .company-header {
+        background: linear-gradient(135deg, #5165f3, #7b3fe0);
+        color: white;
+        padding: 12px 18px;
+        border-radius: 12px 12px 0 0;
+    }
+    .stock-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px){
+        .table th, .table td {
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .filter-select {
+            width: 100% !important;
+        }
+    }
+
+</style>
+
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="background-color: #f8f9fa; min-height: 100vh;">
+<div class="container-fluid py-4" style="min-height: 100vh; background:#f8f9fa;">
 
-    <!-- Today's Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-6 col-md-6 mb-4">
-            <div class="card border-left-primary shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-primary" style="font-size: 1.5rem;">
-                                <i class="bi bi-cart fs-2 me-2"></i>{{ current_date }} Sales
-                            </div>
-                            <div class="h3 mb-0 font-weight-bold text-dark">₹{{ today_sales|floatformat:2 }}</div>
-                        </div>
-                    </div>
+
+    <!-- ----------------------------------- -->
+    <!--         SECTION 1: SUMMARY CARDS     -->
+    <!-- ----------------------------------- -->
+    <div class="row g-3">
+
+        <div class="col-lg-6 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-primary fw-bold fs-5">
+                    <i class="bi bi-cart fs-3 me-2"></i> {{ current_date }} Sales
                 </div>
+                <h3 class="fw-bold mt-2">₹{{ today_sales|floatformat:2 }}</h3>
             </div>
         </div>
 
-        <div class="col-xl-6 col-md-6 mb-4">
-            <div class="card border-left-warning shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-warning" style="font-size: 1.5rem;">
-                                <i class="bi bi-cash-stack fs-2 me-2"></i>Total Due
-                            </div>
-                            <div class="h3 mb-0 font-weight-bold text-dark">₹{{ total_due|floatformat:2 }}</div>
-                        </div>
-                    </div>
+        <div class="col-lg-6 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-warning fw-bold fs-5">
+                    <i class="bi bi-cash-stack fs-3 me-2"></i> Total Due
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stock Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-info" style="font-size: 1.2rem;">
-                                <i class="bi bi-boxes fs-2 me-2"></i>Total Stock Items
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-dark">{{ total_stock_items }}</div>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="fw-bold mt-2">₹{{ total_due|floatformat:2 }}</h3>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-success" style="font-size: 1.2rem;">
-                                <i class="bi bi-currency-rupee fs-2 me-2"></i>Total Stock Value
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-dark">₹{{ total_stock_value|floatformat:2 }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-danger shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-danger" style="font-size: 1.2rem;">
-                                <i class="bi bi-exclamation-triangle fs-2 me-2"></i>Low Stock Items
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-dark">{{ low_stock_items }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-secondary shadow-sm h-100 bg-white rounded">
-                <div class="card-body text-center py-4">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col">
-                            <div class="text-uppercase mb-2 font-weight-bold text-secondary" style="font-size: 1.2rem;">
-                                <i class="bi bi-dash-circle fs-2 me-2"></i>Out of Stock
-                            </div>
-                            <div class="h4 mb-0 font-weight-bold text-dark">{{ out_of_stock_items }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
 
 
-    <!-- Stock Details Tables by Company -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
-                <div class="card-header bg-transparent border-0 py-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="font-weight-bold text-white mb-0">
-                            <i class="bi bi-box-seam-fill me-2"></i>Stock Details by Company
-                        </h5>
-                        <!-- Filter Form -->
-                        <form method="get" class="d-flex align-items-center">
-                            <div class="input-group me-3">
-                                <span class="input-group-text bg-white border-0">
-                                    <i class="bi bi-building text-primary"></i>
-                                </span>
-                                <select name="company" class="form-select border-0 shadow-sm" style="min-width: 150px;">
-                                    <option value="">All Companies</option>
-                                    {% for company in companies %}
-                                        <option value="{{ company }}" {% if request.GET.company == company %}selected{% endif %}>
-                                            {{ company }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="input-group me-3">
-                                <span class="input-group-text bg-white border-0">
-                                    <i class="bi bi-tags text-success"></i>
-                                </span>
-                                <select name="category" class="form-select border-0 shadow-sm" style="min-width: 150px;">
-                                    <option value="">All Categories</option>
-                                    {% for category in categories %}
-                                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
-                                            {{ category }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-light me-2 shadow-sm btn-sm col-lg-auto">
-                                <i class="bi bi-funnel-fill me-1"></i>
-                            </button>
-                            <a href="{% url 'milk_agency:home' %}" class="btn btn-outline-light shadow-sm btn-sm col-lg-auto">
-                                <i class="bi bi-x-circle me-1"></i>
-                            </a>
-                        </form>
-                    </div>
+    <!-- ----------------------------------- -->
+    <!--         SECTION 2: STOCK SUMMARY     -->
+    <!-- ----------------------------------- -->
+    <div class="row g-3 mt-3">
+
+        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-info fw-bold">
+                    <i class="bi bi-box fs-3 me-2"></i>Total Stock Items
                 </div>
+                <h4 class="fw-bold mt-2">{{ total_stock_items }}</h4>
             </div>
         </div>
+
+        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-success fw-bold">
+                    <i class="bi bi-currency-rupee fs-3 me-2"></i>Total Stock Value
+                </div>
+                <h4 class="fw-bold mt-2">₹{{ total_stock_value|floatformat:2 }}</h4>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-danger fw-bold">
+                    <i class="bi bi-exclamation-triangle fs-3 me-2"></i>Low Stock
+                </div>
+                <h4 class="fw-bold mt-2">{{ low_stock_items }}</h4>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
+            <div class="summary-card text-center">
+                <div class="text-secondary fw-bold">
+                    <i class="bi bi-x-circle fs-3 me-2"></i>Out of Stock
+                </div>
+                <h4 class="fw-bold mt-2">{{ out_of_stock_items }}</h4>
+            </div>
+        </div>
+
     </div>
 
-    <div class="row">
+
+
+    <!-- ----------------------------------- -->
+    <!--         SECTION 3: FILTER BAR        -->
+    <!-- ----------------------------------- -->
+    <div class="mt-4 p-3 bg-white rounded shadow-sm">
+
+        <form method="get" id="filterForm" class="d-flex flex-column flex-md-row gap-2">
+
+            <!-- Company -->
+            <select name="company" class="form-select w-100"
+                    onchange="document.getElementById('filterForm').submit();">
+                <option value="">All Companies</option>
+                {% for c in companies %}
+                <option value="{{ c }}" {% if request.GET.company == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Category -->
+            <select name="category" class="form-select w-100"
+                    onchange="document.getElementById('filterForm').submit();">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+
+        </form>
+
+    </div>
+
+    <!-- ----------------------------------- -->
+    <!--         SECTION 4: STOCK TABLES      -->
+    <!-- ----------------------------------- -->
+    <div class="row g-4 mt-2">
+
         {% for company, items in stock_by_company.items %}
-        <div class="col-lg-6 col-md-12 mb-4">
-            <div class="card shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="bi bi-building-fill me-2"></i>{{ company }} Stock Details
+        <div class="col-xl-6 col-lg-6 col-md-12 col-12">
+
+            <div class="stock-card">
+                <div class="company-header">
+                    <h6 class="fw-bold m-0">
+                        <i class="bi bi-building me-2"></i>{{ company }} Stock
                     </h6>
                 </div>
-                <div class="card-body bg-light">
+
+                <div class="p-3">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped border-0" style="border-radius: 10px; overflow: hidden;">
+                        <table class="table table-hover table-striped align-middle">
+
                             <thead class="table-dark">
-                                <tr>
-                                    <th class="text-center"><i class="bi bi-tag-fill me-1"></i>Item Name</th>
-                                    <th class="text-center"><i class="bi bi-box-seam me-1"></i>Crates</th>
-                                    <th class="text-center"><i class="bi bi-package me-1"></i>Packets</th>
-                                    <th class="text-center"><i class="bi bi-currency-rupee me-1"></i>Stock Value</th>
+                                <tr class="text-center">
+                                    <th>Item</th>
+                                    <th>Crates</th>
+                                    <th>Packets</th>
+
+                                    <!-- HIDE VALUE COLUMN ON MOBILE -->
+                                    <th class="d-none d-md-table-cell">Value</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                    {% for item in items %}
-                                    <tr class="{% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
-                                        <td class="text-center fw-bold">{{ item.name }}</td>
 
-                                        <td class="text-center">
-                                            <span class="badge bg-primary">{{ item.crates|floatformat:0 }}</span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-info">{{ item.packets|floatformat:0 }}</span>
-                                        </td>
-                                        <td class="text-center fw-bold text-success">
-                                            ₹{{ item.stock_value|floatformat:2 }}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                            <tbody>
+                                {% for item in items %}
+                                <tr class="text-center
+                                    {% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
+
+                                    <!-- Item Name Desktop / Code Mobile -->
+                                    <td class="fw-bold">
+                                        <span class="d-none d-md-inline">{{ item.name }}</span>
+                                        <span class="d-inline d-md-none">{{ item.code }}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-primary">{{ item.crates|floatformat:0 }}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-info">{{ item.packets|floatformat:0 }}</span>
+                                    </td>
+
+                                    <!-- VALUE → Hidden on mobile -->
+                                    <td class="fw-bold text-success d-none d-md-table-cell">
+                                        ₹{{ item.stock_value|floatformat:2 }}
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
                     </div>
                 </div>
+
             </div>
+
+        </div>
         {% endfor %}
+
     </div>
-    </div>
-    {% endblock %}
 
 
-
+</div>
+{% endblock %}

@@ -4,94 +4,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
+
+    <!-- Favicons -->
     <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
-    <link rel="icon" type="image/png" href="{% static 'favicon-16x16.png' %}" sizes="16x16">
-    <link rel="icon" type="image/png" href="{% static 'favicon-32x32.png' %}" sizes="32x32">
+    <link rel="icon" href="{% static 'favicon-32x32.png' %}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{% static 'favicon-16x16.png' %}" type="image/png" sizes="16x16">
     <link rel="apple-touch-icon" href="{% static 'apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
     <title>{% block title %}Customer Portal - SVD Milk Agencies{% endblock %}</title>
+
+    <!-- Bootstrap + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Page-specific CSS -->
     {% block extra_css %}{% endblock %}
+
+    <!-- Main Base Styles -->
+    <link rel="stylesheet" href="{% static 'css/customer_portal/base.css' %}">
 </head>
-<body>
-    <!-- Navigation for Customer Portal -->
+
+<body style="font-family: 'Inter', sans-serif;">
+
+    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top custom-navbar py-2">
         <div class="container">
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbarNav">
-                <span class="navbar-toggler-icon text-white"></span>
-            </button>
-            <a class="navbar-brand text-white fw-bold" href="{% url 'customer_portal:home' %}">
-                Customer Portal
+
+            <!-- Brand -->
+            <a class="navbar-brand text-white fw-bold fs-5" href="{% url 'customer_portal:home' %}">
+                <i class="bi bi-shop me-1"></i> Customer Portal
             </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+
+            <!-- Nav Links -->
             <div class="collapse navbar-collapse" id="customerNavbarNav">
-                <ul class="navbar-nav me-auto">
+
+                <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+
                     {% block nav_links %}
+
                     <li class="nav-item">
-                        <a class="nav-link text-white custom-nav-link" href="{% url 'customer_portal:home' %}">
-                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:home' %}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link text-white custom-nav-link" href="{% url 'customer_portal:customer_orders_dashboard' %}">
-                            <i class="bi bi-clipboard-data me-1"></i>My Orders
+                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:customer_orders_dashboard' %}">
+                            <i class="bi bi-cart-check me-1"></i> My Orders
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link text-white custom-nav-link" href="{% url 'customer_portal:reports_dashboard' %}">
-                            <i class="bi bi-graph-up me-1"></i>Reports
+                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:reports_dashboard' %}">
+                            <i class="bi bi-file-earmark-bar-graph me-1"></i> Reports
                         </a>
                     </li>
+
                     {% endblock %}
                 </ul>
+
+                <!-- Right Side -->
+                <ul class="navbar-nav ms-auto d-flex align-items-center">
+
+                    <!-- Date & Time -->
+                    <li class="nav-item me-3 text-end">
+                        <small id="date" class="text-white d-block"></small>
+                        <small id="time" class="text-white d-block"></small>
+                    </li>
+
+                    <!-- Logout -->
+                    <li class="nav-item">
+                        <button class="btn btn-danger btn-sm"
+                                onclick="if(confirm('Are you sure you want to logout?')) { window.location.href='{% url 'customer_portal:logout' %}'; }">
+                            <i class="bi bi-power"></i>
+                        </button>
+                    </li>
+                </ul>
             </div>
-            <ul class="navbar-nav ms-auto d-flex align-items-center">
-                <li class="nav-item me-3">
-                    <div class="d-flex flex-column align-items-end text-white">
-                        <small id="date" class="mb-0"></small>
-                        <small id="time" class="mb-0"></small>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <button class="btn btn-danger" onclick="if(confirm('Are you sure you want to logout?')) { window.location.href='{% url 'customer_portal:logout' %}'; }">
-                        <i class="bi bi-power"></i>
-                    </button>
-                </li>
-            </ul>
+
         </div>
     </nav>
 
-    {% block content %}
-    {% endblock %}
+    <!-- PAGE CONTENT -->
+    <main style="padding-top: 10px; min-height: 80vh;">
+        {% block content %}{% endblock %}
+    </main>
 
-    <!-- Footer for Customer Portal -->
-    <footer class="footer bg-light mt-auto text-center">
-        <div class="container py-3">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-0 text-muted">
-                        <i class="bi bi-shield-check me-2"></i>
-                        Secure Customer Portal - SVD Milk Agencies
-                    </p>
+    <!-- FOOTER -->
+    <footer class="footer bg-white border-top text-center py-3 mt-auto">
+        <div class="container">
+
+            <div class="row g-2 align-items-center">
+
+                <div class="col-md-6 text-muted small">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Secure Customer Portal – SVD Milk Agencies
                 </div>
-                <div class="col-md-6">
-                    <p class="mb-0 text-muted">
-                        <i class="bi bi-clock me-2"></i>
-                        Last login: {% if user.last_login %}{{ user.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}
-                    </p>
+
+                <div class="col-md-6 text-muted small">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Last login:
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"M d, Y H:i" }}
+                    {% else %}
+                        Never
+                    {% endif %}
                 </div>
+
             </div>
+
         </div>
     </footer>
 
-    <link rel="stylesheet" href="{% static 'css/customer_portal/base.css' %}">
+    <!-- JS Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Base JS (date & time logic) -->
     <script src="{% static 'js/customer_portal/base.js' %}"></script>
+
     {% block extra_js %}{% endblock %}
+
 </body>
 </html>
-
-
-

@@ -96,12 +96,12 @@
             <div class="card border-0 shadow-lg h-100">
                 <div class="card-header bg-light border-0 py-3">
                     <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-pie-chart me-2"></i>Category-wise Stock Value
+                        <i class="bi bi-pie-chart me-2"></i>Company-wise Stock Value
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="chart-container" style="position: relative; height: 300px;">
-                        <canvas id="categoryChart"></canvas>
+                        <canvas id="companyChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@ fetch("{% url 'milk_agency:stock_data_api' %}")
     .then(data => {
         updateSummaryCards(data.summary);
         renderTopItemsChart(data.top_items);
-        renderCategoryChart(data.category_data);
+        renderCompanyChart(data.company_data);
         renderStockOverviewTable(data.all_items);
     })
     .catch(error => console.error('Error loading stock data:', error));
@@ -165,7 +165,9 @@ function renderTopItemsChart(topItems) {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: topItems.map(item => item.company ? `${item.name} (${item.company})` : item.name),
+            labels: topItems.map(item =>
+                item.company_name ? `${item.name} (${item.company_name})` : item.name
+            ),
             datasets: [{
                 label: 'Stock Value (₹)',
                 data: topItems.map(item => item.stock_value),
@@ -180,35 +182,24 @@ function renderTopItemsChart(topItems) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                }
+                legend: { display: false }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        display: false
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
+                y: { beginAtZero: true, grid: { display: false }},
+                x: { grid: { display: false }}
             }
         }
     });
 }
 
-function renderCategoryChart(categoryData) {
-    const ctx = document.getElementById('categoryChart').getContext('2d');
+function renderCompanyChart(companyData) {
+    const ctx = document.getElementById('companyChart').getContext('2d');
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: categoryData.map(cat => cat.company || 'Unknown'),
+            labels: companyData.map(cat => cat.company_name || 'Unknown'),
             datasets: [{
-                data: categoryData.map(cat => cat.total_value),
+                data: companyData.map(cat => cat.total_value),
                 backgroundColor: [
                     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
                     '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0'
@@ -224,10 +215,7 @@ function renderCategoryChart(categoryData) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true
-                    }
+                    labels: { padding: 20, usePointStyle: true }
                 }
             }
         }
@@ -236,11 +224,13 @@ function renderCategoryChart(categoryData) {
 
 function renderStockOverviewTable(allItems) {
     const tbody = document.querySelector('#stockOverviewTable tbody');
+    tbody.innerHTML = "";
+
     allItems.forEach((item, index) => {
         const row = tbody.insertRow();
         row.innerHTML = `
             <td class="py-3 px-4 fw-medium">${index + 1}</td>
-            <td class="py-3 px-4 fw-medium">${item.name}${item.company ? ` (${item.company})` : ''}</td>
+            <td class="py-3 px-4 fw-medium">${item.name}${item.company_name ? ` (${item.company_name})` : ''}</td>
             <td class="py-3 px-4">
                 <span class="badge bg-primary fs-6 px-2 py-1">${item.stock_quantity}</span>
             </td>
@@ -251,6 +241,3 @@ function renderStockOverviewTable(allItems) {
 }
 </script>
 {% endblock %}
-
-
-

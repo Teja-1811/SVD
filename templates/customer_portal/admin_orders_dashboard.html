@@ -8,12 +8,97 @@
 {% endblock %}
 
 {% block content %}
-{% csrf_token %}
+
+<style>
+
+/* ==============================
+   HEADER RESPONSIVENESS
+============================== */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px;
+        padding: 15px !important;
+    }
+
+    .admin-header h1 {
+        font-size: 1.4rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .admin-header .badge {
+        font-size: 1rem !important;
+        padding: 6px 12px !important;
+        width: auto;
+    }
+}
+
+/* ==============================
+   FIX GIANT CONTENT GAP
+============================== */
+.flex-grow-1 {
+    padding-top: 10px !important;
+}
+
+/* ==============================
+   NO PENDING ORDERS CENTERING
+============================== */
+.no-orders-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 180px);
+}
+
+@media (max-width: 768px) {
+    .no-orders-wrapper .alert {
+        width: 100%;
+        padding: 20px;
+    }
+    .no-orders-wrapper h4 {
+        font-size: 1.2rem;
+    }
+}
+
+/* ==============================
+   ORDER CARD RESPONSIVENESS
+============================== */
+@media (max-width: 768px) {
+    .card h5 {
+        font-size: 1.1rem;
+    }
+
+    .quantity-input {
+        width: 60px !important;
+    }
+
+    .table-sm th, .table-sm td {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    .card .d-flex.gap-2 .btn {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+}
+
+/* Keep inner tables scrollable */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+</style>
+
 <div class="container-fluid h-100">
     <div class="row h-100">
         <div class="col-12 d-flex flex-column">
+            
+
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center p-4 bg-light border-bottom">
+            <div class="d-flex justify-content-between align-items-center p-4 bg-light border-bottom admin-header">
                 <h1 class="text-primary mb-0">Admin Orders Dashboard</h1>
                 <div class="badge bg-warning text-dark fs-5 px-3 py-2">
                     {{ total_pending }} Pending Orders
@@ -23,17 +108,21 @@
             <!-- Content Area -->
             <div class="flex-grow-1 overflow-auto p-4">
                 {% if pending_orders %}
+
                     <div class="row g-4">
                         {% for order in pending_orders %}
                         <div class="col-xl-4 col-lg-6 col-md-12">
                             <div class="card shadow-sm border-0 h-100" id="order-{{ order.id }}">
+                                
                                 <div class="card-header bg-light">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">{{ order.order_number }}</h5>
                                         <span class="badge bg-warning">Pending</span>
                                     </div>
                                 </div>
+
                                 <div class="card-body d-flex flex-column">
+
                                     <div class="row mb-3">
                                         <div class="col-sm-6">
                                             <strong>Customer:</strong><br>
@@ -56,6 +145,7 @@
                                         </div>
                                     </div>
 
+                                    <!-- Items Table -->
                                     <div class="mb-3 flex-grow-1">
                                         <strong>Items:</strong>
                                         <div class="table-responsive">
@@ -73,9 +163,10 @@
                                                     <tr>
                                                         <td>{{ item.item.name }}</td>
                                                         <td>
-                                                            <input type="number" min="1" value="{{ item.requested_quantity }}"
-                                                                class="form-control form-control-sm quantity-input"
-                                                                data-item-id="{{ item.id }}" />
+                                                            <input type="number" min="1" 
+                                                                   value="{{ item.requested_quantity }}"
+                                                                   class="form-control form-control-sm quantity-input"
+                                                                   data-item-id="{{ item.id }}" />
                                                         </td>
                                                         <td>₹{{ item.requested_price|floatformat:2 }}</td>
                                                         <td class="item-total">₹{{ item.requested_total|floatformat:2 }}</td>
@@ -93,6 +184,7 @@
                                     </div>
                                     {% endif %}
 
+                                    <!-- Confirm / Reject -->
                                     <div class="d-flex gap-2 mt-auto">
                                         <button class="btn btn-success btn-sm flex-fill"
                                                 onclick="confirmOrder({{ order.id }})">
@@ -103,25 +195,29 @@
                                             <i class="bi bi-x-circle"></i> Reject
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+
                 {% else %}
-                    <div class="d-flex align-items-center justify-content-center h-100">
+
+                    <!-- NO PENDING ORDERS -->
+                    <div class="no-orders-wrapper">
                         <div class="alert alert-info text-center">
                             <i class="bi bi-info-circle fs-1"></i>
                             <h4>No Pending Orders</h4>
                             <p>All orders have been processed.</p>
                         </div>
                     </div>
+
                 {% endif %}
             </div>
+
         </div>
     </div>
 </div>
+
 {% endblock %}
-
-
-

@@ -162,7 +162,7 @@ class CashbookEntry(models.Model):
     coin1 = models.IntegerField(default=0)
 
 class DailyPayment(models.Model):
-    company = models.CharField(max_length=255)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='daily_payments')
     date = models.DateField()
     invoice_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)

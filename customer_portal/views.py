@@ -51,96 +51,91 @@ def home(request):
 @never_cache
 @login_required
 def customer_orders_dashboard(request):
+
+    # ---------- POST: SAVE ORDER ----------
     if request.method == 'POST':
-        # Handle order submission
         try:
             data = json.loads(request.body)
             items = data.get('items', [])
-            delivery_date = data.get('delivery_date')
-            additional_notes = data.get('additional_notes', '')
-            delivery_address = data.get('delivery_address', '')
-            phone = data.get('phone', '')
 
             if not items:
-                return JsonResponse({'success': False, 'message': 'No items in order.'})
+                return JsonResponse({'success': False, 'message': 'No items selected'})
 
-            # Generate order number
             order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
 
-            # Create order
             order = CustomerOrder.objects.create(
                 order_number=order_number,
                 customer=request.user,
-                delivery_date=delivery_date if delivery_date else None,
-                additional_notes=additional_notes,
-                delivery_address=delivery_address,
-                phone=phone,
                 created_by=request.user
             )
 
             total_amount = 0
-            for item_data in items:
-                item_id = item_data.get('item_id')
-                quantity = item_data.get('quantity')
-                price = item_data.get('price')
-
-                item = get_object_or_404(Item, id=item_id)
-                total = quantity * price
+            for i in items:
+                item = get_object_or_404(Item, id=i["item_id"])
+                qty = i["quantity"]
+                price = i["price"]
+                line_total = qty * price
 
                 CustomerOrderItem.objects.create(
                     order=order,
                     item=item,
-                    requested_quantity=quantity,
+                    requested_quantity=qty,
                     requested_price=price,
-                    requested_total=total
+                    requested_total=line_total
                 )
-                total_amount += total
+
+                total_amount += line_total
 
             order.total_amount = total_amount
             order.save()
 
-            return JsonResponse({'success': True, 'message': 'Order placed successfully!', 'order_number': order_number})
+            return JsonResponse({'success': True, 'order_number': order_number})
 
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
 
-    # GET request - show order form
-    items = Item.objects.all()
-    today = timezone.now().date()
-    customer_orders = CustomerOrder.objects.filter(customer=request.user, order_date=today).order_by('-order_date')
+    # ---------- GET: RENDER ORDER PAGE ----------
+    items = Item.objects.select_related("company").all()
 
-    # Group items by company and then by category
-    items_by_company = {}
     for item in items:
-        company = item.company or 'Other'
-        category = item.category or 'Other'
+        if item.mrp and item.mrp > 0:
+            item.margin_percent = round(((item.mrp - item.selling_price) / item.mrp) * 100, 1)
+        else:
+            item.margin_percent = 0
+
+    today = timezone.now().date()
+
+    customer_orders = CustomerOrder.objects.filter(
+        customer=request.user,
+        order_date=today
+    ).order_by('-order_date')
+
+    # ---------- CLEAN GROUPING STRUCTURE ----------
+    # items_by_company = {
+    #     "Dodla": {
+    #         "Milk": [items],
+    #         "Curd": [items]
+    #     }
+    # }
+
+    items_by_company = {}
+
+    for item in items:
+        company = item.company.name if item.company else "Other"
+        category = item.category if item.category else "Other"
+
         if company not in items_by_company:
             items_by_company[company] = {}
+
         if category not in items_by_company[company]:
             items_by_company[company][category] = []
+
         items_by_company[company][category].append(item)
 
-    # Prepare items data for JavaScript
-    items_data = {}
-    for company, categories in items_by_company.items():
-        items_data[company] = {}
-        for category, category_items in categories.items():
-            items_data[company][category] = [
-                {
-                    'id': item.id,
-                    'name': item.name,
-                    'selling_price': float(item.selling_price)
-                }
-                for item in category_items
-            ]
-
-    context = {
+    return render(request, 'customer_portal/customer_orders_dashboard.html', {
         'items_by_company': items_by_company,
         'customer_orders': customer_orders,
-        'items_data_json': json.dumps(items_data)
-    }
-    return render(request, 'customer_portal/customer_orders_dashboard.html', context)
-
+    })
 @never_cache
 @login_required
 def reports_dashboard(request):

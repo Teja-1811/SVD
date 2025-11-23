@@ -5,7 +5,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Bill, BillItem, Customer, Item
+from .models import Bill, BillItem, Customer, Item, Company
 from num2words import num2words
 from decimal import Decimal
 from datetime import datetime
@@ -112,7 +112,7 @@ def generate_bill(request):
         )
     ).order_by('category_priority', 'name')
     # Get distinct companies for the filter dropdown
-    companies = Item.objects.exclude(company__exact='').values_list('company', flat=True).distinct().order_by('company')
+    companies = Company.objects.filter(items__isnull=False).distinct().order_by('name')
     # Get distinct categories for the filter dropdown
     categories = Item.objects.exclude(category__exact='').values_list('category', flat=True).distinct().order_by('category')
 

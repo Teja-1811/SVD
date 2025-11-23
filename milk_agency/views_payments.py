@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db.models import Sum
-from .models import Item, DailyPayment, MonthlyPaymentSummary
+from .models import Item, DailyPayment, MonthlyPaymentSummary, Company
 from datetime import date, timedelta
 import calendar
 
@@ -16,7 +16,7 @@ def payments_dashboard(request):
     last_day = date(year, month, calendar.monthrange(year, month)[1])
 
     # List all distinct companies from Items table
-    companies = Item.objects.values_list('company', flat=True).distinct()
+    companies = Company.objects.all()
 
     # --------------------------
     # SAVE DATA (POST request)
