@@ -132,9 +132,15 @@ def customer_orders_dashboard(request):
 
         items_by_company[company][category].append(item)
 
+        # Last order for status tracking
+    last_order = CustomerOrder.objects.filter(
+        customer=request.user
+    ).order_by('-order_date').first()
+
     return render(request, 'customer_portal/customer_orders_dashboard.html', {
         'items_by_company': items_by_company,
         'customer_orders': customer_orders,
+        'last_order': last_order,
     })
     
 @csrf_exempt
@@ -228,6 +234,21 @@ def reports_dashboard(request):
         'average_amount': average_amount
     }
     return render(request, 'customer_portal/reports_dashboard.html', context)
+
+@login_required
+@never_cache
+def last_order_details(request):
+    order = CustomerOrder.objects.filter(customer=request.user).order_by('-order_date').first()
+    bill = Bill.objects.filter(
+            customer=order.customer,
+            total_amount=order.approved_total_amount
+        ).order_by('-invoice_date').first()
+
+    return render(request, "customer_portal/last_order_details.html", {
+        "order": order,
+        'bill': bill
+    })
+
 
 @never_cache
 @login_required

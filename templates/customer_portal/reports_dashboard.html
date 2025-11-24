@@ -5,6 +5,76 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+<style>
+/* ----- LAYOUT SWITCHING ----- */
+.desktop-layout { display: block; }
+.mobile-layout { display: none; }
+
+@media (max-width: 768px) {
+    .desktop-layout { display: none !important; }
+    .mobile-layout { display: block !important; }
+}
+
+/* ----- MOBILE CARD DESIGN ----- */
+.invoice-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border: 1px solid #1a1919ff;
+}
+
+.invoice-header {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.invoice-meta {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.amount {
+    font-size: 1rem;
+    color: green;
+    font-weight: bold;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* ICON ONLY BUTTON */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    font-size: 1.3rem;
+}
+
+/* DESKTOP BUTTON: icon+text */
+.btn-desktop {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* MOBILE → hide text inside desktop btn */
+@media (max-width: 768px) {
+    .btn-desktop span { display: none !important; }
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -12,9 +82,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4" style="margin-top: 70px !important;">
+
     <!-- Header -->
-    <div class="row mb-4" style="margin-top: 70px;">
+    <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -29,153 +100,182 @@
             </div>
         </div>
     </div>
+
     <!-- Summary Cards -->
-    {% if bills %}
     <div class="row mt-4">
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
-            <div class="card border-left-primary shadow h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Invoices</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ bills|length }}</div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-receipt fs-2 text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
-            <div class="card border-left-success shadow h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Amount</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                ₹{{ total_amount|floatformat:2 }}
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-currency-rupee fs-2 text-success"></i>
-                        </div>
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
+        <div class="card border-left-primary shadow h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Invoices</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ bills|length }}</div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
-            <div class="card border-left-info shadow h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Latest Invoice</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">{{ bills.0.invoice_date|date:"M d, Y" }}</div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-calendar-event fs-2 text-info"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
-            <div class="card border-left-warning shadow h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avg. Invoice</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                ₹{{ average_amount|floatformat:2 }}
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <i class="bi bi-graph-up fs-2 text-warning"></i>
-                        </div>
+                    <div class="col-4 text-end">
+                        <i class="bi bi-receipt fs-2 text-primary"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
 
-    <!-- Bills/Invoices Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>My Invoices</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Filter Form -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <form method="GET" class="d-flex">
-                                <input type="month" name="date" value="{{ selected_date }}" class="form-control me-2" required>
-                                <button type="submit" class="btn btn-primary">Filter</button>
-                            </form>
-                        </div>
-                        <div class="col-md-8 text-end">
-                            <small class="text-muted">Showing bills for {{ current_month }} {{ current_year }}</small>
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
+        <div class="card border-left-success shadow h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Amount</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            ₹{{ total_amount|floatformat:2 }}
                         </div>
                     </div>
-
-                    {% if bills %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Invoice #</th>
-                                        <th>Date</th>
-                                        <th>Total Amount</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for bill in bills %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ bill.invoice_number }}</strong>
-                                        </td>
-                                        <td>{{ bill.invoice_date|date:"M d, Y" }}</td>
-                                        <td>
-                                            <span class="fw-bold text-success">₹{{ bill.total_amount|floatformat:2 }}</span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'customer_portal:bill_details' bill.id %}" class="btn btn-sm btn-outline-primary me-2">
-                                                <i class="bi bi-eye"></i> View
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-secondary"
-                                                    onclick="downloadInvoice({{ bill.id }})">
-                                                <i class="bi bi-download"></i> Download
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <div class="mb-3">
-                                <i class="bi bi-receipt-x fs-1 text-muted"></i>
-                            </div>
-                            <h4 class="text-muted">No Invoices Found</h4>
-                            <p class="text-muted">You don't have any invoices for the selected period. Place an order to get started!</p>
-                            <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-2"></i>Place New Order
-                            </a>
-                        </div>
-                    {% endif %}
+                    <div class="col-4 text-end">
+                        <i class="bi bi-currency-rupee fs-2 text-success"></i>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
+        <div class="card border-left-info shadow h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Latest Invoice</div>
+                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                            {{ bills.0.invoice_date|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="bi bi-calendar-event fs-2 text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3">
+        <div class="card border-left-warning shadow h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avg. Invoice</div>
+                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                            ₹{{ average_amount|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="bi bi-graph-up fs-2 text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+    <!-- INVOICE SECTION -->
+    <div class="card shadow mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>My Invoices</h5>
+        </div>
+        <div class="card-body">
+
+            <!-- Filter Row -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <form method="GET" class="d-flex">
+                        <input type="month" name="date" value="{{ selected_date }}" class="form-control me-2" required>
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </form>
+                </div>
+                <div class="col-md-8 text-end">
+                    <small class="text-muted">Showing bills for {{ current_month }} {{ current_year }}</small>
+                </div>
+            </div>
+
+            <!-- =======================
+                 DESKTOP LAYOUT (TABLE)
+            ======================== -->
+            <div class="desktop-layout">
+                {% if bills %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Total Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for bill in bills %}
+                            <tr>
+                                <td><strong>{{ bill.invoice_number }}</strong></td>
+                                <td>{{ bill.invoice_date|date:"M d, Y" }}</td>
+                                <td class="text-success fw-bold">₹{{ bill.total_amount|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'customer_portal:bill_details' bill.id %}"
+                                       class="btn btn-outline-primary btn-sm btn-desktop">
+                                        <i class="bi bi-eye"></i>
+                                        <span>View</span>
+                                    </a>
+
+                                    <button onclick="downloadInvoice({{ bill.id }})"
+                                            class="btn btn-outline-secondary btn-sm btn-desktop">
+                                        <i class="bi bi-download"></i>
+                                        <span>Download</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    {% include 'customer_portal/no_invoices.html' %}
+                {% endif %}
+            </div>
+
+            <!-- =======================
+                 MOBILE LAYOUT (CARDS)
+            ======================== -->
+            <div class="mobile-layout">
+
+                {% if bills %}
+                    {% for bill in bills %}
+                    <div class="invoice-card">
+
+                        <div class="invoice-header">{{ bill.invoice_number }}</div>
+
+                        <div class="d-flex justify-content-between invoice-meta">
+                            <span>{{ bill.invoice_date|date:"M d, Y" }}</span>
+                            <span class="amount">₹{{ bill.total_amount|floatformat:2 }}</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="{% url 'customer_portal:bill_details' bill.id %}" class="btn-icon">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button class="btn-icon" onclick="downloadInvoice({{ bill.id }})">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {% include 'customer_portal/no_invoices.html' %}
+                {% endif %}
+
+            </div>
+
         </div>
     </div>
 </div>
 {% endblock %}
-
-
-
