@@ -338,158 +338,111 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // Add hidden CSRF token
+    const csrfToken = "{{ csrf_token }}";
+
     const orderSummaryEl = document.getElementById("orderSummary");
     const grandTotalEl = document.getElementById("grandTotal");
     const placeOrderBtn = document.getElementById("placeOrderBtn");
 
     /* ---------------- UPDATE TOTALS ---------------- */
     function updateTotals() {
-        try {
-            let grandTotal = 0;
-            let summary = "";
+        let grandTotal = 0;
+        let summary = "";
 
-            document.querySelectorAll(".product-card").forEach(card => {
+        document.querySelectorAll(".product-card").forEach(card => {
 
-                try {
-                    const qtyInput = card.querySelector(".qty-input");
-                    if (!qtyInput) {
-                        console.error("❌ ERROR: qty-input missing in card:", card);
-                        return;
-                    }
+            const qtyInput = card.querySelector(".qty-input");
+            const qty = parseInt(qtyInput.value) || 0;
+            const price = parseFloat(qtyInput.dataset.itemPrice);
+            const name = card.querySelector(".product-title").innerText;
 
-                    const qty = parseInt(qtyInput.value) || 0;
-                    const price = parseFloat(qtyInput.dataset.itemPrice || 0);
-                    const name = card.querySelector(".product-title")?.innerText || "Item";
+            const total = qty * price;
 
-                    const total = qty * price;
+            card.querySelector(".item-total").innerText = "₹" + total.toFixed(2);
 
-                    // Update total label
-                    const totalEl = card.querySelector(".item-total");
-                    if (!totalEl) {
-                        console.error("❌ ERROR: item-total missing:", card);
-                        return;
-                    }
-                    totalEl.innerText = "₹" + total.toFixed(2);
+            if (qty > 0) {
+                grandTotal += total;
+                summary += `
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>${name} × ${qty}</span>
+                        <strong>₹${total.toFixed(2)}</strong>
+                    </div>
+                `;
+            }
+        });
 
-                    if (qty > 0) {
-                        grandTotal += total;
-                        summary += `
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>${name} × ${qty}</span>
-                                <strong>₹${total.toFixed(2)}</strong>
-                            </div>
-                        `;
-                    }
-
-                } catch (err) {
-                    console.error("❌ ERROR inside product-card loop:", err, card);
-                }
-
-            });
-
-            orderSummaryEl.innerHTML = summary || `<p class="text-muted small">No items selected</p>`;
-            grandTotalEl.innerText = "₹" + grandTotal.toFixed(2);
-
-        } catch (err) {
-            console.error("❌ updateTotals() FAILED:", err);
-        }
+        orderSummaryEl.innerHTML = summary || `<p class="text-muted small">No items selected</p>`;
+        grandTotalEl.innerText = "₹" + grandTotal.toFixed(2);
     }
 
     /* ---------------- BUTTON HANDLERS ---------------- */
     document.body.addEventListener("click", function (e) {
 
-        try {
-            if (e.target.classList.contains("btn-incr")) {
-                const input = e.target.closest(".product-card")?.querySelector(".qty-input");
-                if (!input) {
-                    console.error("❌ btn-incr: qty-input NOT FOUND", e.target.closest(".product-card"));
-                    return;
-                }
-                input.value = (parseInt(input.value) || 0) + 1;
-                updateTotals();
-            }
-
-            if (e.target.classList.contains("btn-decr")) {
-                const input = e.target.closest(".product-card")?.querySelector(".qty-input");
-                if (!input) {
-                    console.error("❌ btn-decr: qty-input NOT FOUND", e.target.closest(".product-card"));
-                    return;
-                }
-                input.value = Math.max(0, (parseInt(input.value) || 0) - 1);
-                updateTotals();
-            }
-
-        } catch (err) {
-            console.error("❌ BUTTON HANDLER FAILED:", err);
+        if (e.target.classList.contains("btn-incr")) {
+            const input = e.target.closest(".product-card").querySelector(".qty-input");
+            input.value = (parseInt(input.value) || 0) + 1;
+            updateTotals();
         }
 
+        if (e.target.classList.contains("btn-decr")) {
+            const input = e.target.closest(".product-card").querySelector(".qty-input");
+            input.value = Math.max(0, (parseInt(input.value) || 0) - 1);
+            updateTotals();
+        }
     });
 
     /* ---------------- INPUT CHANGE ---------------- */
     document.body.addEventListener("input", function (e) {
-        try {
-            if (e.target.classList.contains("qty-input")) {
-                if (e.target.value < 0 || isNaN(e.target.value)) e.target.value = 0;
-                updateTotals();
-            }
-        } catch (err) {
-            console.error("❌ qty-input input handler FAILED:", err);
+        if (e.target.classList.contains("qty-input")) {
+            if (e.target.value < 0 || isNaN(e.target.value)) e.target.value = 0;
+            updateTotals();
         }
     });
 
     /* ---------------- PLACE ORDER ---------------- */
     placeOrderBtn.addEventListener("click", function () {
-        try {
-            const items = [];
 
-            document.querySelectorAll(".qty-input").forEach(input => {
-                try {
-                    const qty = parseInt(input.value) || 0;
-                    if (qty > 0) {
-                        items.push({
-                            item_id: input.dataset.itemId,
-                            quantity: qty,
-                            price: parseFloat(input.dataset.itemPrice)
-                        });
-                    }
-                } catch (err) {
-                    console.error("❌ ERROR READING ITEM:", err, input);
-                }
-            });
+        const items = [];
 
-            if (items.length === 0) {
-                alert("Please select at least one item.");
-                return;
+        document.querySelectorAll(".qty-input").forEach(input => {
+            const qty = parseInt(input.value) || 0;
+
+            if (qty > 0) {
+                items.push({
+                    item_id: input.dataset.itemId,
+                    quantity: qty,
+                    price: parseFloat(input.dataset.itemPrice)
+                });
             }
+        });
 
-            fetch("/customer/orders/place/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-                },
-                body: JSON.stringify({ items: items })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Order placed successfully! Order # " + data.order_number);
-                    window.location.reload();
-                } else {
-                    alert("Error: " + data.message);
-                }
-            })
-            .catch(err => {
-                console.error("❌ FETCH ERROR:", err);
-            });
-
-        } catch (err) {
-            console.error("❌ placeOrderBtn FAILED:", err);
+        if (items.length === 0) {
+            alert("Please select at least one item.");
+            return;
         }
+
+        fetch("/customer/orders/place/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify({ items: items })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert("Order placed successfully! Order # " + data.order_number);
+                window.location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => console.error("FETCH ERROR:", err));
     });
 
     updateTotals();
 });
-
 </script>
 {% endblock %}

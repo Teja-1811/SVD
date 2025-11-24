@@ -136,6 +136,67 @@ def customer_orders_dashboard(request):
         'items_by_company': items_by_company,
         'customer_orders': customer_orders,
     })
+    
+@csrf_exempt
+@login_required
+def place_order(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        items = data.get("items", [])
+
+        if not items:
+            return JsonResponse({"success": False, "message": "No items selected"}, status=400)
+
+        # Generate order number
+        order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+
+        customer = request.user  # Your logged-in customer object
+
+        # Create order
+        order = CustomerOrder.objects.create(
+            order_number=order_number,
+            customer=customer,
+            created_by=customer,
+            delivery_address=customer.address if hasattr(customer, "address") else "N/A",
+            phone=customer.phone if hasattr(customer, "phone") else "",
+            additional_notes=""
+        )
+
+        total_amount = 0
+
+        for i in items:
+            item = get_object_or_404(Item, id=i["item_id"])
+            qty = int(i["quantity"])
+            price = float(i["price"])
+            line_total = qty * price
+
+            # Create order item
+            CustomerOrderItem.objects.create(
+                order=order,
+                item=item,
+                requested_quantity=qty,
+                requested_price=price,
+                requested_total=line_total
+            )
+
+            total_amount += line_total
+
+        # Update total amount
+        order.total_amount = total_amount
+        order.approved_total_amount = total_amount  # default
+        order.save()
+
+        return JsonResponse({
+            "success": True,
+            "order_number": order_number
+        })
+
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
 @never_cache
 @login_required
 def reports_dashboard(request):

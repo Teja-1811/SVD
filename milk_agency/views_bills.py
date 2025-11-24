@@ -292,19 +292,23 @@ def generate_bill_from_order(order):
             total_profit = Decimal(0)
             updated_items = []
 
-            # Create bill items from order items
+            # inside generate_bill_from_order, loop over order.items.all():
             for order_item in order.items.all():
                 item = order_item.item
                 quantity = order_item.requested_quantity
                 price_per_unit = order_item.requested_price
-                item_total = price_per_unit * quantity
-                profit = (price_per_unit - item.buying_price) * quantity
+                # discount per qty (may be Decimal)
+                discount_per_qty = getattr(order_item, 'discount', Decimal('0.00'))
+                discount_total = getattr(order_item, 'discount_total', Decimal('0.00'))
+
+                item_total = (price_per_unit * quantity) - discount_total
+                profit = ((price_per_unit - item.buying_price) * quantity) - discount_total
 
                 BillItem.objects.create(
                     bill=bill,
                     item=item,
                     price_per_unit=price_per_unit,
-                    discount=Decimal(0),
+                    discount=discount_per_qty,
                     quantity=quantity,
                     total_amount=item_total
                 )
@@ -316,7 +320,6 @@ def generate_bill_from_order(order):
 
                 total_amount += item_total
                 total_profit += profit
-
             if total_amount == 0:
                 bill.delete()
                 raise Exception('At least one item is required to generate a bill.')

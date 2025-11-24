@@ -1,111 +1,102 @@
-// Function to recalculate totals when quantity changes
-function recalculateTotals(cardElement) {
-    const quantityInputs = cardElement.querySelectorAll('.quantity-input');
-    let orderTotal = 0;
+// admin_orders_dashboard.js
+// clean version — no price needed, only qty + discount
 
-    quantityInputs.forEach(input => {
-        const quantity = parseFloat(input.value) || 0;
-        const priceText = input.closest('tr').querySelector('td:nth-child(3)').textContent;
-        const price = parseFloat(priceText.replace('â‚¹', '').replace(',', '')) || 0;
-        const itemTotal = quantity * price;
+document.addEventListener('DOMContentLoaded', function () {
 
-        // Update item total display
-        const itemTotalCell = input.closest('tr').querySelector('.item-total');
-        itemTotalCell.textContent = 'â‚¹' + itemTotal.toFixed(2);
-
-        orderTotal += itemTotal;
-    });
-
-    // Update order total display
-    const orderTotalElement = cardElement.querySelector('.card-body .row.mb-3 .col-sm-6:last-child strong');
-    if (orderTotalElement && orderTotalElement.textContent.includes('Total Amount:')) {
-        const totalAmountCell = orderTotalElement.nextElementSibling;
-        totalAmountCell.textContent = 'â‚¹' + orderTotal.toFixed(2);
-    }
-}
-
-// Add event listeners to quantity inputs
-document.addEventListener('DOMContentLoaded', function() {
-    const quantityInputs = document.querySelectorAll('.quantity-input');
-    quantityInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            const cardElement = this.closest('.card');
-            recalculateTotals(cardElement);
+    // Recalculate card totals on input
+    document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
+        input.addEventListener('input', function () {
+            const card = this.closest('.card');
+            if (card) recalcCardTotal(card);
         });
     });
+
+    // Recalculate totals for all cards on load
+    document.querySelectorAll('.card[id^="order-"]').forEach(card => recalcCardTotal(card));
 });
 
-function confirmOrder(orderId) {
-    if (confirm('Are you sure you want to confirm this order?')) {
-        // Collect updated quantities
-        const cardElement = document.getElementById(`order-${orderId}`);
-        if (!cardElement) {
-            alert('Order card not found.');
-            return;
-        }
-        const quantityInputs = cardElement.querySelectorAll('.quantity-input');
-        let updatedQuantities = [];
-        quantityInputs.forEach(input => {
-            updatedQuantities.push({
-                item_id: input.getAttribute('data-item-id'),
-                quantity: parseInt(input.value)
-            });
-        });
 
-        fetch(`/milk_agency/confirm-order/${orderId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ quantities: updatedQuantities })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                // Redirect to reports dashboard to view the generated invoice
-                window.location.href = '/milk_agency/admin-orders-dashboard/';
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
-    }
+function recalcCardTotal(cardElement) {
+    let total = 0;
+
+    cardElement.querySelectorAll('table tbody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.quantity-input')?.value) || 0;
+        const discount = parseFloat(row.querySelector('.discount-input')?.value) || 0;
+
+        // Just UI preview (backend does real calculation)
+        total += qty - discount;
+    });
+
+    const totalEl = cardElement.querySelector('.order-total');
+    if (totalEl) totalEl.textContent = total.toFixed(2);
 }
 
-function rejectOrder(orderId) {
-    if (confirm('Are you sure you want to reject this order?')) {
-        fetch(`/milk_agency/reject-order/${orderId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
+
+function confirmOrder(orderId) {
+    if (!confirm('Confirm this order?')) return;
+
+    const card = document.getElementById(`order-${orderId}`);
+    if (!card) return alert("Order card not found");
+
+    const updatedItems = [];
+
+    card.querySelectorAll('table tbody tr').forEach(row => {
+        const itemId = row.querySelector('.quantity-input')?.dataset.itemId;
+        const qty = parseInt(row.querySelector('.quantity-input')?.value) || 0;
+        const discount = parseFloat(row.querySelector('.discount-input')?.value) || 0;
+
+        if (itemId) {
+            updatedItems.push({
+                item_id: itemId,
+                quantity: qty,
+                discount: discount
+            });
+        }
+    });
+
+    fetch(`/milk_agency/confirm-order/${orderId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ quantities: updatedItems })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            if (data.bill_id) {
+                window.location.href = `/milk_agency/view-bill/${data.bill_id}/`;
             } else {
-                alert('Error: ' + data.message);
+                window.location.reload();
             }
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
-    }
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => alert("Error: " + err.message));
+}
+
+
+function rejectOrder(orderId) {
+    if (!confirm("Reject this order?")) return;
+
+    fetch(`/milk_agency/reject-order/${orderId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "Content-Type": "application/json"
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => alert("Error: " + err.message));
 }
