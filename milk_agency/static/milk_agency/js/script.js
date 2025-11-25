@@ -1,32 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Automatically dismiss all Bootstrap alert messages after 10 seconds
     const alertList = document.querySelectorAll('.message-container-top-right .alert');
-<<<<<<< SEARCH
-    
-=======
-    
->>>>>>> REPLACE
     alertList.forEach((alert, index) => {
-<<<<<<< SEARCH
-        
-=======
-        
->>>>>>> REPLACE
         setTimeout(() => {
-<<<<<<< SEARCH
-            
-=======
-            
->>>>>>> REPLACE
             // Remove 'show' class to trigger fade out transition
             alert.classList.remove('show');
             // Remove the alert element from DOM after fade out transition (300ms)
             setTimeout(() => {
-<<<<<<< SEARCH
-                
-=======
-                
->>>>>>> REPLACE
                 alert.remove();
             }, 300);
         }, 10000);
