@@ -137,55 +137,47 @@
             <p class="mb-4">Company-wise product availability</p>
         </div>
 
-        {% for group in companies %}
+        {% for company in companies %}
         <div class="card bg-light p-4 mb-5">
 
             <!-- Company Header -->
             <div class="text-center mb-5">
-                <img src="{{ group.company.logo.url }}" 
-                     alt="{{ group.company.name }} Logo"
+                <img src="{{ company.logo.url }}" 
+                     alt="{{ company.name }} Logo"
                      style="height:90px; width:auto; padding:8px; background:white; border-radius:12px;">
 
-                <h3 class="mt-3">{{ group.company.name }} Products</h3>
-                <p class="text-muted">Available items from {{ group.company.name }}</p>
+                <h3 class="mt-3">{{ company.name }} Products</h3>
+                <p class="text-muted">Available items from {{ company.name }}</p>
             </div>
 
             <!-- Product Grid -->
             <div class="row g-4">
-                {% for product in group.products %}
-                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                    <div class="product-card h-100">
+                {% for product in products %}
+                    {% if product.company == company %}
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="product-card h-100 d-flex flex-column">
 
-                        <!-- Product image with inline resize -->
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}"
-                                 alt="{{ product.name }}"
-                                 style="
-                                     height:160px; width:auto; object-fit:contain;
-                                     padding:10px; background:white; border-radius:12px;
-                                     display:block; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.1);
-                                 ">
-                        {% else %}
-                            <img src="{% static 'images/placeholder.png' %}"
-                                 alt="{{ product.name }}"
-                                 style="
-                                     height:160px; width:auto; object-fit:contain;
-                                     padding:10px; background:white; border-radius:12px;
-                                     display:block; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.1);
-                                 ">
-                        {% endif %}
+                            <div class="product-image-wrapper position-relative">
+                                <img src="{{ product.image.url }}" 
+                                     alt="{{ product.name }}" 
+                                     class="product-image img-fluid rounded-top">
 
-                        <div class="product-content text-center mt-3">
-                            <h5>{{ product.name }}</h5>
-                            <p>{{ product.description|default:"Premium dairy product" }}</p>
-                            {% if product.selling_price %}
-                                <p class="text-primary fw-bold">₹{{ product.selling_price }}</p>
-                            {% endif %}
-                            <small class="text-muted">Stock: {{ product.stock_quantity }}</small>
+                                {% if product.frozen %}
+                                <span class="badge bg-info position-absolute top-0 start-0 m-2">Frozen</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="product-details flex-grow-1 d-flex flex-column p-3">
+                                <h5 class="product-name mb-2">{{ product.name }}</h5>
+                                <p class="product-description text-muted mb-3">{{ product.description }}</p>
+                                <div class="mt-auto">
+                                    <span class="product-price h5 fw-bold">₹{{ product.price_per_unit }} / {{ product.unit }}</span>
+                                </div>
+                            </div>
+
                         </div>
-
                     </div>
-                </div>
+                    {% endif %}
                 {% endfor %}
             </div>
 
