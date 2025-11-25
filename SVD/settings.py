@@ -138,8 +138,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/home/ubuntu/SVD/static'
 
 # Media files (User uploaded files)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/ubuntu/SVD/media'
+MEDIA_URL = '/images/'
+MEDIA_ROOT = '/home/ubuntu/SVD/images'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
