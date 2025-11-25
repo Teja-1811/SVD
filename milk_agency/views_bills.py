@@ -151,10 +151,19 @@ def generate_bill(request):
                 messages.error(request, 'Customer not found.')
                 return redirect('milk_agency:generate_bill')
 
-        # Generate invoice number
         today = timezone.now().date()
-        last_bill_today = Bill.objects.filter(created_at__date=today).order_by('-id').first()
-        invoice_number = f"INV-{today.strftime('%Y%m%d')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
+        today_str = today.strftime('%Y%m%d')
+
+        last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{today_str}").order_by('-invoice_number').first()
+
+        if last_bill:
+            # Extract last 4-digit counter
+            last_counter = int(last_bill.invoice_number.split('-')[-1])
+            new_counter = last_counter + 1
+        else:
+            new_counter = 1
+
+        invoice_number = f"INV-{today_str}-{new_counter:04d}"
 
         try:
             with transaction.atomic():
