@@ -3,387 +3,256 @@
 
 {% block title %}SVD Milk Agencies{% endblock %}
 
+{% block extra_css %}
+<style>
+
+/* -------------------------------------------
+   HERO LOGO FIX (IMPORTANT)
+-------------------------------------------- */
+.company-logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+    padding: 8px;
+    background: #ffffff;
+    border-radius: 12px;
+    margin: 8px 15px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transition: transform .3s ease;
+}
+.company-logo:hover {
+    transform: scale(1.05);
+}
+
+.hero-subtitle .divider {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Responsive logos */
+@media (max-width: 576px) {
+    .company-logo {
+        height: 55px;
+        margin: 8px;
+    }
+}
+
+/* Main SVD logo fix */
+.hero-logo-img {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Hero background */
+.hero-section {
+    min-height: 90vh;
+    padding-top: 60px;
+    background: linear-gradient(135deg, #5a42e1, #8a5cf5);
+}
+
+</style>
+{% endblock extra_css %}
+
+
 {% block content %}
-    <!-- Hero Section -->
-    <section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
-        <!-- Background Elements -->
-        <div class="hero-bg-pattern position-absolute top-0 start-0 w-100 h-100"></div>
-        <div class="hero-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
 
-        <div class="container-fluid h-100 position-relative z-index-2 mt-5">
-            <div class="row h-100 align-items-center">
-                <div class="col-12 text-center">
-                    <div class="hero-content loading">
-                        <!-- Enhanced Logo Section -->
-                        <div class="hero-logo-wrapper mb-4 mb-lg-5">
-                            <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
-                                <img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies Logo" class="hero-logo-img">
-                            </div>
-                        </div>
+<!-- Hero Section -->
+<section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
+    <div class="hero-bg-pattern position-absolute top-0 start-0 w-100 h-100"></div>
+    <div class="hero-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
 
-                        <!-- Main Title with Better Typography -->
-                        <h3 class="hero-main-title display-3 display-md-2 display-lg-1 fw-bold mb-4 mb-lg-5">
-                            <span class="d-block">Fresh <span class="gradient-text">Milk</span> Delivery</span>
-                            <span class="d-block text-white">Every Day</span>
-                        </h3>
+    <div class="container-fluid h-100 position-relative z-index-2 mt-5">
+        <div class="row h-100 align-items-center">
+            <div class="col-12 text-center">
+                <div class="hero-content loading">
 
-                        <div class="hero-subtitle mb-4 mb-lg-5">
-                            <p class="lead mb-0">Your Trusted Partner for Quality Dairy Products</p>
-                            <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center">
-                                {% if show_company_logos %}
-                                    {% for company in companies %}
-                                        <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo mx-3">
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-
-                            <div class="mt-2">
-                                <p class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru, and Surrounding Areas</p>
-                                <p class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Call Us: <a href="tel:+919392890375" class="text-decoration-none text-white">+91 9392890375</a></p>
-                            </div>
-                        </div>
-
-                        <!-- Enhanced CTA Buttons -->
-                        <div class="hero-cta-buttons d-flex flex-column flex-sm-row gap-3 gap-md-4 justify-content-center align-items-center">
-                            <a href="#products" class="btn btn-primary btn-hero-cta px-5 py-3 fw-semibold">
-                                <i class="bi bi-box-seam me-2"></i>Explore Products
-                            </a>
-                            <a href="#contact" class="btn btn-outline-light btn-hero-cta-secondary px-5 py-3 fw-semibold">
-                                <i class="bi bi-telephone me-2"></i>Get in Touch
-                            </a>
-                        </div>
-
-                        <!-- Trust Indicators -->
-                        <div class="trust-indicators mt-5 pt-4">
-                            <div class="row justify-content-center g-4">
-                                <div class="col-auto">
-                                    <div class="trust-item d-flex align-items-center text-white">
-                                        <i class="bi bi-shield-check text-success me-2 fs-4"></i>
-                                        <span class="fw-medium">Quality Assured</span>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="trust-item d-flex align-items-center text-white">
-                                        <i class="bi bi-truck text-info me-2 fs-4"></i>
-                                        <span class="fw-medium">Fast Delivery</span>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="trust-item d-flex align-items-center text-white">
-                                        <i class="bi bi-headset text-warning me-2 fs-4"></i>
-                                        <span class="fw-medium">24/7 Support</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Logo -->
+                    <div class="hero-logo-wrapper mb-4 mb-lg-5">
+                        <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
+                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" class="hero-logo-img">
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Products Section -->
-    <section class="section products-section" id="products">
-        <div class="container-fluid">
-            <div class="section-title text-center">
-                <h2 class="mb-3">Our Premium Products</h2>
-                <p class="mb-4 mb-lg-5">Quality dairy products from trusted brands - Dodla and Jersey, ensuring freshness and taste in every drop</p>
-            </div>
 
-            <!-- Products from Database -->
-            {% if products %}
-            <div class="card bg-light p-4 mb-5">
-                <div class="brand-header animate-on-scroll text-center mb-5">
-                    <img src="{% static 'images/Dodla/logo.png' %}" alt="Dodla Logo" class="brand-logo my-5">
-                    <h3 class="brand-title">Our Available Products</h3>
-                    <p class="text-muted">Premium quality dairy products currently in stock</p>
-                </div>
+                    <!-- Title -->
+                    <h3 class="hero-main-title display-3 fw-bold mb-4">
+                        <span class="d-block">Fresh <span class="gradient-text">Milk</span> Delivery</span>
+                        <span class="d-block text-white">Every Day</span>
+                    </h3>
 
-                <div class="row g-3 g-md-4">
-                    {% for product in products %}
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="product-card animate-on-scroll h-100">
-                            {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-                            {% else %}
-                                <img src="{% static 'images/Dodla/FCM.png' %}" alt="{{ product.name }}" class="product-image">
+                    <!-- Subtitle -->
+                    <div class="hero-subtitle mb-5">
+                        <p class="lead mb-3">Your Trusted Partner for Quality Dairy Products</p>
+
+                        <div class="divider d-flex mx-auto">
+                            {% if show_company_logos %}
+                                {% for company in companies %}
+                                    <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo">
+                                {% endfor %}
                             {% endif %}
-                            <div class="product-content">
-                                <h5 class="product-title">{{ product.name }}</h5>
-                                <p class="product-description">{{ product.description|default:"Premium quality dairy product" }}</p>
-                                {% if product.selling_price %}
-                                <p class="product-price text-primary fw-bold">₹{{ product.selling_price }}</p>
-                                {% endif %}
-                                <small class="text-muted">Stock: {{ product.stock_quantity }} {{ product.unit|default:"units" }}</small>
-                            </div>
                         </div>
+
+                        <p class="mb-1"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru and Nearby</p>
+                        <p class="mb-0"><i class="bi bi-telephone-fill me-2"></i>
+                            Call Us: <a href="tel:+919392890375" class="text-white text-decoration-none">+91 9392890375</a>
+                        </p>
                     </div>
-                    {% endfor %}
-                </div>
-                <div class="text-center my-5">
-                    <div class="button-container">
-                        <a href="{% url 'milk_agency:dodla_products' %}" class="btn btn-primary btn-hero-cta px-4 py-2 fw-semibold">
-                            <i class="bi bi-eye me-2"></i>View All Products
+
+                    <!-- CTA Buttons -->
+                    <div class="hero-cta-buttons d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center">
+                        <a href="#products" class="btn btn-primary btn-hero-cta px-5 py-3 fw-semibold">
+                            <i class="bi bi-box-seam me-2"></i>Explore Products
+                        </a>
+                        <a href="#contact" class="btn btn-outline-light btn-hero-cta-secondary px-5 py-3 fw-semibold">
+                            <i class="bi bi-telephone me-2"></i>Get in Touch
                         </a>
                     </div>
+
+                    <!-- Trust Indicators -->
+                    <div class="trust-indicators mt-5 pt-4">
+                        <div class="row justify-content-center g-4">
+                            <div class="col-auto">
+                                <div class="trust-item d-flex align-items-center text-white">
+                                    <i class="bi bi-shield-check text-success me-2 fs-4"></i>
+                                    <span>Quality Assured</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="trust-item d-flex align-items-center text-white">
+                                    <i class="bi bi-truck text-info me-2 fs-4"></i>
+                                    <span>Fast Delivery</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="trust-item d-flex align-items-center text-white">
+                                    <i class="bi bi-headset text-warning me-2 fs-4"></i>
+                                    <span>24/7 Support</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            {% else %}
-            <!-- Fallback to static products if no database products -->
-            <div class="card bg-light p-4 mb-5">
-                <div class="brand-header animate-on-scroll text-center mb-5">
-                    <img src="{% static 'images/Dodla/logo.png' %}" alt="Dodla Logo" class="brand-logo my-5">
-                    <h3 class="brand-title">Dodla Dairy Products</h3>
-                    <p class="text-muted">Premium quality dairy products with traditional taste and modern packaging</p>
-                </div>
-
-                <div class="row g-3 g-md-4">
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="product-card animate-on-scroll h-100">
-                            <img src="{% static 'images/Dodla/FCM.png' %}" alt="Dodla Full Cream Milk" class="product-image">
-                            <div class="product-content">
-                                <h5 class="product-title">Full Cream Milk</h5>
-                                <p class="product-description">Premium quality full cream milk for your daily needs</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="product-card animate-on-scroll h-100">
-                            <img src="{% static 'images/Dodla/curd.png' %}" alt="Dodla Curd" class="product-image">
-                            <div class="product-content">
-                                <h5 class="product-title">Fresh Curd</h5>
-                                <p class="product-description">Traditional homemade taste with modern packaging</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="product-card animate-on-scroll h-100">
-                            <img src="{% static 'images/Dodla/buter-milk-packet.png' %}" alt="Dodla Butter Milk" class="product-image">
-                            <div class="product-content">
-                                <h5 class="product-title">Butter Milk</h5>
-                                <p class="product-description">Refreshing and healthy buttermilk</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="product-card animate-on-scroll h-100">
-                            <img src="{% static 'images/Dodla/ghee.webp' %}" alt="Dodla Ghee" class="product-image">
-                            <div class="product-content">
-                                <h5 class="product-title">Pure Ghee</h5>
-                                <p class="product-description">Traditional cow ghee with rich flavor</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center my-5">
-                    <div class="button-container">
-                        <a href="{% url 'milk_agency:dodla_products' %}" class="btn btn-primary btn-hero-cta px-4 py-2 fw-semibold">
-                            <i class="bi bi-eye me-2"></i>View All Products
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Features Section -->
-    <section class="section features-section" id="features">
-        <div class="container-fluid">
-            <div class="section-title text-center">
-                <h2 class="mb-3">Why Choose SVD Milk Agencies?</h2>
-                <p class="mb-4 mb-lg-5">Advanced technology and dedicated service ensure your dairy business runs smoothly and efficiently</p>
+
+<!-- Products Section -->
+<section class="section products-section" id="products">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h2 class="mb-3">Our Premium Products</h2>
+            <p class="mb-4">Quality dairy products from trusted brands</p>
+        </div>
+
+        {% if products %}
+        <div class="card bg-light p-4 mb-5">
+            <div class="text-center mb-5">
+                <img src="{% static 'images/Dodla/logo.png' %}" class="brand-logo my-5" alt="Dodla Logo">
+                <h3>Our Available Products</h3>
+                <p class="text-muted">Premium quality dairy items</p>
             </div>
 
             <div class="row g-4">
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <div class="feature-card animate-on-scroll h-100">
-                        <div class="feature-icon">
-                            <i class="bi bi-credit-card"></i>
+                {% for product in products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="product-card h-100">
+                        <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                        <div class="product-content">
+                            <h5>{{ product.name }}</h5>
+                            <p>{{ product.description|default:"Premium dairy product" }}</p>
+                            {% if product.selling_price %}
+                            <p class="text-primary fw-bold">₹{{ product.selling_price }}</p>
+                            {% endif %}
+                            <small class="text-muted">Stock: {{ product.stock_quantity }}</small>
                         </div>
-                        <h4 class="feature-title">Automated Billing</h4>
-                        <p class="feature-description">Streamlined billing process with automatic invoice generation, payment tracking, and financial reporting for seamless financial management.</p>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
 
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <div class="feature-card animate-on-scroll h-100">
-                        <div class="feature-icon">
-                            <i class="bi bi-headset"></i>
-                        </div>
-                        <h4 class="feature-title">24/7 Support</h4>
-                        <p class="feature-description">Round-the-clock customer support ensures immediate assistance for any queries, issues, or support requirements from our dedicated team.</p>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <div class="feature-card animate-on-scroll h-100">
-                        <div class="feature-icon">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <h4 class="feature-title">Quality Assurance</h4>
-                        <p class="feature-description">Rigorous quality control processes with batch tracking, expiry monitoring, and quality verification ensure premium product standards.</p>
-                    </div>
-                </div>
+            <div class="text-center my-5">
+                <a href="{% url 'milk_agency:dodla_products' %}" class="btn btn-primary px-4 py-2 fw-semibold">
+                    <i class="bi bi-eye me-2"></i>View All Products
+                </a>
             </div>
         </div>
-    </section>
+        {% endif %}
+    </div>
+</section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="container-fluid">
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">60+</div>
-                        <div class="stat-label">Happy Customers</div>
-                    </div>
-                </div>
-                <!--<div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">10+</div>
-                        <div class="stat-label">Years Experience</div>
-                    </div>
-                </div>-->
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Customer Support</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Quality Assurance</div>
-                    </div>
-                </div>
-            </div>
+<!-- Contact Section -->
+<section class="section location-contact-section py-5" id="contact">
+    <div class="container-fluid">
+
+        <div class="section-title text-center mb-5">
+            <h2 class="mb-3">Get In Touch</h2>
+            <p>Find our location or send us a message</p>
         </div>
-    </section>
 
-    <!-- Location & Contact Section -->
-    <section class="section location-contact-section py-5" id="contact">
-        <div class="container-fluid">
-            <div class="section-title text-center mb-5">
-                <h2 class="mb-3">Get In Touch</h2>
-                <p class="mb-4">Find our location and send us a message for inquiries or orders</p>
+        <div class="row g-4">
+
+            <!-- Map -->
+            <div class="col-lg-6 col-md-12">
+                <div class="location-card h-100">
+                    <h4 class="text-center mb-4"><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
+
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+                        width="100%" height="400" style="border:0; border-radius: 10px;" loading="lazy"></iframe>
+
+                    <div class="contact-pills mt-3 text-center">
+                        <p><i class="bi bi-clock-fill me-2"></i>Mon - Sun: 6 AM - 9 PM</p>
+                        <p><i class="bi bi-telephone-fill me-2"></i>
+                            <a href="tel:+919392890375">+91 9392890375</a>
+                        </p>
+                        <p><i class="bi bi-envelope-fill me-2"></i>
+                            <a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a>
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <div class="row g-4">
-                <!-- Map Section -->
-                <div class="col-lg-6 col-md-12">
-                    <div class="location-card h-100">
-                        <div class="location-header text-center mb-4">
-                            <h4 class="location-title">
-                                <i class="bi bi-geo-alt-fill me-2"></i>Our Location
-                            </h4>
-                            <p class="location-address">
-                                <i class="bi bi-map me-2"></i>Near Santa Market, Main Road Gundugolanu, Eluru, AP - 534427
-                            </p>
-                        </div>
+            <!-- Contact form -->
+            <div class="col-lg-6 col-md-12">
+                <div class="contact-form-card h-100">
+                    <h4 class="mb-3"><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
-                        <div class="map-container">
-                            <iframe
-                                src="https://maps.google.com/maps?q=16.7784167,81.2303611&hl=en&z=14&output=embed"
-                                width="100%"
-                                height="400"
-                                style="border:0; border-radius: 10px;"
-                                allowfullscreen=""
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
-                                title="SVD Milk Agencies Location - Near Santa Market, Gundugolanu, Eluru (Lat: 16.7784167, Lon: 81.2303611) with Large Red Pin">
-                            </iframe>
-                        </div>
+                    <form id="contactForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label>Name *</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Phone *</label>
+                                <input type="tel" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label>Email</label>
+                                <input type="email" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label>Message *</label>
+                                <textarea rows="4" class="form-control" required></textarea>
+                            </div>
 
-                        <div class="contact-pills mt-3">
-                            <div class="d-flex flex-wrap gap-3 justify-content-center">
-                                <div class="contact-pill">
-                                    <i class="bi bi-clock-fill me-2"></i>
-                                    <div>
-                                        <small class="pill-label">Business Hours</small>
-                                        <span class="pill-value">Mon - Sun: 6:00 AM - 9:00 PM</span>
-                                    </div>
-                                </div>
-                                <div class="contact-pill">
-                                    <i class="bi bi-telephone-fill me-2"></i>
-                                    <div>
-                                        <small class="pill-label">Call Us</small>
-                                        <a href="tel:+919392890375" class="pill-value text-decoration-none">+91 9392890375</a>
-                                    </div>
-                                </div>
-                                <div class="contact-pill">
-                                    <i class="bi bi-envelope-fill me-2"></i>
-                                    <div>
-                                        <small class="pill-label">Email Us</small>
-                                        <a href="mailto:svdagencies12@gmail.com" class="pill-value text-decoration-none">svdagencies12@gmail.com</a>
-                                    </div>
-                                </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-whatsapp btn-lg" id="whatsappBtn">
+                                    <i class="bi bi-whatsapp me-2"></i>Share via WhatsApp
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </form>
 
-                <!-- Contact Form Section -->
-                <div class="col-lg-6 col-md-12">
-                    <div class="contact-form-card h-100">
-                        <div class="contact-header">
-                            <h4 class="contact-title">
-                                <i class="bi bi-envelope-paper me-2"></i>Send us a Message
-                            </h4>
-                            <p class="contact-subtitle">Fill out the form below and we'll get back to you soon</p>
-                        </div>
-
-                        <form class="contact-form" id="contactForm">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="contactName" class="form-label">Full Name *</label>
-                                    <input type="text" class="form-control" id="contactName" name="name" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="contactPhone" class="form-label">Phone Number *</label>
-                                    <input type="tel" class="form-control" id="contactPhone" name="phone" required>
-                                </div>
-                                <div class="col-12">
-                                    <label for="contactEmail" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" id="contactEmail" name="email">
-                                </div>
-                                <div class="col-12">
-                                    <label for="contactSubject" class="form-label">Subject *</label>
-                                    <select class="form-select" id="contactSubject" name="subject" required>
-                                        <option value="">Select a subject</option>
-                                        <option value="Product Inquiry">Product Inquiry</option>
-                                        <option value="Order Placement">Order Placement</option>
-                                        <option value="Delivery Schedule">Delivery Schedule</option>
-                                        <option value="Business Partnership">Business Partnership</option>
-                                        <option value="General Information">General Information</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label for="contactMessage" class="form-label">Message *</label>
-                                    <textarea class="form-control" id="contactMessage" name="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
-                                </div>
-                                <div class="col-12">
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-whatsapp btn-lg" id="whatsappBtn">
-                                            <i class="bi bi-whatsapp me-2"></i>Share via WhatsApp
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Contact Form JavaScript -->
-    <script src="{% static 'js/contact-whatsapp.js' %}"></script>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'js/contact-whatsapp.js' %}"></script>
 
 {% endblock %}
-
-
-
