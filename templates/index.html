@@ -158,10 +158,11 @@
                         <div class="product-card h-100 d-flex flex-column">
 
                             <div class="product-image-wrapper position-relative">
-                                <img src="{{ product.image.url }}" 
-                                     alt="{{ product.name }}" 
-                                     class="product-image img-fluid rounded-top">
-
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="{% static 'images/placeholder.png' %}" class="product-image" alt="{{ product.name }}">
+                                {% endif %}
                                 {% if product.frozen %}
                                 <span class="badge bg-info position-absolute top-0 start-0 m-2">Frozen</span>
                                 {% endif %}
