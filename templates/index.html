@@ -159,7 +159,11 @@
                 {% for product in products %}
                 <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                     <div class="product-card h-100">
-                        <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.png' %}" class="product-image" alt="{{ product.name }}">
+                        {% endif %}
                         <div class="product-content">
                             <h5>{{ product.name }}</h5>
                             <p>{{ product.description|default:"Premium dairy product" }}</p>
