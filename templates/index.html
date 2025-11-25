@@ -16,10 +16,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
-.company-logo img {
-    width: 100px !important;
-}
-
 .divider {
     flex-wrap: wrap !important;
     justify-content: center !important;
@@ -64,14 +60,16 @@
                     <div class="hero-subtitle mb-5">
                         <p class="lead mb-3">Your Trusted Partner for Quality Dairy Products</p>
 
-                        <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center flex-wrap">
+                        <div class="divider my-4" style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:20px;">
+                            
                             {% if show_company_logos %}
                                 {% for company in companies %}
-                                <div class="company-logo-wrapper d-inline-block">
-                                    <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo">
-                                </div>
+                                    <img src="{{ company.logo.url }}"
+                                        alt="{{ company.name }} Logo"
+                                        class="company-logo">
                                 {% endfor %}
                             {% endif %}
+
                         </div>
 
                         <p class="mb-1"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru and Nearby</p>
