@@ -10,7 +10,8 @@ from django.shortcuts import render
 def index_view(request):
     from milk_agency.models import Item
     products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
-    return render(request, 'index.html', {'products': products})
+    show_company_logos = Item.objects.filter(frozen=False).exists()
+    return render(request, 'index.html', {'products': products, 'show_company_logos': show_company_logos})
 
 def handler404(request, exception):
     messages.error(request, "Please Login")
