@@ -8,10 +8,23 @@ from django.contrib import messages
 from django.shortcuts import render
 
 def index_view(request):
-    from milk_agency.models import Item
+    from milk_agency.models import Item, Company
+
+    # Only show products that are not frozen
     products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
-    show_company_logos = Item.objects.filter(frozen=False).exists()
-    return render(request, 'index.html', {'products': products, 'companies': show_company_logos})
+
+    # Check if at least ONE item is unfrozen
+    has_active_items = Item.objects.filter(frozen=False).exists()
+
+    # Show company list only if active items exist
+    companies = Company.objects.all() if has_active_items else []
+
+    return render(request, 'index.html', {
+        'products': products,
+        'companies': companies,
+        'show_company_logos': has_active_items
+    })
+
 
 def handler404(request, exception):
     messages.error(request, "Please Login")
