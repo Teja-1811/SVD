@@ -151,8 +151,8 @@ def generate_bill(request):
                 messages.error(request, 'Customer not found.')
                 return redirect('milk_agency:generate_bill')
 
-        today = timezone.now().date()
-        today_str = today.strftime('%Y%m%d')
+        today = timezone.now()
+        today_str = today.strftime('%Y%m%d%H%M%S')
 
         last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{today_str}").order_by('-invoice_number').first()
 
@@ -284,9 +284,10 @@ def generate_bill_from_order(order):
             bill_date_obj = order.order_date.date() if order.order_date else timezone.now().date()
 
             # Generate invoice number
-            today = timezone.now().date()
-            last_bill_today = Bill.objects.filter(created_at__date=today).order_by('-id').first()
-            invoice_number = f"INV-{today.strftime('%Y%m%d')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
+            today = timezone.now()
+            last_bill_today = Bill.objects.filter(created_at__date=today.date()).order_by('-id').first()
+            invoice_number = f"INV-{today.strftime('%Y%m%d%H%M%S')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
+
 
             # Create a new bill
             bill = Bill.objects.create(
