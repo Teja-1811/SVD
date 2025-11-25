@@ -26,22 +26,61 @@
                             <span class="d-block">Fresh <span class="gradient-text">Milk</span> Delivery</span>
                             <span class="d-block text-white">Every Day</span>
                         </h3>
-                        
+
                         <div class="hero-subtitle mb-4 mb-lg-5">
                             <p class="lead mb-0">Your Trusted Partner for Quality Dairy Products</p>
                             <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center">
                                 {% if show_company_logos %}
-    {% for company in companies %}
-        <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo mx-3">
-    {% endfor %}
-{% endif %}
-
+                                    {% for company in companies %}
+                                        <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo mx-3">
+                                    {% endfor %}
+                                {% endif %}
                             </div>
+
                             <div class="mt-2">
                                 <p class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru, and Surrounding Areas</p>
                                 <p class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Call Us: <a href="tel:+919392890375" class="text-decoration-none text-white">+91 9392890375</a></p>
                             </div>
                         </div>
+
+                        <!-- Enhanced CTA Buttons -->
+                        <div class="hero-cta-buttons d-flex flex-column flex-sm-row gap-3 gap-md-4 justify-content-center align-items-center">
+                            <a href="#products" class="btn btn-primary btn-hero-cta px-5 py-3 fw-semibold">
+                                <i class="bi bi-box-seam me-2"></i>Explore Products
+                            </a>
+                            <a href="#contact" class="btn btn-outline-light btn-hero-cta-secondary px-5 py-3 fw-semibold">
+                                <i class="bi bi-telephone me-2"></i>Get in Touch
+                            </a>
+                        </div>
+
+                        <!-- Trust Indicators -->
+                        <div class="trust-indicators mt-5 pt-4">
+                            <div class="row justify-content-center g-4">
+                                <div class="col-auto">
+                                    <div class="trust-item d-flex align-items-center text-white">
+                                        <i class="bi bi-shield-check text-success me-2 fs-4"></i>
+                                        <span class="fw-medium">Quality Assured</span>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="trust-item d-flex align-items-center text-white">
+                                        <i class="bi bi-truck text-info me-2 fs-4"></i>
+                                        <span class="fw-medium">Fast Delivery</span>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="trust-item d-flex align-items-center text-white">
+                                        <i class="bi bi-headset text-warning me-2 fs-4"></i>
+                                        <span class="fw-medium">24/7 Support</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- Products Section -->
     <section class="section products-section" id="products">
         <div class="container-fluid">
