@@ -11,7 +11,7 @@ def index_view(request):
     from milk_agency.models import Item
     products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
     show_company_logos = Item.objects.filter(frozen=False).exists()
-    return render(request, 'index.html', {'products': products, 'show_company_logos': show_company_logos})
+    return render(request, 'index.html', {'products': products, 'companies': show_company_logos})
 
 def handler404(request, exception):
     messages.error(request, "Please Login")

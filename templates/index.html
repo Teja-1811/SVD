@@ -13,25 +13,6 @@
         <div class="container-fluid h-100 position-relative z-index-2 mt-5">
             <div class="row h-100 align-items-center">
                 <div class="col-12 text-center">
-
-                    {% if show_company_logos %}
-                    <!-- Company Logos Section -->
-                    <section class="company-logos-section py-5 bg-light">
-                        <div class="container">
-                            <h3 class="text-center mb-4">Our Trusted Partners</h3>
-                            <div class="row justify-content-center align-items-center g-4">
-                                {% for logo in company_logos %}
-                                <div class="col-6 col-md-4 col-lg-2 text-center">
-                                    <div class="company-logo-card p-3 bg-white rounded shadow-sm h-100 d-flex align-items-center justify-content-center">
-                                        <img src="{{ logo.image.url }}" alt="{{ logo.name }}" class="company-logo-img img-fluid">
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </section>
-                    {% endif %}
-
                     <div class="hero-content loading">
                         <!-- Enhanced Logo Section -->
                         <div class="hero-logo-wrapper mb-4 mb-lg-5">
@@ -49,7 +30,11 @@
                         <div class="hero-subtitle mb-4 mb-lg-5">
                             <p class="lead mb-0">Your Trusted Partner for Quality Dairy Products</p>
                             <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center">
-                                <img src="{% static 'images/Dodla/logo.png' %}" alt="Dodla Logo" class="divider-logo ms-5" width="250">
+                                {% if companies %}
+                                    {% for company in companies %}
+                                        <img src="{% static 'images/'|add:company|add:'/logo.png' %}" alt="{{ company }} Logo" class="company-logo mx-3">
+                                    {% endfor %}
+                                {% endif %}
                             </div>
                             <div class="mt-2">
                                 <p class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru, and Surrounding Areas</p>
