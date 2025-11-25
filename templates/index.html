@@ -163,16 +163,13 @@
                                 {% else %}
                                     <img src="{% static 'images/placeholder.png' %}" class="product-image" alt="{{ product.name }}">
                                 {% endif %}
-                                {% if product.frozen %}
-                                <span class="badge bg-info position-absolute top-0 start-0 m-2">Frozen</span>
-                                {% endif %}
                             </div>
 
                             <div class="product-details flex-grow-1 d-flex flex-column p-3">
                                 <h5 class="product-name mb-2">{{ product.name }}</h5>
                                 <p class="product-description text-muted mb-3">{{ product.description }}</p>
                                 <div class="mt-auto">
-                                    <span class="product-price h5 fw-bold">₹{{ product.price_per_unit }} / {{ product.unit }}</span>
+                                    <span class="product-price h5 fw-bold">₹{{ product.mrp }}</span>
                                 </div>
                             </div>
 
