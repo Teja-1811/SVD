@@ -16,6 +16,10 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
+.company-logo img {
+    width: 100px !important;
+}
+
 .divider {
     flex-wrap: wrap !important;
     justify-content: center !important;
@@ -63,7 +67,9 @@
                         <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center flex-wrap">
                             {% if show_company_logos %}
                                 {% for company in companies %}
-                                    <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo">
+                                <div class="company-logo-wrapper d-inline-block">
+                                    <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo">
+                                </div>
                                 {% endfor %}
                             {% endif %}
                         </div>
