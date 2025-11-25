@@ -5,53 +5,29 @@
 
 {% block extra_css %}
 <style>
-
-/* -------------------------------------------
-   HERO LOGO FIX (IMPORTANT)
--------------------------------------------- */
 .company-logo {
-    height: 80px;
-    width: auto;
-    object-fit: contain;
-    padding: 8px;
-    background: #ffffff;
-    border-radius: 12px;
-    margin: 8px 15px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    transition: transform .3s ease;
-}
-.company-logo:hover {
-    transform: scale(1.05);
+    height: 110px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    padding: 10px !important;
+    background: white !important;
+    border-radius: 12px !important;
+    margin: 10px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
-.hero-subtitle .divider {
-    flex-wrap: wrap;
-    justify-content: center;
+.divider {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
 }
 
-/* Responsive logos */
 @media (max-width: 576px) {
     .company-logo {
-        height: 55px;
-        margin: 8px;
+        height: 70px !important;
     }
 }
-
-/* Main SVD logo fix */
-.hero-logo-img {
-    height: 120px;
-    width: auto;
-    object-fit: contain;
-}
-
-/* Hero background */
-.hero-section {
-    min-height: 90vh;
-    padding-top: 60px;
-    background: linear-gradient(135deg, #5a42e1, #8a5cf5);
-}
-
 </style>
+
 {% endblock extra_css %}
 
 
@@ -84,7 +60,7 @@
                     <div class="hero-subtitle mb-5">
                         <p class="lead mb-3">Your Trusted Partner for Quality Dairy Products</p>
 
-                        <div class="divider d-flex mx-auto">
+                        <div class="divider my-3 mx-auto d-flex justify-content-center align-items-center flex-wrap">
                             {% if show_company_logos %}
                                 {% for company in companies %}
                                     <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo">
