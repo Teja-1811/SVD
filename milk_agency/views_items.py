@@ -15,7 +15,7 @@ def items_dashboard(request):
     # Filter by company_id if passed
     company_id = request.GET.get('company')
 
-    if company_id:
+    if company_id and company_id != "all":
         items = Item.objects.filter(company_id=company_id).order_by('category', 'name')
     else:
         items = Item.objects.all().order_by('category', 'name')

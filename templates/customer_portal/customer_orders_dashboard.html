@@ -193,10 +193,7 @@
                 <span class="badge
                     {% if last_order.status == 'pending' %} bg-warning text-dark
                     {% elif last_order.status == 'confirmed' %} bg-success
-                    {% elif last_order.status == 'processing' %} bg-info
-                    {% elif last_order.status == 'ready' %} bg-primary
-                    {% elif last_order.status == 'delivered' %} bg-success
-                    {% elif last_order.status == 'cancelled' %} bg-secondary
+                    {% elif last_order.status == 'cancelled' %} bg-danger
                     {% elif last_order.status == 'rejected' %} bg-danger
                     {% endif %}
                 ">

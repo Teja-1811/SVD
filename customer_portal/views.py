@@ -166,9 +166,6 @@ def place_order(request):
             order_number=order_number,
             customer=customer,
             created_by=customer,
-            delivery_address=customer.address if hasattr(customer, "address") else "N/A",
-            phone=customer.phone if hasattr(customer, "phone") else "",
-            additional_notes=""
         )
 
         total_amount = 0

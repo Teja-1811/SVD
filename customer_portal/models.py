@@ -9,21 +9,14 @@ class CustomerOrder(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending Review'),
         ('confirmed', 'Confirmed'),
-        ('processing', 'Processing'),
-        ('ready', 'Ready for Delivery'),
-        ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
         ('rejected', 'Rejected'),
     ]
 
     order_number = models.CharField(max_length=50, unique=True, help_text='Unique order number')
     order_date = models.DateTimeField(default=timezone.now)
-    delivery_date = models.DateField(blank=True, null=True, help_text='Requested delivery date')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    admin_notes = models.TextField(blank=True, help_text='Admin notes and feedback')
     delivery_address = models.TextField(help_text='Delivery address')
-    phone = models.CharField(max_length=20, blank=True, help_text='Contact phone for delivery')
-    additional_notes = models.TextField(blank=True, help_text="Customer's additional notes")
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Total order amount')
     approved_total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Admin approved total amount')
     created_at = models.DateTimeField(auto_now_add=True)

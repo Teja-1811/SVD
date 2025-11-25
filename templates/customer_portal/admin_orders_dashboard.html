@@ -10,165 +10,258 @@
 {% block content %}
 
 <style>
-/* ===== GLOBAL CARD ===== */
-.order-card { border-radius: 12px; overflow: hidden; }
-
-/* ===== HEADER RESPONSIVE ===== */
-.admin-header { padding: 20px; }
-@media (max-width: 768px) {
-  .admin-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px; }
-  .admin-header h1 { font-size: 1.4rem; margin: 0; }
-  .admin-header .badge { font-size: 0.95rem; padding: 6px 10px; }
+/* =====================================
+   GLOBAL CARD
+===================================== */
+.order-card {
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-/* ===== TABLE RESPONSIVE (keep as table) ===== */
-.table-responsive { width:100%; overflow-x:auto !important; -webkit-overflow-scrolling: touch; }
-
-.items-table { min-width: 380px !important; border-collapse: collapse; }
-.items-table th, .items-table td { padding: 3px 6px !important; font-size: 0.82rem !important; line-height:1.1; }
-
-@media (max-width: 768px) {
-  .items-table th, .items-table td { padding: 2px 4px !important; font-size: 0.75rem !important; }
-  .quantity-input { width: 40px !important; padding: 2px !important; }
+/* =====================================
+   TABLE DESIGN
+===================================== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* ===== ITEM CODE (mobile only) ===== */
-.item-code-mobile { display: none; color: #000; font-weight:600; font-size:0.9rem; }
+.items-table {
+    min-width: 380px !important;
+    border-collapse: collapse;
+}
+
+.items-table th, .items-table td {
+    padding: 3px 6px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.1;
+}
+
+@media (max-width: 768px) {
+    .items-table th, .items-table td {
+        padding: 2px 4px !important;
+        font-size: 0.75rem !important;
+    }
+    .quantity-input {
+        width: 40px !important;
+        padding: 2px !important;
+    }
+}
+
+/* =====================================
+   ITEM NAME (DESKTOP) / CODE (MOBILE)
+===================================== */
+.item-code-mobile { display: none; font-weight: 600; font-size: 0.9rem; }
 .item-name-desktop { display: inline-block; }
-@media (max-width:768px) {
-  .item-name-desktop { display:none !important; }
-  .item-code-mobile { display:inline-block !important; }
+
+@media (max-width: 768px) {
+    .item-name-desktop { display: none !important; }
+    .item-code-mobile { display: inline-block !important; }
 }
 
-/* ===== BUTTON SYSTEM (desktop I+T, mobile icon-only) ===== */
+/* =====================================
+   ACTION BUTTONS
+===================================== */
 .btn-action {
-  display:flex; align-items:center; justify-content:center; gap:6px;
-  font-weight:500; padding:10px 14px; border-radius:8px; width:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 8px;
+    width: 100%;
 }
 
-@media (max-width:768px) {
-  .btn-action span { display: none !important; }
-  .btn-action { width:55px !important; height:55px !important; padding:0 !important; border-radius:50% !important; }
-  .btn-action i { font-size:1.6rem !important; }
-  .order-actions { justify-content:center !important; gap:15px !important; }
+@media (max-width: 768px) {
+    .btn-action span { display: none !important; }
+    .btn-action {
+        width: 55px !important;
+        height: 55px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+    }
+    .btn-action i { font-size: 1.6rem !important; }
+    .order-actions { justify-content: center !important; gap: 15px !important; }
+}
+
+/* =====================================
+   HEADER — ALWAYS SIDE BY SIDE
+===================================== */
+.admin-header {
+    padding: 18px 20px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+/* Title */
+.admin-title {
+    font-size: 1.9rem;
+    font-weight: 600;
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Badge */
+.pending-badge {
+    background: #ffc107;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 1rem;
+}
+
+/* Desktop full text */
+.count-only { display: none; }
+.count-text { display: inline; }
+
+/* Mobile count-only */
+@media (max-width: 768px) {
+    .pending-badge {
+        padding: 3px 9px;
+        border-radius: 8px;
+        font-size: 1rem;
+        margin-left: 12px; /* spacing beside title */
+    }
+
+    .admin-title {
+        font-size: 1.4rem;
+        white-space: nowrap;
+    }
+
+    .count-only {
+        display: inline;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .count-text {
+        display: none !important;
+    }
 }
 </style>
 
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <!-- HEADER -->
-      <div class="d-flex justify-content-between align-items-center bg-light border-bottom admin-header">
-        <h1 class="text-primary mb-0">Admin Orders Dashboard</h1>
-        <div class="badge bg-warning text-dark px-3 py-2">{{ total_pending }} Pending Orders</div>
-      </div>
+    <div class="row">
+        <div class="col-12">
 
-      <!-- CONTENT -->
-      <div class="p-3">
-        {% if pending_orders %}
-        <div class="row g-4">
-          {% for order in pending_orders %}
-          <div class="col-lg-6 col-xl-4 col-md-6 col-12">
-            <div class="card shadow-sm border-0 order-card" id="order-{{ order.id }}">
-              <div class="card-header bg-light d-flex justify-content-between">
-                <h5 class="mb-0">{{ order.order_number }}</h5>
-                <span class="badge bg-warning">Pending</span>
-              </div>
+            <!-- =====================================
+                 HEADER SECTION (Side-by-Side ALWAYS)
+            ====================================== -->
+            <div class="admin-header bg-light border-bottom">
 
-              <div class="card-body">
-                <div class="row mb-2">
-                  <div class="col-sm-6">
-                    <strong>Customer:</strong><br>{{ order.customer.name }}
-                  </div>
-                  <div class="col-sm-6">
-                    <strong>Order Date:</strong><br>{{ order.order_date|localtime|date:"M d, Y h:i A" }}
-                  </div>
+                <h1 class="text-primary mb-0 admin-title">Admin Orders Dashboard</h1>
+
+                <span class="pending-badge">
+                    <span class="count-only">{{ total_pending }}</span>
+                    <span class="count-text">{{ total_pending }} Pending Orders</span>
+                </span>
+
+            </div>
+
+            <!-- =====================================
+                 CONTENT SECTION
+            ====================================== -->
+            <div class="p-3">
+
+                {% if pending_orders %}
+                <div class="row g-4">
+
+                    {% for order in pending_orders %}
+                    <div class="col-lg-6 col-xl-4 col-md-6 col-12">
+
+                        <div class="card shadow-sm border-0 order-card" id="order-{{ order.id }}">
+                            <div class="card-header bg-light d-flex justify-content-between">
+                                <h5 class="mb-0">{{ order.order_number }}</h5>
+                                <span class="badge bg-warning">Pending</span>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Customer:</strong><br>{{ order.customer.name }}</div>
+                                    <div class="col-sm-6"><strong>Order Date:</strong><br>{{ order.order_date|localtime|date:"M d, Y h:i A" }}</div>
+                                </div>
+
+                                <strong>Items:</strong>
+                                <div class="table-responsive mt-2">
+                                    <table class="table table-sm items-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Qty</th>
+                                                <th>Disc</th>
+                                                <th>AQ</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {% for item in order.items.all %}
+                                            <tr>
+                                                <td>
+                                                    <span class="item-name-desktop">{{ item.item.name }}</span>
+                                                    <span class="item-code-mobile">{{ item.item.name|slice:":10" }}</span>
+                                                </td>
+
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm quantity-input"
+                                                           min="1"
+                                                           value="{{ item.requested_quantity }}"
+                                                           data-item-id="{{ item.id }}">
+                                                </td>
+
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm discount-input"
+                                                           min="0" step="0.1"
+                                                           value="{{ item.discount|default:0 }}"
+                                                           data-item-id="{{ item.id }}">
+                                                </td>
+
+                                                <td>{{ item.item.stock_quantity }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {% if order.additional_notes %}
+                                <div class="mb-3">
+                                    <strong>Notes:</strong>
+                                    <p class="text-muted">{{ order.additional_notes }}</p>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex gap-2 order-actions mt-2">
+                                    <button class="btn btn-success btn-action" onclick="confirmOrder({{ order.id }})">
+                                        <i class="bi bi-check-circle"></i><span>Confirm</span>
+                                    </button>
+                                    <button class="btn btn-danger btn-action" onclick="rejectOrder({{ order.id }})">
+                                        <i class="bi bi-x-circle"></i><span>Reject</span>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
                 </div>
 
-                <div class="row mb-2">
-                  <div class="col-sm-6">
-                    <strong>Delivery Date:</strong><br>{{ order.delivery_date|date:"M d, Y"|default:"Not specified" }}
-                  </div>
-                  <div class="col-sm-6">
-                    <strong>Total Amount:</strong><br>₹<span class="order-total">{{ order.total_amount|floatformat:2 }}</span>
-                  </div>
-                </div>
-
-                <!-- ITEMS TABLE -->
-                <strong>Items:</strong>
-                <div class="table-responsive mt-2">
-                  <table class="table table-sm items-table">
-                    <thead>
-                      <tr>
-                        <th>Item</th>
-                        <th>Qty</th>
-                        <th>Disc</th>
-                        <th>AQ</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for item in order.items.all %}
-                      <tr>
-                        <td>
-                          <!-- desktop name, mobile code (shortened name = code) -->
-                          <span class="item-name-desktop">{{ item.item.name }}</span>
-                          <span class="item-code-mobile">{{ item.item.name|slice:":10" }}</span>
-                        </td>
-
-                        <td>
-                          <input type="number" class="form-control form-control-sm quantity-input"
-                                 min="1"
-                                 value="{{ item.requested_quantity }}"
-                                 data-item-id="{{ item.id }}">
-                        </td>
-
-                        <td>
-                          <input type="number" class="form-control form-control-sm discount-input"
-                                 min="0" step="0.1"
-                                 value="{{ item.discount|default:0 }}"
-                                 data-item-id="{{ item.id }}">
-                        </td>
-
-                        <td>{{ item.item.stock_quantity }}</td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- NOTES -->
-                {% if order.additional_notes %}
-                <div class="mb-3">
-                  <strong>Notes:</strong>
-                  <p class="text-muted">{{ order.additional_notes }}</p>
+                {% else %}
+                <div class="text-center p-5">
+                    <h4>No Pending Orders</h4>
+                    <p>All orders have been processed.</p>
                 </div>
                 {% endif %}
 
-                <!-- ACTION BUTTONS -->
-                <div class="d-flex gap-2 order-actions mt-2">
-                  <button class="btn btn-success btn-action" onclick="confirmOrder({{ order.id }})">
-                    <i class="bi bi-check-circle"></i><span>Confirm</span>
-                  </button>
-
-                  <button class="btn btn-danger btn-action" onclick="rejectOrder({{ order.id }})">
-                    <i class="bi bi-x-circle"></i><span>Reject</span>
-                  </button>
-                </div>
-
-              </div>
             </div>
-          </div>
-          {% endfor %}
         </div>
-        {% else %}
-        <div class="text-center p-5">
-          <h4>No Pending Orders</h4>
-          <p>All orders have been processed.</p>
-        </div>
-        {% endif %}
-      </div>
     </div>
-  </div>
 </div>
 
 {% endblock %}

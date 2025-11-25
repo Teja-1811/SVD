@@ -3,8 +3,64 @@
 {% block title %}Edit Expense{% endblock %}
 
 {% block content %}
+<style>
+    /* PAGE HEADER */
+    .page-header h2 {
+        font-weight: 700;
+        font-size: 26px;
+    }
+
+    /* MAIN CARD */
+    .expense-card {
+        border-radius: 18px;
+        border: 1px solid #323233ff;
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .expense-card .card-header {
+        background: #f8f9fc;
+        border-radius: 18px 18px 0 0 !important;
+        border-bottom: 1px solid #e3e6f0;
+    }
+
+    /* INPUT STYLING */
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 15px;
+    }
+
+    textarea.form-control {
+        height: 90px !important;
+    }
+
+    /* SUBMIT BUTTON */
+    .update-btn {
+        color: #fff;
+        background: #006cff;
+        font-size: 16px;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-weight: 600;
+    }
+    .update-btn:hover {
+        background: #0053cb;
+    }
+
+    /* MOBILE RESPONSIVE */
+    @media (max-width: 576px) {
+        .expense-card {
+            margin: 0 12px;
+        }
+    }
+</style>
+
+
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- PAGE HEADING -->
+    <div class="d-flex justify-content-between align-items-center mb-4 page-header">
         <h2>Edit Expense</h2>
         <a href="{% url 'milk_agency:expenses_list' %}" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i>Back to Expenses List
@@ -13,23 +69,29 @@
 
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
+
+            <div class="card expense-card">
+
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Edit Expense Details</h6>
+                    <h6 class="m-0 fw-bold text-primary">Edit Expense Details</h6>
                 </div>
+
                 <div class="card-body">
+
                     <form method="post">
                         {% csrf_token %}
 
+                        <!-- Amount -->
                         <div class="mb-3">
-                            <label for="amount" class="form-label">Amount (₹)</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" name="amount"
-                                   value="{{ expense.amount }}" required>
+                            <label class="form-label">Amount (₹)</label>
+                            <input type="number" step="0.01" class="form-control"
+                                   name="amount" value="{{ expense.amount }}" required>
                         </div>
 
+                        <!-- Category -->
                         <div class="mb-3">
-                            <label for="category" class="form-label">Category</label>
-                            <select class="form-control" id="category" name="category" required>
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category" required>
                                 <option value="">Select Category</option>
                                 <option value="petrol" {% if expense.category == 'petrol' %}selected{% endif %}>Petrol</option>
                                 <option value="food" {% if expense.category == 'food' %}selected{% endif %}>Food</option>
@@ -42,29 +104,34 @@
                             </select>
                         </div>
 
+                        <!-- Description -->
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3">{{ expense.description }}</textarea>
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description">{{ expense.description }}</textarea>
                         </div>
 
+                        <!-- Date -->
                         <div class="mb-3">
-                            <label for="date" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="date" name="date"
-                                   value="{{ expense.date|date:'Y-m-d' }}" required>
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control"
+                                   name="date" value="{{ expense.date|date:'Y-m-d' }}" required>
                         </div>
 
+                        <!-- Submit Button -->
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-1"></i>Update Expense
+                            <button type="submit" class="btn update-btn">
+                                <i class="bi bi-check-circle me-1"></i> Update Expense
                             </button>
                         </div>
+
                     </form>
+
                 </div>
+
             </div>
+
         </div>
     </div>
+
 </div>
 {% endblock %}
-
-
-

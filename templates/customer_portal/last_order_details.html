@@ -50,9 +50,6 @@
                 <span class="order-status-badge 
                     {% if order.status == 'pending' %} bg-warning text-dark
                     {% elif order.status == 'confirmed' %} bg-success
-                    {% elif order.status == 'processing' %} bg-info text-dark
-                    {% elif order.status == 'ready' %} bg-primary
-                    {% elif order.status == 'delivered' %} bg-success
                     {% elif order.status == 'cancelled' %} bg-secondary
                     {% elif order.status == 'rejected' %} bg-danger
                     {% endif %}">
@@ -71,7 +68,13 @@
 
                 <div class="col-md-6">
                     <p class="mb-1"><strong>Delivery Address:</strong></p>
-                    <p class="text-muted small">{{ order.delivery_address }}</p>
+                    <p class="text-muted small">{{ order.customer.shop_name }} <br> 
+                        {{order.customer.area}}, 
+                        {{order.customer.city}},
+                        {{order.customer.area}},
+                        {{order.customer.state}} - 
+                        {{order.customer.pin_code}}
+                    </p>
                 </div>
             </div>
 

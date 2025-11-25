@@ -4,240 +4,423 @@
 {% block title %}Stock Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/common.css' %}">
-<link rel="stylesheet" href="{% static 'css/milk_agency/stock_dashboard.css' %}">
+<style>
+/* ================================
+   GLOBAL CARD STYLE (ALL CARDS)
+================================ */
+.card {
+    background: #ffffff;
+    border: 1px solid #e4e7eb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+    transition: all .25s ease;
+}
+.card:hover {
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+}
+
+/* ================================
+   PASTEL BACKGROUNDS (Option A)
+   - summary cards + chart + table
+================================ */
+/* Summary card pastel variants */
+.stat-items { background: linear-gradient(180deg, #f6fbff 0%, #f4f8ff 100%) !important; }   /* Light blue */
+.stat-value { background: linear-gradient(180deg, #f6fff7 0%, #f1fff5 100%) !important; }   /* Light green */
+.stat-low   { background: linear-gradient(180deg, #fffbef 0%, #fff8e8 100%) !important; }   /* Light yellow */
+.stat-move  { background: linear-gradient(180deg, #f7feff 0%, #effcff 100%) !important; }   /* Light aqua */
+
+/* Chart card background */
+.chart-card { background: linear-gradient(180deg,#fbfdff 0%, #f7faff 100%) !important; }
+
+/* Table card background */
+.table-card { background: linear-gradient(180deg,#ffffff 0%, #fafbfc 100%) !important; }
+
+/* ================================
+   SUMMARY CARDS
+================================ */
+.card.stat-card {
+    padding: 1.4rem 1.2rem !important;
+    text-align: center;
+}
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto .6rem;
+}
+.stat-title {
+    font-size: .9rem;
+    color: #6c6c6c;
+    margin-bottom: .25rem;
+}
+.stat-value-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* ================================
+   CHART CARDS & PIE CENTERING
+================================ */
+.chart-container {
+    height: 300px !important;
+    position: relative;
+}
+
+/* container to center pie */
+.pie-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    padding: 0;
+}
+
+/* limit donut size so legend doesn't push it */
+#companyChart {
+    max-width: 260px !important;
+    max-height: 260px !important;
+    margin: auto !important;
+}
+
+/* ================================
+   TABLE CARD
+================================ */
+.table-responsive {
+    border-radius: 12px;
+}
+#stockOverviewTable thead th {
+    background: #eef1f5 !important;
+    border-bottom: 1px solid #dfe3e8 !important;
+    font-weight: 700;
+}
+#stockOverviewTable tbody tr:hover {
+    background: #f7f9fc !important;
+}
+.badge.stock-low {
+    background: rgba(230,70,70,0.12);
+    color: #d62828;
+    padding: .4rem .6rem;
+    border-radius: 8px;
+}
+.badge.stock-ok {
+    background: rgba(30,150,90,0.15);
+    color: #198754;
+    padding: .4rem .6rem;
+    border-radius: 8px;
+}
+
+/* =================================
+   TOP RIGHT BUTTON + preview thumbnail
+=================================== */
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* preview thumbnail (uses uploaded file path) */
+.dashboard-preview {
+    width: 44px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+}
+
+/* update button */
+.update-btn {
+    background: #198754;
+    color: #fff;
+    padding: 0.55rem 1.15rem;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(25,135,84,0.25);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all .22s ease;
+}
+.update-btn:hover {
+    background: #187048;
+    box-shadow: 0 8px 16px rgba(25,135,84,0.3);
+    transform: translateY(-2px);
+}
+.update-btn i { font-size: 1.15rem; }
+
+/* MOBILE: icon-only */
+@media (max-width: 576px) {
+    .update-text { display: none !important; }
+    .update-btn { padding: 0.55rem 0.7rem !important; border-radius: 12px !important; gap: 0 !important; }
+    .update-btn i { font-size: 1.35rem !important; }
+    .dashboard-preview { display:none !important; } /* hide preview on tiny screens */
+}
+
+/* ================================
+   ANIMATION
+================================ */
+.fade-in-up { opacity: 0; transform: translateY(10px); animation: fadeInUp .5s forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Header Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
-                <div>
-                    <h2 class="mb-1 fw-bold">Stock Dashboard</h2>
-                    <p class="text-muted mb-0">Monitor your inventory and stock levels</p>
-                </div>
-                <a href="{% url 'milk_agency:update_stock' %}" class="btn btn-success btn-lg px-4">
-                    <i class="bi bi-pencil-square me-2"></i>Update Stock
-                </a>
-            </div>
+
+  <!-- HEADER -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="stock-header">
+
+        <div>
+          <h2 class="fw-bold mb-1">Stock Dashboard</h2>
+          <p class="text-muted mb-0">Monitor your inventory and stock levels</p>
         </div>
+
+        <div class="header-right">
+          <!-- update button (top-right) -->
+          <a href="{% url 'milk_agency:update_stock' %}" class="update-btn">
+            <i class="bi bi-pencil-square"></i>
+            <span class="update-text">Update Stock</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="row g-3 mb-3">
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card stat-card stat-items fade-in-up">
+        <div class="stat-icon bg-primary bg-opacity-10"><i class="bi bi-box-seam text-primary fs-4"></i></div>
+        <div class="stat-title">Total Items</div>
+        <div class="stat-value-number text-primary" id="total-items">-</div>
+      </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="row g-3 g-md-4 mb-4">
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-body text-center p-4">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-box-seam text-primary fs-3"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Total Items</h5>
-                    <h3 class="fw-bold text-primary mb-0" id="total-items">-</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-body text-center p-4">
-                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-cash text-success fs-3"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Total Stock Value</h5>
-                    <h3 class="fw-bold text-success mb-0" id="total-stock-value">₹ -</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-body text-center p-4">
-                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-exclamation-triangle text-warning fs-3"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Low Stock Items</h5>
-                    <h3 class="fw-bold text-warning mb-0" id="low-stock-count">-</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-body text-center p-4">
-                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-arrow-left-right text-info fs-3"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">30-Day Movement</h5>
-                    <div class="small">
-                        <span class="text-success fw-medium">In: <span id="stock-in">-</span></span> |
-                        <span class="text-danger fw-medium">Out: <span id="stock-out">-</span></span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card stat-card stat-value fade-in-up" style="animation-delay:.05s;">
+        <div class="stat-icon bg-success bg-opacity-10"><i class="bi bi-cash text-success fs-4"></i></div>
+        <div class="stat-title">Total Stock Value</div>
+        <div class="stat-value-number text-success" id="total-stock-value">₹ -</div>
+      </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="row g-3 g-md-4 mb-4">
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-header bg-light border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-bar-chart me-2"></i>Top 10 Items by Stock Value
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="chart-container" style="position: relative; height: 300px;">
-                        <canvas id="topItemsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-header bg-light border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-pie-chart me-2"></i>Company-wise Stock Value
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="chart-container" style="position: relative; height: 300px;">
-                        <canvas id="companyChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card stat-card stat-low fade-in-up" style="animation-delay:.1s;">
+        <div class="stat-icon bg-warning bg-opacity-10"><i class="bi bi-exclamation-triangle text-warning fs-4"></i></div>
+        <div class="stat-title">Low Stock Items</div>
+        <div class="stat-value-number text-warning" id="low-stock-count">-</div>
+      </div>
     </div>
 
-    <!-- Current Stock Overview -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header bg-light border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-table me-2"></i>Current Stock Overview
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="stockOverviewTable">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th class="border-0 fw-semibold py-3 px-4">#</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Item</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Current Stock</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Selling Price</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Stock Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card stat-card stat-move fade-in-up" style="animation-delay:.15s;">
+        <div class="stat-icon bg-info bg-opacity-10"><i class="bi bi-arrow-left-right text-info fs-4"></i></div>
+        <div class="stat-title">30-Day Movement</div>
+        <div class="small">
+          <span class="text-success">In: <span id="stock-in">-</span></span> |
+          <span class="text-danger">Out: <span id="stock-out">-</span></span>
         </div>
+      </div>
     </div>
+
+  </div>
+
+  <!-- CHARTS -->
+  <div class="row g-3 mb-3">
+
+    <div class="col-12 col-lg-6">
+      <div class="card chart-card p-3 fade-in-up">
+        <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2"></i>Top 10 Items by Stock Value</h6>
+        <div class="chart-container">
+          <canvas id="topItemsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card chart-card p-3 fade-in-up">
+        <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Company-wise Stock Value</h6>
+        <div class="pie-container">
+          <canvas id="companyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STOCK TABLE -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card table-card p-3 fade-in-up">
+        <h6 class="fw-bold mb-3"><i class="bi bi-table me-2"></i>Current Stock Overview</h6>
+
+        <div class="table-responsive">
+          <table class="table align-middle mb-0" id="stockOverviewTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th>Current Stock</th>
+                <th>Selling Price</th>
+                <th>Stock Value</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Chart.js CDN -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-// Fetch data from API
+/* ---------- Fetch Dashboard Data ---------- */
 fetch("{% url 'milk_agency:stock_data_api' %}")
-    .then(response => response.json())
-    .then(data => {
-        updateSummaryCards(data.summary);
-        renderTopItemsChart(data.top_items);
-        renderCompanyChart(data.company_data);
-        renderStockOverviewTable(data.all_items);
-    })
-    .catch(error => console.error('Error loading stock data:', error));
+  .then(res => res.json())
+  .then(data => {
+    updateSummaryCards(data.summary);
+    renderTopItemsChart(data.top_items || []);
+    renderCompanyChart(data.company_data || []);
+    renderStockOverviewTable(data.all_items || []);
+  })
+  .catch(err => console.error('Error loading stock data:', err));
 
-function updateSummaryCards(summary) {
-    document.getElementById('total-items').textContent = summary.total_items;
-    document.getElementById('total-stock-value').textContent = '₹ ' + summary.total_stock_value.toLocaleString('en-IN');
-    document.getElementById('low-stock-count').textContent = summary.low_stock_count;
-    document.getElementById('stock-in').textContent = summary.stock_in_30d;
-    document.getElementById('stock-out').textContent = summary.stock_out_30d;
+/* ---------- Summary Cards ---------- */
+function updateSummaryCards(s = {}) {
+  const fmt = v => (typeof v === 'number' ? v.toLocaleString('en-IN') : (v || '-'));
+  document.getElementById('total-items').textContent = fmt(s.total_items);
+  document.getElementById('total-stock-value').textContent = '₹ ' + fmt(s.total_stock_value);
+  document.getElementById('low-stock-count').textContent = fmt(s.low_stock_count);
+  document.getElementById('stock-in').textContent = fmt(s.stock_in_30d);
+  document.getElementById('stock-out').textContent = fmt(s.stock_out_30d);
 }
 
-function renderTopItemsChart(topItems) {
-    const ctx = document.getElementById('topItemsChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: topItems.map(item =>
-                item.company_name ? `${item.name} (${item.company_name})` : item.name
-            ),
-            datasets: [{
-                label: 'Stock Value (₹)',
-                data: topItems.map(item => item.stock_value),
-                backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                borderRadius: 8,
-                borderSkipped: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true, grid: { display: false }},
-                x: { grid: { display: false }}
-            }
-        }
-    });
+/* ---------- Bar Chart ---------- */
+function renderTopItemsChart(items = []) {
+  const ctx = document.getElementById('topItemsChart').getContext('2d');
+  if (window.topItemsChart && typeof window.topItemsChart.destroy === 'function') window.topItemsChart.destroy();
+
+  window.topItemsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.name),
+      datasets: [{
+        label: 'Stock Value (₹)',
+        data: items.map(i => i.stock_value || 0),
+        backgroundColor: 'rgba(54,162,235,0.85)',
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+        x: { grid: { display: false }, ticks: { autoSkip: true } }
+      }
+    }
+  });
 }
 
-function renderCompanyChart(companyData) {
-    const ctx = document.getElementById('companyChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: companyData.map(cat => cat.company_name || 'Unknown'),
-            datasets: [{
-                data: companyData.map(cat => cat.total_value),
-                backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                    '#9966FF', '#FF9F40', '#C9CBCF', '#4BC0C0'
-                ],
-                borderWidth: 0,
-                hoverBorderWidth: 2,
-                hoverBorderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { padding: 20, usePointStyle: true }
-                }
-            }
-        }
-    });
+/* ---------- Doughnut Chart (centered) ---------- */
+function renderCompanyChart(data = []) {
+  const ctx = document.getElementById('companyChart').getContext('2d');
+  if (window.companyChart && typeof window.companyChart.destroy === 'function') window.companyChart.destroy();
+
+  const labels = data.map(d => d.company_name || 'Unknown');
+  const values = data.map(d => d.total_value || 0);
+  const palette = ['#4e73df','#1cc88a','#f6c23e','#36b9cc','#858796','#fd7e14','#6f42c1','#20c997'];
+
+  window.companyChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: palette,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: 0 },
+      plugins: {
+        legend: { position: 'bottom', align: 'center' },
+        tooltip: { callbacks: { label: ctx => `₹ ${Number(ctx.raw).toLocaleString('en-IN')}` } }
+      },
+      elements: {
+        arc: { borderWidth: 0 }
+      }
+    }
+  });
 }
 
-function renderStockOverviewTable(allItems) {
-    const tbody = document.querySelector('#stockOverviewTable tbody');
-    tbody.innerHTML = "";
+/* ---------- Table ---------- */
+function renderStockOverviewTable(items = []) {
+  const tbody = document.querySelector('#stockOverviewTable tbody');
+  tbody.innerHTML = '';
 
-    allItems.forEach((item, index) => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td class="py-3 px-4 fw-medium">${index + 1}</td>
-            <td class="py-3 px-4 fw-medium">${item.name}${item.company_name ? ` (${item.company_name})` : ''}</td>
-            <td class="py-3 px-4">
-                <span class="badge bg-primary fs-6 px-2 py-1">${item.stock_quantity}</span>
-            </td>
-            <td class="py-3 px-4 fw-medium">₹ ${item.selling_price}</td>
-            <td class="py-3 px-4 fw-medium">₹ ${(item.stock_quantity * item.selling_price).toLocaleString('en-IN')}</td>
-        `;
-    });
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No stock items found.</td></tr>`;
+    return;
+  }
+
+  items.forEach((item, idx) => {
+    const stock = Number(item.stock_quantity || 0);
+    const price = Number(item.selling_price || 0);
+    const stockValue = stock * price;
+    const lowThreshold = Number(item.min_stock ?? 5);
+    const badgeClass = stock <= lowThreshold ? 'stock-low' : 'stock-ok';
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(item.name)}${item.company_name ? ' <span class="text-muted">(' + escapeHtml(item.company_name) + ')</span>' : ''}</td>
+        <td><span class="badge ${badgeClass}">${stock}</span></td>
+        <td>₹ ${price.toLocaleString('en-IN')}</td>
+        <td>₹ ${stockValue.toLocaleString('en-IN')}</td>
+      </tr>
+    `;
+  });
+}
+
+/* simple escape */
+function escapeHtml(unsafe) {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 </script>
+
 {% endblock %}

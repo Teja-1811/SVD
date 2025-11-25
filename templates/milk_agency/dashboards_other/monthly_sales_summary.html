@@ -2,180 +2,265 @@
 {% load static %}
 {% load custom_filters %}
 
-{% block title %}Monthly Sales Summary {% endblock %}
+{% block title %}Monthly Sales Summary{% endblock %}
 
 {% block head %}
 <style>
+/* ===================== FILTER SECTION STYLING ===================== */
+
+label {
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.form-select,
+.form-control,
+.icon-btn {
+    height: 42px !important;
+    font-size: 0.9rem;
+}
+
+/* Round equal-sized icon buttons */
+.icon-btn {
+    width: 42px !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .filter-row .col-md-4 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .filter-row .col-md-4 {
+        margin-bottom: 10px;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid mt-4">
-    <!-- Filters and Generate Button on Same Line -->
-    <div class="row mb-3">
+
+    <!-- Filters and Buttons Row -->
+    <div class="row align-items-end mb-3 g-2">
+
+        <!-- FILTERS -->
         <div class="col-md-9">
             <form method="get">
-                <div class="row">
+                <div class="row filter-row g-2">
+
                     <div class="col-md-4">
-                        <label for="area">Select Area:</label>
-                        <select name="area" id="area" class="form-select" onchange="this.form.submit()">
+                        <label>Select Area:</label>
+                        <select name="area" class="form-select" onchange="this.form.submit()">
                             <option value="">-- All Areas --</option>
                             {% for a in areas %}
-                                <option value="{{ a }}" {% if a == selected_area %}selected{% endif %}>{{ a }}</option>
+                            <option value="{{ a }}" {% if a == selected_area %}selected{% endif %}>{{ a }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="col-md-4">
-                        <label for="customer">Select Customer:</label>
-                        <select name="customer" id="customer" class="form-select" onchange="this.form.submit()">
+                        <label>Select Customer:</label>
+                        <select name="customer" class="form-select" onchange="this.form.submit()">
                             <option value="">-- All Customers --</option>
                             {% for cust in customers %}
-                                <option value="{{ cust.id }}" {% if cust.id|stringformat:"s" == selected_customer %}selected{% endif %}>{{ cust.name }}</option>
+                            <option value="{{ cust.id }}" {% if cust.id|stringformat:"s" == selected_customer %}selected{% endif %}>
+                                {{ cust.name }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="col-md-4">
-                        <label for="date">Select Month:</label>
-                        <input type="month" name="date" id="date" value="{{ selected_date|date:'Y-m' }}" class="form-control" onchange="this.form.submit()">
+                        <label>Select Month:</label>
+                        <input type="month" name="date" value="{{ selected_date|date:'Y-m' }}" class="form-control" onchange="this.form.submit()">
                     </div>
+
                 </div>
             </form>
         </div>
-        <div class="col-md-3 text-end">
+
+        <!-- BUTTONS -->
+        <div class="col-md-3 d-flex justify-content-end gap-2">
+
             {% if selected_customer_obj %}
-            <a href="{% url 'milk_agency:generate_monthly_sales_pdf' %}?date={{ selected_date|date:'Y-m' }}&area={{ selected_area }}&customer={{ selected_customer }}" class="btn btn-outline-info me-2 btn-sm col-lg-auto" title="Download PDF"><i class="bi bi-arrow-down-circle"></i></a>
-            <button class="btn btn-outline-success me-2 btn-sm col-lg-auto" onclick="shareMonthlySummaryOnWhatsApp()" title="Share on WhatsApp"><i class="bi bi-whatsapp"></i></button>
-            <button id="generateBtn" class="btn btn-outline-success btn-sm col-lg-auto" title="Update"><i class="bi bi-arrow-clockwise"></i></button>
+
+            <!-- PDF Download -->
+            <a href="{% url 'milk_agency:generate_monthly_sales_pdf' %}?date={{ selected_date|date:'Y-m' }}&area={{ selected_area }}&customer={{ selected_customer }}"
+                class="btn btn-outline-info icon-btn" title="Download PDF">
+                <i class="bi bi-arrow-down-circle"></i>
+            </a>
+
+            <!-- WhatsApp Share -->
+            <button onclick="shareMonthlySummaryOnWhatsApp()" class="btn btn-outline-success icon-btn" title="WhatsApp">
+                <i class="bi bi-whatsapp"></i>
+            </button>
+
+            <!-- Update -->
+            <button id="generateBtn" class="btn btn-outline-success icon-btn" title="Update">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+
             {% endif %}
+
         </div>
     </div>
 
-    <!-- Customer Details Card -->
     {% if selected_customer_obj %}
+
+    <!-- Customer Details -->
     <div class="card mb-4" id="customer-card">
         <div class="card-header">
             <h5 class="card-title">Customer Details</h5>
         </div>
         <div class="card-body p-2">
-            <p class="mb-1"><b>Name : </b> {{selected_customer_obj.name}}</p>
-            <p class="mb-1"><b>Shop Name : </b> {{selected_customer_obj.shop_name}}</p>
-            <p class="mb-1"><b>Phone : </b> {{selected_customer_obj.phone}}</p>
-            <p class="mb-1"><b>Address : </b> {{selected_customer_obj.flat_number}}, {{selected_customer_obj.area}} (V), {{selected_customer_obj.city}} (M), Eluru Dist, AP - {{selected_customer_obj.pin_code}}</p>
+            <p class="mb-1"><b>Name:</b> {{ selected_customer_obj.name }}</p>
+            <p class="mb-1"><b>Shop Name:</b> {{ selected_customer_obj.shop_name }}</p>
+            <p class="mb-1"><b>Phone:</b> {{ selected_customer_obj.phone }}</p>
+            <p class="mb-1"><b>Address:</b> {{ selected_customer_obj.flat_number }}, {{ selected_customer_obj.area }} (V),
+                {{ selected_customer_obj.city }} (M), Eluru Dist, AP - {{ selected_customer_obj.pin_code }}</p>
         </div>
     </div>
 
+    <!-- Main Data Card -->
     <div class="card mb-4">
         <div class="card-body p-2">
-                <p class="fw-bold text-center">Customer Statement for the Period : {{ start_date|date:"d M Y" }} - {{ end_date|date:"d M Y" }}</p>
-                <hr>
 
-                {% if unique_items %}
-                <h6>Customer Purchase Details</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center table-compact">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                {% for item_code in unique_codes %}<th>{{ item_code }}</th>{% endfor %}
-                                <th>Invoice</th>
-                                <th>Paid</th>
-                                <th>Due</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for date_obj in date_range %}
-                                {% with date_key=date_obj|date:"Y-m-d" %}
-                                    {% for bill in customer_bills.values %}
-                                        {% if bill.invoice_date|date:"Y-m-d" == date_key and bill.total_amount > 0 %}
-                                            <tr>
-                                                <td>{{ date_obj|date:"d-m-Y" }}</td>
-                                                {% for item_code in unique_codes %}
-                                                    <td>{{ customer_items_data|get_item:item_code|get_nested_item:date_key|default:"0" }}</td>
-                                                {% endfor %}
+            <p class="fw-bold text-center">
+                Customer Statement for the Period:
+                {{ start_date|date:"d M Y" }} - {{ end_date|date:"d M Y" }}
+            </p>
 
-                                                <td>₹{{ bill.total_amount|floatformat:2 }}</td>
-                                                <td>₹{{ bill.paid_amount|floatformat:2 }}</td>
-                                                <td>₹{{ bill.due_amount|floatformat:2 }}</td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endwith %}
+            <hr>
+
+            {% if unique_items %}
+            <h6>Customer Purchase Details</h6>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center table-compact">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            {% for item_code in unique_codes %}
+                            <th>{{ item_code }}</th>
                             {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr class="fw-bold">
-                                <td>Total</td>
-                                {% for item_code in unique_codes %}
-                                    <td>{{ total_quantity_per_item|get_item:item_code|default:"0" }}</td>
-                                {% endfor %}
+                            <th>Invoice</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                        </tr>
+                    </thead>
 
-                                <td>₹{{ total_sales|floatformat:2 }}</td>
-                                <td>₹{{ paid_amount|floatformat:2 }}</td>
-                                <td>₹{{ due_amount|floatformat:2 }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                {% endif %}
+                    <tbody>
+                        {% for date_obj in date_range %}
+                        {% with date_key=date_obj|date:"Y-m-d" %}
+                        {% for bill in customer_bills.values %}
+                        {% if bill.invoice_date|date:"Y-m-d" == date_key and bill.total_amount > 0 %}
+                        <tr>
+                            <td>{{ date_obj|date:"d-m-Y" }}</td>
 
-                <!-- Commission Card-->
-                <h6 class="mt-4">Commission Details</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center table-compact">
-                        <thead class="table-light fw-bold">
-                            <tr>
-                                <td>Total Sale - {{ avg_volume|floatformat:2 }}</td>
-                                <td>Milk</td>
-                                <td>Curd</td>
-                                <td>Total Commission (₹)</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Volume (Liters)</td>
-                                <td>{{ milk_volume|floatformat:2 }}</td>
-                                <td>{{ curd_volume|floatformat:2 }}</td>
-                                <td rowspan=4 class="m-auto">₹{{ total_commission|floatformat:2 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Commission Rate (₹/Liter)</td>
-                                <td>₹{{ milk_commission_rate|floatformat:2 }}</td>
-                                <td>₹{{ curd_commission_rate|floatformat:2 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Commission Earned (₹)</td>
-                                <td>₹{{ milk_commission|floatformat:2 }}</td>
-                                <td>₹{{ curd_commission|floatformat:2 }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                {% if total_commission != 0 %}
-                <div class="text-start">
-                    <p class="mb-1"><strong>Final Summary : </strong></p>
-                    <p class="mb-1">Due : ₹{{ due_amount|floatformat:2 }}</p>
-                    <p class="mb-1">Commission : ₹{{ total_commission|floatformat:2 }}</p>
-                    <p class="mb-1">Remaining Due : ₹{{ remaining_due|floatformat:2}}</p>
-                </div>
-                {% else %}
-                    <p class="mb-1"><strong>Final Summary : </strong></p>
-                    <p class="mb-1">Due : ₹{{ due_amount|floatformat:2 }}</p>
-                {% endif %}
+                            {% for item_code in unique_codes %}
+                            <td>{{ customer_items_data|get_item:item_code|get_nested_item:date_key|default:"0" }}</td>
+                            {% endfor %}
+
+                            <td>₹{{ bill.total_amount|floatformat:2 }}</td>
+                            <td>₹{{ bill.paid_amount|floatformat:2 }}</td>
+                            <td>₹{{ bill.due_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td>Total</td>
+                            {% for item_code in unique_codes %}
+                            <td>{{ total_quantity_per_item|get_item:item_code|default:"0" }}</td>
+                            {% endfor %}
+                            <td>₹{{ total_sales|floatformat:2 }}</td>
+                            <td>₹{{ paid_amount|floatformat:2 }}</td>
+                            <td>₹{{ due_amount|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+
+                </table>
             </div>
+            {% endif %}
+
+            <!-- Commission Table -->
+            <h6 class="mt-4">Commission Details</h6>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center table-compact">
+                    <thead class="table-light fw-bold">
+                        <tr>
+                            <td>Total Sale - {{ avg_volume|floatformat:2 }}</td>
+                            <td>Milk</td>
+                            <td>Curd</td>
+                            <td>Total Commission (₹)</td>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Volume (Liters)</td>
+                            <td>{{ milk_volume|floatformat:2 }}</td>
+                            <td>{{ curd_volume|floatformat:2 }}</td>
+                            <td rowspan="4" class="m-auto">₹{{ total_commission|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Commission Rate (₹)</td>
+                            <td>₹{{ milk_commission_rate|floatformat:2 }}</td>
+                            <td>₹{{ curd_commission_rate|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Commission Earned</td>
+                            <td>₹{{ milk_commission|floatformat:2 }}</td>
+                            <td>₹{{ curd_commission|floatformat:2 }}</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Final Summary -->
+            {% if total_commission != 0 %}
+            <p class="fw-bold mt-3">Final Summary:</p>
+            <p class="mb-1">Due: ₹{{ due_amount|floatformat:2 }}</p>
+            <p class="mb-1">Commission: ₹{{ total_commission|floatformat:2 }}</p>
+            <p class="mb-1">Remaining Due: ₹{{ remaining_due|floatformat:2 }}</p>
+
+            {% else %}
+            <p class="fw-bold mt-3">Final Summary:</p>
+            <p class="mb-1">Due: ₹{{ due_amount|floatformat:2 }}</p>
+            {% endif %}
+
         </div>
     </div>
     {% endif %}
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-$(document).ready(function() {
-    $('#generateBtn').click(function() {
+
+$(document).ready(function () {
+    $('#generateBtn').click(function () {
         var customerId = '{{ selected_customer_obj.id }}';
         var remainingDue = '{{ remaining_due }}';
         var selectedMonth = '{{ selected_date|date:"Y-m" }}';
+
         var commissionData = {
             'milk_volume': '{{ milk_volume }}',
             'curd_volume': '{{ curd_volume }}',
@@ -195,11 +280,11 @@ $(document).ready(function() {
                 'commission_data': JSON.stringify(commissionData),
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             },
-            success: function(response) {
+            success: function (response) {
                 alert(response.message);
                 location.reload();
             },
-            error: function() {
+            error: function () {
                 alert('Error updating balance.');
             }
         });
@@ -214,15 +299,13 @@ function shareMonthlySummaryOnWhatsApp() {
     const totalCommission = "{{ total_commission|floatformat:2 }}";
     const remainingDue = "{{ remaining_due|floatformat:2 }}";
 
-    const whatsappMessage = `Dear Customer ${customerName},\n\nMonthly Sales Summary for ${period}\n\nTotal Sales: ₹${totalSales}\nCommission Earned: ₹${totalCommission}\nRemaining Due: ₹${remainingDue}\n\nThank you for your continued business with Sri Vijaya Durga Milk Agencies.\n\nPlace the orders using svdagencies.netlify.app`;
+    const whatsappMessage =
+        `Dear Customer ${customerName},\n\nMonthly Sales Summary for ${period}\n\nTotal Sales: ₹${totalSales}\nCommission Earned: ₹${totalCommission}\nRemaining Due: ₹${remainingDue}\n\nThank you.\n\nsvdagencies.netlify.app`;
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
-
-    window.open(whatsappURL, '_blank');
+    window.open(`https://wa.me/${customerPhone}?text=${encodedMessage}`, "_blank");
 }
+
 </script>
+
 {% endblock %}
-
-
-

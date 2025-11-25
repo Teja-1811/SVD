@@ -6,6 +6,8 @@ from decimal import Decimal
 from .models import Bill, BillItem, Item, Customer
 from .utils import process_bill_items
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from customer_portal.models import CustomerOrder
 
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
@@ -138,26 +140,37 @@ def delete_bill(request, bill_id):
     bill_items = BillItem.objects.filter(bill=bill)
 
     if request.method == 'POST':
-        # Restore stock quantities
+
+        # 1️⃣ REVERT STOCK FOR EACH BILL ITEM
         for bill_item in bill_items:
             bill_item.item.stock_quantity += bill_item.quantity
             bill_item.item.save()
 
-        # Update customer due
+        # 2️⃣ REVERT CUSTOMER DUE (Remove bill amount)
         customer = bill.customer
-        customer.due -= bill.total_amount + bill.op_due_amount
+        customer.due -= bill.total_amount
         customer.save()
 
-        # Delete bill items and bill
+        # 3️⃣ FIND RELATED CUSTOMER ORDER (IF ANY)
+        order = CustomerOrder.objects.filter(
+            customer=bill.customer,
+            order_date__date=bill.invoice_date,
+            total_amount=bill.total_amount
+        ).order_by('-id').first()
+
+        if order:
+            order.status = "cancelled"
+            order.approved_total_amount = 0
+            order.save()
+            
+        # 4️⃣ DELETE BILL ITEMS & BILL
         bill_items.delete()
         bill.delete()
 
-        messages.success(request, f'Bill {bill.invoice_number} deleted successfully.')
+        messages.success(request, "Bill deleted. Stock & customer due updated. Order marked as Cancelled.")
         return redirect('milk_agency:bills_dashboard')
 
-    # GET request - show confirmation page
-    context = {
+    return render(request, 'milk_agency/bills/delete_bill.html', {
         'bill': bill,
         'bill_items': bill_items
-    }
-    return render(request, 'milk_agency/bills/delete_bill.html', context)
+    })

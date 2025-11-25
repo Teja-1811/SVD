@@ -188,9 +188,11 @@ def generate_bill(request):
                     except Item.DoesNotExist:
                         continue
 
-                    price_per_unit = item.selling_price
-                    item_total = (price_per_unit * quantity) - (discount * quantity)
-                    profit = ((price_per_unit - item.buying_price) * quantity) - (discount * quantity)
+                    price_per_unit = Decimal(str(item.selling_price))
+                    discount = Decimal(str(discounts[i])) if i < len(discounts) and discounts[i] else Decimal('0')
+
+                    item_total = (price_per_unit * Decimal(quantity)) - (discount * Decimal(quantity))
+                    profit = ((price_per_unit - Decimal(str(item.buying_price))) * Decimal(quantity)) - (discount * Decimal(quantity))
 
                     BillItem.objects.create(
                         bill=bill,
