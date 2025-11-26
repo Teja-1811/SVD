@@ -313,4 +313,4 @@ def update_profile(request):
 @never_cache
 def logout_user(request):
     logout(request)
-    return redirect('login')
+    return redirect('/')
