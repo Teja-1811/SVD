@@ -63,70 +63,6 @@
     background: white;
 }
 
-/* MOBILE FIXES */
-@media (max-width: 768px) {
-    
-    /* Hero Section Spacing */
-    .hero-section {
-        padding-top: 40px !important;
-        padding-bottom: 40px !important;
-    }
-
-    /* Main Logo */
-    .hero-logo-wrapper img {
-        height: 80px !important;   /* reduce size drastically */
-    }
-
-    /* Main Heading */
-    .hero-main-title {
-        font-size: 1.8rem !important;
-        line-height: 2.2rem !important;
-        margin-bottom: 15px !important;
-    }
-
-    /* Sub text */
-    .lead {
-        font-size: 1rem !important;
-    }
-
-    /* Company logo */
-    .company-logo {
-        height: 60px !important;
-        margin: 5px !important;
-    }
-
-    /* Buttons */
-    .btn {
-        width: 80% !important;
-        padding: 10px 0 !important;
-        font-size: 1rem !important;
-    }
-
-    .btn-primary {
-        background-color: #007bff !important;
-    }
-
-    /* Modal */
-    .modal-fullscreen .modal-content {
-        padding: 10px !important;
-    }
-
-    /* Product grid on mobile */
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
-        gap: 15px !important;
-    }
-
-    /* Product card */
-    .product-card {
-        max-width: 140px !important;
-        min-height: 180px !important;
-    }
-
-    .product-img {
-        max-height: 90px !important;
-    }
-}
 
 
 </style>
@@ -162,7 +98,9 @@
                     <div class="divider my-4">
                         {% for company in companies %}
                             {% if company.name == "Dodla" %}
-                                <img src="{{ company.logo.url }}" class="company-logo">
+                                <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
                             {% endif %}
                         {% endfor %}
                     </div>
