@@ -28,23 +28,23 @@
     padding: 20px;
     border-radius: 15px;
     margin: auto;
-    max-width: 1600px; /* Prevents too wide on ultra-wide screens */
+    max-width: 1500px;
 }
 
-/* Small product grid */
+/* FORCE small product grid */
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
+    display: grid !important;  /* force override bootstrap */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 20px !important;
     padding: 10px;
-    justify-items: center;
+    justify-items: center !important;
 }
 
 /* Small product card */
 .product-card {
     width: 100%;
-    max-width: 160px;
-    min-height: 220px;
+    max-width: 150px !important;
+    min-height: 200px;
     padding: 10px;
     border-radius: 12px;
     background: white;
@@ -54,14 +54,15 @@
 
 /* Small product image */
 .product-img {
-    max-height: 100px !important;
+    max-height: 120px !important;
     width: auto !important;
-    object-fit: contain;
+    object-fit: contain !important;
     padding: 5px;
     display: block;
     margin: auto;
     background: white;
 }
+
 </style>
 {% endblock extra_css %}
 
@@ -188,12 +189,6 @@
         </div>
     </div>
 </div>
-
-
-
-
-
-
 
 <!-- CONTACT SECTION -->
 <section class="section py-5" id="contact">
