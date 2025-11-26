@@ -8,7 +8,7 @@ from reportlab.lib.utils import ImageReader
 from num2words import num2words
 from django.contrib.staticfiles import finders
 from django.http import HttpResponse
-
+from django.conf import settings
 from .models import BillItem
 from .utils import InvoicePDFUtils
 
@@ -98,16 +98,16 @@ class PDFGenerator:
         c.drawString(40, height - 80, "Gundugolanu, Bhimadolu, Eluru, AP - 534427")
         c.drawString(40, height - 95, "Phone: 9392890375")
 
-        # Logo
-        logo_path = finders.find('images/SVD1.png')
-        if logo_path and os.path.exists(logo_path):
+        # --- LOGO ---
+        # static/images/SVD1.png
+        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "SVD1.png")
+        if os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
                 c.drawImage(logo, 280, height - 110, width=80, height=80, mask='auto')
             except Exception as e:
+                # optional: print(e) or log
                 pass
-        else:
-            pass
 
 
     def _draw_customer_details(self, c, bill, width, height):
@@ -240,9 +240,10 @@ class PDFGenerator:
         """Draw signature only (stamps removed)"""
         footer_y = 60
 
-        signature_path = finders.find('images/N. Ramesh.png')
+        # static/images/signature.png
+        signature_path = os.path.join(settings.BASE_DIR, "static", "images", "signature.png")
 
-        if signature_path and os.path.exists(signature_path):
+        if os.path.exists(signature_path):
             try:
                 signature = ImageReader(signature_path)
                 c.saveState()
@@ -250,11 +251,11 @@ class PDFGenerator:
                 c.drawImage(signature, 0, 0, width=100, height=100, mask='auto')
                 c.restoreState()
             except Exception as e:
+                # optional: print(e) or log
                 pass
-        else:
-            pass
 
         c.drawRightString(width - 90, footer_y + 70, "AUTHORISED SIGNATURE")
+
 
     def _draw_footer(self, c, width, height):
         """Draw footer section"""

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django import forms
 from .models import Item, Company
@@ -10,7 +11,7 @@ class CompanyForm(forms.ModelForm):
         model = Company
         fields = ['name', 'logo', 'website_link']
 
-
+@login_required
 def add_company(request):
     if request.method == 'POST':
         form = CompanyForm(request.POST, request.FILES)
@@ -21,7 +22,7 @@ def add_company(request):
         form = CompanyForm()
     return render(request, 'milk_agency/company_form.html', {'form': form, 'form_title': 'Add Company'})
 
-
+@login_required
 def edit_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     if request.method == 'POST':
@@ -33,7 +34,7 @@ def edit_company(request, company_id):
         form = CompanyForm(instance=company)
     return render(request, 'milk_agency/company_form.html', {'form': form, 'form_title': 'Edit Company'})
 
-
+@login_required
 def companies_dashboard(request):
     """Display company cards with logo + details + items count + stock info."""
     

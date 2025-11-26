@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from .models import Item, DailyPayment, MonthlyPaymentSummary, Company
 from datetime import date, timedelta
 import calendar
 
-
+@login_required
 def payments_dashboard(request):
     today = date.today()
 

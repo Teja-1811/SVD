@@ -1,3 +1,4 @@
+from django.conf import settings
 import os
 from datetime import datetime
 from decimal import Decimal
@@ -117,7 +118,7 @@ class MonthlySalesPDFGenerator:
         c.drawString(left_x, height - 95, "Phone: 9392890375")
 
         # Center section - Logo
-        logo_path = finders.find('images/SVD1.png')
+        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "SVD1.png")
         if logo_path and os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
@@ -309,7 +310,7 @@ class MonthlySalesPDFGenerator:
         """Draw signature"""
         footer_y = 60
 
-        signature_path = finders.find('images/N. Ramesh.png')
+        signature_path = os.path.join(settings.BASE_DIR, "static", "images", "signature.png")
         if signature_path and os.path.exists(signature_path):
             try:
                 signature = ImageReader(signature_path)
