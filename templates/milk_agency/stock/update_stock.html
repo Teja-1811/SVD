@@ -362,59 +362,81 @@
 </div>
 
 <script>
-(function(){
+(function () {
     const qs = s => document.querySelector(s);
     const qsa = s => document.querySelectorAll(s);
 
-    // Search filter
-    qs("#itemSearch").addEventListener("input", function(){
-        const val = this.value.toLowerCase();
-        qsa("[data-name]").forEach(el => {
-            el.style.display = el.dataset.name.includes(val) ? "" : "none";
+    // -----------------------------
+    // SEARCH FILTER
+    // -----------------------------
+    const searchInput = qs("#itemSearch");
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const val = this.value.toLowerCase().trim();
+            qsa("[data-name]").forEach(el => {
+                const match = el.dataset.name.includes(val);
+                el.style.display = match ? "" : "none";
+            });
         });
-    });
+    }
 
-    // Company filter
-    qs("#companyFilter").addEventListener("change", function(){
-        const val = this.value;
-        qsa("[data-company]").forEach(el => {
-            el.style.display = (val === "all" || el.dataset.company === val) ? "" : "none";
+    // -----------------------------
+    // COMPANY FILTER
+    // -----------------------------
+    const companyFilter = qs("#companyFilter");
+    if (companyFilter) {
+        companyFilter.addEventListener("change", function () {
+            const val = this.value;
+            qsa("[data-company]").forEach(el => {
+                const match = (val === "all" || el.dataset.company === val);
+                el.style.display = match ? "" : "none";
+            });
         });
-    });
+    }
 
-    // Live new quantity update (DESKTOP + MOBILE FIXED)
-    document.addEventListener("input", function(e){
+    // -----------------------------
+    // LIVE "NEW" QTY UPDATE
+    // Works for DESKTOP + MOBILE
+    // -----------------------------
+    document.addEventListener("input", function (e) {
         if (!e.target.classList.contains("stock-input")) return;
 
-        const el = e.target;
-        const id = el.dataset.itemId;
+        const input = e.target;
 
-        const current = parseInt(el.dataset.current) || 0;
-        const units = parseInt(el.dataset.units) || 1;
-        const crates = parseInt(el.value) || 0;
+        const current = parseInt(input.dataset.current || "0", 10);
+        const units   = parseInt(input.dataset.units   || "1", 10);
+        const crates  = parseInt(input.value || "0", 10);
 
-        const newQty = current + (crates * units);
+        const newQty  = current + (crates * units);
 
-        // Update desktop
-        const desktopSpan = document.getElementById("new-quantity-" + id);
-        if (desktopSpan) desktopSpan.textContent = newQty;
+        // ---- DESKTOP ROW: update .new-badge in same <tr> ----
+        const row = input.closest("tr");
+        if (row) {
+            const desktopNewBadge = row.querySelector(".new-badge");
+            if (desktopNewBadge) {
+                desktopNewBadge.textContent = newQty;
+            }
+        }
 
-        // Update mobile
-        const mobileTiles = document.querySelectorAll(`[data-item-id='${id}']`);
-        mobileTiles.forEach(tile => {
-            let qSpan = tile.closest(".item-tile")?.querySelector(".qty-badge");
-            if (qSpan) qSpan.textContent = newQty;
-        });
+        // ---- MOBILE TILE: update .qty-badge inside .item-tile ----
+        const tile = input.closest(".item-tile");
+        if (tile) {
+            const mobileQtyBadge = tile.querySelector(".qty-badge");
+            if (mobileQtyBadge) {
+                mobileQtyBadge.textContent = newQty;
+            }
+        }
     });
 
-    // Clear all inputs
+    // -----------------------------
+    // CLEAR ALL INPUTS
+    // -----------------------------
     window.clearAllInputs = () => {
-        qsa(".stock-input").forEach(el => {
-            el.value = 0;
-            el.dispatchEvent(new Event("input"));
+        qsa(".stock-input").forEach(input => {
+            input.value = 0;
+            input.dispatchEvent(new Event("input"));
         });
     };
-
 })();
 </script>
 {% endblock %}
