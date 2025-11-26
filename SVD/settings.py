@@ -51,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 🚀 Add this line (your actual middleware)
+    'SVD.middleware.NoCacheMiddleware.NoCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'SVD.urls'

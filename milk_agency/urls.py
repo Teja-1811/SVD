@@ -88,9 +88,4 @@ urlpatterns = [
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),
 
-    # Dodla Products URL
-    path('dodla-products/', views_dodla.dodla_products, name='dodla_products'),
-
-
-
 ]

@@ -71,6 +71,7 @@ def home(request):
                 When(category__iexact="sweets", then=Value(5)),
                 When(category__iexact="flavoured milk", then=Value(6)),
                 When(category__iexact="ghee", then=Value(7)),
+                When(category__iexact="cups", then=Value(8)),
                 default=Value(8),
                 output_field=IntegerField(),
             ),

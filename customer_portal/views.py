@@ -311,21 +311,6 @@ def update_profile(request):
         return render(request, 'customer_portal/update_profile.html', context)
 
 @never_cache
-def logout_view(request):
-    # Clear the session completely
-    request.session.flush()
-
-    # Logout the user
+def logout_user(request):
     logout(request)
-
-    # Add a success message
-    messages.success(request, 'You have been successfully logged out.')
-
-    # Create response with cache control headers
-    response = redirect('index')
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-
-    # Redirect to index page
-    return response
+    return redirect('login')
