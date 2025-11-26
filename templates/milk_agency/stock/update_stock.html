@@ -8,18 +8,14 @@
 <link rel="stylesheet" href="{% static 'css/milk_agency/update_stock.css' %}">
 
 <style>
-
-/* -------------------------------------------------------------- */
-/* MAIN PURPLE HEADER – FINAL DESIGN */
-/* -------------------------------------------------------------- */
+/* ---------------------- HEADER ---------------------- */
 .custom-stock-header {
     background: linear-gradient(135deg, #6a11cb, #4e63d7);
-    border-radius: 16px 16px 0 0 !important;
-    padding: 28px 26px !important;
+    border-radius: 16px 16px 0 0;
+    padding: 28px 26px;
     position: relative;
     overflow: hidden;
 }
-
 .custom-stock-header::before {
     content: "";
     position: absolute;
@@ -27,86 +23,33 @@
     right: -40px;
     width: 280px;
     height: 180px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255,255,255,0.15);
     border-radius: 50%;
     filter: blur(45px);
 }
-
 .icon-box {
     width: 50px;
     height: 50px;
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255,255,255,.28);
     border-radius: 50%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     color: white;
-    flex-shrink: 0;
     font-size: 1.4rem;
 }
 
-/* -------------------------------------------------------------- */
-/* CATEGORY CARDS & TABLE */
-/* -------------------------------------------------------------- */
-.category-card {
-    border-radius: 12px;
-    background: #fff;
-    transition: .2s;
-}
-.category-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-}
+/* ---------------------- TABLE ---------------------- */
+.stock-input { width: 75px; text-align:center; }
 
-.table thead th { padding: 10px; font-size: .88rem; }
-.table tbody td { padding: 10px; }
-
-/* Stock input */
-.stock-input {
-    width: 75px;
-    max-width: 75px;
-    text-align: center;
-}
-
-/* -------------------------------------------------------------- */
-/* FILTERS */
-/* -------------------------------------------------------------- */
-.filter-box {
-    background: #f9faff;
-    border: 1px solid #e2e5ff;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 18px;
-}
-
-.filter-label {
-    font-size: .8rem;
-    font-weight: 600;
-    color: #59628f;
-}
-
-.search-wrapper { position: relative; }
-.search-wrapper i {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    color: #7f85a1;
-}
-
-.search-input { padding-left: 34px !important; }
-
-/* -------------------------------------------------------------- */
-/* MOBILE */
-/* -------------------------------------------------------------- */
-@media(max-width: 767px) { .desktop-table { display: none !important; } }
-@media(min-width: 768px) { .mobile-list { display: none !important; } }
+/* ---------------------- MOBILE ---------------------- */
+@media(max-width: 767px){ .desktop-table{display:none;} }
+@media(min-width: 768px){ .mobile-list{display:none;} }
 
 .mobile-header {
     display: flex;
     justify-content: space-between;
     background: #ebedff;
-    border: 1px solid #d6d9ff;
     padding: 6px 12px;
     border-radius: 8px;
     font-weight: 600;
@@ -115,55 +58,35 @@
 
 .item-tile {
     background: white;
-    border: 1px solid rgba(0,0,0,.08);
     padding: 10px;
+    border: 1px solid rgba(0,0,0,.08);
     border-radius: 10px;
 }
 
 .mobile-row {
     display: grid;
     grid-template-columns: 1fr 70px 70px;
-    column-gap: 8px;
+    gap: 8px;
 }
-
-.mob-qty .qty-badge {
-    width: 55px;
-    padding: 6px 0 !important;
-}
-
-.mob-cr input {
-    width: 65px !important;
-    height: 36px !important;
-}
-
 </style>
 {% endblock %}
 
-
-
 {% block content %}
+
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
 
-            <!-- MAIN CARD -->
             <div class="card shadow-sm mb-4">
 
                 <!-- HEADER -->
                 <div class="custom-stock-header">
                     <div class="d-flex align-items-center gap-3">
-
-                        <!-- Icon -->
-                        <div class="icon-box">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
-
-                        <!-- Text -->
+                        <div class="icon-box"><i class="bi bi-box-seam"></i></div>
                         <div class="text-white">
-                            <div class="fw-bold fs-5 mb-0">Update Stock</div>
+                            <div class="fw-bold fs-5">Update Stock</div>
                             <small class="text-white-50">Manage inventory levels</small>
                         </div>
-
                     </div>
                 </div>
 
@@ -173,17 +96,15 @@
                     <form method="post" action="{% url 'milk_agency:update_stock' %}">
                         {% csrf_token %}
 
-                        <!-- FILTER BOX -->
-                        <div class="filter-box">
+                        <!-- Filters -->
+                        <div class="filter-box mb-3">
                             <div class="row g-2 align-items-end">
 
                                 <div class="col-md-6">
                                     <label class="filter-label">Search Items</label>
                                     <div class="search-wrapper">
                                         <i class="bi bi-search"></i>
-                                        <input id="itemSearch"
-                                               class="form-control search-input"
-                                               placeholder="Search by name/code">
+                                        <input id="itemSearch" class="form-control" placeholder="Search by name/code">
                                     </div>
                                 </div>
 
@@ -191,18 +112,14 @@
                                     <label class="filter-label">Filter by Company</label>
                                     <select id="companyFilter" class="form-select">
                                         <option value="all">All Companies</option>
-                                        {% for company in companies %}
-                                        <option value="{{ company }}">{{ company }}</option>
+                                        {% for c in companies %}
+                                        <option value="{{ c }}">{{ c }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
 
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button type="button"
-                                            onclick="clearAllInputs()"
-                                            class="btn btn-outline-danger w-25">
-                                        Clear
-                                    </button>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger w-100" onclick="clearAllInputs()">Clear</button>
                                 </div>
                             </div>
                         </div>
@@ -217,16 +134,12 @@
 
                                     <div class="d-flex justify-content-between p-3">
                                         <div>
-                                            <h5 class="mb-0 fw-semibold">{{ category|title }}</h5>
+                                            <h5 class="fw-semibold mb-0">{{ category|title }}</h5>
                                             <small class="text-muted">{{ items|length }} items</small>
                                         </div>
 
-                                        <!-- Mobile toggle -->
-                                        <div class="mobile-toggle d-md-none collapsed"
-                                             data-bs-toggle="collapse"
-                                             data-bs-target="#cat-{{ forloop.counter }}">
+                                        <div class="d-md-none collapsed" data-bs-toggle="collapse" data-bs-target="#cat-{{ forloop.counter }}">
                                             <span>View</span>
-                                            <i class="bi bi-chevron-down caret"></i>
                                         </div>
                                     </div>
 
@@ -240,58 +153,53 @@
                                                         <tr>
                                                             <th>#</th>
                                                             <th style="text-align:left;">Item</th>
-                                                            <th>Cur</th>
-                                                            <th>Cr</th>
-                                                            <th>New</th>
+                                                            <th>CUR</th>
+                                                            <th>CR</th>
+                                                            <th>NEW</th>
                                                         </tr>
                                                     </thead>
+
                                                     <tbody>
+                                                        {% for item in items %}
+                                                        <tr data-name="{{ item.name|lower }}" data-company="{{ item.company.name }}">
 
-                                                    {% for item in items %}
-                                                    <tr data-name="{{ item.name|lower }}"
-                                                        data-company="{{ item.company.name }}">
+                                                            <td>{{ forloop.counter }}</td>
 
-                                                        <td>{{ forloop.counter }}</td>
+                                                            <td style="text-align:left;">
+                                                                <strong>{{ item.name }}</strong><br>
+                                                                <small class="text-muted">{{ item.company.name }}</small>
+                                                            </td>
 
-                                                        <td style="text-align:left;">
-                                                            <strong>{{ item.name }}</strong><br>
-                                                            <small class="text-muted">{{ item.company.name }}</small>
-                                                        </td>
+                                                            <td>
+                                                                <span class="badge bg-primary qty-badge">{{ item.stock_quantity }}</span>
+                                                            </td>
 
-                                                        <td>
-                                                            <span class="badge bg-primary qty-badge">
-                                                                {{ item.stock_quantity }}
-                                                            </span>
-                                                        </td>
+                                                            <td>
+                                                                <input type="number"
+                                                                    name="stock_{{ item.id }}"
+                                                                    class="form-control form-control-sm stock-input"
+                                                                    value="0" min="0"
+                                                                    data-item-id="{{ item.id }}"
+                                                                    data-current="{{ item.stock_quantity }}"
+                                                                    data-units="{{ item.pcs_count }}">
+                                                            </td>
 
-                                                        <td>
-                                                            <input type="number"
-                                                                   name="stock_{{ item.id }}"
-                                                                   class="form-control form-control-sm stock-input"
-                                                                   value="0" min="0"
-                                                                   data-item-id="{{ item.id }}"
-                                                                   data-current="{{ item.stock_quantity }}"
-                                                                   data-units="{{ item.pcs_count }}">
-                                                        </td>
+                                                            <td>
+                                                                <span class="badge bg-success new-badge"
+                                                                      id="new-quantity-{{ item.id }}">
+                                                                    {{ item.stock_quantity }}
+                                                                </span>
+                                                            </td>
 
-                                                        <td>
-                                                            <span class="badge bg-success new-badge"
-                                                                  id="new-quantity-{{ item.id }}">
-                                                                {{ item.stock_quantity }}
-                                                            </span>
-                                                        </td>
-
-                                                    </tr>
-                                                    {% endfor %}
-
+                                                        </tr>
+                                                        {% endfor %}
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
 
                                         <!-- MOBILE LIST -->
-                                        <div class="mobile-list collapse"
-                                             id="cat-{{ forloop.counter }}">
+                                        <div class="mobile-list collapse" id="cat-{{ forloop.counter }}">
 
                                             <div class="mobile-header">
                                                 <div>Name</div>
@@ -299,33 +207,30 @@
                                                 <div>Cr</div>
                                             </div>
 
-                                            <div class="d-flex flex-column gap-2 mt-2">
+                                            <div class="d-flex flex-column mt-2">
+
                                                 {% for item in items %}
-                                                <div class="item-tile"
-                                                     data-name="{{ item.name|lower }}"
-                                                     data-company="{{ item.company.name }}">
+                                                <div class="item-tile" data-name="{{ item.name|lower }}" data-company="{{ item.company.name }}">
 
                                                     <div class="mobile-row">
 
                                                         <div>
-                                                            {{ item.code }}<br>
+                                                            {{ item.name }}<br>
                                                             <small class="text-muted">{{ item.company.name }}</small>
                                                         </div>
 
-                                                        <div class="mob-qty">
-                                                            <span class="badge bg-primary qty-badge">
-                                                                {{ item.stock_quantity }}
-                                                            </span>
+                                                        <div>
+                                                            <span class="badge bg-primary qty-badge">{{ item.stock_quantity }}</span>
                                                         </div>
 
-                                                        <div class="mob-cr">
+                                                        <div>
                                                             <input type="number"
-                                                                   name="stock_{{ item.id }}"
-                                                                   class="form-control form-control-sm stock-input"
-                                                                   value="0" min="0"
-                                                                   data-item-id="{{ item.id }}"
-                                                                   data-current="{{ item.stock_quantity }}"
-                                                                   data-units="{{ item.pcs_count }}">
+                                                                name="stock_{{ item.id }}"
+                                                                class="form-control form-control-sm stock-input"
+                                                                value="0" min="0"
+                                                                data-item-id="{{ item.id }}"
+                                                                data-current="{{ item.stock_quantity }}"
+                                                                data-units="{{ item.pcs_count }}">
                                                         </div>
 
                                                     </div>
@@ -343,11 +248,8 @@
                             {% endfor %}
                         </div>
 
-                        <!-- BUTTONS -->
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{% url 'milk_agency:stock_dashboard' %}"
-                               class="btn btn-outline-secondary btn-sm">Cancel</a>
-
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                            <a href="{% url 'milk_agency:stock_dashboard' %}" class="btn btn-outline-secondary btn-sm">Cancel</a>
                             <button type="submit" class="btn btn-success btn-sm">Update Stock</button>
                         </div>
 
@@ -362,81 +264,48 @@
 </div>
 
 <script>
-(function () {
+(function(){
     const qs = s => document.querySelector(s);
     const qsa = s => document.querySelectorAll(s);
 
-    // -----------------------------
-    // SEARCH FILTER
-    // -----------------------------
-    const searchInput = qs("#itemSearch");
-    if (searchInput) {
-        searchInput.addEventListener("input", function () {
-            const val = this.value.toLowerCase().trim();
-            qsa("[data-name]").forEach(el => {
-                const match = el.dataset.name.includes(val);
-                el.style.display = match ? "" : "none";
-            });
+    // Search filter
+    qs("#itemSearch").addEventListener("input", function(){
+        const val = this.value.toLowerCase();
+        qsa("[data-name]").forEach(el => {
+            el.style.display = el.dataset.name.includes(val) ? "" : "none";
         });
-    }
-
-    // -----------------------------
-    // COMPANY FILTER
-    // -----------------------------
-    const companyFilter = qs("#companyFilter");
-    if (companyFilter) {
-        companyFilter.addEventListener("change", function () {
-            const val = this.value;
-            qsa("[data-company]").forEach(el => {
-                const match = (val === "all" || el.dataset.company === val);
-                el.style.display = match ? "" : "none";
-            });
-        });
-    }
-
-    // -----------------------------
-    // LIVE "NEW" QTY UPDATE
-    // Works for DESKTOP + MOBILE
-    // -----------------------------
-    document.addEventListener("input", function (e) {
-        if (!e.target.classList.contains("stock-input")) return;
-
-        const input = e.target;
-
-        const current = parseInt(input.dataset.current || "0", 10);
-        const units   = parseInt(input.dataset.units   || "1", 10);
-        const crates  = parseInt(input.value || "0", 10);
-
-        const newQty  = current + (crates * units);
-
-        // ---- DESKTOP ROW: update .new-badge in same <tr> ----
-        const row = input.closest("tr");
-        if (row) {
-            const desktopNewBadge = row.querySelector(".new-badge");
-            if (desktopNewBadge) {
-                desktopNewBadge.textContent = newQty;
-            }
-        }
-
-        // ---- MOBILE TILE: update .qty-badge inside .item-tile ----
-        const tile = input.closest(".item-tile");
-        if (tile) {
-            const mobileQtyBadge = tile.querySelector(".qty-badge");
-            if (mobileQtyBadge) {
-                mobileQtyBadge.textContent = newQty;
-            }
-        }
     });
 
-    // -----------------------------
-    // CLEAR ALL INPUTS
-    // -----------------------------
+    // Company filter
+    qs("#companyFilter").addEventListener("change", function(){
+        const val = this.value;
+        qsa("[data-company]").forEach(el => {
+            el.style.display = (val==="all" || el.dataset.company===val) ? "" : "none";
+        });
+    });
+
+    // Live NEW quantity update
+    document.addEventListener("input", function(e){
+        if (!e.target.classList.contains("stock-input")) return;
+        const el = e.target;
+        const id = el.dataset.itemId;
+        const current = parseInt(el.dataset.current);
+        const units = parseInt(el.dataset.units);
+        const crates = parseInt(el.value || 0);
+
+        const newQty = current + crates * units;
+        const span = document.getElementById("new-quantity-"+id);
+        if (span) span.textContent = newQty;
+    });
+
+    // Clear inputs
     window.clearAllInputs = () => {
-        qsa(".stock-input").forEach(input => {
-            input.value = 0;
-            input.dispatchEvent(new Event("input"));
+        qsa(".stock-input").forEach(el => {
+            el.value = 0;
+            el.dispatchEvent(new Event("input"));
         });
     };
 })();
 </script>
+
 {% endblock %}
