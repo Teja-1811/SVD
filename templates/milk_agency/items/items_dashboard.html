@@ -343,7 +343,7 @@
 
         <div class="item-image-box">
           {% if item.image %}
-          <img src="/media/{{ item.image }}" />
+          <img src="{{ item.image.url }}" />
           {% else %}
           <i class="bi bi-image text-muted no-img-icon"></i>
           {% endif %}
