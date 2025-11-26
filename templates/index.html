@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+
     .company-logo {
         height: 90px !important;
         width: auto !important;
@@ -16,8 +17,7 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
 
-    /* PRODUCT CARD FIX */
-
+    /* Product Card */
     .product-card {
         min-height: 320px;
         padding: 15px;
@@ -31,16 +31,34 @@
     }
 
     .product-img {
-        max-height: 180px !important;
-        width: auto !important;
-        object-fit: contain !important;
+        max-height: 180px;
+        width: auto;
+        object-fit: contain;
         padding: 5px;
-        background: white;
         border-radius: 12px;
         display: block;
         margin: auto;
+        background: white;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
+
+    /* Wrapper inside modal */
+    .products-wrapper {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        margin: auto;
+        max-width: 1100px;
+    }
+
+    /* Responsive Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 25px;
+    }
+
 </style>
 {% endblock extra_css %}
 
@@ -55,7 +73,7 @@
             <div class="col-12 text-center">
                 <div class="hero-content">
 
-                    <!-- Logo -->
+                    <!-- MAIN LOGO -->
                     <div class="hero-logo-wrapper mb-4">
                         <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
                             <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" class="hero-logo-img" style="height:120px;">
@@ -68,7 +86,7 @@
 
                     <p class="lead text-white">Your Trusted Partner for Quality Dairy Products</p>
 
-                    <!-- Company Logos -->
+                    <!-- COMPANY LOGOS -->
                     <div class="divider my-4">
                         {% for company in companies %}
                             {% if company.name == "Dodla" %}
@@ -77,9 +95,14 @@
                         {% endfor %}
                     </div>
 
-                    <p class="text-white mb-1"><i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru</p>
-                    <p class="text-white mb-0"><i class="bi bi-telephone-fill me-2"></i>
-                        Call Us: <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
+                    <p class="text-white mb-1">
+                        <i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru
+                    </p>
+
+                    <p class="text-white mb-0">
+                        <i class="bi bi-telephone-fill me-2"></i>
+                        Call Us:
+                        <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
                     </p>
 
                     <!-- BUTTONS -->
@@ -104,8 +127,10 @@
 
 
 
+
+
 <!-- =============================== -->
-<!--     PRODUCTS MODAL SECTION      -->
+<!--    PRODUCTS MODAL START         -->
 <!-- =============================== -->
 
 <div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
@@ -119,65 +144,64 @@
 
             <div class="modal-body">
 
-                <!-- PRODUCTS SECTION -->
-                <div class="container-fluid">
+                <div class="products-wrapper">
 
-                    <div class="section-title text-center">
-                        <h2 class="mb-3">Our Premium Products</h2>
-                        <p class="mb-4">Company-wise Product Availability</p>
+                    <div class="text-center mb-4">
+                        <h2>Our Premium Products</h2>
+                        <p class="text-muted">Company-wise Product Availability</p>
                     </div>
 
                     {% for company in companies %}
                         {% if company.name == "Dodla" %}
-                        <div class="card bg-light p-4 mb-5">
-
-                        <!-- Company Header -->
+                        
                         <div class="text-center mb-5">
                             <img src="{{ company.logo.url }}"
-                                alt="{{ company.name }} Logo"
-                                style="height:90px; width:auto; padding:8px; background:white; border-radius:12px;">
+                                 alt="{{ company.name }} Logo"
+                                 style="height:90px; width:auto; padding:8px; background:white; border-radius:12px;">
 
                             <h3 class="mt-3">{{ company.name }} Products</h3>
                             <p class="text-muted">Available items from {{ company.name }}</p>
                         </div>
 
-                        <!-- Product Grid -->
-                        <div class="row g-4">
+                        <div class="products-grid">
+
                             {% for product in products %}
                                 {% if product.company == company %}
-                                <div class="col-lg-3 col-md-4 col-sm-6">
 
-                                    <div class="product-card">
+                                <div class="product-card">
 
-                                        <!-- Product Image -->
-                                        {% if product.image %}
-                                            <img src="{{ product.image.url }}" class="product-img" alt="{{ product.name }}">
-                                        {% else %}
-                                            <img src="{% static 'images/placeholder.png' %}" class="product-img" alt="{{ product.name }}">
-                                        {% endif %}
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" class="product-img" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder.png' %}" class="product-img" alt="{{ product.name }}">
+                                    {% endif %}
 
-                                        <!-- Product Name & Price -->
-                                        <div style="margin-top:15px;">
-                                            <h5 style="font-size:1rem; font-weight:600;">{{ product.name }}</h5>
-                                            <p style="font-size:1.1rem; font-weight:700; margin:0;">₹{{ product.mrp }}</p>
-                                        </div>
-
+                                    <div style="margin-top: 15px;">
+                                        <h5 style="font-size:1rem; font-weight:600;">{{ product.name }}</h5>
+                                        <p style="font-size:1.1rem; font-weight:700; margin:0;">₹{{ product.mrp }}</p>
                                     </div>
+
                                 </div>
+
                                 {% endif %}
                             {% endfor %}
+
                         </div>
 
-                    </div>
                         {% endif %}
                     {% endfor %}
 
                 </div>
 
             </div>
+
         </div>
     </div>
 </div>
+
+<!-- =============================== -->
+<!--    PRODUCTS MODAL END           -->
+<!-- =============================== -->
 
 
 
