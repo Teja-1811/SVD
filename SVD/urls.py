@@ -11,10 +11,10 @@ def index_view(request):
     from milk_agency.models import Item, Company
 
     # Only show products that are not frozen
-    products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
+    products = Item.objects.all().order_by('id')
 
     # Check if at least ONE item is unfrozen
-    has_active_items = Item.objects.filter(company_id = 1)
+    has_active_items = Item.objects.filter(frozen=False).exists()
 
     # Show company list only if active items exist
     companies = Company.objects.all() if has_active_items else []
