@@ -17,46 +17,54 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
 
-    /* Product Card */
-    .product-card {
-        min-height: 320px;
-        padding: 15px;
-        border-radius: 15px;
-        background: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        text-align: center;
+    /* Modal Wider */
+    .custom-modal-width {
+        max-width: 95% !important;   /* Extend horizontally */
     }
 
-    .product-img {
-        max-height: 180px;
-        width: auto;
-        object-fit: contain;
-        padding: 5px;
-        border-radius: 12px;
-        display: block;
-        margin: auto;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    /* Wrapper inside modal */
+    /* Products Wrapper */
     .products-wrapper {
         background: #ffffff;
         padding: 30px;
         border-radius: 20px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
         margin: auto;
-        max-width: 1100px;
+        max-width: 1300px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
     }
 
-    /* Responsive Grid */
+    /* Product Grid */
     .products-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-        gap: 25px;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px;
+        justify-items: center;
+    }
+
+    /* Product Card */
+    .product-card {
+        width: 100%;
+        max-width: 240px;
+        min-height: 280px;
+        padding: 15px;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Medium-sized Images */
+    .product-img {
+        max-height: 150px;
+        width: auto;
+        object-fit: contain;
+        padding: 10px;
+        border-radius: 12px;
+        display: block;
+        margin: auto;
+        background: white;
     }
 
 </style>
@@ -76,21 +84,23 @@
                     <!-- MAIN LOGO -->
                     <div class="hero-logo-wrapper mb-4">
                         <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
-                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" class="hero-logo-img" style="height:120px;">
+                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
                         </div>
                     </div>
 
-                    <h3 class="hero-main-title display-3 fw-bold mb-4 text-white">
+                    <h3 class="display-3 fw-bold mb-4 text-white">
                         Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
                     </h3>
 
-                    <p class="lead text-white">Your Trusted Partner for Quality Dairy Products</p>
+                    <p class="lead text-white">
+                        Your Trusted Partner for Quality Dairy Products
+                    </p>
 
                     <!-- COMPANY LOGOS -->
                     <div class="divider my-4">
                         {% for company in companies %}
                             {% if company.name == "Dodla" %}
-                                <img src="{{ company.logo.url }}" alt="{{ company.name }} Logo" class="company-logo">
+                                <img src="{{ company.logo.url }}" class="company-logo">
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -101,7 +111,7 @@
 
                     <p class="text-white mb-0">
                         <i class="bi bi-telephone-fill me-2"></i>
-                        Call Us:
+                        Call:
                         <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
                     </p>
 
@@ -129,12 +139,12 @@
 
 
 
-<!-- =============================== -->
-<!--    PRODUCTS MODAL START         -->
-<!-- =============================== -->
+<!-- ======================================================== -->
+<!--                        PRODUCTS MODAL                    -->
+<!-- ======================================================== -->
 
 <div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-centered modal-dialog-scrollable custom-modal-width">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -157,12 +167,13 @@
                         <div class="text-center mb-5">
                             <img src="{{ company.logo.url }}"
                                  alt="{{ company.name }} Logo"
-                                 style="height:90px; width:auto; padding:8px; background:white; border-radius:12px;">
+                                 style="height:70px; background:white; border-radius:12px; padding:8px;">
 
                             <h3 class="mt-3">{{ company.name }} Products</h3>
                             <p class="text-muted">Available items from {{ company.name }}</p>
                         </div>
 
+                        <!-- PRODUCT GRID -->
                         <div class="products-grid">
 
                             {% for product in products %}
@@ -171,14 +182,14 @@
                                 <div class="product-card">
 
                                     {% if product.image %}
-                                        <img src="{{ product.image.url }}" class="product-img" alt="{{ product.name }}">
+                                        <img src="{{ product.image.url }}" class="product-img">
                                     {% else %}
-                                        <img src="{% static 'images/placeholder.png' %}" class="product-img" alt="{{ product.name }}">
+                                        <img src="{% static 'images/placeholder.png' %}" class="product-img">
                                     {% endif %}
 
-                                    <div style="margin-top: 15px;">
+                                    <div style="margin-top:15px;">
                                         <h5 style="font-size:1rem; font-weight:600;">{{ product.name }}</h5>
-                                        <p style="font-size:1.1rem; font-weight:700; margin:0;">₹{{ product.mrp }}</p>
+                                        <p style="font-size:1.1rem; font-weight:700;">₹{{ product.mrp }}</p>
                                     </div>
 
                                 </div>
@@ -199,9 +210,7 @@
     </div>
 </div>
 
-<!-- =============================== -->
-<!--    PRODUCTS MODAL END           -->
-<!-- =============================== -->
+
 
 
 
@@ -211,7 +220,7 @@
 <section class="section py-5" id="contact">
     <div class="container-fluid">
 
-        <div class="section-title text-center mb-5">
+        <div class="text-center mb-5">
             <h2 class="mb-3">Get In Touch</h2>
             <p>Find our location or send us a message</p>
         </div>
