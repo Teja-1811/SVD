@@ -8,10 +8,8 @@ from . import views_cashbook
 from . import views_stock_dashboard
 from . import views_companies
 from . import views_payments
-from . import views_customer_monthly_purchases
 from . import views_orders_dashboard
 from . import views_sales_summary
-from . import views_dodla
 
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
