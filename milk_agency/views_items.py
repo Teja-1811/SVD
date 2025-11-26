@@ -30,7 +30,7 @@ def items_dashboard(request):
     for category, group in groupby(items, key=lambda x: (x.category or 'others').lower()):
         grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
 
-    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
+    category_order = ['milk', 'curd','cups', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
     ordered_grouped = OrderedDict((cat, grouped_items.get(cat, [])) for cat in category_order)
 
     total_items = sum(len(items) for items in ordered_grouped.values())
