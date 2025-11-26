@@ -163,20 +163,41 @@
                             <h3 class="mt-3">{{ company.name }} Products</h3>
                             <p class="text-muted">Available items from {{ company.name }}</p>
                         </div>
-                        <div class="products-grid">
+                        <div style="
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    padding: 10px;
+    width: 100%;
+">
 
-                        {% for product in products %}
-                            {% if product.company == company %}
+{% for product in products %}
+    {% if product.company == company %}
 
-                            <div class="product-card">
-                                <img src="{{ product.image.url }}" class="product-img" alt="{{ product.name }}">
-                                <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
-                                <p style="font-weight:bold; margin:0;">₹{{ product.mrp }}</p>
-                            </div>
+    <div style="
+        width: 150px;
+        background: white;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        text-align: center;
+        margin: auto;
+    ">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="
+            height: 120px;
+            object-fit: contain;
+            display: block;
+            margin: auto;
+        ">
 
-                            {% endif %}
-                        {% endfor %}
+        <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
+        <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+    </div>
 
+    {% endif %}
+{% endfor %}
+
+</div>
                         </div>
 
                         {% endif %}
