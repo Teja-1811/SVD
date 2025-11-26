@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Bill, BillItem, Customer, Item, Company
 from num2words import num2words
-from decimal import Decimal
+from decimal import Decimal, ROUND_UP
 from datetime import datetime
 from django.contrib.staticfiles import finders
 import json
@@ -224,22 +224,22 @@ def generate_bill(request):
                     messages.error(request, 'At least one item is required')
                     return redirect('milk_agency:generate_bill')
 
-                # Update bill totals
-                bill.total_amount = total_amount
+                # Update bill totals with ceiling
+                rounded_total = Decimal(total_amount).quantize(Decimal('1'), rounding=ROUND_UP)
                 bill.profit = total_profit
 
                 # Apply commission deduction if available
                 if commission_to_deduct and total_amount > 0:
                     commission_amount = commission_to_deduct.commission_amount
-                    # Deduct commission from bill amount
-                    bill.total_amount = max(Decimal(0), total_amount - commission_amount)
+                    bill.total_amount = (rounded_total - commission_amount).quantize(Decimal('1'), rounding=ROUND_UP)
                     bill.commission_deducted = commission_amount
                     bill.commission_month = commission_to_deduct.month
                     bill.commission_year = commission_to_deduct.year
 
-                    # Mark commission as deducted
                     commission_to_deduct.status = True
                     commission_to_deduct.save()
+                else:
+                    bill.total_amount = rounded_total
 
                 # Keep the last_paid from latest bill (set during creation), don't reset to 0
                 bill.save()
