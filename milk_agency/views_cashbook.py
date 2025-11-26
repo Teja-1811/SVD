@@ -15,6 +15,7 @@ from .models import (
 # -------------------------------------------------------
 # CASHBOOK DASHBOARD
 # -------------------------------------------------------
+@login_required
 def cashbook(request):
     today = timezone.now().date()
 
@@ -229,6 +230,7 @@ def delete_expense(request, pk):
 # -------------------------------------------------------
 # EXPENSE LIST
 # -------------------------------------------------------
+@login_required
 def expenses_list(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
