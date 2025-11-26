@@ -361,8 +361,6 @@
     </div>
 </div>
 
-
-<!-- JS -->
 <script>
 (function(){
     const qs = s => document.querySelector(s);
@@ -384,19 +382,29 @@
         });
     });
 
-    // Live new quantity update
+    // Live new quantity update (DESKTOP + MOBILE FIXED)
     document.addEventListener("input", function(e){
         if (!e.target.classList.contains("stock-input")) return;
 
         const el = e.target;
         const id = el.dataset.itemId;
-        const current = parseInt(el.dataset.current);
-        const units = parseInt(el.dataset.units);
+
+        const current = parseInt(el.dataset.current) || 0;
+        const units = parseInt(el.dataset.units) || 1;
         const crates = parseInt(el.value) || 0;
 
-        const newQty = current + crates * units;
-        const span = document.getElementById("new-quantity-" + id);
-        if (span) span.textContent = newQty;
+        const newQty = current + (crates * units);
+
+        // Update desktop
+        const desktopSpan = document.getElementById("new-quantity-" + id);
+        if (desktopSpan) desktopSpan.textContent = newQty;
+
+        // Update mobile
+        const mobileTiles = document.querySelectorAll(`[data-item-id='${id}']`);
+        mobileTiles.forEach(tile => {
+            let qSpan = tile.closest(".item-tile")?.querySelector(".qty-badge");
+            if (qSpan) qSpan.textContent = newQty;
+        });
     });
 
     // Clear all inputs
@@ -409,5 +417,4 @@
 
 })();
 </script>
-
 {% endblock %}
