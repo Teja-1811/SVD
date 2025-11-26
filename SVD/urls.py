@@ -14,7 +14,7 @@ def index_view(request):
     products = Item.objects.filter(stock_quantity__gt=0).order_by('name')
 
     # Check if at least ONE item is unfrozen
-    has_active_items = Item.objects.filter(frozen=False).exists()
+    has_active_items = Item.objects.filter(company_id = 1)
 
     # Show company list only if active items exist
     companies = Company.objects.all() if has_active_items else []
