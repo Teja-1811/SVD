@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+/* Company Logos */
 .company-logo {
     height: 90px !important;
     width: 25% !important;
@@ -16,125 +17,91 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
-    /* FULL WIDTH modal */
+/* FULL WIDTH MODAL */
 .modal-fullscreen .modal-content {
     border-radius: 10px;
 }
 
-/* Wrapper inside modal */
+/* Modal wrapper */
 .products-wrapper {
     background: #ffffff;
     padding: 20px;
     border-radius: 15px;
-    margin: auto;
     max-width: 1500px;
+    margin: auto;
 }
 
-/* FORCE small product grid */
+/* Product grid */
 .products-grid {
-    display: grid !important;  /* force override bootstrap */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
     gap: 20px !important;
     padding: 10px;
     justify-items: center !important;
 }
 
-/* Small product card */
+/* Product card */
 .product-card {
     width: 100%;
-    max-width: 150px !important;
-    min-height: 200px;
+    max-width: 180px;
+    background: white;
     padding: 10px;
     border-radius: 12px;
-    background: white;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
     text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
 
-/* Small product image */
+/* Product image styling */
 .product-img {
-    max-height: 120px !important;
-    width: auto !important;
-    object-fit: contain !important;
+    height: 130px;
+    width: 100%;
+    object-fit: contain;
     padding: 5px;
-    display: block;
-    margin: auto;
     background: white;
+    border-radius: 10px;
+    margin-bottom: 10px;
 }
-/* ---------------------------------------------------
-   MAP / LOCATION CARD
---------------------------------------------------- */
 
+/* MAP / LOCATION CARD */
 .location-card {
     background: #ffffff;
     border-radius: 14px;
-    padding: 25px 25px 30px;
+    padding: 25px;
     box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    text-align: center;
     border: 1px solid #f1f1f1;
 }
 
-/* Header */
-.location-card h4 {
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: #2d2d2d;
-    margin-bottom: 15px;
-}
-
-/* Map iframe */
 .location-card iframe {
     width: 100%;
     height: 380px;
-    border: 0 !important;
-    border-radius: 14px !important;
+    border-radius: 14px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.10);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: 0.25s ease;
 }
 
-/* Hover Effect */
 .location-card iframe:hover {
     transform: scale(1.01);
-    box-shadow: 0 6px 22px rgba(0,0,0,0.18);
 }
 
-/* Timing & phone text */
+/* Badges */
 .location-card p {
-    border:1px solid #1d1c1cff;
-    background-color:#f9f9f9;
-    padding:8px 12px;
+    background: #f9f9f9;
+    padding: 8px 12px;
     margin-bottom: 8px;
-    font-size: 0.95rem;
-    color: #444;
 }
 
-/* Links (phone & email) */
-.location-card a {
-    color: #0d6efd;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.location-card a:hover {
-    text-decoration: underline;
-}
-
-/* Mobile Optimization */
+/* Mobile view */
 @media (max-width: 768px) {
-    .location-card {
-        padding: 20px;
+    .product-card {
+        max-width: 150px;
     }
-
+    .product-img {
+        height: 100px;
+    }
     .location-card iframe {
         height: 300px;
     }
-
-    .location-card h4 {
-        font-size: 1.15rem;
-    }
 }
-
-
 </style>
 {% endblock extra_css %}
 
@@ -143,154 +110,109 @@
 {% block content %}
 
 <!-- HERO SECTION -->
-<section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
-    <div class="container-fluid h-100 position-relative z-index-2 mt-5">
-        <div class="row h-100 align-items-center">
-            <div class="col-12 text-center">
-                <div class="hero-content">
+<section class="hero-section d-flex align-items-center">
+    <div class="container-fluid mt-5 text-center">
 
-                    <!-- MAIN LOGO -->
-                    <div class="hero-logo-wrapper mb-4">
-                        <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
-                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
-                        </div>
-                    </div>
+        <!-- LOGO -->
+        <div class="hero-logo-wrapper mb-4">
+            <img src="{% static 'images/SVD1.png' %}" style="height:120px;">
+        </div>
 
-                    <h3 class="display-3 fw-bold mb-4 text-white">
-                        Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
-                    </h3>
+        <h3 class="display-3 fw-bold text-white">
+            Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
+        </h3>
 
-                    <p class="lead text-white">
-                        Your Trusted Partner for Quality Dairy Products
-                    </p>
+        <p class="lead text-white">Your Trusted Partner for Quality Dairy Products</p>
 
-                    <!-- COMPANY LOGOS -->
-                    <div class="divider my-4">
-                        {% for company in companies %}
-                            {% if company.name == "Dodla" %}
-                                <img src="{{ company.logo.url }}"
-                                 alt="{{ company.name }} Logo"
-                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+        <!-- Company Logo (Dodla only) -->
+        <div class="my-4">
+            {% for company in companies %}
+                {% if company.name == "Dodla" %}
+                <img src="{{ company.logo.url }}" class="company-logo">
+                {% endif %}
+            {% endfor %}
+        </div>
 
-                    <p class="text-white mb-1 badge badge-warning p-2">
-                        <i class="bi bi-geo-alt-fill me-2"></i>Service : Gundugolanu and Surroundings
-                    </p>
+        <p class="text-white badge bg-warning p-2">
+            <i class="bi bi-geo-alt-fill me-2"></i>Service : Gundugolanu and Surroundings
+        </p><br>
 
-                    <p class="text-white mb-0 badge badge-warning p-2">
-                        <i class="bi bi-telephone-fill me-2"></i>
-                        Call:
-                        <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
-                    </p>
+        <p class="text-white badge bg-warning p-2">
+            <i class="bi bi-telephone-fill me-2"></i>
+            <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
+        </p>
 
-                    <!-- BUTTONS -->
-                    <div class="mt-4 d-flex justify-content-center gap-3">
+        <!-- Buttons -->
+        <div class="mt-4">
+            <button class="btn btn-primary px-5 py-3 fw-semibold"
+                    data-bs-toggle="modal" data-bs-target="#productsModal">
+                Explore Products
+            </button>
 
-                        <!-- OPEN PRODUCTS MODAL -->
-                        <button class="btn btn-primary px-5 py-3 fw-semibold"
-                                data-bs-toggle="modal" data-bs-target="#productsModal">
-                            Explore Products
-                        </button>
-
-                        <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold">
-                            Get in Touch
-                        </a>
-                    </div>
-
-                </div>
-            </div>
+            <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold">
+                Get in Touch
+            </a>
         </div>
     </div>
 </section>
-<!-- ======================================================== -->
-<!--                        PRODUCTS MODAL                    -->
-<!-- ======================================================== -->
 
-<div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
+
+
+<!-- PRODUCTS MODAL -->
+<div class="modal fade" id="productsModal">
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
 
             <div class="modal-header">
                 <h4 class="modal-title">Our Premium Products</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
-
                 <div class="products-wrapper">
 
-                    <div class="text-center mb-4">
-                        <h2>Our Premium Products</h2>
-                        <p class="text-muted">Company-wise Product Availability</p>
-                    </div>
+                    <h2 class="text-center mb-3">Our Premium Products</h2>
+                    <p class="text-muted text-center">Company-wise Product Availability</p>
 
                     {% for company in companies %}
                         {% if company.name == "Dodla" %}
-                        
-                        <div class="text-center mb-5">
-                            <img src="{{ company.logo.url }}"
-                                 alt="{{ company.name }} Logo"
-                                 style="height:70px; background:white; border-radius:12px; padding:8px;">
 
-                            <h3 class="mt-3">{{ company.name }} Products</h3>
-                            <p class="text-muted">Available items from {{ company.name }}</p>
+                        <div class="text-center mb-4">
+                            <img src="{{ company.logo.url }}" class="company-logo" style="height:70px;">
+                            <h3 class="mt-2">{{ company.name }} Products</h3>
                         </div>
-                        <div style="
-                                display: grid;
-                                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                                gap: 20px;
-                                padding: 10px;
-                                width: 100%;
-                            ">
 
+                        <!-- Products Grid -->
+                        <div class="products-grid">
                             {% for product in products %}
                                 {% if product.company == company %}
-
-                                <div style="
-                                    width: 250px;
-                                    background: white;
-                                    border-radius: 12px;
-                                    padding: 10px;
-                                    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-                                    text-align: center;
-                                    margin: auto;
-                                ">
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="
-                                        height: 120px;
-                                        object-fit: contain;
-                                        display: block;
-                                        margin: auto;
-                                    ">
-
-                                    <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
-                                    <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+                                <div class="product-card">
+                                    <img src="{{ product.image.url }}" class="product-img">
+                                    <h6>{{ product.name }}</h6>
+                                    <p class="fw-bold">₹{{ product.mrp }}</p>
                                 </div>
-
                                 {% endif %}
                             {% endfor %}
-
-                            </div>
                         </div>
 
                         {% endif %}
                     {% endfor %}
 
                 </div>
-
             </div>
 
         </div>
     </div>
 </div>
 
+
+
 <!-- CONTACT SECTION -->
-<section class="section py-5" id="contact">
+<section class="py-5" id="contact">
     <div class="container-fluid">
 
         <div class="text-center mb-5">
-            <h2 class="mb-3">Get In Touch</h2>
+            <h2>Get In Touch</h2>
             <p>Find our location or send us a message</p>
         </div>
 
@@ -298,27 +220,24 @@
 
             <!-- MAP -->
             <div class="col-lg-6">
-                <div class="location-card h-100 text-center">
+                <div class="location-card">
                     <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
 
-                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
-                        width="100%" height="400"
-                        style="border:0; border-radius:10px;" loading="lazy"></iframe>
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed" loading="lazy"></iframe>
 
-                    <p class="mt-3 badge badge-info p-2">Mon–Sun: 6 AM – 9 PM</p>
-                    <p class="mt-3 badge badge-info p-2"><a href="tel:+919392890375">+91 9392890375</a></p>
-                    <p class="mt-3 badge badge-info p-2"><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
+                    <p class="badge bg-info p-2 mt-3">Mon–Sun: 6 AM – 9 PM</p>
+                    <p class="badge bg-info p-2"><a href="tel:+919392890375">+91 9392890375</a></p>
+                    <p class="badge bg-info p-2"><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
                 </div>
             </div>
 
             <!-- CONTACT FORM -->
             <div class="col-lg-6">
-                <div class="contact-form-card h-100">
+                <div class="location-card">
                     <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
                     <form>
                         <div class="row g-3">
-
                             <div class="col-md-6">
                                 <label>Name *</label>
                                 <input type="text" class="form-control" required>
@@ -340,11 +259,10 @@
                             </div>
 
                             <div class="col-12 text-center mt-3">
-                                <button type="submit" class="btn btn-whatsapp btn-lg">
+                                <button class="btn btn-success btn-lg">
                                     <i class="bi bi-whatsapp me-2"></i>Share via WhatsApp
                                 </button>
                             </div>
-
                         </div>
                     </form>
 
