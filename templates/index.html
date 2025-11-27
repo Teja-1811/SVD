@@ -19,21 +19,18 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
-/* Mobile Dodla logo fix */
+/* ---- FIX DODLA LOGO ON MOBILE ---- */
 @media (max-width: 768px) {
     .company-logo {
-        width: 150px !important;
+        max-width: 180px !important;   /* do NOT use % */
+        width: 100% !important;
         height: auto !important;
+        display: block !important;
+        margin: 10px auto !important;
         padding: 8px !important;
-        margin-top: 20px !important;
-    }
-
-    /* Hero Section Space Fix */
-    .hero-section {
-        padding-top: 100px !important;
-        padding-bottom: 120px !important;
     }
 }
+
 
 /* FULLSCREEN MODAL */
 .modal-fullscreen .modal-content {
