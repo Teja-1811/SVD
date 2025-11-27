@@ -6,110 +6,61 @@
 {% block extra_css %}
 <style>
 
-/* Company Logos */
-.company-logo {
-    height: 90px !important;
-    width: 25% !important;
-    object-fit: contain !important;
-    padding: 4px !important;
-    background: white !important;
-    border-radius: 12px !important;
-    margin: 10px auto !important;
-    display: block !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
-}
-
-/* ---- FIX DODLA LOGO ON MOBILE ---- */
-@media (max-width: 768px) {
     .company-logo {
-        max-width: 180px !important;   /* do NOT use % */
-        width: 75% !important;
-        height: auto !important;
-        display: block !important;
-        margin: 10px auto !important;
-        padding: 8px !important;
+        height: 90px !important;
+        width: 25% !important;
+        object-fit: contain !important;
+        padding: 4px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        margin: 10px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
-}
 
-
-/* FULLSCREEN MODAL */
+    /* FULL WIDTH modal */
 .modal-fullscreen .modal-content {
     border-radius: 10px;
 }
 
-/* Modal wrapper */
+/* Wrapper inside modal */
 .products-wrapper {
     background: #ffffff;
     padding: 20px;
     border-radius: 15px;
-    max-width: 1500px;
     margin: auto;
+    max-width: 1500px;
 }
 
-/* Product grid */
+/* FORCE small product grid */
 .products-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    display: grid !important;  /* force override bootstrap */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
     gap: 20px !important;
     padding: 10px;
     justify-items: center !important;
 }
 
-/* Product card */
+/* Small product card */
 .product-card {
     width: 100%;
-    max-width: 180px;
-    background: white;
+    max-width: 150px !important;
+    min-height: 200px;
     padding: 10px;
     border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-}
-
-/* Product image */
-.product-img {
-    height: 130px;
-    width: 100%;
-    object-fit: contain;
-    padding: 5px;
     background: white;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    text-align: center;
 }
 
-/* CONTACT SECTION DESIGN */
-.location-card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 25px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    border: 1px solid #f1f1f1;
-}
-
-.location-card iframe {
-    width: 100%;
-    height: 380px;
-    border-radius: 14px;
-    border: none;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.10);
-    transition: 0.25s ease;
-}
-
-.location-card iframe:hover {
-    transform: scale(1.01);
-}
-
-.location-card p {
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    background: #e8f6ff;
-    border-radius: 8px;
-    font-size: 0.95rem;
-}
-
-/* Mobile Contact Style */
-@media (max-width: 768px) {
-    .location-card iframe { height: 300px; }
+/* Small product image */
+.product-img {
+    max-height: 120px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    padding: 5px;
+    display: block;
+    margin: auto;
+    background: white;
 }
 
 </style>
@@ -117,136 +68,180 @@
 
 
 
-
 {% block content %}
 
 <!-- HERO SECTION -->
 <section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
-    <div class="container-fluid text-center mt-5">
+    <div class="container-fluid h-100 position-relative z-index-2 mt-5">
+        <div class="row h-100 align-items-center">
+            <div class="col-12 text-center">
+                <div class="hero-content">
 
-        <!-- Logo -->
-        <img src="{% static 'images/SVD1.png' %}" style="height:120px;" class="mb-4">
+                    <!-- MAIN LOGO -->
+                    <div class="hero-logo-wrapper mb-4">
+                        <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
+                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
+                        </div>
+                    </div>
 
-        <h3 class="display-3 fw-bold text-white">
-            Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
-        </h3>
+                    <h3 class="display-3 fw-bold mb-4 text-white">
+                        Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
+                    </h3>
 
-        <p class="lead text-white">Your Trusted Partner for Quality Dairy Products</p>
+                    <p class="lead text-white">
+                        Your Trusted Partner for Quality Dairy Products
+                    </p>
 
-        <!-- Dodla Logo -->
-        <div class="my-4">
-            {% for company in companies %}
-                {% if company.name == "Dodla" %}
-                <img src="{{ company.logo.url }}" class="company-logo">
-                {% endif %}
-            {% endfor %}
+                    <!-- COMPANY LOGOS -->
+                    <div class="divider my-4">
+                        {% for company in companies %}
+                            {% if company.name == "Dodla" %}
+                                <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <p class="text-white mb-1">
+                        <i class="bi bi-geo-alt-fill me-2"></i>Serving Gundugolanu, Eluru
+                    </p>
+
+                    <p class="text-white mb-0">
+                        <i class="bi bi-telephone-fill me-2"></i>
+                        Call:
+                        <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
+                    </p>
+
+                    <!-- BUTTONS -->
+                    <div class="mt-4 d-flex justify-content-center gap-3">
+
+                        <!-- OPEN PRODUCTS MODAL -->
+                        <button class="btn btn-primary px-5 py-3 fw-semibold"
+                                data-bs-toggle="modal" data-bs-target="#productsModal">
+                            Explore Products
+                        </button>
+
+                        <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold">
+                            Get in Touch
+                        </a>
+                    </div>
+
+                </div>
+            </div>
         </div>
-
-        <p class="text-white badge bg-warning p-2">
-            <i class="bi bi-geo-alt-fill me-2"></i>Service: Gundugolanu and Surroundings
-        </p><br>
-
-        <p class="text-white badge bg-warning p-2">
-            <i class="bi bi-telephone-fill me-2"></i>
-            <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
-        </p>
-
-        <div class="mt-4">
-            <button class="btn btn-primary px-5 py-3 fw-semibold"
-                    data-bs-toggle="modal" data-bs-target="#productsModal">
-                Explore Products
-            </button>
-
-            <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold ms-2">
-                Get in Touch
-            </a>
-        </div>
-
     </div>
 </section>
+<!-- ======================================================== -->
+<!--                        PRODUCTS MODAL                    -->
+<!-- ======================================================== -->
 
-
-
-
-<!-- PRODUCTS MODAL -->
-<div class="modal fade" id="productsModal">
+<div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
 
             <div class="modal-header">
                 <h4 class="modal-title">Our Premium Products</h4>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
+
                 <div class="products-wrapper">
 
-                    <h2 class="text-center mb-3">Our Premium Products</h2>
-                    <p class="text-muted text-center">Company-wise Product Availability</p>
+                    <div class="text-center mb-4">
+                        <h2>Our Premium Products</h2>
+                        <p class="text-muted">Company-wise Product Availability</p>
+                    </div>
 
                     {% for company in companies %}
                         {% if company.name == "Dodla" %}
+                        
+                        <div class="text-center mb-5">
+                            <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:70px; background:white; border-radius:12px; padding:8px;">
 
-                        <div class="text-center mb-4">
-                            <img src="{{ company.logo.url }}" class="company-logo" style="height:70px;">
-                            <h3 class="mt-2">{{ company.name }} Products</h3>
+                            <h3 class="mt-3">{{ company.name }} Products</h3>
+                            <p class="text-muted">Available items from {{ company.name }}</p>
                         </div>
+                        <div style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                                gap: 20px;
+                                padding: 10px;
+                                width: 100%;
+                            ">
 
-                        <!-- Products Grid -->
-                        <div class="products-grid">
                             {% for product in products %}
                                 {% if product.company == company %}
-                                <div class="product-card">
-                                    <img src="{{ product.image.url }}" class="product-img">
-                                    <h6>{{ product.name }}</h6>
-                                    <p class="fw-bold">₹{{ product.mrp }}</p>
+
+                                <div style="
+                                    width: 250px;
+                                    background: white;
+                                    border-radius: 12px;
+                                    padding: 10px;
+                                    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+                                    text-align: center;
+                                    margin: auto;
+                                ">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="
+                                        height: 120px;
+                                        object-fit: contain;
+                                        display: block;
+                                        margin: auto;
+                                    ">
+
+                                    <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
+                                    <p style="font-weight:bold;">₹{{ product.mrp }}</p>
                                 </div>
+
                                 {% endif %}
                             {% endfor %}
+
+                            </div>
                         </div>
 
                         {% endif %}
                     {% endfor %}
 
                 </div>
+
             </div>
 
         </div>
     </div>
 </div>
 
-
-
-
 <!-- CONTACT SECTION -->
-<section class="py-5" id="contact">
-    <div class="container">
+<section class="section py-5" id="contact">
+    <div class="container-fluid">
 
         <div class="text-center mb-5">
-            <h2>Get In Touch</h2>
+            <h2 class="mb-3">Get In Touch</h2>
             <p>Find our location or send us a message</p>
         </div>
 
-        <div class="row g-4 align-items-stretch">
+        <div class="row g-4">
 
-            <!-- MAP CARD -->
-            <div class="col-lg-6 d-flex">
-                <div class="location-card w-100">
+            <!-- MAP -->
+            <div class="col-lg-6">
+                <div class="location-card h-100 text-center">
                     <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
 
-                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"></iframe>
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+                        width="100%" height="400"
+                        style="border:0; border-radius:10px;" loading="lazy"></iframe>
 
-                    <div class="mt-3">
-                        <p>Mon–Sun: 6 AM – 9 PM</p>
-                        <p><a href="tel:+919392890375">+91 9392890375</a></p>
-                        <p><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
-                    </div>
+                    <p class="mt-3">Mon–Sun: 6 AM – 9 PM</p>
+                    <p><a href="tel:+919392890375">+91 9392890375</a></p>
+                    <p><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
                 </div>
             </div>
 
             <!-- CONTACT FORM -->
-            <div class="col-lg-6 d-flex">
-                <div class="location-card w-100">
+            <div class="col-lg-6">
+                <div class="contact-form-card h-100">
                     <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
                     <form>
@@ -272,8 +267,8 @@
                                 <textarea rows="4" class="form-control" required></textarea>
                             </div>
 
-                            <div class="col-12 mt-3">
-                                <button class="btn btn-success btn-lg w-100">
+                            <div class="col-12 text-center mt-3">
+                                <button type="submit" class="btn btn-whatsapp btn-lg">
                                     <i class="bi bi-whatsapp me-2"></i>Share via WhatsApp
                                 </button>
                             </div>
@@ -285,7 +280,6 @@
             </div>
 
         </div>
-
     </div>
 </section>
 
