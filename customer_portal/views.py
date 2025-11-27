@@ -95,7 +95,8 @@ def customer_orders_dashboard(request):
             return JsonResponse({'success': False, 'message': str(e)})
 
     # ---------- GET: RENDER ORDER PAGE ----------
-    items = Item.objects.select_related("company").all()
+    # Show ONLY Dodla company items
+    items = Item.objects.select_related("company").filter(company__name__iexact="Dodla")
 
     for item in items:
         if item.mrp and item.mrp > 0:
