@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+
 /* Company Logos */
 .company-logo {
     height: 90px !important;
@@ -13,11 +14,28 @@
     padding: 4px !important;
     background: white !important;
     border-radius: 12px !important;
-    margin: 10px !important;
+    margin: 10px auto !important;
+    display: block !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
 }
 
-/* FULL WIDTH MODAL */
+/* Mobile Dodla logo fix */
+@media (max-width: 768px) {
+    .company-logo {
+        width: 150px !important;
+        height: auto !important;
+        padding: 8px !important;
+        margin-top: 20px !important;
+    }
+
+    /* Hero Section Space Fix */
+    .hero-section {
+        padding-top: 100px !important;
+        padding-bottom: 120px !important;
+    }
+}
+
+/* FULLSCREEN MODAL */
 .modal-fullscreen .modal-content {
     border-radius: 10px;
 }
@@ -51,7 +69,7 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
 
-/* Product image styling */
+/* Product image */
 .product-img {
     height: 130px;
     width: 100%;
@@ -62,7 +80,7 @@
     margin-bottom: 10px;
 }
 
-/* MAP / LOCATION CARD */
+/* CONTACT SECTION DESIGN */
 .location-card {
     background: #ffffff;
     border-radius: 14px;
@@ -75,6 +93,7 @@
     width: 100%;
     height: 380px;
     border-radius: 14px;
+    border: none;
     box-shadow: 0 3px 12px rgba(0,0,0,0.10);
     transition: 0.25s ease;
 }
@@ -83,40 +102,33 @@
     transform: scale(1.01);
 }
 
-/* Badges */
 .location-card p {
-    background: #f9f9f9;
     padding: 8px 12px;
     margin-bottom: 8px;
+    background: #e8f6ff;
+    border-radius: 8px;
+    font-size: 0.95rem;
 }
 
-/* Mobile view */
+/* Mobile Contact Style */
 @media (max-width: 768px) {
-    .product-card {
-        max-width: 150px;
-    }
-    .product-img {
-        height: 100px;
-    }
-    .location-card iframe {
-        height: 300px;
-    }
+    .location-card iframe { height: 300px; }
 }
+
 </style>
 {% endblock extra_css %}
+
 
 
 
 {% block content %}
 
 <!-- HERO SECTION -->
-<section class="hero-section d-flex align-items-center">
-    <div class="container-fluid mt-5 text-center">
+<section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
+    <div class="container-fluid text-center mt-5">
 
-        <!-- LOGO -->
-        <div class="hero-logo-wrapper mb-4">
-            <img src="{% static 'images/SVD1.png' %}" style="height:120px;">
-        </div>
+        <!-- Logo -->
+        <img src="{% static 'images/SVD1.png' %}" style="height:120px;" class="mb-4">
 
         <h3 class="display-3 fw-bold text-white">
             Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
@@ -124,7 +136,7 @@
 
         <p class="lead text-white">Your Trusted Partner for Quality Dairy Products</p>
 
-        <!-- Company Logo (Dodla only) -->
+        <!-- Dodla Logo -->
         <div class="my-4">
             {% for company in companies %}
                 {% if company.name == "Dodla" %}
@@ -134,7 +146,7 @@
         </div>
 
         <p class="text-white badge bg-warning p-2">
-            <i class="bi bi-geo-alt-fill me-2"></i>Service : Gundugolanu and Surroundings
+            <i class="bi bi-geo-alt-fill me-2"></i>Service: Gundugolanu and Surroundings
         </p><br>
 
         <p class="text-white badge bg-warning p-2">
@@ -142,19 +154,20 @@
             <a href="tel:+919392890375" class="text-white">+91 9392890375</a>
         </p>
 
-        <!-- Buttons -->
         <div class="mt-4">
             <button class="btn btn-primary px-5 py-3 fw-semibold"
                     data-bs-toggle="modal" data-bs-target="#productsModal">
                 Explore Products
             </button>
 
-            <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold">
+            <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold ms-2">
                 Get in Touch
             </a>
         </div>
+
     </div>
 </section>
+
 
 
 
@@ -207,37 +220,41 @@
 
 
 
+
 <!-- CONTACT SECTION -->
 <section class="py-5" id="contact">
-    <div class="container-fluid">
+    <div class="container">
 
         <div class="text-center mb-5">
             <h2>Get In Touch</h2>
             <p>Find our location or send us a message</p>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-4 align-items-stretch">
 
-            <!-- MAP -->
-            <div class="col-lg-6">
-                <div class="location-card">
+            <!-- MAP CARD -->
+            <div class="col-lg-6 d-flex">
+                <div class="location-card w-100">
                     <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
 
-                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed" loading="lazy"></iframe>
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"></iframe>
 
-                    <p class="badge bg-info p-2 mt-3">Mon–Sun: 6 AM – 9 PM</p>
-                    <p class="badge bg-info p-2"><a href="tel:+919392890375">+91 9392890375</a></p>
-                    <p class="badge bg-info p-2"><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
+                    <div class="mt-3">
+                        <p>Mon–Sun: 6 AM – 9 PM</p>
+                        <p><a href="tel:+919392890375">+91 9392890375</a></p>
+                        <p><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></p>
+                    </div>
                 </div>
             </div>
 
             <!-- CONTACT FORM -->
-            <div class="col-lg-6">
-                <div class="location-card">
+            <div class="col-lg-6 d-flex">
+                <div class="location-card w-100">
                     <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
                     <form>
                         <div class="row g-3">
+
                             <div class="col-md-6">
                                 <label>Name *</label>
                                 <input type="text" class="form-control" required>
@@ -258,11 +275,12 @@
                                 <textarea rows="4" class="form-control" required></textarea>
                             </div>
 
-                            <div class="col-12 text-center mt-3">
-                                <button class="btn btn-success btn-lg">
+                            <div class="col-12 mt-3">
+                                <button class="btn btn-success btn-lg w-100">
                                     <i class="bi bi-whatsapp me-2"></i>Share via WhatsApp
                                 </button>
                             </div>
+
                         </div>
                     </form>
 
@@ -270,6 +288,7 @@
             </div>
 
         </div>
+
     </div>
 </section>
 
