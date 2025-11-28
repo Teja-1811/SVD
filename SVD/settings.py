@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'milk_agency',
     'customer_portal',
     'mathfilters',
+    'rest_framework',
+    'api',
 ]
 
 MIDDLEWARE = [
