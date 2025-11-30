@@ -449,6 +449,7 @@ def generate_monthly_sales_pdf(request):
 
     avg_milk = milk_volume / days_in_month if milk_volume else Decimal('0')
     avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
+    avg_volunme = avg_milk + avg_curd
 
     milk_commission = calculate_milk_commission(avg_milk) * days_in_month
     curd_commission = calculate_curd_commission(avg_curd) * days_in_month
