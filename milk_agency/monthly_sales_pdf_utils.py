@@ -221,11 +221,12 @@ class MonthlySalesPDFGenerator:
 
     def _draw_commission_details(self, c, context, width, start_y):
         """Draw commission details using Table class"""
-        if context['avg_volume'] <= 25:
+        customer = context['selected_customer_obj']
+        if not customer.is_commissioned:
             # Display average volume instead of commission details
             c.setFont("Helvetica-Bold", 10)
             c.drawString(40, start_y, f"Average Sale Of this Month: {context['avg_volume']:.2f} Liters")
-            return start_y - 20  # Return adjusted y position
+            return start_y - 20
 
         y = start_y
 
