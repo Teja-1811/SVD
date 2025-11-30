@@ -69,7 +69,7 @@ def update_stock(request):
         grouped_items[category] = sorted(list(group), key=lambda x: x.name.lower())
 
     # Category display order
-    category_order = ['milk', 'curd', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
+    category_order = ['milk', 'curd', 'cups', 'buckets', 'panner', 'sweets', 'flavoured milk', 'ghee', 'others']
 
     from collections import OrderedDict
     ordered_grouped = OrderedDict()
