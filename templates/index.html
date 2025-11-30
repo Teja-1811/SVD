@@ -272,6 +272,7 @@
                     <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
                     <form id="contactForm">
+                        {% csrf_token %}
                         <div class="row g-3">
 
                             <div class="col-md-6">
@@ -302,6 +303,7 @@
                             <div class="col-12 text-center mt-3">
                                 <button type="button" id="whatsappBtn" class="btn btn-whatsapp btn-lg">
                                     <i class="bi bi-whatsapp me-2"></i> Contact via WhatsApp
+                                </button>
                             </div>
 
                         </div>
