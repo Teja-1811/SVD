@@ -277,18 +277,24 @@ class MonthlySalesPDFGenerator:
         return y - table._height - 20
 
     def _draw_final_summary(self, c, context, width, start_y):
-        """Draw final summary"""
         bottom_y = start_y - 100
 
         c.setFont("Helvetica-Bold", 10)
         c.drawString(40, bottom_y + 50, "Final Summary")
 
         c.setFont("Helvetica", 10)
-        c.drawString(40, bottom_y + 30, f"Due: {context['due_amount']:.2f}")
-        c.drawString(40, bottom_y + 15, f"Commission: {context['total_commission']:.2f}")
-        c.drawString(40, bottom_y, f"Remaining Due: {context['remaining_due']:.2f}")
 
-        return 260  # Return value to prevent unnecessary page break
+        # Always show Due
+        c.drawString(40, bottom_y + 30, f"Due: {context['due_amount']:.2f}")
+
+        # Show commission only if customer is commissioned
+        customer = context["selected_customer_obj"]
+
+        if customer.is_commissioned and context["total_commission"] > 0:
+            c.drawString(40, bottom_y + 15, f"Commission: {context['total_commission']:.2f}")
+            c.drawString(40, bottom_y, f"Remaining Due: {context['remaining_due']:.2f}")
+
+        return 260
 
     def _draw_watermark(self, c, width, height):
         """Draw logo as watermark on the page"""

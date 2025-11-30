@@ -234,16 +234,14 @@ label {
                 </table>
             </div>
 
-            <!-- Final Summary -->
-            {% if total_commission != 0 %}
             <p class="fw-bold mt-3">Final Summary:</p>
             <p class="mb-1">Due: ₹{{ due_amount|floatformat:2 }}</p>
-            <p class="mb-1">Commission: ₹{{ total_commission|floatformat:2 }}</p>
-            <p class="mb-1">Remaining Due: ₹{{ remaining_due|floatformat:2 }}</p>
 
-            {% else %}
-            <p class="fw-bold mt-3">Final Summary:</p>
-            <p class="mb-1">Due: ₹{{ due_amount|floatformat:2 }}</p>
+            {% if selected_customer_obj.is_commissioned %}
+                {% if total_commission != 0 %}
+                    <p class="mb-1">Commission: ₹{{ total_commission|floatformat:2 }}</p>
+                    <p class="mb-1">Remaining Due: ₹{{ remaining_due|floatformat:2 }}</p>
+                {% endif %}
             {% endif %}
 
         </div>
