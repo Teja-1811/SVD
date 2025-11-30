@@ -444,14 +444,15 @@ def generate_monthly_sales_pdf(request):
 
         total_volume = milk_volume + curd_volume
 
-    # Calculate average daily volumes (already in liters, no need to divide by 1000)
+    # Use same average-based commission logic as HTML template
+    days_in_month = (end_date - start_date).days + 1
+
     avg_milk = milk_volume / days_in_month if milk_volume else Decimal('0')
     avg_curd = curd_volume / days_in_month if curd_volume else Decimal('0')
-    avg_volunme = avg_milk + avg_curd
 
-    # Calculate commissions based on slabs
-    milk_commission = calculate_milk_commission(milk_volume)
-    curd_commission = calculate_curd_commission(curd_volume)
+    milk_commission = calculate_milk_commission(avg_milk) * days_in_month
+    curd_commission = calculate_curd_commission(avg_curd) * days_in_month
+
     total_commission = milk_commission + curd_commission
 
     context = {
