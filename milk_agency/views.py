@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from urllib.parse import quote
 from django.db.models import Sum, F, Case, When, Value, IntegerField
 from django.utils import timezone
 from itertools import groupby
@@ -157,7 +158,8 @@ def contact_form_submit(request):
             contact.save()
 
             # Generate WhatsApp message
-            whatsapp_message = f"""New Contact Form Inquiry - SVD Milk Agencies
+            whatsapp_message = f"""
+            New Contact Form Inquiry - SVD Milk Agencies
 
             Name: {name}
             Phone: {phone}
@@ -168,10 +170,11 @@ def contact_form_submit(request):
             {message}
 
             Inquiry received via SVD Milk Agencies website
-            We typically respond within 24 hours"""
+            We typically respond within 24 hours
+            """
 
-            # Encode the message for URL
-            encoded_message = json.dumps(whatsapp_message).strip('"').replace('\\n', '\n').replace('\\t', '\t')
+            # FIXED: Proper URL-encoding
+            encoded_message = quote(whatsapp_message)
 
             # WhatsApp URL
             whatsapp_url = f"https://wa.me/919392890375?text={encoded_message}"
