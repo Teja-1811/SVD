@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const whatsappBtn = document.getElementById('whatsappBtn');
 
     if (contactForm && whatsappBtn) {
-        contactForm.addEventListener('submit', function(e) {
+        whatsappBtn.addEventListener('click', function(e) {
             e.preventDefault();
 
             // Get form data
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = formData.get('name').trim();
             const phone = formData.get('phone').trim();
             const email = formData.get('email').trim();
-            const subject = formData.get('subject');
+            const subject = formData.get('subject').trim();
             const message = formData.get('message').trim();
 
             // Validate required fields
