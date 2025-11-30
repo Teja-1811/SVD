@@ -154,20 +154,21 @@ def contact_form_submit(request):
                 subject=subject,
                 message=message
             )
+            contact.save()
 
             # Generate WhatsApp message
             whatsapp_message = f"""New Contact Form Inquiry - SVD Milk Agencies
 
-Name: {name}
-Phone: {phone}
-{'Email: ' + email if email else ''}
-Subject: {subject}
+            Name: {name}
+            Phone: {phone}
+            {'Email: ' + email if email else ''}
+            Subject: {subject}
 
-Message:
-{message}
+            Message:
+            {message}
 
-Inquiry received via SVD Milk Agencies website
-We typically respond within 24 hours"""
+            Inquiry received via SVD Milk Agencies website
+            We typically respond within 24 hours"""
 
             # Encode the message for URL
             encoded_message = json.dumps(whatsapp_message).strip('"').replace('\\n', '\n').replace('\\t', '\t')

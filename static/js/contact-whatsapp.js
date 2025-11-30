@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             whatsappBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
 
             // Send data to server
-            fetch('/milk_agency/contact/submit/', {
+            fetch('/contact/submit/', {
                 method: 'POST',
                 body: formData,
                 headers: {
