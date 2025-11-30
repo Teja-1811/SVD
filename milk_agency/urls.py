@@ -86,4 +86,7 @@ urlpatterns = [
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),
 
+    # Contact Form URL
+    path('contact/submit/', views.contact_form_submit, name='contact_form_submit'),
+
 ]

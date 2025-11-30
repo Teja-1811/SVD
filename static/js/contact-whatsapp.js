@@ -20,27 +20,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Generate WhatsApp message
-            const whatsappMessage = `New Contact Form Inquiry - SVD Milk Agencies\n\n` +
-                `Name: ${name}\n` +
-                `Phone: ${phone}\n` +
-                (email ? `Email: ${email}\n` : '') +
-                `Subject: ${subject}\n\n` +
-                `Message:\n${message}\n\n` +
-                `Inquiry received via SVD Milk Agencies website\n` +
-                `We typically respond within 24 hours`;
+            // Disable button to prevent double submission
+            whatsappBtn.disabled = true;
+            whatsappBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
 
-            // Encode the message for URL
-            const encodedMessage = encodeURIComponent(whatsappMessage);
+            // Send data to server
+            fetch('/milk_agency/contact/submit/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert(data.message);
 
-            // WhatsApp URL (using the phone number from the footer)
-            const whatsappURL = `https://wa.me/919392890375?text=${encodedMessage}`;
+                    // Open WhatsApp with the generated message
+                    if (data.whatsapp_url) {
+                        window.open(data.whatsapp_url, '_blank');
+                    }
 
-            // Open WhatsApp
-            window.open(whatsappURL, '_blank');
-
-            // Optional: Reset form after sending
-            // contactForm.reset();
+                    // Reset form
+                    contactForm.reset();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                // Re-enable button
+                whatsappBtn.disabled = false;
+                whatsappBtn.innerHTML = '<i class="bi bi-whatsapp me-2"></i>Share via WhatsApp';
+            });
         });
     }
 });

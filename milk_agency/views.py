@@ -1,11 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Sum, F, Case, When, Value, IntegerField
 from django.utils import timezone
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, Contact
 from datetime import datetime
+import json
 
 @login_required
 @never_cache
@@ -127,3 +130,58 @@ def home(request):
     }
 
     return render(request, "milk_agency/home/home_dashboard.html", context)
+
+
+def contact_form_submit(request):
+    if request.method == 'POST':
+        try:
+            # Get form data
+            name = request.POST.get('name', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            email = request.POST.get('email', '').strip()
+            subject = request.POST.get('subject', '').strip()
+            message = request.POST.get('message', '').strip()
+
+            # Validate required fields
+            if not all([name, phone, subject, message]):
+                return JsonResponse({'success': False, 'message': 'Please fill in all required fields.'})
+
+            # Save to database
+            contact = Contact.objects.create(
+                name=name,
+                phone=phone,
+                email=email if email else None,
+                subject=subject,
+                message=message
+            )
+
+            # Generate WhatsApp message
+            whatsapp_message = f"""New Contact Form Inquiry - SVD Milk Agencies
+
+Name: {name}
+Phone: {phone}
+{'Email: ' + email if email else ''}
+Subject: {subject}
+
+Message:
+{message}
+
+Inquiry received via SVD Milk Agencies website
+We typically respond within 24 hours"""
+
+            # Encode the message for URL
+            encoded_message = json.dumps(whatsapp_message).strip('"').replace('\\n', '\n').replace('\\t', '\t')
+
+            # WhatsApp URL
+            whatsapp_url = f"https://wa.me/919392890375?text={encoded_message}"
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Thank you for your message! We will get back to you soon.',
+                'whatsapp_url': whatsapp_url
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
