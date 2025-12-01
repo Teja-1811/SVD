@@ -46,6 +46,9 @@ class Customer(AbstractBaseUser, PermissionsMixin):
     # Commission eligibility
     is_commissioned = models.BooleanField(default=False, help_text="Whether this customer is eligible for commission calculation")
 
+    # Delivery eligibility
+    is_delivery = models.BooleanField(default=False, help_text="Whether this customer is eligible for delivery")
+
     # Status
     frozen = models.BooleanField(default=False)
     last_login = models.DateTimeField(blank=True, null=True)
