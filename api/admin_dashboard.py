@@ -1,5 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
 from django.utils.timezone import now
@@ -23,8 +22,8 @@ def dashboard_counts_api(request):
     )["total"] or 0
 
     # Total due amount
-    total_dues = Bill.objects.aggregate(
-        total=Sum("op_due_amount")
+    total_dues  =  Customer.objects.aggregate(
+        total=Sum("due_amount")
     )["total"] or 0
 
     # Stock summary
