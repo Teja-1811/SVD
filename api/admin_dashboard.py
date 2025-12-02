@@ -5,7 +5,7 @@ from django.utils.timezone import now
 from milk_agency.models import Customer, Item, Bill
 
 @api_view(["GET"])
-def dashboard_counts_api(request):
+def dashboard_api(request):
 
     # Total customers
     total_customers = Customer.objects.count()
