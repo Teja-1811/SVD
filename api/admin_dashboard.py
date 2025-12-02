@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.utils.timezone import now
 from milk_agency.models import Customer, Item, Bill
 
