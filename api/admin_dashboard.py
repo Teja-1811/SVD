@@ -23,7 +23,7 @@ def dashboard_api(request):
 
     # Total due amount
     total_dues  =  Customer.objects.aggregate(
-        total=Sum("due_amount")
+        total=Sum("due")
     )["total"] or 0
 
     # Stock summary
