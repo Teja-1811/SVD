@@ -27,9 +27,10 @@ def dashboard_api(request):
     )["total"] or 0
 
     # Stock summary
-    stock_value = Item.objects.aggregate(
-        total=Sum("stock_quantity") * Sum("buying_price")
-    )["total"] or 0
+    stock_value =  (
+        Item.objects.aggregate(total=Sum(F("stock_quantity") * F("buying_price")))["total"]
+        or 0
+    )
 
     # Low stock count
     low_stock = Item.objects.filter(stock_quantity__lt=10).count()
