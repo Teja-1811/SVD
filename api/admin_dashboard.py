@@ -8,7 +8,6 @@ from milk_agency.models import Customer, Item, Bill
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def dashboard_api(request):
 
     # Total customers
