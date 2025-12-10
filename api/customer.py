@@ -78,7 +78,7 @@ def products_api(request):
         return Response({"error": "Invalid category_id"}, status=400)
 
     # Fetch items belonging to this category
-    items = Item.objects.filter(category=category_name)
+    items = Item.objects.filter(category=category_name, category_id=1)
 
     product_list = []
     for item in items:
