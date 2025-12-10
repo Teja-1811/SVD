@@ -58,12 +58,26 @@ def categories_api(request):
 
 @api_view(["GET"])
 def products_api(request):
-    category_name = request.GET.get("category_id")
+    category_id = request.GET.get("category_id")
 
-    if not category_name:
+    if not category_id:
         return Response({"error": "category_id is required"}, status=400)
 
-    # Fetch all items with matching category
+    # Convert category_id back to category name
+    categories = (
+        Item.objects.exclude(category__isnull=True)
+                    .exclude(category__exact="")
+                    .values_list("category", flat=True)
+                    .distinct()
+    )
+
+    try:
+        category_index = int(category_id) - 1
+        category_name = list(categories)[category_index]
+    except:
+        return Response({"error": "Invalid category_id"}, status=400)
+
+    # Fetch items belonging to this category
     items = Item.objects.filter(category=category_name)
 
     product_list = []
