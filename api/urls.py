@@ -12,4 +12,5 @@ urlpatterns = [
     
     # Customer Dashboard API
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
+    path('customer-items/', customer_items_api, name='customer_items_api'),
 ]
