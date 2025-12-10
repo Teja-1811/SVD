@@ -57,29 +57,25 @@ def categories_api(request):
     return Response(result)
 
 @api_view(["GET"])
-def customer_items_api(request):
-    # Get all non-frozen items
-    items = Item.objects.filter(frozen=False).order_by("name")
+def products_api(request):
+    category_name = request.GET.get("category_id")
 
-    item_list = []
+    if not category_name:
+        return Response({"error": "category_id is required"}, status=400)
 
+    # Fetch all items with matching category
+    items = Item.objects.filter(category=category_name)
+
+    product_list = []
     for item in items:
-        margin_percent = 0
-
-        try:
-            margin_percent = ((item.selling_price - item.buying_price) / item.buying_price) * 100
-        except:
-            margin_percent = 0
-
-        item_list.append({
+        product_list.append({
             "id": item.id,
             "name": item.name,
             "mrp": float(item.mrp),
-            "sellingPrice": float(item.selling_price),
-            "buyingPrice": float(item.buying_price),
-            "marginPercent": round(margin_percent, 2),
-            "image": item.image.url if item.image else None,
-            "category": item.category or "Others"
+            "selling_price": float(item.selling_price),
+            "margin": float(item.selling_price - item.buying_price),
+            "stock": item.stock_quantity,
+            "image": item.image.url if item.image else ""
         })
 
-    return Response({"items": item_list}, status=200)
+    return Response(product_list)

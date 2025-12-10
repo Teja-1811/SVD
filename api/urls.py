@@ -13,5 +13,5 @@ urlpatterns = [
     # Customer Dashboard API
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
     path('categories/', categories_api, name='categories_api'),
-    path('customer-items/', customer_items_api, name='customer_items_api'),
+    path('products/', products_api, name='products_api'),
 ]
