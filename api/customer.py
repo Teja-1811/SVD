@@ -36,6 +36,26 @@ def customer_dashboard_api(request):
 # =======================================================
 # CUSTOMER ITEMS API
 # =======================================================
+
+@api_view(["GET"])
+def categories_api(request):
+    # Extract all unique categories from Items
+    categories = (
+        Item.objects.exclude(category__isnull=True)
+                    .exclude(category__exact="")
+                    .values_list("category", flat=True)
+                    .distinct()
+    )
+
+    result = []
+    for i, cat in enumerate(categories):
+        result.append({
+            "id": i + 1,
+            "name": cat
+        })
+
+    return Response(result)
+
 @api_view(["GET"])
 def customer_items_api(request):
     # Get all non-frozen items
@@ -58,7 +78,6 @@ def customer_items_api(request):
             "sellingPrice": float(item.selling_price),
             "buyingPrice": float(item.buying_price),
             "marginPercent": round(margin_percent, 2),
-            "stock": item.stock_quantity,
             "image": item.image.url if item.image else None,
             "category": item.category or "Others"
         })
