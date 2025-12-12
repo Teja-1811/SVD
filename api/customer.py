@@ -106,6 +106,7 @@ def customer_invoice_summary_api(request):
     except Customer.DoesNotExist:
         return Response({"error": "Customer not found"}, status=404)
 
+    # MUST USE invoice_date (same as web portal)
     bills = Bill.objects.filter(
         customer_id=customer_id,
         invoice_date__year=year,
@@ -159,6 +160,7 @@ def customer_invoice_list_api(request):
     ]
 
     return Response({"invoices": invoice_list}, status=200)
+
 
 # =======================================================
 # CUSTOMER INVOICE PDF DOWNLOAD API
