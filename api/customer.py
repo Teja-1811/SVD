@@ -20,7 +20,6 @@ def customer_dashboard_api(request):
     except Customer.DoesNotExist:
         return Response({"error": "Customer not found"}, status=404)
 
-    # Balance
     balance = customer.due or 0
 
     data = {
@@ -34,13 +33,12 @@ def customer_dashboard_api(request):
     return Response(data, status=200)
 
 
+
 # =======================================================
 # CUSTOMER ITEMS API
 # =======================================================
-
 @api_view(["GET"])
 def categories_api(request):
-    # Extract all unique categories from Items
     categories = (
         Item.objects.exclude(category__isnull=True)
                     .exclude(category__exact="")
@@ -48,14 +46,9 @@ def categories_api(request):
                     .distinct()
     )
 
-    result = []
-    for i, cat in enumerate(categories):
-        result.append({
-            "id": i + 1,
-            "name": cat
-        })
-
+    result = [{"id": i + 1, "name": cat} for i, cat in enumerate(categories)]
     return Response(result)
+
 
 @api_view(["GET"])
 def products_api(request):
@@ -64,7 +57,6 @@ def products_api(request):
     if not category_id:
         return Response({"error": "category_id is required"}, status=400)
 
-    # Convert category_id back to category name
     categories = (
         Item.objects.exclude(category__isnull=True)
                     .exclude(category__exact="")
@@ -78,12 +70,10 @@ def products_api(request):
     except:
         return Response({"error": "Invalid category_id"}, status=400)
 
-    # Fetch items belonging to this category
     items = Item.objects.filter(category=category_name, company_id=1)
 
-    product_list = []
-    for item in items:
-        product_list.append({
+    product_list = [
+        {
             "id": item.id,
             "name": item.name,
             "mrp": float(item.mrp),
@@ -91,10 +81,17 @@ def products_api(request):
             "margin": float(item.selling_price - item.buying_price),
             "stock": item.stock_quantity,
             "image": item.image.url if item.image else ""
-        })
+        }
+        for item in items
+    ]
 
     return Response(product_list)
 
+
+
+# =======================================================
+# CUSTOMER INVOICE SUMMARY API
+# =======================================================
 @api_view(["GET"])
 def customer_invoice_summary_api(request):
     month = request.GET.get("month")
@@ -105,22 +102,21 @@ def customer_invoice_summary_api(request):
         return Response({"error": "month, year, and customer_id are required"}, status=400)
 
     try:
-        customer = Customer.objects.get(id=customer_id)
+        Customer.objects.get(id=customer_id)
     except Customer.DoesNotExist:
         return Response({"error": "Customer not found"}, status=404)
 
-    # Filter bills
     bills = Bill.objects.filter(
-    customer_id=customer_id,
-    invoice_date__year=year,
-    invoice_date__month=month
-    )
-    
-    # Summary calculations
+        customer_id=customer_id,
+        created_at__year=year,
+        created_at__month=month
+    ).order_by("-created_at")
+
     total_invoices = bills.count()
     total_amount = bills.aggregate(total=Sum("total_amount"))["total"] or 0
     avg_invoice = bills.aggregate(avg=Avg("total_amount"))["avg"] or 0
-    latest_invoice_date = bills.order_by("-date").first().invoice_date if bills.exists() else None
+
+    latest_invoice_date = bills.first().created_at if bills.exists() else None
 
     data = {
         "total_invoices": total_invoices,
@@ -131,6 +127,11 @@ def customer_invoice_summary_api(request):
 
     return Response(data, status=200)
 
+
+
+# =======================================================
+# CUSTOMER INVOICE LIST API
+# =======================================================
 @api_view(["GET"])
 def customer_invoice_list_api(request):
     month = request.GET.get("month")
@@ -141,28 +142,32 @@ def customer_invoice_list_api(request):
         return Response({"error": "month, year, and customer_id are required"}, status=400)
 
     try:
-        customer = Customer.objects.get(id=customer_id)
+        Customer.objects.get(id=customer_id)
     except Customer.DoesNotExist:
         return Response({"error": "Customer not found"}, status=404)
 
-    # Filter bills
     bills = Bill.objects.filter(
         customer_id=customer_id,
-        date__year=year,
-        date__month=month
-    ).order_by("-date")
+        created_at__year=year,
+        created_at__month=month
+    ).order_by("-created_at")
 
-    invoice_list = []
-
-    for bill in bills:
-        invoice_list.append({
+    invoice_list = [
+        {
             "number": bill.invoice_number,
-            "date": bill.date.strftime("%Y-%m-%d"),
+            "date": bill.created_at.strftime("%Y-%m-%d"),
             "amount": float(bill.total_amount),
-        })
+        }
+        for bill in bills
+    ]
 
     return Response({"invoices": invoice_list}, status=200)
 
+
+
+# =======================================================
+# CUSTOMER INVOICE PDF DOWNLOAD API
+# =======================================================
 @api_view(["GET"])
 def customer_invoice_download_api(request):
     invoice_number = request.GET.get("invoice_number")
@@ -170,12 +175,10 @@ def customer_invoice_download_api(request):
     if not invoice_number:
         return Response({"error": "invoice_number is required"}, status=400)
 
-    # Fetch invoice (Bill)
     try:
         bill = Bill.objects.get(invoice_number=invoice_number)
     except Bill.DoesNotExist:
         return Response({"error": "Invoice not found"}, status=404)
 
-    # Use your existing PDF generator utility
     pdf_gen = PDFGenerator()
     return pdf_gen.generate_and_return_pdf(bill, request)
