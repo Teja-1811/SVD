@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from milk_agency.pdf_utils import PDFGenerator
 from milk_agency.models import Customer, Bill, Item
 
