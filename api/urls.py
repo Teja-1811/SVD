@@ -22,14 +22,11 @@ urlpatterns = [
     # -------------------------
 
     # Invoice Summary API
-    path('customer/invoices/summary/', customer_invoice_summary_api,
-         name='customer_invoice_summary_api'),
+    path('customer/invoices/summary/', customer_invoice_summary_api, name='customer_invoice_summary_api'),
 
     # Invoice List API
-    path('customer/invoices/', customer_invoice_list_api,
-         name='customer_invoice_list_api'),
+    path('customer/invoices/', customer_invoice_list_api, name='customer_invoice_list_api'),
 
-    # Invoice PDF Download API (on-demand PDF generation)
-    path('customer/invoice/download/', customer_invoice_download_api,
-         name='customer_invoice_download_api'),
+    # Invoice PDF Download API
+    path('customer/invoice/download/', customer_invoice_download_api, name='customer_invoice_download_api'),
 ]
