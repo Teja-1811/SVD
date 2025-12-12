@@ -108,15 +108,14 @@ def customer_invoice_summary_api(request):
 
     bills = Bill.objects.filter(
         customer_id=customer_id,
-        created_at__year=year,
-        created_at__month=month
-    ).order_by("-created_at")
+        invoice_date__year=year,
+        invoice_date__month=month
+    ).order_by("-invoice_date")
 
     total_invoices = bills.count()
     total_amount = bills.aggregate(total=Sum("total_amount"))["total"] or 0
     avg_invoice = bills.aggregate(avg=Avg("total_amount"))["avg"] or 0
-
-    latest_invoice_date = bills.first().created_at if bills.exists() else None
+    latest_invoice_date = bills.first().invoice_date if bills.exists() else None
 
     data = {
         "total_invoices": total_invoices,
@@ -126,8 +125,6 @@ def customer_invoice_summary_api(request):
     }
 
     return Response(data, status=200)
-
-
 
 # =======================================================
 # CUSTOMER INVOICE LIST API
@@ -148,22 +145,20 @@ def customer_invoice_list_api(request):
 
     bills = Bill.objects.filter(
         customer_id=customer_id,
-        created_at__year=year,
-        created_at__month=month
-    ).order_by("-created_at")
+        invoice_date__year=year,
+        invoice_date__month=month
+    ).order_by("-invoice_date")
 
     invoice_list = [
         {
             "number": bill.invoice_number,
-            "date": bill.created_at.strftime("%Y-%m-%d"),
+            "date": bill.invoice_date.strftime("%Y-%m-%d"),
             "amount": float(bill.total_amount),
         }
         for bill in bills
     ]
 
     return Response({"invoices": invoice_list}, status=200)
-
-
 
 # =======================================================
 # CUSTOMER INVOICE PDF DOWNLOAD API
