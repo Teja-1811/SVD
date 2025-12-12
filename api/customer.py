@@ -112,8 +112,8 @@ def customer_invoice_summary_api(request):
     # Filter bills
     bills = Bill.objects.filter(
     customer_id=customer_id,
-    invoice_date__year=year,
-    invoice_date__month=month
+    #invoice_date__year=year,
+    #invoice_date__month=month
     )
     
     # Summary calculations
