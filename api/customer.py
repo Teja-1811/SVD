@@ -112,15 +112,15 @@ def customer_invoice_summary_api(request):
     # Filter bills
     bills = Bill.objects.filter(
     customer_id=customer_id,
-    #invoice_date__year=year,
-    #invoice_date__month=month
+    invoice_date__year=year,
+    invoice_date__month=month
     )
     
     # Summary calculations
     total_invoices = bills.count()
     total_amount = bills.aggregate(total=Sum("total_amount"))["total"] or 0
     avg_invoice = bills.aggregate(avg=Avg("total_amount"))["avg"] or 0
-    latest_invoice_date = bills.order_by("-date").first().date if bills.exists() else None
+    latest_invoice_date = bills.order_by("-date").first().invoice_date if bills.exists() else None
 
     data = {
         "total_invoices": total_invoices,
