@@ -29,4 +29,7 @@ urlpatterns = [
 
     # Invoice PDF Download API
     path('customer/invoice/download/', customer_invoice_download_api, name='customer_invoice_download_api'),
+    
+    # Invoice Details API
+    path('customer/invoice/details/', customer_invoice_details_api, name='customer_invoice_details_api'),
 ]

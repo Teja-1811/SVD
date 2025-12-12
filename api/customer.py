@@ -179,3 +179,42 @@ def customer_invoice_download_api(request):
 
     pdf_gen = PDFGenerator()
     return pdf_gen.generate_and_return_pdf(bill, request)
+
+#======================================================
+# CUSTOMER INVOICE DETAILS API
+# =======================================================
+@api_view(["GET"])
+def customer_invoice_details_api(request):
+    invoice_number = request.GET.get("invoice_number")
+
+    if not invoice_number:
+        return Response({"error": "invoice_number is required"}, status=400)
+
+    try:
+        bill = Bill.objects.get(invoice_number=invoice_number)
+    except Bill.DoesNotExist:
+        return Response({"error": "Invoice not found"}, status=404)
+
+    items = []
+    for item in bill.items.all():
+        items.append({
+            "name": item.item.name,
+            "code": item.item.code,
+            "price": float(item.price),
+            "quantity": item.quantity,
+            "discount": float(item.discount),
+            "total": float(item.total)
+        })
+
+    data = {
+        "invoice_number": bill.invoice_number,
+        "invoice_date": bill.invoice_date.strftime("%Y-%m-%d"),
+        "customer_name": bill.customer.name,
+        "total_amount": float(bill.total_amount),
+        "opening_due": float(bill.op_due_amount),
+        "last_paid": float(bill.last_paid or 0),
+        "items": items,
+        "grand_total": float(bill.total_amount),
+    }
+
+    return Response(data, status=200)
