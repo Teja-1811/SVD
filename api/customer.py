@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
+from milk_agency.pdf_utils import PDFGenerator
 from milk_agency.models import Customer, Bill, Item
 
 
@@ -93,3 +94,88 @@ def products_api(request):
         })
 
     return Response(product_list)
+
+@api_view(["GET"])
+def customer_invoice_summary_api(request):
+    month = request.GET.get("month")
+    year = request.GET.get("year")
+    customer_id = request.GET.get("customer_id")
+
+    if not (month and year and customer_id):
+        return Response({"error": "month, year, and customer_id are required"}, status=400)
+
+    try:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
+        return Response({"error": "Customer not found"}, status=404)
+
+    # Filter bills
+    bills = Bill.objects.filter(
+        customer_id=customer_id,
+        date__year=year,
+        date__month=month
+    )
+
+    # Summary calculations
+    total_invoices = bills.count()
+    total_amount = bills.aggregate(total=Sum("total_amount"))["total"] or 0
+    avg_invoice = bills.aggregate(avg=Avg("total_amount"))["avg"] or 0
+    latest_invoice_date = bills.order_by("-date").first().date if bills.exists() else None
+
+    data = {
+        "total_invoices": total_invoices,
+        "total_amount": float(total_amount),
+        "latest_invoice": latest_invoice_date.strftime("%Y-%m-%d") if latest_invoice_date else "",
+        "avg_invoice": float(avg_invoice)
+    }
+
+    return Response(data, status=200)
+
+@api_view(["GET"])
+def customer_invoice_list_api(request):
+    month = request.GET.get("month")
+    year = request.GET.get("year")
+    customer_id = request.GET.get("customer_id")
+
+    if not (month and year and customer_id):
+        return Response({"error": "month, year, and customer_id are required"}, status=400)
+
+    try:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
+        return Response({"error": "Customer not found"}, status=404)
+
+    # Filter bills
+    bills = Bill.objects.filter(
+        customer_id=customer_id,
+        date__year=year,
+        date__month=month
+    ).order_by("-date")
+
+    invoice_list = []
+
+    for bill in bills:
+        invoice_list.append({
+            "number": bill.invoice_number,
+            "date": bill.date.strftime("%Y-%m-%d"),
+            "amount": float(bill.total_amount),
+        })
+
+    return Response({"invoices": invoice_list}, status=200)
+
+@api_view(["GET"])
+def customer_invoice_download_api(request):
+    invoice_number = request.GET.get("invoice_number")
+
+    if not invoice_number:
+        return Response({"error": "invoice_number is required"}, status=400)
+
+    # Fetch invoice (Bill)
+    try:
+        bill = Bill.objects.get(invoice_number=invoice_number)
+    except Bill.DoesNotExist:
+        return Response({"error": "Invoice not found"}, status=404)
+
+    # Use your existing PDF generator utility
+    pdf_gen = PDFGenerator()
+    return pdf_gen.generate_and_return_pdf(bill, request)
