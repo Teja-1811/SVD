@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import login_api
+from .products import *
 from .admin_dashboard import *
 from .customer import *
 
