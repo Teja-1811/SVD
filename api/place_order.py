@@ -40,14 +40,6 @@ def place_order_api(request):
 
             line_total = qty * price
 
-            # OPTIONAL: stock check
-            if product.stock_quantity < qty:
-                order.delete()
-                return Response({
-                    "success": False,
-                    "message": f"Insufficient stock for {product.name}"
-                }, status=400)
-
             CustomerOrderItem.objects.create(
                 order=order,
                 item=product,
