@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from milk_agency.models import Item
 from customer_portal.views import place_order
+from milk_agency.models import Customer
 
 
 @api_view(["POST"])
@@ -48,8 +49,9 @@ def place_order_api(request):
             "quantity": quantity
         })
 
+    customer = Customer.objects.get(user=user)
     # Call existing business logic
-    order_response = place_order(user.id, order_items)
+    order_response = place_order(customer, order_items)
 
     if order_response.get("status") == "success":
         return Response({
