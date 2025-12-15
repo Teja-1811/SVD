@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import login_api
 from .products import *
+from .place_order import *
 from .admin_dashboard import *
 from .customer import *
 
@@ -17,6 +18,9 @@ urlpatterns = [
     # Items APIs
     path('categories/', categories_api, name='categories_api'),
     path('products/', products_api, name='products_api'),
+    
+    # Place Order API
+    path('place-order/', place_order_api, name='place_order_api'),
 
     # -------------------------
     # CUSTOMER INVOICE APIS
