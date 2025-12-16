@@ -46,8 +46,7 @@ def place_order_api(request):
             for i in items:
                 item_id = i.get("item_id")
                 qty = int(i.get("quantity", 0))
-                price = float(i.get("price", 0))
-
+                price = Item.objects.filter(id=item_id).first().selling_price if Item.objects.filter(id=item_id).exists() else 0
                 if not item_id or qty <= 0 or price <= 0:
                     return Response(
                         {"success": False, "message": "Invalid item data"},
