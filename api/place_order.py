@@ -2,9 +2,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from milk_agency.models import Item
+from django.db import transaction
+from milk_agency.models import Item, Customer
 from customer_portal.views import place_order
-from milk_agency.models import Customer
 
 
 @api_view(["POST"])
@@ -14,53 +14,64 @@ def place_order_api(request):
     """
     ANDROID PLACE ORDER API (SECURE)
     """
-    user = request.user   # ✅ authenticated user
-    data = request.data
-    items = data.get("items")
+    user = request.user
+    items = request.data.get("items")
 
-    if not items or not isinstance(items, list):
+    if not isinstance(items, list) or len(items) == 0:
         return Response(
             {"status": "error", "message": "Items list is required"},
             status=400
         )
 
+    try:
+        customer = Customer.objects.get(user=user)
+    except Customer.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "Customer profile not found"},
+            status=404
+        )
+
     order_items = []
 
-    for i in items:
-        item_id = i.get("item_id")
-        quantity = i.get("quantity")
+    try:
+        with transaction.atomic():
 
-        if not item_id or not quantity or quantity <= 0:
-            return Response(
-                {"status": "error", "message": "Invalid item data"},
-                status=400
-            )
+            for i in items:
+                item_id = i.get("item_id")
+                quantity = i.get("quantity")
 
-        try:
-            item_obj = Item.objects.get(id=item_id)
-        except Item.DoesNotExist:
-            return Response(
-                {"status": "error", "message": f"Item {item_id} not found"},
-                status=404
-            )
+                if not isinstance(item_id, int) or not isinstance(quantity, int) or quantity <= 0:
+                    return Response(
+                        {"status": "error", "message": "Invalid item data"},
+                        status=400
+                    )
 
-        order_items.append({
-            "item": item_obj,
-            "quantity": quantity
-        })
+                item_obj = Item.objects.get(id=item_id)
 
-    customer = Customer.objects.get(user=user)
-    # Call existing business logic
-    order_response = place_order(customer, order_items)
+                order_items.append({
+                    "item": item_obj,
+                    "quantity": quantity
+                })
 
-    if order_response.get("status") == "success":
-        return Response({
-            "status": "success",
-            "message": "Order placed successfully",
-            "order_id": order_response.get("order_id")
-        })
+            order_response = place_order(customer, order_items)
 
-    return Response(
-        {"status": "error", "message": "Order placement failed"},
-        status=500
-    )
+            if order_response.get("status") != "success":
+                raise Exception("Order failed")
+
+            return Response({
+                "status": "success",
+                "message": "Order placed successfully",
+                "order_id": order_response.get("order_id")
+            })
+
+    except Item.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "One or more items not found"},
+            status=404
+        )
+
+    except Exception as e:
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=500
+        )
