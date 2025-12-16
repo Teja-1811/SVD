@@ -3,8 +3,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
-from milk_agency.models import Item, Customer
-from customer_portal.views import place_order
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+
+from milk_agency.models import Item
+from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
 @api_view(["POST"])
@@ -12,66 +15,72 @@ from customer_portal.views import place_order
 @permission_classes([IsAuthenticated])
 def place_order_api(request):
     """
-    ANDROID PLACE ORDER API (SECURE)
+    ANDROID PLACE ORDER API
+    Saves order EXACTLY like website
     """
-    user = request.user
-    items = request.data.get("items")
 
-    if not isinstance(items, list) or len(items) == 0:
+    customer = request.user              # ✅ SAME AS WEBSITE
+    items = request.data.get("items", [])
+
+    if not isinstance(items, list) or not items:
         return Response(
-            {"status": "error", "message": "Items list is required"},
+            {"success": False, "message": "No items selected"},
             status=400
         )
 
     try:
-        customer = Customer.objects.get(auth_token=request.auth)
-    except Customer.DoesNotExist:
-        return Response(
-            {"status": "error", "message": "Customer profile not found"},
-            status=404
-        )
-
-    order_items = []
-
-    try:
         with transaction.atomic():
+
+            # ✅ SAME ORDER NUMBER LOGIC
+            order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+
+            # ✅ CREATE ORDER (IDENTICAL FIELDS)
+            order = CustomerOrder.objects.create(
+                order_number=order_number,
+                customer=customer,
+                created_by=customer,
+            )
+
+            total_amount = 0
 
             for i in items:
                 item_id = i.get("item_id")
-                quantity = i.get("quantity")
+                qty = int(i.get("quantity", 0))
+                price = float(i.get("price", 0))
 
-                if not isinstance(item_id, int) or not isinstance(quantity, int) or quantity <= 0:
+                if not item_id or qty <= 0 or price <= 0:
                     return Response(
-                        {"status": "error", "message": "Invalid item data"},
+                        {"success": False, "message": "Invalid item data"},
                         status=400
                     )
 
-                item_obj = Item.objects.get(id=item_id)
+                item = get_object_or_404(Item, id=item_id)
 
-                order_items.append({
-                    "item": item_obj,
-                    "quantity": quantity
-                })
+                line_total = qty * price
 
-            order_response = place_order(customer, order_items)
+                # ✅ CREATE ORDER ITEM (IDENTICAL)
+                CustomerOrderItem.objects.create(
+                    order=order,
+                    item=item,
+                    requested_quantity=qty,
+                    requested_price=price,
+                    requested_total=line_total
+                )
 
-            if order_response.get("status") != "success":
-                raise Exception("Order failed")
+                total_amount += line_total
+
+            # ✅ UPDATE TOTALS (IDENTICAL)
+            order.total_amount = total_amount
+            order.approved_total_amount = total_amount
+            order.save()
 
             return Response({
-                "status": "success",
-                "message": "Order placed successfully",
-                "order_id": order_response.get("order_id")
+                "success": True,
+                "order_number": order_number
             })
-
-    except Item.DoesNotExist:
-        return Response(
-            {"status": "error", "message": "One or more items not found"},
-            status=404
-        )
 
     except Exception as e:
         return Response(
-            {"status": "error", "message": str(e)},
+            {"success": False, "message": str(e)},
             status=500
         )
