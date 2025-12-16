@@ -5,6 +5,7 @@ from .customer_place_order import *
 from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
+from .customer_payment import record_customer_payment
 
 urlpatterns = [
     # Auth / Login
@@ -38,4 +39,7 @@ urlpatterns = [
     
     # Invoice Details API
     path('customer/invoice/details/', customer_invoice_details_api, name='customer_invoice_details_api'),
+    
+    # Customer Payment API
+    path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
 ]
