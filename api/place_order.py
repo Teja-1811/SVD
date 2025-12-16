@@ -24,7 +24,7 @@ def place_order_api(request):
         )
 
     try:
-        customer = Customer.objects.get(id=user.id)
+        customer = Customer.objects.get(auth_token=request.auth)
     except Customer.DoesNotExist:
         return Response(
             {"status": "error", "message": "Customer profile not found"},
