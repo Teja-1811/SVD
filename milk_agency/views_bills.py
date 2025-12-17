@@ -163,7 +163,7 @@ def generate_bill(request):
         else:
             new_counter = 1
 
-        invoice_number = f"INV-{today_str}-{new_counter:04d}"
+        invoice_number = f"INV-{today_str}"
 
         try:
             with transaction.atomic():
@@ -286,7 +286,7 @@ def generate_bill_from_order(order):
             # Generate invoice number
             today = timezone.now()
             last_bill_today = Bill.objects.filter(created_at__date=today.date()).order_by('-id').first()
-            invoice_number = f"INV-{today.strftime('%Y%m%d%H%M%S')}-{last_bill_today.id + 1 if last_bill_today else 1:04d}"
+            invoice_number = f"INV-{today.strftime('%Y%m%d%H%M%S')}"
 
 
             # Create a new bill
