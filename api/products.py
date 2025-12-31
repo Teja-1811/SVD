@@ -48,7 +48,8 @@ def products_api(request):
             "selling_price": float(item.selling_price),
             "margin": float(item.selling_price - item.buying_price),
             "stock": item.stock_quantity,
-            "image": item.image.url if item.image else ""
+            "image": item.image.url if item.image else "",
+            "pcs_count": item.pcs_count,
         }
         for item in items
     ]
