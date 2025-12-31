@@ -16,20 +16,20 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# 2. Remove old sqlite database
+# 2. Remove old SQLite file
 rm -f "$SQLITE_DB"
 
-# 3. Recreate schema in SQLite
-$PYTHON manage.py migrate
+# 3. Re-create SQLite schema
+$PYTHON manage.py migrate --database=backup
 if [ $? -ne 0 ]; then
-  echo "❌ migrate failed"
+  echo "❌ migrate backup failed"
   exit 1
 fi
 
 # 4. Load MySQL dump into SQLite
-$PYTHON manage.py loaddata "$DUMP_FILE"
+$PYTHON manage.py loaddata --database=backup "$DUMP_FILE"
 if [ $? -ne 0 ]; then
-  echo "❌ loaddata failed"
+  echo "❌ loaddata backup failed"
   exit 1
 fi
 
