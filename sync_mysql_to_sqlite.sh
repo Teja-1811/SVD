@@ -2,21 +2,35 @@
 
 PROJECT_DIR="/home/ubuntu/SVD"
 PYTHON="$PROJECT_DIR/venv/bin/python"
+SQLITE_DB="$PROJECT_DIR/db.sqlite3"
+DUMP_FILE="$PROJECT_DIR/mysql_dump.json"
 
-cd $PROJECT_DIR || exit
+cd "$PROJECT_DIR" || exit
 
-echo "Starting sync: $(date)"
+echo "==== MySQL → SQLite Sync Started $(date) ===="
 
-# Export MySQL → JSON
-$PYTHON manage.py dumpdata --natural-foreign --natural-primary > mysql_dump.json
+# 1. Dump MySQL data
+$PYTHON manage.py dumpdata --natural-foreign --natural-primary > "$DUMP_FILE"
+if [ $? -ne 0 ]; then
+  echo "❌ dumpdata failed"
+  exit 1
+fi
 
-# Remove old sqlite
-rm -f db.sqlite3
+# 2. Remove old sqlite database
+rm -f "$SQLITE_DB"
 
-# Re-create SQLite schema
+# 3. Recreate schema in SQLite
 $PYTHON manage.py migrate
+if [ $? -ne 0 ]; then
+  echo "❌ migrate failed"
+  exit 1
+fi
 
-# Load data into sqlite
-$PYTHON manage.py loaddata mysql_dump.json
+# 4. Load MySQL dump into SQLite
+$PYTHON manage.py loaddata "$DUMP_FILE"
+if [ $? -ne 0 ]; then
+  echo "❌ loaddata failed"
+  exit 1
+fi
 
-echo "Sync completed: $(date)"
+echo "==== Sync Completed Successfully $(date) ===="
