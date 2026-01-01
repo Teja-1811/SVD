@@ -281,6 +281,35 @@
     font-size: 1rem;
     margin-bottom: 1px;
   }
+
+  .refresh-logo{
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px dashed #28a745;
+  color: #28a745;
+  background:#ffffff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:28px;
+  cursor:pointer;
+  transition: all .25s ease-in-out;
+}
+
+/* hover animation */
+.refresh-logo:hover{
+  background:#e8f7ec;
+  transform: scale(1.1);
+}
+
+/* when ALL companies active */
+.refresh-logo.active{
+  border: 3px solid #28a745 !important;
+  background:#e8f7ec;
+  color:#1c7f34;
+}
+
 </style>
 {% endblock %} {% block content %}
 <div class="container-fluid py-4">
