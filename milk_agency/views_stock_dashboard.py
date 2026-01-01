@@ -31,7 +31,7 @@ def update_stock(request):
         for key, value in request.POST.items():
             if key.startswith('stock_') and value:
                 item_id = int(key.replace('stock_', ''))
-                crates = int(value)
+                crates = float(value)
 
                 try:
                     item = Item.objects.get(id=item_id)
