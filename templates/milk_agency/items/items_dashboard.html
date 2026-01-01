@@ -298,11 +298,8 @@
       </a>
       {% endfor %}
 
-      <a
-        href="?company=all"
-        class="company-filter-logo {% if request.GET.company == 'all' or not request.GET.company %}active{% endif %}"
-      >
-        <i class="bi bi-arrow-clockwise"></i>
+      <a href="?company=all" class="company-filter-logo {% if request.GET.company == 'all' or not request.GET.company %}active{% endif %}">
+        <i class="bi bi-arrow-clockwise w-100"></i>
       </a>
     </div>
 
