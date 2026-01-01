@@ -1,371 +1,310 @@
-﻿{% extends "milk_agency/home/base.html" %} 
-{% load static %} 
-{% load mathfilters%}
+﻿{% extends "milk_agency/home/base.html" %}
+{% load static %}
+{% load mathfilters %}
 {% block title %}Items Dashboard{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+
 <style>
-  /* ===================== TOP BAR ===================== */
+/* ===================== TOP BAR ===================== */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: nowrap;
+}
+
+/* ===================== LOGOS ===================== */
+.logo-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  white-space: nowrap;
+}
+
+.logo-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.logo-scroll::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 10px;
+}
+
+.company-filter-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  transition: 0.2s;
+}
+
+.company-filter-logo:hover {
+  transform: scale(1.1);
+}
+
+.company-filter-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.company-filter-logo.active {
+  border: 3px solid #28a745 !important;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);
+  transform: scale(1.12);
+}
+
+/* ===================== REFRESH BUTTON ===================== */
+.refresh-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px dashed #28a745;
+  color: #28a745;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  transition: 0.2s;
+}
+
+.refresh-logo:hover {
+  background: #e8f8ee;
+  transform: scale(1.1);
+}
+
+.refresh-logo.active {
+  border: 3px solid #28a745 !important;
+  background: #e8f8ee;
+}
+
+/* ===================== SEARCH & BUTTONS ===================== */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box {
+  width: 320px;
+  max-width: 100%;
+}
+.search-box .form-control,
+.search-box .input-group-text {
+  height: 46px;
+  border-radius: 8px;
+  border: 1.5px solid #cfcfcf;
+}
+.search-box .input-group-text {
+  border-right: none;
+  background: #fff;
+}
+
+.add-btn {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===================== MOBILE ===================== */
+@media (max-width: 768px) {
   .top-bar {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: nowrap;
-  }
-
-  /* ===================== LOGOS ===================== */
-  .logo-scroll {
-    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 12px;
-    overflow-x: auto;
-    padding-bottom: 5px;
-    white-space: nowrap;
   }
-  .logo-scroll::-webkit-scrollbar {
-    height: 6px;
-  }
-  .logo-scroll::-webkit-scrollbar-thumb {
-    background: #bbb;
-    border-radius: 10px;
-  }
-
-  .company-filter-logo {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: #fff;
-    border: 2px solid #eee;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 6px;
-    transition: 0.2s;
-  }
-  .company-filter-logo:hover {
-    transform: scale(1.1);
-  }
-  .company-filter-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .company-filter-logo.active {
-    border: 3px solid #28a745 !important;
-    box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);
-    transform: scale(1.12);
-  }
-
-  /* ===================== SEARCH + ADD BUTTON ===================== */
   .actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .search-box {
-    width: 320px;
-    max-width: 100%;
-  }
-  .search-box .form-control,
-  .search-box .input-group-text {
-    height: 46px;
-    border-radius: 8px;
-    border: 1.5px solid #cfcfcf;
-  }
-  .search-box .input-group-text {
-    border-right: none;
-    background: #fff;
-  }
-
-  .add-btn {
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ===================== MOBILE VIEW ===================== */
-  @media (max-width: 768px) {
-    .top-bar {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    .actions {
-      width: 100%;
-      justify-content: space-between;
-    }
-    .search-box {
-      width: 100%;
-    }
-    .add-btn {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-    }
-    .add-btn span {
-      display: none !important;
-    }
-  }
-
-  /* ===================== PRODUCT CARD ===================== */
-  .item-card {
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    transition: 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 1.5px solid #3d3c3cff;
-  }
-  .item-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-  }
-
-  /* Company Logo */
-  .item-company-logo {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3px;
-    z-index: 2;
-  }
-  .item-company-logo img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  /* Product Image */
-  .item-image-box {
-    height: 200px;
-    background: #fafafa;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 12px;
-  }
-  .item-image-box img {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
-  }
-  .no-img-icon {
-    font-size: 3rem;
-  }
-
-  /* Stock Badge */
-  .stock-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .in-stock {
-    background: #28a745ff !important;
-  }
-
-  .no-stock {
-    background: #ee0404ff !important;
-  }
-
-  /* Content */
-  .item-content {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
-
-  .item-title {
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 10px;
-  }
-
-  .item-info {
-    display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
   }
+  .search-box {
+    width: 100%;
+  }
+  .add-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+  }
+  .add-btn span {
+    display: none !important;
+  }
+}
 
-  .item-price-box {
-    display: flex;
-    justify-content: space-between;
-    border-top: 1px solid #ececec;
-    padding-top: 12px;
-  }
-  .price-buy {
-    color: #007bff;
-    font-weight: 700;
-  }
-  .price-sell {
-    color: #28a745;
-    font-weight: 700;
-  }
-  .price-mrp {
-    color: #a72881ff;
-    font-weight: 700;
-  }
-  .price-margin {
-    color: #287fa7ff;
-    font-weight: 700;
-  }
+/* ================= PRODUCT CARD ================= */
+.item-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transition: 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1.5px solid #3d3c3cff;
+}
 
-  /* ================= BUTTONS CLEAN UI ================= */
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
 
-  .item-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-  }
+/* Logo */
+.item-company-logo {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px;
+  z-index: 2;
+}
 
-  .action-btn {
-    flex: 1;
-    padding: 10px 0;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    border: 1.8px solid transparent;
-    transition: all 0.2s ease;
-  }
+.item-company-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-  /* EDIT BUTTON */
-  .edit-btn {
-    background: #e8f8ee;
-    color: #2c8f46;
-    border-color: #2c8f46;
-  }
-  .edit-btn:hover {
-    background: #dff5e8;
-    transform: translateY(-2px);
-  }
+/* Image */
+.item-image-box {
+  height: 200px;
+  background: #fafafa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+.item-image-box img {
+  height: 100%;
+  object-fit: contain;
+}
 
-  /* FREEZE BUTTON */
-  .freeze-btn {
-    background: #ffe8e8;
-    color: #d22a2a;
-    border-color: #d22a2a;
-  }
-  .freeze-btn:hover {
-    background: #ffdede;
-    transform: translateY(-2px);
-  }
+/* Stock Badge */
+.stock-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.in-stock { background:#28a745ff!important; }
+.no-stock { background:#ee0404ff!important; }
 
-  /* ICONS */
-  .action-btn i {
-    font-size: 1rem;
-    margin-bottom: 1px;
-  }
+/* Content */
+.item-content { padding:16px; display:flex; flex-direction:column; flex-grow:1; }
+.item-title { font-weight:700; margin-bottom:10px; }
+
+/* Buttons */
+.item-buttons { display:flex; gap:10px; margin-top:15px; }
+
+.action-btn {
+  flex:1;
+  padding:10px 0;
+  border-radius:10px;
+  font-weight:600;
+  border:1.8px solid transparent;
+}
+
+/* Edit */
+.edit-btn { background:#e8f8ee; color:#2c8f46; border-color:#2c8f46; }
+/* Freeze */
+.freeze-btn { background:#ffe8e8; color:#d22a2a; border-color:#d22a2a; }
+
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+
+{% block content %}
+
 <div class="container-fluid py-4">
+
   <h2 class="fw-bold mb-3">Items Dashboard</h2>
 
-  <!-- ===================== TOP BAR ===================== -->
   <div class="top-bar">
+
     <div class="logo-scroll p-2">
+
       {% for c in companies %}
-      <a
-        href="?company={{ c.id }}"
-        class="company-filter-logo {% if request.GET.company == c.id|stringformat:'s' %}active{% endif %}"
-      >
-        <img src="{{ c.logo.url }}" />
+      <a href="?company={{ c.id }}"
+         class="company-filter-logo {% if request.GET.company == c.id|stringformat:'s' %}active{% endif %}">
+        <img src="{{ c.logo.url }}">
       </a>
       {% endfor %}
 
-      <a href="?company=all" class="company-filter-logo {% if request.GET.company == 'all' or not request.GET.company %}active{% endif %}">
-        <i class="bi bi-arrow-clockwise w-100"></i>
+      <!-- REFRESH BUTTON -->
+      <a href="?company=all"
+         class="refresh-logo {% if request.GET.company == 'all' or not request.GET.company %}active{% endif %}">
+        <i class="bi bi-arrow-clockwise"></i>
       </a>
+
     </div>
 
     <div class="actions">
       <div class="input-group search-box">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input
-          type="search"
-          id="itemSearchInput"
-          class="form-control"
-          placeholder="Search Items"
-        />
+        <input type="search" id="itemSearchInput" class="form-control" placeholder="Search Items">
       </div>
 
-      <a
-        href="{% url 'milk_agency:add_item' %}"
-        class="btn btn-outline-success add-btn p-3"
-      >
+      <a href="{% url 'milk_agency:add_item' %}" class="btn btn-outline-success add-btn p-3">
         <i class="bi bi-plus-circle fs-4"></i>
         <span class="ms-2">Add Item</span>
       </a>
     </div>
+
   </div>
 
-  <hr />
+  <hr>
 
-  <!-- ===================== PRODUCT LIST ===================== -->
-  {% for category, items in grouped_items.items %} {% if items %}
+  {% for category, items in grouped_items.items %}
+  {% if items %}
   <h3 class="mt-4">{{ category|title }}</h3>
 
   <div class="row g-3 g-md-4">
+
     {% for item in items %}
     <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 item-col">
+
       <div class="item-card">
+
         <div class="item-company-logo">
-          <img src="{{ item.company.logo.url }}" />
+          <img src="{{ item.company.logo.url }}">
         </div>
 
         <div class="item-image-box">
           {% if item.image %}
-          <img src="{{ item.image.url }}" />
+          <img src="{{ item.image.url }}">
           {% else %}
           <i class="bi bi-image text-muted no-img-icon"></i>
           {% endif %}
         </div>
 
-        <span class="stock-badge 
-    {% if item.stock_quantity > 0 %}in-stock{% else %}no-stock{% endif %}">
-    {{ item.stock_quantity }} in stock
-</span>
-
+        <span class="stock-badge {% if item.stock_quantity > 0 %}in-stock{% else %}no-stock{% endif %}">
+          {{ item.stock_quantity }} in stock
+        </span>
 
         <div class="item-content">
+
           <h6 class="item-title">{{ item.name }}</h6>
-
-          <div class="item-info">
-            <div>
-              <small class="text-muted">Code</small>
-              <div class="fw-semibold">{{ item.code }}</div>
-            </div>
-
-            <div>
-              <small class="text-muted">Company</small>
-              <div class="fw-semibold">{{ item.company }}</div>
-            </div>
-          </div>
 
           <div class="item-price-box">
             <div>
@@ -378,76 +317,51 @@
             </div>
           </div>
 
-          <div class="item-price-box">
-            <div>
-              <small class="text-muted">MRP</small>
-              <div class="price-mrp">₹{{ item.mrp }}</div>
-            </div>
-            <div>
-              <small class="text-muted">Margin</small>
-              <div class="price-margin">
-                ₹{{ item.selling_price|sub:item.buying_price }}
-              </div>
-            </div>
-          </div>
-
           <div class="item-buttons">
-            <button
-              class="action-btn edit-btn"
-              onclick="location.href='{% url 'milk_agency:edit_item' item.id %}'"
-            >
-              <i class="bi bi-pencil-square"></i>
+            <button class="action-btn edit-btn"
+              onclick="location.href='{% url 'milk_agency:edit_item' item.id %}'">
               Edit
             </button>
 
-            <button
-              class="action-btn freeze-btn"
-              onclick="freezeItem({{ item.id }}, '{{ item.name }}')"
-            >
-              <i class="bi bi-snow"></i>
+            <button class="action-btn freeze-btn"
+              onclick="freezeItem({{ item.id }}, '{{ item.name }}')">
               {% if item.frozen %}Unfreeze{% else %}Freeze{% endif %}
             </button>
           </div>
+
         </div>
       </div>
+
     </div>
     {% endfor %}
   </div>
 
-  {% endif %} {% endfor %}
+  {% endif %}
+  {% endfor %}
+
 </div>
 
-<!-- ===================== JS ===================== -->
 <script>
-  /* Search Filter */
-  document
-    .getElementById("itemSearchInput")
-    .addEventListener("keyup", function () {
-      let val = this.value.toLowerCase();
+document.getElementById("itemSearchInput").addEventListener("keyup", function() {
+  let val = this.value.toLowerCase();
+  document.querySelectorAll(".item-card").forEach(card => {
+    let name = card.querySelector(".item-title").textContent.toLowerCase();
+    card.closest(".item-col").style.display = name.includes(val) ? "" : "none";
+  });
+});
 
-      document.querySelectorAll(".item-card").forEach((card) => {
-        let name = card.querySelector(".item-title").textContent.toLowerCase();
-        card.closest(".item-col").style.display = name.includes(val)
-          ? ""
-          : "none";
-      });
-    });
+function freezeItem(id, name) {
+  if (!confirm(`Freeze/Unfreeze "${name}"?`)) return;
 
-  /* Freeze / Unfreeze */
-  function freezeItem(id, name) {
-    if (!confirm(`Freeze/Unfreeze "${name}"?`)) return;
-
-    fetch(`/milk_agency/freeze-item/${id}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-          .value,
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    })
-      .then((r) => r.json())
-      .then(() => location.reload());
-  }
+  fetch(`/milk_agency/freeze-item/${id}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  }).then(r => r.json())
+    .then(() => location.reload());
+}
 </script>
 
 {% endblock %}
