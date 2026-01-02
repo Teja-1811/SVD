@@ -6,7 +6,7 @@ from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
-from .admin_customer import api_customer_list
+from .admin_customer import *
 
 urlpatterns = [
     # Auth / Login
@@ -20,6 +20,11 @@ urlpatterns = [
 
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
+    path('api/customers/<int:pk>/', api_customer_detail, name='api_customer_detail'),
+    path('api/customers/<int:pk>/freeze/', api_toggle_freeze, name='api_toggle_freeze'),
+    path('api/customers/<int:pk>/balance/', api_update_balance, name='api_update_balance'),
+
+
 
     # Items APIs
     path('categories/', categories_api, name='categories_api'),
