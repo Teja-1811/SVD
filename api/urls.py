@@ -6,6 +6,7 @@ from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
+from .admin_customer import api_customer_list
 
 urlpatterns = [
     # Auth / Login
@@ -13,6 +14,9 @@ urlpatterns = [
 
     # Admin Dashboard Counts
     path('dashboard-counts/', dashboard_api, name='dashboard_counts_api'),
+    
+    #Customer Dashboard APIs
+    path('customer-list/', api_customer_list, name='api_customer_list'),
 
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
