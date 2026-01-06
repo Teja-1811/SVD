@@ -30,6 +30,7 @@ def login_api(request):
 
     return Response({
         "status": "success",
+        "message": "Login successful",
         "phone": user.phone,
         "name": user.name,
         "role": role,

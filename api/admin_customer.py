@@ -11,7 +11,6 @@ from milk_agency.models import Customer
 # CUSTOMER LIST
 # =========================
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def api_customer_list(request):
 
     customers = Customer.objects.filter(
@@ -39,7 +38,6 @@ def api_customer_list(request):
 # CUSTOMER DETAIL
 # =========================
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def api_customer_detail(request, pk):
 
     c = get_object_or_404(Customer, id=pk, is_superuser=False)
@@ -60,7 +58,6 @@ def api_customer_detail(request, pk):
 # =========================
 # FREEZE / UNFREEZE
 # =========================
-@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_toggle_freeze(request, pk):
 
@@ -79,7 +76,6 @@ def api_toggle_freeze(request, pk):
 # UPDATE BALANCE
 # =========================
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def api_update_balance(request, pk):
 
     c = get_object_or_404(Customer, id=pk, is_superuser=False)

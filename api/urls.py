@@ -17,15 +17,15 @@ urlpatterns = [
     
     #Customer Dashboard APIs
     path('customer-list/', api_customer_list, name='api_customer_list'),
+    path('customers/<int:pk>/', api_customer_detail, name='api_customer_detail'),
+    path('customers/<int:pk>/freeze/', api_toggle_freeze, name='api_toggle_freeze'),
+    path('customers/<int:pk>/balance/', api_update_balance, name='api_update_balance'),
+
+
 
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
-    path('api/customers/<int:pk>/', api_customer_detail, name='api_customer_detail'),
-    path('api/customers/<int:pk>/freeze/', api_toggle_freeze, name='api_toggle_freeze'),
-    path('api/customers/<int:pk>/balance/', api_update_balance, name='api_update_balance'),
-
-
-
+    
     # Items APIs
     path('categories/', categories_api, name='categories_api'),
     path('products/', products_api, name='products_api'),
