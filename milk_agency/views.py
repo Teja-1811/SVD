@@ -210,3 +210,6 @@ def terms(request):
 def refund(request):
     return render(request, "refund.html")
 
+#CheckOut Page
+def checkout(request):
+    return render(request, "checkout.html") 

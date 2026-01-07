@@ -25,6 +25,7 @@ urlpatterns = [
     path('privacy-policy/', views.privacy, name='privacy_policy'),
     path('terms-and-conditions/', views.terms, name='terms_and_conditions'),
     path('refund-policy/', views.refund, name='refund_policy'),
+    path('checkout/', views.checkout, name='checkout'),
 
     # Customer Monthly Purchases URLs - removed, functionality no longer available
 

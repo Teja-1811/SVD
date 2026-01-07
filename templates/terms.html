@@ -1,43 +1,49 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Terms & Conditions | Sri Vijaya Durga Milk Agency{% endblock %}
 
 {% block content %}
-<section class="section py-5 mt-5">
-  <div class="container">
+<section class="py-5">
+  <div class="container" style="max-width:1000px">
 
-    <h2 class="text-center fw-bold mb-4">Terms & Conditions</h2>
+    <div class="card shadow-sm border-0 p-4 p-md-5">
 
-    <p>
-      By using the services of Sri Vijaya Durga Milk Agency, customers agree to the terms
-      and conditions outlined below.
-    </p>
+      <h2 class="fw-bold text-center mb-4">Terms & Conditions</h2>
 
-    <h5 class="fw-bold mt-3">Service</h5>
-    <ul>
-      <li>Product supply is subject to availability</li>
-      <li>Prices may vary based on market conditions</li>
-      <li>Delivery schedules may differ due to logistics</li>
-    </ul>
+      <p>
+        By using the services of Sri Vijaya Durga Milk Agency, customers agree to
+        the terms and conditions described below.
+      </p>
 
-    <h5 class="fw-bold mt-3">Customer Responsibility</h5>
-    <ul>
-      <li>Provide accurate delivery information</li>
-      <li>Ensure payment as per agreed billing cycle</li>
-      <li>Report issues immediately</li>
-    </ul>
+      <h5 class="fw-bold mt-3">Service Conditions</h5>
+      <ul>
+        <li>Supply is subject to product availability</li>
+        <li>Prices may change as per market rates</li>
+        <li>Delivery timings depend on logistics</li>
+      </ul>
 
-    <h5 class="fw-bold mt-3">Payment Terms</h5>
-    <p>
-      Customers must clear dues as mutually agreed. Delays may result in suspension of supply.
-    </p>
+      <h5 class="fw-bold mt-3">Customer Responsibilities</h5>
+      <ul>
+        <li>Provide accurate delivery details</li>
+        <li>Ensure timely payments</li>
+        <li>Report issues immediately</li>
+      </ul>
 
-    <h5 class="fw-bold mt-3">Policy Updates</h5>
-    <p>
-      We may update these terms at any time without prior notice.
-    </p>
+      <h5 class="fw-bold mt-3">Payment Policy</h5>
+      <p>
+        Bills must be cleared as mutually agreed between the customer and agency.
+      </p>
 
+      <h5 class="fw-bold mt-3">Policy Updates</h5>
+      <p>
+        We reserve the right to amend terms without prior notice.
+      </p>
+
+      <p class="mb-0">
+        Continued service use implies acceptance of updated terms.
+      </p>
+
+    </div>
   </div>
 </section>
 {% endblock %}
