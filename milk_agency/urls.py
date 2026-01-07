@@ -20,6 +20,11 @@ app_name = 'milk_agency'
 urlpatterns = [
     # Home/Dashboard URLs
     path('', views.home, name='home'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
+    path('privacy-policy/', views.privacy, name='privacy_policy'),
+    path('terms-and-conditions/', views.terms, name='terms_and_conditions'),
+    path('refund-policy/', views.refund, name='refund_policy'),
 
     # Customer Monthly Purchases URLs - removed, functionality no longer available
 
@@ -88,5 +93,5 @@ urlpatterns = [
 
     # Contact Form URL
     path('contact/submit/', views.contact_form_submit, name='contact_form_submit'),
-
+    
 ]

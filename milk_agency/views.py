@@ -189,3 +189,24 @@ def contact_form_submit(request):
             return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+#About Page
+def about(request):
+    return render(request, "about.html")
+
+#Contact Page
+def contact(request):
+    return render(request, "contactus.html")
+
+#Privacy Policy Page
+def privacy(request):
+    return render(request, "privacy.html") 
+
+#Terms and Conditions Page
+def terms(request):
+    return render(request, "terms.html")
+
+#Refund Policy Page
+def refund(request):
+    return render(request, "refund.html")
+
