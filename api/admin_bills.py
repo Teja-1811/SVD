@@ -7,12 +7,7 @@ from django.utils import timezone
 from decimal import Decimal
 from milk_agency.views_bills import generate_invoice_pdf
 
-from milk_agency.models import (
-    Bill,
-    BillItem,
-    Customer,
-    Item
-)
+from milk_agency.models import Bill, BillItem, Customer, Item
 
 from customer_portal.models import CustomerOrder
 

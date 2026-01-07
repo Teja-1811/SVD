@@ -44,7 +44,6 @@ urlpatterns = [
 
     # Bills URLs
     path('bills/', views_bills.bills_dashboard, name='bills_dashboard'),
-    path('anonymous-bills/', views_bills.anonymous_bills_list, name='anonymous_bills_list'),
     path('generate-bill/', views_bills.generate_bill, name='generate_bill'),
     path('generate-invoice-pdf/<int:bill_id>/', views_bills.generate_invoice_pdf, name='generate_invoice_pdf'),
 
