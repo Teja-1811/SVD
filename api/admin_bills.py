@@ -1,89 +1,281 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from decimal import Decimal
-from milk_agency.models import Bill, BillItem, Customer, Item
-from milk_agency.serializers import BillSerializer, BillItemSerializer
+from milk_agency.views_bills import generate_invoice_pdf
 
-# filepath: c:\Users\bhanu\OneDrive\Desktop\SVD\api\admin_bills.py
+from milk_agency.models import (
+    Bill,
+    BillItem,
+    Customer,
+    Item
+)
+
+from customer_portal.models import CustomerOrder
 
 
-class BillViewSet(viewsets.ModelViewSet):
-    """
-    API ViewSet for managing bills.
-    Provides CRUD operations and custom actions for bill management.
-    """
-    queryset = Bill.objects.select_related('customer').prefetch_related('billitem_set')
-    serializer_class = BillSerializer
-    permission_classes = [IsAuthenticated]
+# ------------------------------------------
+# 1️⃣ GET CUSTOMERS
+# ------------------------------------------
+@api_view(['GET'])
+def api_get_customers(request):
+    customers = Customer.objects.filter(frozen=False).order_by("name")
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        customer_id = self.request.query_params.get('customer', None)
-        start_date = self.request.query_params.get('start_date', None)
-        end_date = self.request.query_params.get('end_date', None)
-
-        if customer_id:
-            queryset = queryset.filter(customer_id=customer_id)
-        if start_date:
-            queryset = queryset.filter(invoice_date__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(invoice_date__lte=end_date)
-
-        return queryset.order_by('-invoice_date')
-
-    @action(detail=False, methods=['get'])
-    def anonymous_bills(self, request):
-        """Get all bills without customers."""
-        bills = Bill.objects.filter(customer__isnull=True).order_by('-invoice_date')
-        serializer = self.get_serializer(bills, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['delete'])
-    def delete_bill(self, request, pk=None):
-        """Delete a bill and revert stock & customer due."""
-        bill = self.get_object()
-        bill_items = BillItem.objects.filter(bill=bill)
-
-        try:
-            with transaction.atomic():
-                # Revert stock
-                for bill_item in bill_items:
-                    bill_item.item.stock_quantity += bill_item.quantity
-                    bill_item.item.save()
-
-                # Revert customer due
-                if bill.customer:
-                    bill.customer.due -= bill.total_amount
-                    bill.customer.save()
-
-                # Delete bill items and bill
-                bill_items.delete()
-                bill.delete()
-
-            return Response(
-                {'message': 'Bill deleted successfully. Stock and customer due updated.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-    @action(detail=True, methods=['get'])
-    def bill_details(self, request, pk=None):
-        """Get bill with all items and calculations."""
-        bill = self.get_object()
-        bill_items = BillItem.objects.filter(bill=bill).select_related('item')
-        current_due = bill.op_due_amount + bill.total_amount
-
-        data = {
-            'bill': BillSerializer(bill).data,
-            'items': BillItemSerializer(bill_items, many=True).data,
-            'current_due': float(current_due)
+    return Response([
+        {
+            "id": c.id,
+            "name": c.name,
+            "phone": c.phone,
+            "area": c.area or "",
+            "due": str(c.due)
         }
-        return Response(data)
+        for c in customers
+    ])
+
+
+# ------------------------------------------
+# 2️⃣ BILLS DASHBOARD (filters + pagination)
+# ------------------------------------------
+@api_view(['GET'])
+def api_list_bills(request):
+
+    customer_id = request.GET.get("customer")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    page = request.GET.get("page", 1)
+
+    bills = Bill.objects.select_related("customer").order_by('-invoice_date', '-id')
+
+    if customer_id:
+        bills = bills.filter(customer_id=customer_id)
+
+    if start_date:
+        bills = bills.filter(invoice_date__gte=start_date)
+
+    if end_date:
+        bills = bills.filter(invoice_date__lte=end_date)
+
+    paginator = Paginator(bills, 25)
+    page_obj = paginator.get_page(page)
+
+    data = []
+    for b in page_obj:
+        data.append({
+            "id": b.id,
+            "invoice_number": b.invoice_number,
+            "invoice_date": str(b.invoice_date),
+            "customer": b.customer.name if b.customer else "Anonymous",
+            "total_amount": str(b.total_amount),
+            "op_due": str(b.op_due_amount),
+            "current_due": str(b.customer.due) if b.customer else "0",
+        })
+
+    return Response({
+        "results": data,
+        "current_page": page_obj.number,
+        "total_pages": paginator.num_pages,
+        "total_records": paginator.count
+    })
+
+
+# ------------------------------------------
+# 3️⃣ BILL DETAILS
+# ------------------------------------------
+@api_view(['GET'])
+def api_bill_detail(request, bill_id):
+
+    bill = get_object_or_404(
+        Bill.objects.select_related('customer'),
+        id=bill_id
+    )
+
+    return Response({
+        "id": bill.id,
+        "invoice_number": bill.invoice_number,
+        "invoice_date": str(bill.invoice_date),
+        "customer": bill.customer.name if bill.customer else None,
+        "total_amount": float(bill.total_amount),
+        "op_due_amount": float(bill.op_due_amount),
+        "last_paid": float(bill.last_paid),
+        "current_due": float(bill.customer.due if bill.customer else 0),
+        "profit": float(bill.profit)
+    })
+
+
+# ------------------------------------------
+# 4️⃣ BILL ITEMS
+# ------------------------------------------
+@api_view(['GET'])
+def api_bill_items(request, bill_id):
+
+    items = BillItem.objects.filter(bill_id=bill_id).select_related("item")
+
+    return Response([
+        {
+            "item_name": i.item.name,
+            "quantity": i.quantity,
+            "price_per_unit": float(i.price_per_unit),
+            "discount": float(i.discount),
+            "total_amount": float(i.total_amount)
+        }
+        for i in items
+    ])
+
+
+# ------------------------------------------
+# 5️⃣ CREATE BILL (manual entry)
+# ------------------------------------------
+@api_view(['POST'])
+def api_create_bill(request):
+
+    customer_id = request.data.get("customer")
+    item_ids = request.data.get("items", [])
+    quantities = request.data.get("quantities", [])
+    discounts = request.data.get("discounts", [])
+
+    customer = Customer.objects.filter(id=customer_id).first()
+
+    with transaction.atomic():
+
+        bill = Bill.objects.create(
+            customer=customer,
+            invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+            total_amount=Decimal(0),
+            op_due_amount=customer.due if customer else 0,
+            last_paid=Decimal(0),
+            profit=Decimal(0)
+        )
+
+        total = Decimal(0)
+        total_profit = Decimal(0)
+
+        for i, item_id in enumerate(item_ids):
+
+            item = Item.objects.get(id=item_id)
+
+            qty = int(quantities[i])
+            discount = Decimal(discounts[i]) if discounts else Decimal(0)
+
+            line_total = (item.selling_price * qty) - (discount * qty)
+            profit = ((item.selling_price - item.buying_price) * qty) - (discount * qty)
+
+            BillItem.objects.create(
+                bill=bill,
+                item=item,
+                price_per_unit=item.selling_price,
+                discount=discount,
+                quantity=qty,
+                total_amount=line_total
+            )
+
+            item.stock_quantity -= qty
+            item.save()
+
+            total += line_total
+            total_profit += profit
+
+        bill.total_amount = total
+        bill.profit = total_profit
+        bill.save()
+
+        if customer:
+            customer.due = bill.op_due_amount + total
+            customer.save()
+
+    return Response({"success": True, "bill_id": bill.id})
+
+
+# ------------------------------------------
+# 6️⃣ EDIT BILL
+# ------------------------------------------
+@api_view(['POST'])
+def api_edit_bill(request, bill_id):
+
+    bill = get_object_or_404(Bill, id=bill_id)
+
+    item_ids = request.data.get("items", [])
+    quantities = request.data.get("quantities", [])
+    discounts = request.data.get("discounts", [])
+
+    bill_items = BillItem.objects.filter(bill=bill)
+
+    with transaction.atomic():
+
+        # restore stock
+        for bi in bill_items:
+            bi.item.stock_quantity += bi.quantity
+            bi.item.save()
+
+        bill_items.delete()
+
+        total = Decimal(0)
+        total_profit = Decimal(0)
+
+        for i, item_id in enumerate(item_ids):
+
+            item = Item.objects.get(id=item_id)
+
+            qty = int(quantities[i])
+            discount = Decimal(discounts[i])
+
+            line_total = (item.selling_price * qty) - (discount * qty)
+            profit = ((item.selling_price - item.buying_price) * qty) - (discount * qty)
+
+            BillItem.objects.create(
+                bill=bill,
+                item=item,
+                price_per_unit=item.selling_price,
+                discount=discount,
+                quantity=qty,
+                total_amount=line_total
+            )
+
+            item.stock_quantity -= qty
+            item.save()
+
+            total += line_total
+            total_profit += profit
+
+        bill.total_amount = total
+        bill.profit = total_profit
+        bill.save()
+
+        if bill.customer:
+            bill.customer.due = bill.op_due_amount + total
+            bill.customer.save()
+
+    return Response({"success": True})
+
+
+# ------------------------------------------
+# 7️⃣ DELETE BILL (safe rollback)
+# ------------------------------------------
+@api_view(['DELETE'])
+def api_delete_bill(request, bill_id):
+
+    bill = get_object_or_404(Bill, id=bill_id)
+    bill_items = BillItem.objects.filter(bill=bill)
+
+    with transaction.atomic():
+
+        # Return stock
+        for bi in bill_items:
+            bi.item.stock_quantity += bi.quantity
+            bi.item.save()
+
+        # Adjust due
+        if bill.customer:
+            bill.customer.due -= bill.total_amount
+            bill.customer.save()
+
+        bill_items.delete()
+        bill.delete()
+
+    return Response({"success": True})
+
+@api_view(['GET'])
+def api_download_bill(request, bill_id):
+    return generate_invoice_pdf(request, bill_id)

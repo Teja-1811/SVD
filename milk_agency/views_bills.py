@@ -73,17 +73,6 @@ def bills_dashboard(request):
     return render(request, 'milk_agency/bills/bills_dashboard.html', context)
 
 @login_required
-def anonymous_bills_list(request):
-    # Get bills without customers (anonymous bills)
-    bills = Bill.objects.filter(customer__isnull=True).order_by('-invoice_date')
-
-    context = {
-        'bills': bills,
-        'page_title': 'Anonymous Bills',
-    }
-    return render(request, 'milk_agency/bills/anonymous_bills_list.html', context)
-
-@login_required
 def generate_bill(request):
     # Get area filter from request
     selected_area = request.GET.get('area', '')

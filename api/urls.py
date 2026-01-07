@@ -7,6 +7,8 @@ from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
 from .admin_customer import *
+from .admin_items import *
+from .admin_bills import *
 
 urlpatterns = [
     # Auth / Login
@@ -21,6 +23,22 @@ urlpatterns = [
     path('customer-freeze/<int:pk>/', api_toggle_freeze, name='api_toggle_freeze'),
     path('customer-balance/<int:pk>/', api_update_balance, name='api_update_balance'),
     path('customer-add/', api_add_edit_customer, name='api_add_customer'),
+    
+    # Items Management APIs
+    path('items/categories/', get_categories, name='get_categories'),
+    path('items/by-category/', get_items_by_category, name='get_items_by_category'),
+    path('items/add/', add_item, name='add_item'),
+    path('items/edit/<int:pk>/', edit_item, name='edit_item'),
+    
+    # Bills Management APIs
+    path('bills/list/', api_list_bills, name='api_list_bills'),
+    path('bills/create/', api_create_bill, name='api_create_bill'),
+    path('bills/<int:bill_id>/', api_bill_detail, name='api_bill_detail'),
+    path('bills/<int:bill_id>/items/', api_bill_items, name='api_bill_items'),
+    path('bills/<int:bill_id>/download/', api_download_bill, name='api_download_bill'),
+    path('bills/<int:bill_id>/delete/', api_delete_bill, name='api_delete_bill'),
+    path('bills/<int:bill_id>/edit/', api_edit_bill, name='api_edit_bill'),
+    
 
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
