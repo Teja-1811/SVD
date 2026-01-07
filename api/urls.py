@@ -21,8 +21,6 @@ urlpatterns = [
     path('customer-freeze/<int:pk>/', api_toggle_freeze, name='api_toggle_freeze'),
     path('customer-balance/<int:pk>/', api_update_balance, name='api_update_balance'),
 
-
-
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
     
