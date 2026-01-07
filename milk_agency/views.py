@@ -196,7 +196,7 @@ def about(request):
 
 #Contact Page
 def contact(request):
-    return render(request, "contactus.html")
+    return render(request, "contact_us.html")
 
 #Privacy Policy Page
 def privacy(request):
