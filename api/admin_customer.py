@@ -97,3 +97,44 @@ def api_update_balance(request, pk):
         "success": True,
         "new_balance": float(c.due)
     })
+
+#--------------------------
+# Add and Edit Customer API
+#--------------------------
+@api_view(['POST'])
+def api_add_edit_customer(request):
+    customer_id = request.data.get("customer_id")
+    name = request.data.get("name")
+    shop_name = request.data.get("shop_name", "")
+    phone = request.data.get("phone", "")
+    city = request.data.get("city", "")
+    state = request.data.get("state", "")
+    retailer_id = request.data.get("retailer_id", "")
+
+    if not name:
+        return Response({"success": False, "message": "Name is required"}, status=400)
+
+    if customer_id:
+        # Edit existing customer
+        customer = get_object_or_404(Customer, id=customer_id, is_superuser=False)
+        customer.name = name
+        customer.shop_name = shop_name
+        customer.phone = phone
+        customer.city = city
+        customer.state = state
+        customer.retailer_id = retailer_id
+        customer.save()
+        message = "Customer updated successfully"
+    else:
+        # Add new customer
+        Customer.objects.create(
+            name=name,
+            shop_name=shop_name,
+            phone=phone,
+            city=city,
+            state=state,
+            retailer_id=retailer_id
+        )
+        message = "Customer added successfully"
+
+    return Response({"success": True, "message": message})

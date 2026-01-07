@@ -20,6 +20,7 @@ urlpatterns = [
     path('customer-detail/<int:pk>/', api_customer_detail, name='api_customer_detail'),
     path('customer-freeze/<int:pk>/', api_toggle_freeze, name='api_toggle_freeze'),
     path('customer-balance/<int:pk>/', api_update_balance, name='api_update_balance'),
+    path('customer-add/', api_add_edit_customer, name='api_add_customer'),
 
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
