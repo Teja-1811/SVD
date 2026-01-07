@@ -58,7 +58,7 @@ def api_customer_detail(request, pk):
 # =========================
 # FREEZE / UNFREEZE
 # =========================
-@permission_classes([IsAuthenticated])
+@api_view(['POST'])
 def api_toggle_freeze(request, pk):
 
     c = get_object_or_404(Customer, id=pk, is_superuser=False)
