@@ -17,9 +17,9 @@ urlpatterns = [
     
     #Customer Dashboard APIs
     path('customer-list/', api_customer_list, name='api_customer_list'),
-    path('customers/<int:pk>/', api_customer_detail, name='api_customer_detail'),
-    path('customers/<int:pk>/freeze/', api_toggle_freeze, name='api_toggle_freeze'),
-    path('customers/<int:pk>/balance/', api_update_balance, name='api_update_balance'),
+    path('customer/<int:pk>/', api_customer_detail, name='api_customer_detail'),
+    path('customer/<int:pk>/freeze/', api_toggle_freeze, name='api_toggle_freeze'),
+    path('customer/<int:pk>/balance/', api_update_balance, name='api_update_balance'),
 
 
 
