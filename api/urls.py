@@ -9,6 +9,9 @@ from .customer_payment import record_customer_payment
 from .admin_customer import *
 from .admin_items import *
 from .admin_bills import *
+from .admin_cashbook import *
+from .admin_payments import *
+from .admin_orders_dashboard import *
 
 urlpatterns = [
     # Auth / Login
@@ -38,6 +41,26 @@ urlpatterns = [
     path('bills/<int:bill_id>/download/', api_download_bill, name='api_download_bill'),
     path('bills/<int:bill_id>/delete/', api_delete_bill, name='api_delete_bill'),
     path('bills/<int:bill_id>/edit/', api_edit_bill, name='api_edit_bill'),
+    
+    #Cashbook Management APIs
+    path('cashbook/entries/', api_cashbook_dashboard, name='api_cashbook_entries'),
+    path('cashbook/save-cash/', api_save_cash_in, name='api_add_cash_in'),
+    path('cashbook/save-bank/', api_save_bank_balance, name='api_add_cash_out'),
+    path('cashbook/add-expense/', api_add_expense, name='api_add_expense'),
+    path('cashbook/edit-expense/<int:expense_id>/', api_edit_expense, name='api_edit_expense'),
+    path('cashbook/expenses/', api_list_expenses, name='api_list_expenses'),
+    path('cashbook/delete-expense/<int:expense_id>/', api_delete_expense, name='api_delete_expense'),
+    
+    #Company Payments APIs
+    path('payments/dashboard/', api_payments_dashboard, name='api_payments_dashboard'),
+    path('payments/save-daily/', api_save_daily_payments, name='api_save_daily_payment'),
+    path('payments/monthly-summary/', api_monthly_payment_summary, name='api_monthly_payment_summary'),
+    
+    #Admin Orders Dashboard APIs
+    path('orders/dashboard/', api_admin_orders_dashboard, name='api_admin_orders_dashboard'),
+    path('orders/<int:order_id>/detail/', api_order_detail, name='api_order_detail'),
+    path('orders/<int:order_id>/confirm/', api_confirm_order, name='api_confirm_order'),
+    path('orders/<int:order_id>/cancel/', api_reject_order, name='api_cancel_order'),
     
 
     # Customer Dashboard
