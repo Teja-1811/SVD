@@ -182,22 +182,17 @@
                             {% for product in products %}
                                 {% if product.company == company %}
 
-                                <div style="
-                                    width: 250px;
-                                    background: white;
-                                    border-radius: 12px;
-                                    padding: 10px;
-                                    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-                                    text-align: center;
-                                    margin: auto;
+                                <div style="width: 250px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.12); text-align: center; margin: auto;
                                 ">
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="
-                                        height: 120px;
-                                        object-fit: contain;
-                                        display: block;
-                                        margin: auto;
-                                    ">
-
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}"
+                                            alt="{{ product.name }}"
+                                            style="height: 120px; object-fit: contain; display: block; margin: auto;">
+                                    {% else %}
+                                        <img src="{% static 'images/no-product.png' %}"
+                                            alt="No Image"
+                                            style="height: 120px; object-fit: contain; display: block; margin: auto; opacity:0.6;">
+                                    {% endif %}
                                     <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
                                     <p style="font-weight:bold;">₹{{ product.mrp }}</p>
                                 </div>
