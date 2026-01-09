@@ -11,18 +11,14 @@ def index_view(request):
     from milk_agency.models import Item, Company
 
     # Only show products that are not frozen
-    products = Item.objects.all().order_by('id')
-
-    # Check if at least ONE item is unfrozen
-    has_active_items = Item.objects.filter(frozen=False).exists()
+    products = Item.objects.all().filter(frozen=False).order_by('name')
 
     # Show company list only if active items exist
-    companies = Company.objects.all() if has_active_items else []
+    companies = Company.objects.all()
 
     return render(request, 'index.html', {
         'products': products,
         'companies': companies,
-        'show_company_logos': has_active_items
     })
 
 
