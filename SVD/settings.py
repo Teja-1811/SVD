@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-qt%cg=y7$8hoo%4#2ss9sl0l2b+%)tt!wg7e$6@+j%owo@li##
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ec2-18-235-222-205.compute-1.amazonaws.com', '18.235.222.205', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['svdagencies.shop',
+    'www.svdagencies.shop',
+    '18.235.222.205',
+    'ec2-18-235-222-205.compute-1.amazonaws.com',
+    ]
 
 
 # Application definition
