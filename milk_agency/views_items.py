@@ -96,6 +96,7 @@ def add_item(request, item_id=None):
                 code=code,
                 name=name,
                 company_id=company,    # <-- fixed
+                description=description,  # <-- added
                 category=category,
                 buying_price=buying_price,
                 selling_price=selling_price,
