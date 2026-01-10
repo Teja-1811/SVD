@@ -326,7 +326,7 @@ def collect_payment(request):
             messages.error(request, "Invalid amount")
             return redirect("customer_portal:collect_payment")
 
-        if amount <= 0 or amount > customer.due:
+        if amount <= 0:
             messages.error(request, "Invalid payment amount")
             return redirect("customer_portal:collect_payment")
 
