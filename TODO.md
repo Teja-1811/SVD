@@ -1,3 +1,7 @@
-- [x] Add `is_delivery` field to Customer model in milk_agency/models.py
-- [ ] Create Django migration for the new field
-- [ ] Run the migration to apply changes to the database
+# TODO: Create Customer Payments Page in Milk Agency
+
+## Tasks
+- [ ] Add view for customer payments in views_payments.py
+- [ ] Add URL pattern in urls.py
+- [ ] Create template for customer payments page
+- [ ] Test the new page functionality

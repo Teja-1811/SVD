@@ -8,6 +8,7 @@ from . import views_cashbook
 from . import views_stock_dashboard
 from . import views_companies
 from . import views_payments
+from . import customer_payments_views
 from . import views_orders_dashboard
 from . import views_sales_summary
 
@@ -78,6 +79,7 @@ urlpatterns = [
 
     # Payments Dashboard URL
     path('payments/', views_payments.payments_dashboard, name='payments_dashboard'),
+    path('customer-payments/', customer_payments_views.customer_payments, name='customer_payments'),
 
     # Companies Dashboard and Company Forms URLs
     path('companies/', views_companies.companies_dashboard, name='companies_dashboard'),
