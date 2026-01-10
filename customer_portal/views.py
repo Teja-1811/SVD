@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from milk_agency.models import Customer, Item, Bill, CustomerPayment
-from milk_agency.Payment_Gateway import (
+from milk_agency.payment_gateway import (
     generate_upi_link,
     generate_upi_qr,
     generate_upi_payment_link,
