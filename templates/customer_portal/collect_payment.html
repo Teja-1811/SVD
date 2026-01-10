@@ -1,0 +1,49 @@
+{% extends "customer_portal/base.html" %}
+{% block title %}Payment{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <h4>Payment Details</h4>
+
+    {% if not upi_link %}
+    <form method="post">
+        {% csrf_token %}
+        <label>Amount (Due: ₹{{ due }})</label>
+        <input type="number" name="amount" max="{{ due }}" step="0.01"
+               class="form-control mb-3" required>
+
+        <button class="btn btn-success">Generate Payment</button>
+    </form>
+    {% endif %}
+
+    {% if upi_link %}
+    <hr>
+
+    <h5>Pay Using UPI</h5>
+
+    <!-- Open UPI App -->
+    <a href="{{ upi_link }}" class="btn btn-primary mb-3">
+        Open UPI App
+    </a>
+
+    <!-- QR Code -->
+    <div class="mb-3">
+        <p>Scan QR Code</p>
+        <img src="data:image/png;base64,{{ qr_base64 }}" width="250">
+    </div>
+
+    <!-- Payment Link -->
+    <div class="mb-3">
+        <label>Share Payment Link</label>
+        <input type="text" class="form-control" value="{{ payment_link }}" readonly>
+    </div>
+
+    <p class="text-muted">
+        Transaction ID: <strong>{{ txn_id }}</strong><br>
+        Please complete payment and inform admin.
+    </p>
+    {% endif %}
+
+</div>
+{% endblock %}

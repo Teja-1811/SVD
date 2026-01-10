@@ -7,7 +7,14 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
-from milk_agency.models import Customer, Item, Bill
+from milk_agency.models import Customer, Item, Bill, CustomerPayment
+from milk_agency.Payment_Gateway import (
+    generate_upi_link,
+    generate_upi_qr,
+    generate_upi_payment_link,
+    generate_transaction_id
+)
+
 from .models import CustomerOrder, CustomerOrderItem
 import json
 
@@ -310,6 +317,63 @@ def update_profile(request):
             'customer': customer,
         }
         return render(request, 'customer_portal/update_profile.html', context)
+
+@login_required
+def collect_payment(request):
+    customer = request.user
+
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+
+        try:
+            amount = float(amount)
+        except Exception:
+            messages.error(request, "Invalid amount")
+            return redirect("customer_portal:collect_payment")
+
+        if amount <= 0 or amount > customer.due:
+            messages.error(request, "Invalid payment amount")
+            return redirect("customer_portal:collect_payment")
+
+        txn_id = generate_transaction_id()
+
+        upi_link = generate_upi_link(
+            amount=amount,
+            note=f"Due Payment - {customer.name}",
+            txn_id=txn_id
+        )
+
+        qr_base64 = generate_upi_qr(
+            amount=amount,
+            note=f"Due Payment - {customer.name}",
+            txn_id=txn_id
+        )
+
+        payment_link = generate_upi_payment_link(
+            amount=amount,
+            note=f"Due Payment - {customer.name}"
+        )
+
+        # Save as PENDING (UPI needs confirmation)
+        CustomerPayment.objects.create(
+            customer=customer,
+            amount=amount,
+            transaction_id=txn_id,
+            method="UPI",
+            status="PENDING"
+        )
+
+        return render(request, "customer_portal/collect_payment.html", {
+            "amount": amount,
+            "upi_link": upi_link,
+            "qr_base64": qr_base64,
+            "payment_link": payment_link,
+            "txn_id": txn_id
+        })
+
+    return render(request, "customer_portal/collect_payment.html", {
+        "due": customer.due
+    })
 
 @never_cache
 def logout_user(request):
