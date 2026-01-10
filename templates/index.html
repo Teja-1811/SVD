@@ -195,6 +195,9 @@
                                     {% endif %}
                                     <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
                                     <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+                                    {% if product.description %}
+                                        <p style="font-size:0.85rem; color:#555;">{{ product.description }}</p>
+                                    {% endif %}
                                 </div>
 
                                 {% endif %}
