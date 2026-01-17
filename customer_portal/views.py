@@ -368,3 +368,9 @@ def collect_payment(request):
     return render(request, "customer_portal/collect_payment.html", {
         "due": customer.due
     })
+    
+    
+@never_cache
+def logout_user(request):
+    logout(request)
+    return redirect('/')
