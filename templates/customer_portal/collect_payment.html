@@ -1,48 +1,168 @@
 {% extends "customer_portal/base.html" %}
-{% block title %}Payment{% endblock %}
+{% block title %}Make Payment{% endblock %}
 
 {% block content %}
 <div class="container py-4">
 
-    <h4>Payment Details</h4>
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h4 class="fw-semibold mb-1">Make a Payment</h4>
+        <p class="text-muted mb-0">
+            Pay outstanding dues or add advance balance to your wallet
+        </p>
+    </div>
 
+    <!-- Outstanding & Wallet Summary -->
+    <div class="row g-3 mb-4">
+
+        <!-- Outstanding Due -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-danger">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 fs-2 text-danger">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-semibold mb-1">Outstanding Due</h6>
+                        {% if due > 0 %}
+                            <h5 class="mb-0 text-danger">
+                                ₹{{ due|floatformat:2 }}
+                            </h5>
+                        {% else %}
+                            <h5 class="mb-0 text-muted">₹0.00</h5>
+                        {% endif %}
+                        <small class="text-muted">Amount payable</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Balance -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-success">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 fs-2 text-success">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-semibold mb-1">Wallet Balance</h6>
+                        {% if due < 0 %}
+                            <h5 class="mb-0 text-success">
+                                ₹{{ due|floatformat:2|slice:"1:" }}
+                            </h5>
+                        {% else %}
+                            <h5 class="mb-0 text-muted">₹0.00</h5>
+                        {% endif %}
+                        <small class="text-muted">Available credit</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Payment Form -->
     {% if not upi_link %}
-    <form method="post">
-        {% csrf_token %}
-        <label>Amount (Due: ₹{{ due }})</label>
-        <input type="number" name="amount" step="0.01"
-               class="form-control mb-3" required>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
 
-        <button class="btn btn-success">Generate Payment</button>
-    </form>
+            <h6 class="fw-semibold mb-3">
+                <i class="bi bi-currency-rupee me-1"></i>
+                Enter Payment Amount
+            </h6>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <label class="form-label">
+                    Amount
+                    {% if due > 0 %}
+                        <small class="text-muted">(Outstanding: ₹{{ due|floatformat:2 }})</small>
+                    {% elif due < 0 %}
+                        <small class="text-success">(Wallet balance available)</small>
+                    {% else %}
+                        <small class="text-muted">(No outstanding)</small>
+                    {% endif %}
+                </label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    step="0.01"
+                    min="1"
+                    class="form-control mb-3"
+                    placeholder="Enter amount"
+                    required
+                >
+
+                {% if due < 0 %}
+                <div class="alert alert-success py-2">
+                    You already have wallet balance.
+                    Any extra payment will be added as advance credit.
+                </div>
+                {% endif %}
+
+                <div class="text-end">
+                    <button class="btn btn-success px-4">
+                        <i class="bi bi-arrow-right-circle me-1"></i>
+                        Generate Payment
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
     {% endif %}
 
+    <!-- UPI Payment Section -->
     {% if upi_link %}
-    <hr>
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-    <h5>Pay Using UPI</h5>
+            <h6 class="fw-semibold mb-3">
+                <i class="bi bi-phone me-1"></i>
+                Pay Using UPI
+            </h6>
 
-    <!-- Open UPI App -->
-    <a href="{{ upi_link }}" class="btn btn-primary mb-3">
-        Open UPI App
-    </a>
+            <div class="row align-items-center">
 
-    <!-- QR Code -->
-    <div class="mb-3">
-        <p>Scan QR Code</p>
-        <img src="data:image/png;base64,{{ qr_base64 }}" width="250">
+                <!-- QR Code -->
+                <div class="col-md-5 text-center mb-3 mb-md-0">
+                    <p class="fw-semibold mb-2">Scan QR Code</p>
+                    <img
+                        src="data:image/png;base64,{{ qr_base64 }}"
+                        class="img-fluid border rounded p-2"
+                        style="max-width:220px"
+                    >
+                </div>
+
+                <!-- UPI Details -->
+                <div class="col-md-7">
+
+                    <a href="{{ upi_link }}" class="btn btn-primary w-100 mb-3">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                        Open UPI App
+                    </a>
+
+                    <label class="form-label">Payment Link</label>
+                    <input
+                        type="text"
+                        class="form-control mb-3"
+                        value="{{ payment_link }}"
+                        readonly
+                    >
+
+                    <div class="alert alert-warning py-2 mb-0">
+                        <strong>Transaction ID:</strong> {{ txn_id }}<br>
+                        Please complete the payment and inform the admin.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
     </div>
-
-    <!-- Payment Link -->
-    <div class="mb-3">
-        <label>Share Payment Link</label>
-        <input type="text" class="form-control" value="{{ payment_link }}" readonly>
-    </div>
-
-    <p class="text-muted">
-        Transaction ID: <strong>{{ txn_id }}</strong><br>
-        Please complete payment and inform admin.
-    </p>
     {% endif %}
 
 </div>

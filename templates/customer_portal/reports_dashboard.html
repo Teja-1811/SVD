@@ -238,7 +238,9 @@
                     </table>
                 </div>
                 {% else %}
-                    {% include 'customer_portal/no_invoices.html' %}
+                    <div class="alert alert-info text-center">
+                        No invoices available.
+                    </div>
                 {% endif %}
             </div>
 
@@ -270,7 +272,9 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    {% include 'customer_portal/no_invoices.html' %}
+                    <div class="alert alert-info text-center">
+                        No invoices available.
+                    </div>
                 {% endif %}
 
             </div>
