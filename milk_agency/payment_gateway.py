@@ -20,6 +20,7 @@ import uuid
 import urllib.parse
 from io import BytesIO
 from base64 import b64encode
+from decimal import Decimal
 
 import qrcode
 from paytmchecksum import PaytmChecksum
@@ -61,22 +62,22 @@ def format_amount(amount):
 # ============================================================
 
 def generate_upi_link(amount, note="", txn_id=None):
-    """
-    Generates a UPI deep link that opens UPI apps directly
-    """
     if not txn_id:
         txn_id = generate_transaction_id()
 
     params = {
         "pa": UPI_ID,
-        "pn": PAYEE_NAME,
-        "am": format_amount(amount),
-        "cu": CURRENCY,
+        "pn": "SVD Milk Agency",   # shorter, safer
+        "am": f"{Decimal(amount):.2f}",
+        "cu": "INR",
         "tn": note or f"Payment {txn_id}",
         "tr": txn_id,
     }
 
-    return "upi://pay?" + urllib.parse.urlencode(params)
+    return "upi://pay?" + urllib.parse.urlencode(
+        params,
+        quote_via=urllib.parse.quote
+    )
 
 
 def generate_upi_qr(amount, note="", txn_id=None):
