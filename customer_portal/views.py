@@ -9,6 +9,7 @@ from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from milk_agency.models import Customer, Item, Bill, CustomerPayment
 from milk_agency.payment_gateway import generate_upi_link, generate_upi_qr, generate_upi_payment_link, generate_transaction_id
+from decimal import Decimal, InvalidOperation
 
 from .models import CustomerOrder, CustomerOrderItem
 import json
@@ -318,11 +319,9 @@ def collect_payment(request):
     customer = request.user
 
     if request.method == "POST":
-        amount = request.POST.get("amount")
-
         try:
-            amount = float(amount)
-        except Exception:
+            amount = Decimal(request.POST.get("amount"))
+        except (InvalidOperation, TypeError):
             messages.error(request, "Invalid amount")
             return redirect("customer_portal:collect_payment")
 
@@ -349,7 +348,6 @@ def collect_payment(request):
             note=f"Due Payment - {customer.name}"
         )
 
-        # Save as PENDING (UPI needs confirmation)
         CustomerPayment.objects.create(
             customer=customer,
             amount=amount,
@@ -359,6 +357,7 @@ def collect_payment(request):
         )
 
         return render(request, "customer_portal/collect_payment.html", {
+            "due": customer.due,
             "amount": amount,
             "upi_link": upi_link,
             "qr_base64": qr_base64,
@@ -369,8 +368,3 @@ def collect_payment(request):
     return render(request, "customer_portal/collect_payment.html", {
         "due": customer.due
     })
-
-@never_cache
-def logout_user(request):
-    logout(request)
-    return redirect('/')
