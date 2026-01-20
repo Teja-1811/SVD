@@ -337,8 +337,13 @@
                         {% endfor %}
 
                     </div>
-
                     <div class="mt-3 d-grid">
+                        <div id="orderTimeInfo" class="alert alert-info small mt-2">
+                            <i class="bi bi-truck me-1"></i>
+                            Orders: <b>12:00 PM – 5:00 AM</b><br>
+                            Delivery by <b>5:00 PM</b><br>
+                            <span id="orderTimer" class="fw-bold text-dark"></span>
+                        </div>
                         <button id="placeOrderBtn" class="btn btn-success btn-lg">
                             <i class="bi bi-check-circle me-2"></i>Place Order
                         </button>
@@ -382,21 +387,87 @@ document.addEventListener("DOMContentLoaded", function () {
     const orderSummaryEl = document.getElementById("orderSummary");
     const grandTotalEl = document.getElementById("grandTotal");
     const placeOrderBtn = document.getElementById("placeOrderBtn");
+    const orderTimeInfo = document.getElementById("orderTimeInfo");
+    const orderTimerEl = document.getElementById("orderTimer");
 
-    /* ---------------- UPDATE TOTALS ---------------- */
+    /* =====================================================
+       ORDER WINDOW TIMER (12 PM → 5 AM)
+    ===================================================== */
+    function updateOrderWindow() {
+        const now = new Date();
+        const hour = now.getHours();
+
+        let targetTime = new Date(now);
+        let message = "";
+        let isClosed = false;
+
+        // ❌ Closed window: 5 AM → 12 PM
+        if (hour >= 5 && hour < 12) {
+            isClosed = true;
+            targetTime.setHours(12, 0, 0, 0);
+            message = "⏳ Orders open in ";
+        }
+        // ✅ Open: 12 PM → Midnight
+        else if (hour >= 12) {
+            targetTime.setDate(targetTime.getDate() + 1);
+            targetTime.setHours(5, 0, 0, 0);
+            message = "⏳ Orders close in ";
+        }
+        // ✅ Open: Midnight → 5 AM
+        else {
+            targetTime.setHours(5, 0, 0, 0);
+            message = "⏳ Orders close in ";
+        }
+
+        const diff = targetTime - now;
+
+        if (diff <= 0) {
+            location.reload();
+            return;
+        }
+
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff / (1000 * 60)) % 60);
+        const secs = Math.floor((diff / 1000) % 60);
+
+        orderTimerEl.innerHTML = `
+            ${message}
+            <span class="text-primary">${hrs}h ${mins}m ${secs}s</span>
+        `;
+
+        // Button + message control
+        if (isClosed) {
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.classList.replace("btn-success", "btn-secondary");
+            placeOrderBtn.innerText = "Orders closed (opens at 12:00 PM)";
+
+            orderTimeInfo.classList.replace("alert-info", "alert-warning");
+        } else {
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.classList.replace("btn-secondary", "btn-success");
+            placeOrderBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>Place Order`;
+
+            orderTimeInfo.classList.replace("alert-warning", "alert-info");
+        }
+    }
+
+    updateOrderWindow();
+    setInterval(updateOrderWindow, 1000);
+
+    /* =====================================================
+       UPDATE TOTALS
+    ===================================================== */
     function updateTotals() {
         let grandTotal = 0;
         let summary = "";
 
         document.querySelectorAll(".product-card").forEach(card => {
-
             const qtyInput = card.querySelector(".qty-input");
             const qty = parseInt(qtyInput.value) || 0;
             const price = parseFloat(qtyInput.dataset.itemPrice);
             const name = card.querySelector(".product-title").innerText;
 
             const total = qty * price;
-
             card.querySelector(".item-total").innerText = "₹" + total.toFixed(2);
 
             if (qty > 0) {
@@ -414,7 +485,9 @@ document.addEventListener("DOMContentLoaded", function () {
         grandTotalEl.innerText = "₹" + grandTotal.toFixed(2);
     }
 
-    /* ---------------- BUTTON HANDLERS ---------------- */
+    /* =====================================================
+       QTY BUTTONS
+    ===================================================== */
     document.body.addEventListener("click", function (e) {
 
         if (e.target.classList.contains("btn-incr")) {
@@ -430,7 +503,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    /* ---------------- INPUT CHANGE ---------------- */
+    /* =====================================================
+       INPUT CHANGE
+    ===================================================== */
     document.body.addEventListener("input", function (e) {
         if (e.target.classList.contains("qty-input")) {
             if (e.target.value < 0 || isNaN(e.target.value)) e.target.value = 0;
@@ -438,14 +513,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    /* ---------------- PLACE ORDER ---------------- */
+    /* =====================================================
+       PLACE ORDER
+    ===================================================== */
     placeOrderBtn.addEventListener("click", function () {
+
+        if (placeOrderBtn.disabled) {
+            alert("Orders can be placed only between 12:00 PM and 5:00 AM.");
+            return;
+        }
 
         const items = [];
 
         document.querySelectorAll(".qty-input").forEach(input => {
             const qty = parseInt(input.value) || 0;
-
             if (qty > 0) {
                 items.push({
                     item_id: input.dataset.itemId,
@@ -460,13 +541,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.innerText = "Placing Order...";
+
         fetch("/customer/orders/place/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken
             },
-            body: JSON.stringify({ items: items })
+            body: JSON.stringify({ items })
         })
         .then(r => r.json())
         .then(data => {
@@ -475,12 +559,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.reload();
             } else {
                 alert("Error: " + data.message);
+                updateOrderWindow();
             }
         })
-        .catch(err => console.error("FETCH ERROR:", err));
+        .catch(err => {
+            console.error("FETCH ERROR:", err);
+            updateOrderWindow();
+        });
     });
 
     updateTotals();
 });
 </script>
-{% endblock %}

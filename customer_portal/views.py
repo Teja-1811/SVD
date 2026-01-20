@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
+from datetime import time
 from milk_agency.models import Customer, Item, Bill, CustomerPayment
 from milk_agency.payment_gateway import generate_upi_link, generate_upi_qr, generate_upi_payment_link, generate_transaction_id
 from decimal import Decimal, InvalidOperation
@@ -154,33 +155,58 @@ def place_order(request):
         return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
     try:
+        # ---------------- TIME WINDOW CHECK ----------------
+        now = timezone.localtime()        # IST-safe
+        current_time = now.time()
+
+        start_time = time(12, 0)  # 12:00 PM
+        end_time = time(5, 0)     # 5:00 AM
+
+        # Block window: 5 AM → 12 PM
+        if end_time <= current_time < start_time:
+            return JsonResponse({
+                "success": False,
+                "message": (
+                    "Orders can be placed only between 12:00 PM and 5:00 AM. "
+                    "Please try again after 12:00 PM."
+                )
+            }, status=403)
+
+        # ---------------- REQUEST DATA ----------------
         data = json.loads(request.body)
         items = data.get("items", [])
 
         if not items:
             return JsonResponse({"success": False, "message": "No items selected"}, status=400)
 
-        # Generate order number
-        order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+        # ---------------- ORDER CREATION ----------------
+        order_number = f"ORD-{now.strftime('%Y%m%d%H%M%S')}"
+        customer = request.user
 
-        customer = request.user  # Your logged-in customer object
+        delivery_time = now.replace(
+            hour=17, minute=0, second=0, microsecond=0
+        )  # 5:00 PM
 
-        # Create order
         order = CustomerOrder.objects.create(
             order_number=order_number,
             customer=customer,
             created_by=customer,
+            delivery_time=delivery_time
         )
 
         total_amount = 0
 
         for i in items:
             item = get_object_or_404(Item, id=i["item_id"])
+
             qty = int(i["quantity"])
-            price = float(i["price"])
+            if qty <= 0:
+                continue
+
+            # ⚠️ IMPORTANT: never trust frontend price
+            price = float(item.selling_price)
             line_total = qty * price
 
-            # Create order item
             CustomerOrderItem.objects.create(
                 order=order,
                 item=item,
@@ -191,9 +217,15 @@ def place_order(request):
 
             total_amount += line_total
 
-        # Update total amount
+        if total_amount == 0:
+            order.delete()
+            return JsonResponse({
+                "success": False,
+                "message": "Invalid order quantity"
+            }, status=400)
+
         order.total_amount = total_amount
-        order.approved_total_amount = total_amount  # default
+        order.approved_total_amount = total_amount
         order.save()
 
         return JsonResponse({
@@ -203,6 +235,7 @@ def place_order(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)
+
 
 @never_cache
 @login_required
