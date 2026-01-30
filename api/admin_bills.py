@@ -66,6 +66,7 @@ def api_list_bills(request):
             "total_amount": str(b.total_amount),
             "op_due": str(b.op_due_amount),
             "current_due": str(b.customer.due) if b.customer else "0",
+            "profit": str(b.profit)
         })
 
     return Response({
@@ -114,6 +115,7 @@ def api_bill_items(request, bill_id):
             "quantity": i.quantity,
             "price_per_unit": float(i.price_per_unit),
             "discount": float(i.discount),
+            "total_discount": float(i.discount * i.quantity),
             "total_amount": float(i.total_amount)
         }
         for i in items
