@@ -1,7 +1,7 @@
 ﻿{% extends "milk_agency/home/base.html" %}
 {% load static %}
 
-{% block title %}CashBook — Premium{% endblock %}
+{% block title %}CashBook {% endblock %}
 
 {% block extra_css %}
 <style>
@@ -103,6 +103,85 @@ body {
     box-shadow: 0 8px 20px rgba(78,115,223,.25);
 }
 
+.cashbook-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+.cb-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.cb-title {
+    font-weight: 800;
+    margin: 0;
+}
+
+.cb-subtitle {
+    font-size: .8rem;
+    color: #6c757d;
+}
+
+.cb-filters {
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+
+.cb-select {
+    padding: .35rem .6rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: .85rem;
+}
+
+.cb-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+/* Buttons */
+.cb-btn {
+    padding: .45rem .8rem;
+    border-radius: 10px;
+    font-size: .85rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.cb-btn-primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.cb-btn-light {
+    background: #f1f5f9;
+    color: #333;
+}
+
+.cb-btn-warning {
+    background: #fbbf24;
+    color: #000;
+}
+
+.cb-btn-info {
+    background: #06b6d4;
+    color: #fff;
+}
+
 </style>
 {% endblock %}
 
@@ -110,48 +189,59 @@ body {
 <div class="container-fluid py-4">
 
     <!-- Header -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
-        <h2 class="fw-bold">CashBook</h2>
-        <form method="get" class="d-flex gap-2 flex-wrap align-items-center mb-3">
+    <div class="cashbook-header mb-4">
 
-            <select name="month" class="form-select form-select-sm w-auto">
-                {% for m, m_name in months %}
-                    <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
-                        {{ m_name }}
-                    </option>
-                {% endfor %}
-            </select>
+            <!-- Left -->
+            <div class="cb-left">
+                <h2 class="cb-title">CashBook</h2>
+                <span class="cb-subtitle">
+                    {{ selected_month }} / {{ selected_year }}
+                </span>
+            </div>
 
-            <select name="year" class="form-select form-select-sm w-auto">
-                {% for y in years %}
-                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
-                        {{ y }}
-                    </option>
-                {% endfor %}
-            </select>
+            <!-- Center (Filters) -->
+            <form method="get" class="cb-filters">
 
-            <button class="btn btn-primary btn-sm btn-premium">
-                <i class="bi bi-funnel"></i> Apply
-            </button>
+                <select name="month" class="cb-select">
+                    {% for m, m_name in months %}
+                        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                            {{ m_name }}
+                        </option>
+                    {% endfor %}
+                </select>
 
-        </form>
+                <select name="year" class="cb-select">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                            {{ y }}
+                        </option>
+                    {% endfor %}
+                </select>
 
-        <a href="{% url 'milk_agency:cashbook' %}" class="btn btn-outline-secondary btn-sm">
-            Reset
-        </a>
+                <button class="cb-btn cb-btn-primary">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
 
-        <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="btn btn-warning btn-sm btn-premium"
-                    data-bs-toggle="modal" data-bs-target="#expenseModal">
-                <i class="bi bi-cash-coin me-1"></i> Add Expense
-            </button>
+                <a href="{% url 'milk_agency:cashbook' %}" class="cb-btn cb-btn-light">
+                    Reset
+                </a>
+            </form>
 
-            <button type="button" class="btn btn-info btn-sm btn-premium"
-                    onclick="window.location.href='{% url 'milk_agency:expenses_list' %}'">
-                <i class="bi bi-list"></i> View Expenses
-            </button>
-        </div>
+            <!-- Right -->
+            <div class="cb-actions">
+                <button class="cb-btn cb-btn-warning"
+                        data-bs-toggle="modal"
+                        data-bs-target="#expenseModal">
+                    <i class="bi bi-plus-circle"></i> Add Expense
+                </button>
+
+                <a href="{% url 'milk_agency:expenses_list' %}"
+                class="cb-btn cb-btn-info">
+                    <i class="bi bi-list"></i> View Expenses
+                </a>
+            </div>
     </div>
+
 
     <!-- ---------------------------- SUMMARY CARDS ---------------------------- -->
     <div class="row g-3 mb-4">
