@@ -129,7 +129,7 @@ def cashbook(request):
     )['total'] or 0
 
     # FINAL REMAINING AMOUNT
-    remaining_amount = net_cash + total_stock_value - net_profit - total_company_dues
+    remaining_amount = net_cash + total_stock_value - net_profit - total_company_dues + total_customer_dues
 
     context = {
         'cash_entry': cash_entry,
