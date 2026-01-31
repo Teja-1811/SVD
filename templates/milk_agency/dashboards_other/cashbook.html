@@ -112,6 +112,37 @@ body {
     <!-- Header -->
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
         <h2 class="fw-bold">CashBook</h2>
+        <form method="get" class="d-flex gap-2 flex-wrap align-items-center mb-3">
+
+            <!-- Month -->
+            <select name="month" class="form-select form-select-sm w-auto">
+                {% for m in "123456789101112"|make_list %}
+                    <option value="{{ forloop.counter }}"
+                        {% if forloop.counter == selected_month %}selected{% endif %}>
+                        {{ forloop.counter|date:"F" }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Year -->
+            <select name="year" class="form-select form-select-sm w-auto">
+                {% for y in 2023|make_list:10 %}
+                    <option value="{{ y }}"
+                        {% if y == selected_year %}selected{% endif %}>
+                        {{ y }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="btn btn-primary btn-sm btn-premium">
+                <i class="bi bi-funnel"></i> Apply
+            </button>
+
+        </form>
+
+        <a href="{% url 'milk_agency:cashbook' %}" class="btn btn-outline-secondary btn-sm">
+            Reset
+        </a>
 
         <div class="d-flex gap-2 flex-wrap">
             <button type="button" class="btn btn-warning btn-sm btn-premium"
@@ -149,7 +180,7 @@ body {
                  style="--accent-start:#36b9cc; --accent-end:#67e8f9;">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <div class="stat-title">Bank</div>
+                        <div class="stat-title">Bank Balance</div>
                         <div class="stat-value">₹{{ bank_balance|floatformat:2 }}</div>
                     </div>
                     <div class="icon-round"><i class="bi bi-bank fs-4 text-info"></i></div>
@@ -205,7 +236,7 @@ body {
                  style="--accent-start:#e83e8c; --accent-end:#ff8ac1;">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <div class="stat-title">Profit</div>
+                        <div class="stat-title">Gross Profit</div>
                         <div class="stat-value">₹{{ monthly_profit|floatformat:2 }}</div>
                     </div>
                     <div class="icon-round"><i class="bi bi-graph-up fs-4 text-danger"></i></div>

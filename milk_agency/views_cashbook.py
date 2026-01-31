@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,6 +19,10 @@ from .models import (
 @login_required
 def cashbook(request):
     today = timezone.now().date()
+    # Month & Year filter
+    selected_month = int(request.GET.get('month', today.month))
+    selected_year = int(request.GET.get('year', today.year))
+
 
     # Get or create cashbook entry
     cash_entry = CashbookEntry.objects.first()
@@ -50,8 +55,8 @@ def cashbook(request):
     }
 
     # Current month details
-    current_month = today.month
-    current_year = today.year
+    current_month = selected_month
+    current_year = selected_year
 
     # CASH OUT (Expenses)
     cash_out_entries = Expense.objects.filter(
@@ -105,7 +110,7 @@ def cashbook(request):
     net_profit = monthly_profit - total_cash_out
 
     # NET CASH
-    net_cash = total_cash_in + bank_balance + total_customer_dues
+    net_cash = total_cash_in + bank_balance
 
     # TOTAL STOCK VALUE
     total_stock_value = Item.objects.aggregate(
@@ -131,6 +136,8 @@ def cashbook(request):
         'denomination_totals': denomination_totals,
         'total_stock_value': total_stock_value,
         'remaining_amount': remaining_amount,
+        'selected_month': current_month,
+        'selected_year': current_year,
     }
 
     return render(request, 'milk_agency/dashboards_other/cashbook.html', context)
