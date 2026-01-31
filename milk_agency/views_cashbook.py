@@ -19,6 +19,17 @@ from .models import (
 @login_required
 def cashbook(request):
     today = timezone.now().date()
+    
+    # Month & Year options for dropdown
+    months = [
+        (1, "January"), (2, "February"), (3, "March"),
+        (4, "April"), (5, "May"), (6, "June"),
+        (7, "July"), (8, "August"), (9, "September"),
+        (10, "October"), (11, "November"), (12, "December"),
+    ]
+
+    years = list(range(today.year - 5, today.year + 2))
+
     # Month & Year filter
     selected_month = int(request.GET.get('month', today.month))
     selected_year = int(request.GET.get('year', today.year))
@@ -136,6 +147,8 @@ def cashbook(request):
         'denomination_totals': denomination_totals,
         'total_stock_value': total_stock_value,
         'remaining_amount': remaining_amount,
+        'months': months,
+        'years': years,
         'selected_month': current_month,
         'selected_year': current_year,
     }

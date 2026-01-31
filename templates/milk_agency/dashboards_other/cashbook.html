@@ -114,21 +114,17 @@ body {
         <h2 class="fw-bold">CashBook</h2>
         <form method="get" class="d-flex gap-2 flex-wrap align-items-center mb-3">
 
-            <!-- Month -->
             <select name="month" class="form-select form-select-sm w-auto">
-                {% for m in "123456789101112"|make_list %}
-                    <option value="{{ forloop.counter }}"
-                        {% if forloop.counter == selected_month %}selected{% endif %}>
-                        {{ forloop.counter|date:"F" }}
+                {% for m, m_name in months %}
+                    <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                        {{ m_name }}
                     </option>
                 {% endfor %}
             </select>
 
-            <!-- Year -->
             <select name="year" class="form-select form-select-sm w-auto">
-                {% for y in 2023|make_list:10 %}
-                    <option value="{{ y }}"
-                        {% if y == selected_year %}selected{% endif %}>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
                         {{ y }}
                     </option>
                 {% endfor %}
