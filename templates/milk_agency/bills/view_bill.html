@@ -266,28 +266,43 @@
 <!-- ======================== -->
 <script>
 function shareBillOnWhatsApp() {
-    const customerName = "{{ bill.customer.name }}";
-    const agencyName = "{{ bill.customer.shop_name}}";
+
+    // Customer & bill details
+    let customerName = "{{ bill.customer.name|default:'' }}";
+    let agencyName = "{{ bill.customer.shop_name|default:'' }}";
+    let customerPhone = "{{ bill.customer.phone|default:'' }}";
+
     const invoiceNumber = "{{ bill.invoice_number }}";
     const invoiceDate = "{{ bill.invoice_date|date:'d-M-Y' }}";
     const currentDue = "{{ current_due|floatformat:2 }}";
-    const customerPhone = "{{ bill.customer.phone }}";
 
-    const whatsappMessage = 
-`Dear ${customerName} (${agencyName}),
+    // Ensure phone number has country code (India)
+    if (customerPhone.length === 10) {
+        customerPhone = "91" + customerPhone;
+    }
 
-Please find attached your invoice ${invoiceNumber} dated ${invoiceDate}.
+    // WhatsApp message
+    const whatsappMessage =
+`Dear ${customerName}${agencyName ? " (" + agencyName + ")" : ""},
+
+Please find your invoice details below:
+
+Invoice No: ${invoiceNumber}
+Invoice Date: ${invoiceDate}
 
 Current Due: ₹${currentDue}
 
-Thank you for your continued business with Sri Vijaya Durga Milk Agencies.
+Thank you for your continued business with
+Sri Vijaya Durga Milk Agencies.
 
-Place the orders using svdagencies.shop`;
+Place your orders at:
+svdagencies.shop`;
 
+    // Encode and open WhatsApp
     const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
 
-    window.open(whatsappURL, '_blank');
+    window.open(whatsappURL, "_blank");
 }
 </script>
 

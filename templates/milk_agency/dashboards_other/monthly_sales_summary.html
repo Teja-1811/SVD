@@ -290,18 +290,47 @@ $(document).ready(function () {
 });
 
 function shareMonthlySummaryOnWhatsApp() {
-    const customerName = "{{ selected_customer_obj.name }}";
-    const customerPhone = "{{ selected_customer_obj.phone }}";
+    // Customer details
+    let customerName = "{{ selected_customer_obj.name|default:'' }}";
+    let customerPhone = "{{ selected_customer_obj.phone|default:'' }}";
+    const isCommissioned = {{ selected_customer_obj.is_commissioned|yesno:"true,false" }};
+
+    // Ensure India country code
+    if (customerPhone.length === 10) {
+        customerPhone = "91" + customerPhone;
+    }
+
+    // Period & amounts
     const period = "{{ start_date|date:'d M Y' }} - {{ end_date|date:'d M Y' }}";
     const totalSales = "{{ total_sales|floatformat:2 }}";
     const totalCommission = "{{ total_commission|floatformat:2 }}";
     const remainingDue = "{{ remaining_due|floatformat:2 }}";
 
-    const whatsappMessage =
-        `Dear Customer ${customerName},\n\nMonthly Sales Summary for ${period}\n\nTotal Sales: ₹${totalSales}\nCommission Earned: ₹${totalCommission}\nRemaining Due: ₹${remainingDue}\n\nThank you.\n\nsvdagencies.netlify.app`;
+    // Base WhatsApp message
+    let whatsappMessage =
+`Dear ${customerName},
+Monthly Sales Summary (${period})
 
+Total Sales: ₹${totalSales}`;
+
+    // ➕ Add commission line ONLY if customer is commissioned
+    if (isCommissioned) {
+        whatsappMessage += `
+Commission Earned: ₹${totalCommission}`;
+    }
+
+    // Final lines
+    whatsappMessage += `
+Remaining Due: ₹${remainingDue}
+
+Thank you,
+SVD Agencies
+svdagencies.shop`;
+
+    // Encode & open WhatsApp
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    window.open(`https://wa.me/${customerPhone}?text=${encodedMessage}`, "_blank");
+    const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
+    window.open(whatsappURL, "_blank");
 }
 
 </script>
