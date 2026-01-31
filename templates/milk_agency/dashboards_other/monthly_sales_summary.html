@@ -296,7 +296,7 @@ function shareMonthlySummaryOnWhatsApp() {
     const isCommissioned = {{ selected_customer_obj.is_commissioned|yesno:"true,false" }};
 
     // Ensure India country code
-    if (customerPhone.length === 10) {
+    if (customerPhone && customerPhone.length === 10) {
         customerPhone = "91" + customerPhone;
     }
 
@@ -304,33 +304,40 @@ function shareMonthlySummaryOnWhatsApp() {
     const period = "{{ start_date|date:'d M Y' }} - {{ end_date|date:'d M Y' }}";
     const totalSales = "{{ total_sales|floatformat:2 }}";
     const totalCommission = "{{ total_commission|floatformat:2 }}";
-    const remainingDue = "{{ remaining_due|floatformat:2 }}";
 
-    // Base WhatsApp message
+    // 👇 two different dues
+    const remainingDue = "{{ remaining_due|floatformat:2 }}";
+    const balanceDue = "{{ due_amount|floatformat:2 }}";
+
+    // Base message
     let whatsappMessage =
 `Dear ${customerName},
 Monthly Sales Summary (${period})
 
 Total Sales: ₹${totalSales}`;
 
-    // ➕ Add commission line ONLY if customer is commissioned
+    // ✅ Commissioned customer
     if (isCommissioned) {
         whatsappMessage += `
-Commission Earned: ₹${totalCommission}`;
+Commission Earned: ₹${totalCommission}
+Remaining Due: ₹${remainingDue}`;
+    }
+    // ❌ Non-commissioned customer
+    else {
+        whatsappMessage += `
+Balance Due: ₹${balanceDue}`;
     }
 
-    // Final lines
+    // Footer
     whatsappMessage += `
-Remaining Due: ₹${remainingDue}
 
 Thank you,
 SVD Agencies
 svdagencies.shop`;
 
-    // Encode & open WhatsApp
+    // Send WhatsApp
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
-    window.open(whatsappURL, "_blank");
+    window.open(`https://wa.me/${customerPhone}?text=${encodedMessage}`, "_blank");
 }
 
 </script>
