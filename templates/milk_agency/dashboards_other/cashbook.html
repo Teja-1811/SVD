@@ -182,6 +182,75 @@ body {
     color: #fff;
 }
 
+/* ================= MOBILE OPTIMIZATION ================= */
+@media (max-width: 576px) {
+
+    /* Header becomes vertical */
+    .cashbook-header {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .cb-left {
+        text-align: center;
+    }
+
+    .cb-title {
+        font-size: 1.4rem;
+    }
+
+    .cb-subtitle {
+        font-size: .75rem;
+    }
+
+    /* Filters stack nicely */
+    .cb-filters {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .cb-select {
+        width: 100%;
+        height: 36px;
+        font-size: .85rem;
+    }
+
+    .cb-btn {
+        width: 100%;
+        justify-content: center;
+        height: 36px;
+        font-size: .85rem;
+    }
+
+    /* Group action buttons */
+    .cb-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Disable hover animation on mobile */
+    .premium-card:hover {
+        transform: none;
+        box-shadow: 0 6px 26px rgba(20,40,80,0.08);
+    }
+
+    /* Stat cards spacing */
+    .stat-title {
+        font-size: .7rem;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+    }
+
+    /* Reduce icon size */
+    .icon-round {
+        width: 38px;
+        height: 38px;
+    }
+}
+
 </style>
 {% endblock %}
 
