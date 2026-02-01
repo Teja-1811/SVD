@@ -130,7 +130,6 @@ AUTH_USER_MODEL = 'milk_agency.Customer'
 
 # Use Django's default authentication backend
 AUTHENTICATION_BACKENDS = [
-    'customer_portal.authentication.CustomerBackend',  # Customers first
     'django.contrib.auth.backends.ModelBackend',       # Admins second
 ]
 
