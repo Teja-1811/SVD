@@ -1,7 +1,9 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField
+from django.db.models import (
+    Sum, Max, F, ExpressionWrapper, DecimalField
+)
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from decimal import Decimal
@@ -15,28 +17,28 @@ from milk_agency.models import (
     Bill,
     Item
 )
+
 # ======================================================
 # 1️⃣ CASHBOOK DASHBOARD
-
+# ======================================================
 @api_view(['GET'])
 def api_cashbook_dashboard(request):
 
     today = timezone.now().date()
 
-    # ✅ Read month & year from query params (fallback to current)
+    # ---- Month & Year filter ----
     try:
         month = int(request.GET.get("month", today.month))
         year = int(request.GET.get("year", today.year))
     except ValueError:
-        return Response(
-            {"error": "Invalid month or year"},
-            status=400
-        )
+        return Response({"error": "Invalid month or year"}, status=400)
 
-    # -------- Cash Entry --------
-    cash_entry = CashbookEntry.objects.first() or CashbookEntry.objects.create()
+    # ---- Cash Entry ----
+    cash_entry = CashbookEntry.objects.first()
+    if not cash_entry:
+        cash_entry = CashbookEntry.objects.create()
 
-    # -------- Cash In Calculation --------
+    # ---- Cash In ----
     cash_in = (
         cash_entry.c500 * 500 +
         cash_entry.c200 * 200 +
@@ -47,80 +49,92 @@ def api_cashbook_dashboard(request):
     )
 
     denominations = {
-        "c500": cash_entry.c500 ,
-        "c200": cash_entry.c200 ,
-        "c100": cash_entry.c100 ,
+        "c500": cash_entry.c500,
+        "c200": cash_entry.c200,
+        "c100": cash_entry.c100,
         "c50": cash_entry.c50,
-        "c20": cash_entry.c20 ,
-        "c10": cash_entry.c10 ,
+        "c20": cash_entry.c20,
+        "c10": cash_entry.c10,
     }
 
-    # -------- Cash Out (Expenses) --------
+    # ---- Cash Out (Expenses) ----
     expenses = Expense.objects.filter(
         date__year=year,
         date__month=month
     )
 
     total_cash_out = expenses.aggregate(
-            total=Coalesce(
-                Sum("amount"),
-                Decimal("0.00"),
-                output_field=DecimalField(max_digits=12, decimal_places=2)
-            )
-        )["total"]
+        total=Coalesce(
+            Sum("amount"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        )
+    )["total"]
 
-    # -------- Bank Balance --------
+    # ---- Bank Balance ----
     bank_balance_obj = BankBalance.objects.first()
-    bank_balance = bank_balance_obj.amount if bank_balance_obj else 0
+    bank_balance = bank_balance_obj.amount if bank_balance_obj else Decimal("0.00")
 
-    # -------- Company Dues --------
+    # ---- Company Dues ----
     company_dues = DailyPayment.objects.filter(
         date__year=year,
         date__month=month
     ).values(
         company_name=F("company__name")
     ).annotate(
-        total_invoice=Coalesce(Sum("invoice_amount"), 0, output_field=DecimalField()),
-        total_paid=Coalesce(Sum("paid_amount"), 0, output_field=DecimalField()),
+        total_invoice=Coalesce(
+            Sum("invoice_amount"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        ),
+        total_paid=Coalesce(
+            Sum("paid_amount"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        ),
         total_due=ExpressionWrapper(
             F("total_invoice") - F("total_paid"),
-            output_field=DecimalField()
+            output_field=DecimalField(max_digits=12, decimal_places=2)
         ),
         last_updated=Max("date")
     )
 
     company_dues = [c for c in company_dues if c["total_due"] != 0]
-    total_company_dues = sum(c["total_due"] for c in company_dues)
+    total_company_dues = sum(c["total_due"] for c in company_dues) or Decimal("0.00")
 
-    # -------- Customer Dues --------
+    # ---- Customer Dues ----
     total_customer_dues = Customer.objects.aggregate(
-            total=Coalesce(
-                Sum("due"),
-                Decimal("0.00"),
-                output_field=DecimalField(max_digits=12, decimal_places=2)
-            )
-        )["total"]
+        total=Coalesce(
+            Sum("due"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        )
+    )["total"]
 
-
-    # -------- Monthly Profit --------
+    # ---- Monthly Profit ----
     monthly_profit = Bill.objects.filter(
         invoice_date__year=year,
         invoice_date__month=month
     ).aggregate(
-        profit=Coalesce(Sum("profit"), 0)
+        profit=Coalesce(
+            Sum("profit"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        )
     )["profit"]
 
+    # ---- Net Calculations ----
     net_profit = monthly_profit - total_cash_out
     net_cash = cash_in + bank_balance + total_customer_dues
 
-    # -------- Stock Value --------
+    # ---- Stock Value ----
     stock_value = Item.objects.aggregate(
-            total=Coalesce(
-                Sum(F("stock_quantity") * F("buying_price")),
-                Decimal("0.00"),
-                output_field=DecimalField(max_digits=14, decimal_places=2)
-            )
-        )["total"]
+        total=Coalesce(
+            Sum(F("stock_quantity") * F("buying_price")),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=14, decimal_places=2)
+        )
+    )["total"]
 
     remaining_amount = (
         net_cash + stock_value - net_profit - total_company_dues
@@ -144,18 +158,18 @@ def api_cashbook_dashboard(request):
         "remaining_amount": remaining_amount
     })
 
+
 # ======================================================
 # 2️⃣ SAVE / UPDATE CASH IN
 # ======================================================
 @api_view(['POST'])
 def api_save_cash_in(request):
 
-    cash_entry = CashbookEntry.objects.first() or CashbookEntry.objects.create()
+    cash_entry = CashbookEntry.objects.first()
+    if not cash_entry:
+        cash_entry = CashbookEntry.objects.create()
 
-    fields = [
-        "c500", "c200", "c100", "c50", "c20", "c10",
-
-    ]
+    fields = ["c500", "c200", "c100", "c50", "c20", "c10"]
 
     for field in fields:
         setattr(cash_entry, field, int(request.data.get(field, 0)))
@@ -177,12 +191,12 @@ def api_add_expense(request):
             description=request.data.get("description", "")
         )
         return Response({"success": True})
-    except:
+    except Exception:
         return Response({"error": "Invalid expense data"}, status=400)
 
 
 # ======================================================
-# 4️⃣ LIST EXPENSES (DATE RANGE)
+# 4️⃣ LIST EXPENSES
 # ======================================================
 @api_view(['GET'])
 def api_list_expenses(request):
@@ -195,8 +209,12 @@ def api_list_expenses(request):
     ).order_by("-date")
 
     total = expenses.aggregate(
-        total=Sum("amount")
-    )["total"] or 0
+        total=Coalesce(
+            Sum("amount"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        )
+    )["total"]
 
     return Response({
         "expenses": [
@@ -212,8 +230,8 @@ def api_list_expenses(request):
     })
 
 
-#=====================================================
-# 4️⃣ EDIT EXPENSE
+# ======================================================
+# 5️⃣ EDIT EXPENSE
 # ======================================================
 @api_view(['PUT'])
 def api_edit_expense(request, expense_id):
@@ -228,11 +246,12 @@ def api_edit_expense(request, expense_id):
         expense.description = request.data.get("description", "")
         expense.save()
         return Response({"success": True})
-    except:
+    except Exception:
         return Response({"error": "Invalid expense data"}, status=400)
 
+
 # ======================================================
-# 5️⃣ DELETE EXPENSE
+# 6️⃣ DELETE EXPENSE
 # ======================================================
 @api_view(['DELETE'])
 def api_delete_expense(request, expense_id):
@@ -246,17 +265,16 @@ def api_delete_expense(request, expense_id):
 
 
 # ======================================================
-# 6️⃣ SAVE BANK BALANCE
+# 7️⃣ SAVE BANK BALANCE
 # ======================================================
 @api_view(['POST'])
 def api_save_bank_balance(request):
 
     try:
         amount = Decimal(request.data.get("amount"))
-        bank, _ = BankBalance.objects.get_or_create(defaults={"amount": amount})
+        bank, _ = BankBalance.objects.get_or_create()
         bank.amount = amount
         bank.save()
         return Response({"success": True})
-    except:
+    except Exception:
         return Response({"error": "Invalid amount"}, status=400)
-
