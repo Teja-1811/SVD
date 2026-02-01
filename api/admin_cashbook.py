@@ -90,8 +90,13 @@ def api_cashbook_dashboard(request):
 
     # -------- Customer Dues --------
     total_customer_dues = Customer.objects.aggregate(
-        total=Coalesce(Sum("due"), 0)
-    )["total"]
+            total=Coalesce(
+                Sum("due"),
+                Decimal("0.00"),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        )["total"]
+
 
     # -------- Monthly Profit --------
     monthly_profit = Bill.objects.filter(
@@ -106,8 +111,12 @@ def api_cashbook_dashboard(request):
 
     # -------- Stock Value --------
     stock_value = Item.objects.aggregate(
-        total=Coalesce(Sum(F("stock_quantity") * F("buying_price")), 0)
-    )["total"]
+            total=Coalesce(
+                Sum(F("stock_quantity") * F("buying_price")),
+                Decimal("0.00"),
+                output_field=DecimalField(max_digits=14, decimal_places=2)
+            )
+        )["total"]
 
     remaining_amount = (
         net_cash + stock_value - net_profit - total_company_dues
