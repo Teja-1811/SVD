@@ -43,26 +43,16 @@ def api_cashbook_dashboard(request):
         cash_entry.c100 * 100 +
         cash_entry.c50 * 50 +
         cash_entry.c20 * 20 +
-        cash_entry.c10 * 10 +
-        cash_entry.coin20 * 20 +
-        cash_entry.coin10 * 10 +
-        cash_entry.coin5 * 5 +
-        cash_entry.coin2 * 2 +
-        cash_entry.coin1 * 1
+        cash_entry.c10 * 10
     )
 
     denominations = {
-        "c500": cash_entry.c500 * 500,
-        "c200": cash_entry.c200 * 200,
-        "c100": cash_entry.c100 * 100,
-        "c50": cash_entry.c50 * 50,
-        "c20": cash_entry.c20 * 20,
-        "c10": cash_entry.c10 * 10,
-        "coin20": cash_entry.coin20 * 20,
-        "coin10": cash_entry.coin10 * 10,
-        "coin5": cash_entry.coin5 * 5,
-        "coin2": cash_entry.coin2 * 2,
-        "coin1": cash_entry.coin1 * 1,
+        "c500": cash_entry.c500 ,
+        "c200": cash_entry.c200 ,
+        "c100": cash_entry.c100 ,
+        "c50": cash_entry.c50,
+        "c20": cash_entry.c20 ,
+        "c10": cash_entry.c10 ,
     }
 
     # -------- Cash Out (Expenses) --------
