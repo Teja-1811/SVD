@@ -15,17 +15,25 @@ from milk_agency.models import (
     Bill,
     Item
 )
+# ======================================================
+# 1️⃣ CASHBOOK DASHBOARD
 
-# ======================================================
-# 1️⃣ CASHBOOK DASHBOARD (MAIN APP DASHBOARD)
-# ======================================================
 @api_view(['GET'])
 def api_cashbook_dashboard(request):
 
     today = timezone.now().date()
-    month = today.month
-    year = today.year
 
+    # ✅ Read month & year from query params (fallback to current)
+    try:
+        month = int(request.GET.get("month", today.month))
+        year = int(request.GET.get("year", today.year))
+    except ValueError:
+        return Response(
+            {"error": "Invalid month or year"},
+            status=400
+        )
+
+    # -------- Cash Entry --------
     cash_entry = CashbookEntry.objects.first() or CashbookEntry.objects.create()
 
     # -------- Cash In Calculation --------
@@ -64,8 +72,8 @@ def api_cashbook_dashboard(request):
     )
 
     total_cash_out = expenses.aggregate(
-        total=Sum("amount")
-    )["total"] or 0
+        total=Coalesce(Sum("amount"), 0)
+    )["total"]
 
     # -------- Bank Balance --------
     bank_balance_obj = BankBalance.objects.first()
@@ -92,24 +100,24 @@ def api_cashbook_dashboard(request):
 
     # -------- Customer Dues --------
     total_customer_dues = Customer.objects.aggregate(
-        total=Sum("due")
-    )["total"] or 0
+        total=Coalesce(Sum("due"), 0)
+    )["total"]
 
     # -------- Monthly Profit --------
     monthly_profit = Bill.objects.filter(
         invoice_date__year=year,
         invoice_date__month=month
     ).aggregate(
-        profit=Sum("profit")
-    )["profit"] or 0
+        profit=Coalesce(Sum("profit"), 0)
+    )["profit"]
 
     net_profit = monthly_profit - total_cash_out
     net_cash = cash_in + bank_balance + total_customer_dues
 
     # -------- Stock Value --------
     stock_value = Item.objects.aggregate(
-        total=Sum(F("stock_quantity") * F("buying_price"))
-    )["total"] or 0
+        total=Coalesce(Sum(F("stock_quantity") * F("buying_price")), 0)
+    )["total"]
 
     remaining_amount = (
         net_cash + stock_value - net_profit - total_company_dues
@@ -117,6 +125,8 @@ def api_cashbook_dashboard(request):
 
     return Response({
         "date": str(today),
+        "month": month,
+        "year": year,
         "cash_in": cash_in,
         "denominations": denominations,
         "cash_out": total_cash_out,
@@ -130,7 +140,6 @@ def api_cashbook_dashboard(request):
         "stock_value": stock_value,
         "remaining_amount": remaining_amount
     })
-
 
 # ======================================================
 # 2️⃣ SAVE / UPDATE CASH IN
