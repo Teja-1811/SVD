@@ -62,8 +62,12 @@ def api_cashbook_dashboard(request):
     )
 
     total_cash_out = expenses.aggregate(
-        total=Coalesce(Sum("amount"), 0)
-    )["total"]
+            total=Coalesce(
+                Sum("amount"),
+                Decimal("0.00"),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        )["total"]
 
     # -------- Bank Balance --------
     bank_balance_obj = BankBalance.objects.first()
