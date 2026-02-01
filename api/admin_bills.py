@@ -194,7 +194,7 @@ def api_create_bill(request):
 def api_edit_bill(request, bill_id):
 
     bill = get_object_or_404(Bill, id=bill_id)
-
+    customer = request.data.get("customer")
     item_ids = request.data.get("items", [])
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
@@ -255,6 +255,7 @@ def api_edit_bill(request, bill_id):
         # 3️⃣ Update bill totals
         bill.total_amount = total
         bill.profit = total_profit
+        bill.customer = Customer.objects.filter(id=customer).first() if customer else None
         bill.save()
 
         # 4️⃣ Update customer due
