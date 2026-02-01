@@ -5,6 +5,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from decimal import Decimal
+from datetime import datetime
 from milk_agency.views_bills import generate_invoice_pdf
 
 from milk_agency.models import Bill, BillItem, Customer, Item
@@ -188,6 +189,7 @@ def api_create_bill(request):
 # ------------------------------------------
 # 6️⃣ EDIT BILL
 # ------------------------------------------
+
 @api_view(['POST'])
 def api_edit_bill(request, bill_id):
 
@@ -197,11 +199,24 @@ def api_edit_bill(request, bill_id):
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
 
+    # ✅ NEW: invoice date
+    invoice_date = request.data.get("invoice_date")
+
     bill_items = BillItem.objects.filter(bill=bill)
 
     with transaction.atomic():
 
-        # restore stock
+        # ✅ Update invoice date (before recalculations)
+        if invoice_date:
+            try:
+                bill.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%d").date()
+            except ValueError:
+                return Response(
+                    {"success": False, "message": "Invalid invoice_date format"},
+                    status=400
+                )
+
+        # 1️⃣ Restore stock
         for bi in bill_items:
             bi.item.stock_quantity += bi.quantity
             bi.item.save()
@@ -211,6 +226,7 @@ def api_edit_bill(request, bill_id):
         total = Decimal(0)
         total_profit = Decimal(0)
 
+        # 2️⃣ Recreate bill items
         for i, item_id in enumerate(item_ids):
 
             item = Item.objects.get(id=item_id)
@@ -236,15 +252,18 @@ def api_edit_bill(request, bill_id):
             total += line_total
             total_profit += profit
 
+        # 3️⃣ Update bill totals
         bill.total_amount = total
         bill.profit = total_profit
         bill.save()
 
+        # 4️⃣ Update customer due
         if bill.customer:
             bill.customer.due = bill.op_due_amount + total
             bill.customer.save()
 
     return Response({"success": True})
+
 
 
 # ------------------------------------------
