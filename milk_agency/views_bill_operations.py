@@ -69,6 +69,17 @@ def edit_bill(request, bill_id):
         except Customer.DoesNotExist:
             messages.error(request, 'Customer not found.')
             return redirect('milk_agency:edit_bill', bill_id=bill_id)
+        
+        invoice_date = request.POST.get('invoice_date')
+
+        if invoice_date:
+            try:
+                from datetime import datetime
+                bill.invoice_date = datetime.strptime(invoice_date, '%Y-%m-%d').date()
+            except ValueError:
+                messages.error(request, 'Invalid invoice date format.')
+                return redirect('milk_agency:edit_bill', bill_id=bill_id)
+
 
         # Restore stock quantities from old bill items
         for bill_item in bill_items:

@@ -29,6 +29,19 @@
                 </div>
             </div>
         </div>
+        <!-- Invoice Date -->
+        <div class="mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <label class="fw-bold">Invoice Date</label>
+                    <input type="date"
+                        name="invoice_date"
+                        class="form-control"
+                        value="{{ bill.invoice_date|date:'Y-m-d' }}"
+                        required>
+                </div>
+            </div>
+        </div>
 
         <div id="items-container">
             <h4>Items</h4>

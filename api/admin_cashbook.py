@@ -141,7 +141,7 @@ def api_save_cash_in(request):
 
     fields = [
         "c500", "c200", "c100", "c50", "c20", "c10",
-        "coin20", "coin10", "coin5", "coin2", "coin1"
+
     ]
 
     for field in fields:
