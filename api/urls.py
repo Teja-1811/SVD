@@ -12,6 +12,8 @@ from .admin_bills import *
 from .admin_cashbook import *
 from .admin_payments import *
 from .admin_orders_dashboard import *
+from .admin_stock_dashboard import *
+from .admin_customer_payments import *
 
 urlpatterns = [
     # Auth / Login
@@ -61,6 +63,16 @@ urlpatterns = [
     path('orders/<int:order_id>/detail/', api_order_detail, name='api_order_detail'),
     path('orders/<int:order_id>/confirm/', api_confirm_order, name='api_confirm_order'),
     path('orders/<int:order_id>/cancel/', api_reject_order, name='api_cancel_order'),
+    
+    #Admin Stock Dashboard API
+    path('stock/dashboard/', stock_dashboard_api, name='stock_dashboard_api'),
+    path('stock/update/', update_stock_api, name='update_stock_api'),
+    
+    # Customer Payments API
+    path('customer-payments/', customer_payments_api, name='customer_payments_api'),
+    path('customer-payments/update-status/<int:payment_id>/', update_payment_status_api, name='update_payment_status_api'),
+    path('customer-payments/delete/<int:payment_id>/', delete_payment_api, name='delete_payment_api'),
+    
     
 
     # Customer Dashboard
