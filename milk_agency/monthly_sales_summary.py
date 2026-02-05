@@ -19,9 +19,9 @@ def calculate_milk_commission(volume):
     if volume <= 15:
         return volume * Decimal('0.2')
     elif volume <= 30:
-        return Decimal('15') * Decimal('0.2') + (volume - Decimal('15')) * Decimal('0.3')
+        return Decimal('15') * Decimal('0.25') + (volume - Decimal('15')) * Decimal('0.3')
     else:
-        return Decimal('15') * Decimal('0.2') + Decimal('15') * Decimal('0.3') + (volume - Decimal('30')) * Decimal('0.35')
+        return Decimal('15') * Decimal('0.35') + Decimal('15') * Decimal('0.35') + (volume - Decimal('30')) * Decimal('0.35')
 
 
 def calculate_curd_commission(volume):

@@ -34,7 +34,7 @@ def stock_dashboard_api(request):
         "id",
         "name",
         "stock_quantity",
-        "selling_price",
+        "pcs_count",
         company_name=F("company__name"),
     )
 

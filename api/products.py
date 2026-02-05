@@ -44,6 +44,7 @@ def products_api(request):
         {
             "id": item.id,
             "name": item.name,
+            "company": item.company.name if item.company else "",
             "mrp": float(item.mrp),
             "selling_price": float(item.selling_price),
             "margin": float(item.selling_price - item.buying_price),
