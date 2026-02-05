@@ -114,11 +114,6 @@ def company_items_api(request, company_id):
     items = Item.objects.filter(
         company_id=company_id,
         frozen=False
-    ).values(
-        "id",
-        "name",
-        "selling_price",
-        "mrp"
-    )
+    ).values("id", "name", "selling_price", "mrp")
 
-    return JsonResponse(list(items))
+    return JsonResponse(list(items))   # <-- IMPORTANT FIX
