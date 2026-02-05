@@ -232,14 +232,14 @@ class PDFGenerator:
         c.drawString(50, y, f"Grand Total           :   {grand_total:.2f}")
 
         # Right column
-        c.drawRightString(width - 60, y + 80, f"Paid Amount :   {last_paid_balance:.2f}")
+        c.drawRightString(width - 60, y + 30, f"Paid Amount :   {last_paid_balance:.2f}")
         if due < 0:
             c.setFillColorRGB(0, 1, 0)  # Green for negative due (wallet amount)
-            c.drawRightString(width - 60, y + 40, f"Wallet Amount :   {-due:.2f}")
+            c.drawRightString(width - 60, y + 10, f"Wallet Amount :   {-due:.2f}")
             c.setFillColorRGB(0, 0, 0)  # Reset to black
         else:
             c.setFillColorRGB(1, 0, 0)  # Red for positive due    
-            c.drawRightString(width - 60, y + 60, f"Balance Due :   {due:.2f}")
+            c.drawRightString(width - 60, y + 10, f"Balance Due :   {due:.2f}")
             c.setFillColorRGB(0, 0, 0)  # Reset to black
 
         return y
