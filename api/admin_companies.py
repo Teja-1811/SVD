@@ -116,4 +116,5 @@ def company_items_api(request, company_id):
         frozen=False
     ).values("id", "name", "selling_price", "mrp")
 
-    return JsonResponse(list(items))   # <-- IMPORTANT FIX
+    return JsonResponse(list(items), safe=False)
+
