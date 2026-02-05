@@ -14,6 +14,7 @@ from .admin_payments import *
 from .admin_orders_dashboard import *
 from .admin_stock_dashboard import *
 from .admin_customer_payments import *
+from .admin_companies import *
 
 urlpatterns = [
     # Auth / Login
@@ -28,6 +29,12 @@ urlpatterns = [
     path('customer-freeze/<int:pk>/', api_toggle_freeze, name='api_toggle_freeze'),
     path('customer-balance/<int:pk>/', api_update_balance, name='api_update_balance'),
     path('customer-add/', api_add_edit_customer, name='api_add_customer'),
+    
+    # Companies APIs
+    path('companies/', companies_list_api, name='companies_list_api'),
+    path('companies/add/', add_company_api, name='add_company_api'),
+    path('companies/edit/<int:company_id>/', edit_company_api, name='edit_company_api'),
+    
     
     # Items Management APIs
     path('items/categories/', get_categories, name='get_categories'),
