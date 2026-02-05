@@ -228,7 +228,10 @@ class PDFGenerator:
         y -= 18
         c.drawString(50, y, f"Bill Amount            :   {bill.total_amount:.2f}")
         y -= 18
-        c.drawString(50, y, f"Due            :   {grand_total:.2f}")
+        if grand_total <=0 :
+            c.drawString(50, y, f"Wallet Balance       :   {-grand_total:.2f}")
+        else:
+            c.drawString(50, y, f"Due                :   {grand_total:.2f}")
         y -= 40
 
         # Right column
