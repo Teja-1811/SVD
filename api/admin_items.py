@@ -40,6 +40,7 @@ def get_items_by_category(request):
             "code": item.code,
             "name": item.name,
             "company": item.company.name if item.company else None,
+            "company_logo": item.company.logo.url if item.company and item.company.logo else None,
             "category": item.category,
             "selling_price": str(item.selling_price),
             "buying_price": str(item.buying_price),
