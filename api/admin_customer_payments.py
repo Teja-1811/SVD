@@ -32,17 +32,18 @@ def customer_payments_api(request):
     if transaction_id_filter:
         payments = payments.filter(transaction_id__icontains=transaction_id_filter)
 
-    data = list(
-        payments.values(
-            "id",
-            "transaction_id",
-            "amount",
-            "payment_mode",
-            "status",
-            "created_at",
-            customer_name=F("customer__name"),
-        )
-    )
+    data = []
+    for p in payments.values(
+        "id",
+        "transaction_id",
+        "amount",
+        "payment_mode",
+        "status",
+        "created_at",
+        customer_name=F("customer__name"),
+    ):
+        p["created_at"] = p["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+        data.append(p)
 
     return JsonResponse({
         "count": len(data),
