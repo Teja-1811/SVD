@@ -106,3 +106,19 @@ def edit_company_api(request, company_id):
         "company_id": company.id,
         "message": "Company updated successfully"
     })
+
+
+# Catalog API for selected companies only (for dropdowns, etc.)
+@api_view(["GET"])
+def company_items_api(request, company_id):
+    items = Item.objects.filter(
+        company_id=company_id,
+        frozen=False
+    ).values(
+        "id",
+        "name",
+        "selling_price",
+        "mrp"
+    )
+
+    return JsonResponse(list(items))

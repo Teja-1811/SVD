@@ -34,6 +34,7 @@ urlpatterns = [
     path('companies/', companies_list_api, name='companies_list_api'),
     path('companies/add/', add_company_api, name='add_company_api'),
     path('companies/edit/<int:company_id>/', edit_company_api, name='edit_company_api'),
+    path('companies/items/<int:company_id>/', company_items_api, name='company_items_api'),
     
     
     # Items Management APIs
