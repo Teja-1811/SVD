@@ -37,7 +37,7 @@ def customer_payments_api(request):
         "id",
         "transaction_id",
         "amount",
-        "payment_mode",
+        "method",
         "status",
         "created_at",
         customer_name=F("customer__name"),
