@@ -219,8 +219,9 @@ class PDFGenerator:
 
         opening_due = bill.op_due_amount or 0
         total_bill = bill.total_amount
-        grand_total = total_bill + opening_due - bill.last_paid or 0 # Assuming grand total is the same as total bill for now
+        grand_total = total_bill + opening_due # Assuming grand total is the same as total bill for now
         last_paid_balance = bill.last_paid or 0
+        due = grand_total - last_paid_balance or 0
 
         # Left column
         c.setFont("Helvetica-Bold", 10)
@@ -228,14 +229,16 @@ class PDFGenerator:
         y -= 18
         c.drawString(50, y, f"Bill Amount            :   {bill.total_amount:.2f}")
         y -= 18
-        if grand_total <=0 :
-            c.drawString(50, y, f"Wallet Balance       :   {-grand_total:.2f}")
-        else:
-            c.drawString(50, y, f"Due                :   {grand_total:.2f}")
-        y -= 40
+        c.drawString(50, y, f"Grand Total           :   {grand_total:.2f}")
 
         # Right column
         c.drawRightString(width - 60, y + 70, f"Paid Amount :   {last_paid_balance:.2f}")
+        if due < 0:
+            c.setFillColorRGB(0, 1, 0)  # Green for negative due (wallet amount)
+            c.drawRightString(width - 60, y + 50, f"Wallet Amount :   {-due:.2f}")
+        else:
+            c.setFillColorRGB(1, 0, 0)  # Red for positive due    
+            c.drawRightString(width - 60, y + 50, f"Balance Due :   {due:.2f}")
 
         return y
 
