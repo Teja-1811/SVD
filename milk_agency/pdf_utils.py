@@ -219,7 +219,7 @@ class PDFGenerator:
 
         opening_due = bill.op_due_amount or 0
         total_bill = bill.total_amount
-        grand_total = total_bill + opening_due  # Assuming grand total is the same as total bill for now
+        grand_total = total_bill + opening_due - bill.last_paid or 0 # Assuming grand total is the same as total bill for now
         last_paid_balance = bill.last_paid or 0
 
         # Left column
@@ -228,11 +228,11 @@ class PDFGenerator:
         y -= 18
         c.drawString(50, y, f"Bill Amount            :   {bill.total_amount:.2f}")
         y -= 18
-        c.drawString(50, y, f"Grand Total            :   {grand_total:.2f}")
+        c.drawString(50, y, f"Due            :   {grand_total:.2f}")
         y -= 40
 
         # Right column
-        c.drawRightString(width - 60, y + 70, f"Last Paid Balance :   {last_paid_balance:.2f}")
+        c.drawRightString(width - 60, y + 70, f"Paid Amount :   {last_paid_balance:.2f}")
 
         return y
 
