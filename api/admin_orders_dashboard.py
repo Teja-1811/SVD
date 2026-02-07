@@ -33,14 +33,25 @@ def api_admin_orders_dashboard(request):
             "customer_id": order.customer.id if order.customer else None,
             "customer_name": order.customer.name if order.customer else "",
             "total_amount": float(order.total_amount or 0),
-            "items_count": order.items.count()
+            #pass the items which are ordered
+            "items": [
+                {
+                    "item_id": oi.item.id,
+                    "item_name": oi.item.name,
+                    "requested_price": float(oi.requested_price),
+                    "requested_quantity": oi.requested_quantity,
+                    "discount": float(oi.discount or 0),
+                    "discount_total": float(oi.discount_total or 0),
+                    "requested_total": float(oi.requested_total or 0)
+                }
+                for oi in order.items.all()
+            ]
         })
 
     return Response({
         "total_pending": pending_orders.count(),
         "orders": orders
     })
-
 
 # ======================================================
 # 2️⃣ ORDER DETAILS (ITEMS WITH PRICE & QTY)
