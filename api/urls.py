@@ -15,6 +15,7 @@ from .admin_orders_dashboard import *
 from .admin_stock_dashboard import *
 from .admin_customer_payments import *
 from .admin_companies import *
+from .admin_monthly_sales_summary import api_monthly_sales_summary
 
 urlpatterns = [
     # Auth / Login
@@ -75,6 +76,9 @@ urlpatterns = [
     #Admin Stock Dashboard API
     path('stock/dashboard/', stock_dashboard_api, name='stock_dashboard_api'),
     path('stock/update/', update_stock_api, name='update_stock_api'),
+    
+    # Monthly Sales Summary API
+    path('sales/monthly-summary/', api_monthly_sales_summary, name='api_monthly_sales_summary'),
     
     # Customer Payments API
     path('customer-payments/', customer_payments_api, name='customer_payments_api'),
