@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from .models import Customer, Bill, CustomerPayment
 from django.utils.timezone import now
+from django.utils import timezone
 
 @login_required
 def add_customer(request, customer_id=None):
@@ -154,52 +155,51 @@ def update_customer_balance(request, customer_id):
 
     if request.method == 'POST':
         balance_str = request.POST.get('balance', '0')
+
         try:
             balance_decimal = Decimal(balance_str)
-            # Find the most recent bill for the customer in the current month
-            from django.utils import timezone
+
             current_month = timezone.now().month
             current_year = timezone.now().year
+
             recent_bill = Bill.objects.filter(
                 customer=customer,
                 invoice_date__year=current_year,
                 invoice_date__month=current_month
             ).order_by('-id').first()
 
+            transaction_id = recent_bill.invoice_number if recent_bill else 'N/A'
+
             if recent_bill:
-                # Update the most recent bill's last_paid
-                recent_bill.last_paid += balance_decimal
-                customer.due = customer.due - balance_decimal
-                recent_bill.save()
-                customer.save()
-                payment = CustomerPayment.objects.create(
-                    customer=customer,
-                    amount=balance_decimal,
-                    transaction_id = recent_bill.invoice_number if recent_bill else 'N/A',
-                    payment_date=now(),
-                    method='Cash',
-                    status='Completed'
-                )
-                payment.save()
-                message = f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}'
-            else:
-                # No recent bill found, update only customer due
-                # Positive balance reduces due, negative balance increases due
+                # Always update bill last_paid for positive balance only
+                if balance_decimal > 0:
+                    recent_bill.last_paid += balance_decimal
+                    recent_bill.save()
+
+                # ✅ Always update customer due (your requirement)
                 customer.due -= balance_decimal
                 customer.save()
-                payment = CustomerPayment.objects.create(
+
+                message = f'Balance updated for {customer.name} and applied to bill {recent_bill.invoice_number}'
+            else:
+                # No recent bill — still update due
+                customer.due -= balance_decimal
+                customer.save()
+
+                message = f'Balance updated for {customer.name} without a recent bill'
+
+            # ✅ Create CustomerPayment ONLY if balance is POSITIVE
+            if balance_decimal > 0:
+                CustomerPayment.objects.create(
                     customer=customer,
                     amount=balance_decimal,
-                    transaction_id = recent_bill.invoice_number if recent_bill else 'N/A',
+                    transaction_id=transaction_id,
                     payment_date=now(),
                     method='Cash',
                     status='Completed'
                 )
-                payment.save()
-                message = f'Balance updated for {customer.name} without a recent bill'
-                
 
-            # Check if AJAX request
+            # AJAX response
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
@@ -208,13 +208,16 @@ def update_customer_balance(request, customer_id):
                 })
 
             messages.success(request, message)
+
         except (ValueError, TypeError) as e:
             error_message = f'Invalid balance value: {str(e)}'
+
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
                     'message': error_message
                 })
+
             messages.error(request, error_message)
 
     return redirect('milk_agency:customer_data')
