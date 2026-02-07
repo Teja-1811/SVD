@@ -2,8 +2,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from decimal import Decimal, InvalidOperation
-
-from milk_agency.models import Customer
+from django.db import transaction
+import uuid
+from milk_agency.models import Customer, CustomerPayment
 
 
 # =========================
@@ -77,25 +78,54 @@ def api_toggle_freeze(request, pk):
 @api_view(['POST'])
 def api_update_balance(request, pk):
 
-    c = get_object_or_404(Customer, id=pk, is_superuser=False)
+    customer = get_object_or_404(Customer, id=pk, is_superuser=False)
 
     amount = request.data.get("amount")
 
     if amount is None:
-        return Response({"success": False, "message": "amount required"}, status=400)
+        return Response({"success": False, "message": "Amount is required"}, status=400)
 
     try:
-        amount = Decimal(amount)
+        amount = Decimal(str(amount))
     except InvalidOperation:
-        return Response({"success": False, "message": "invalid amount"}, status=400)
+        return Response({"success": False, "message": "Invalid amount"}, status=400)
 
-    c.due -= amount
-    c.save()
+    if amount <= 0:
+        return Response({"success": False, "message": "Amount must be greater than zero"}, status=400)
+
+    # Get latest bill (not just current month)
+    latest_bill = Bill.objects.filter(
+        customer=customer
+    ).order_by('-invoice_date', '-id').first()
+
+    transaction_id = f"PAY-{uuid.uuid4().hex[:10].upper()}"
+
+    with transaction.atomic():
+        # Update latest invoice last_paid
+        if latest_bill:
+            latest_bill.last_paid += amount
+            latest_bill.save()
+
+        # Update customer due balance
+        customer.due -= amount
+        customer.save()
+
+        # Create payment record
+        CustomerPayment.objects.create(
+            customer=customer,
+            amount=amount,
+            transaction_id=transaction_id,
+            method="Cash",
+            status="Completed"
+        )
 
     return Response({
         "success": True,
-        "new_balance": float(c.due)
+        "message": f"Payment of ₹{float(amount):.2f} recorded successfully",
+        "new_balance": float(customer.due),
+        "last_paid_updated": latest_bill.id if latest_bill else None
     })
+
 
 #--------------------------
 # Add and Edit Customer API
