@@ -7,6 +7,8 @@ from decimal import Decimal
 from .models import Customer, Bill, CustomerPayment
 from django.utils.timezone import now
 from django.utils import timezone
+from django.db import transaction
+import uuid  # for unique transaction id
 
 @login_required
 def add_customer(request, customer_id=None):
@@ -168,11 +170,12 @@ def update_customer_balance(request, customer_id):
                 invoice_date__month=current_month
             ).order_by('-id').first()
 
-            transaction_id = recent_bill.invoice_number if recent_bill else 'N/A'
+            # Generate UNIQUE transaction id (prevents duplicate error)
+            transaction_id = f"PAY-{uuid.uuid4().hex[:10].upper()}"
 
-            if recent_bill:
-                # Always update bill last_paid for positive balance only
-                if balance_decimal > 0:
+            with transaction.atomic():
+
+                if recent_bill and balance_decimal > 0:
                     recent_bill.last_paid += balance_decimal
                     recent_bill.save()
 
@@ -180,26 +183,18 @@ def update_customer_balance(request, customer_id):
                 customer.due -= balance_decimal
                 customer.save()
 
-                message = f'Balance updated for {customer.name} and applied to bill {recent_bill.invoice_number}'
-            else:
-                # No recent bill — still update due
-                customer.due -= balance_decimal
-                customer.save()
+                # ✅ Create payment ONLY if balance is positive
+                if balance_decimal > 0:
+                    CustomerPayment.objects.create(
+                        customer=customer,
+                        amount=balance_decimal,
+                        transaction_id=transaction_id,
+                        method='Cash',
+                        status='Completed'
+                    )
 
-                message = f'Balance updated for {customer.name} without a recent bill'
+            message = f'Balance updated for {customer.name}'
 
-            # ✅ Create CustomerPayment ONLY if balance is POSITIVE
-            if balance_decimal > 0:
-                CustomerPayment.objects.create(
-                    customer=customer,
-                    amount=balance_decimal,
-                    transaction_id=transaction_id,
-                    payment_date=now(),
-                    method='Cash',
-                    status='Completed'
-                )
-
-            # AJAX response
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
@@ -209,8 +204,8 @@ def update_customer_balance(request, customer_id):
 
             messages.success(request, message)
 
-        except (ValueError, TypeError) as e:
-            error_message = f'Invalid balance value: {str(e)}'
+        except Exception as e:
+            error_message = f'Error: {str(e)}'
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
