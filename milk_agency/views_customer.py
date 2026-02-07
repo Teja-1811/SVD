@@ -172,23 +172,32 @@ def update_customer_balance(request, customer_id):
                 customer.due = customer.due - balance_decimal
                 recent_bill.save()
                 customer.save()
+                payment = CustomerPayment.objects.create(
+                    customer=customer,
+                    amount=balance_decimal,
+                    transaction_id = recent_bill.invoice_number if recent_bill else 'N/A',
+                    payment_date=now(),
+                    method='Cash',
+                    status='Completed'
+                )
+                payment.save()
                 message = f'Balance updated for {customer.name} and applied to most recent bill {recent_bill.invoice_number}'
             else:
                 # No recent bill found, update only customer due
                 # Positive balance reduces due, negative balance increases due
                 customer.due -= balance_decimal
                 customer.save()
+                payment = CustomerPayment.objects.create(
+                    customer=customer,
+                    amount=balance_decimal,
+                    transaction_id = recent_bill.invoice_number if recent_bill else 'N/A',
+                    payment_date=now(),
+                    method='Cash',
+                    status='Completed'
+                )
+                payment.save()
                 message = f'Balance updated for {customer.name} without a recent bill'
                 
-            payment = CustomerPayment.objects.create(
-                customer=customer,
-                amount=balance_decimal,
-                transaction_id = recent_bill.invoice_number if recent_bill else 'N/A',
-                payment_date=now(),
-                method='Cash',
-                status='Completed'
-            )
-            payment.save()
 
             # Check if AJAX request
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
