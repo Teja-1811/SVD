@@ -188,6 +188,7 @@ def update_customer_balance(request, customer_id):
                 method='Cash',
                 status='Completed'
             )
+            payment.save()
 
             # Check if AJAX request
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
