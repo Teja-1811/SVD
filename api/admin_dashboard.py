@@ -43,7 +43,7 @@ def dashboard_api(request):
     # ============ CUSTOMERS NOT ORDERED TODAY ============
     customers_no_orders_today_qs = Customer.objects.exclude(
         id__in=CustomerOrder.objects.filter(order_date__date=today)
-        .values_list('customer_id', flat=True)
+        .values_list('customer_id', flat=True, frozen = False)
     )
 
     customers_no_orders_today = customers_no_orders_today_qs.count()
