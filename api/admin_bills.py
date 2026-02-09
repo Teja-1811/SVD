@@ -253,6 +253,7 @@ def api_edit_bill(request, bill_id):
             total_profit += profit
 
         # 3️⃣ Update bill totals
+        bill.op_due_amount = bill.customer.due if bill.customer else 0
         bill.total_amount = total
         bill.profit = total_profit
         bill.customer = Customer.objects.filter(id=customer).first() if customer else None

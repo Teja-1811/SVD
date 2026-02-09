@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from decimal import Decimal, InvalidOperation
 from django.db import transaction
 import uuid
-from milk_agency.models import Customer, CustomerPayment
+from milk_agency.models import Customer, CustomerPayment, Bill
 
 
 # =========================
@@ -89,9 +89,6 @@ def api_update_balance(request, pk):
         amount = Decimal(str(amount))
     except InvalidOperation:
         return Response({"success": False, "message": "Invalid amount"}, status=400)
-
-    if amount <= 0:
-        return Response({"success": False, "message": "Amount must be greater than zero"}, status=400)
 
     # Get latest bill (not just current month)
     latest_bill = Bill.objects.filter(
