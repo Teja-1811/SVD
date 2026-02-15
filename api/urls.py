@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import login_api
-from .products import *
+from .customer_products import *
 from .customer_place_order import *
 from .admin_dashboard import *
 from .customer_dashboard import *
@@ -79,6 +79,7 @@ urlpatterns = [
     
     # Monthly Sales Summary API
     path('sales/monthly-summary/', api_monthly_sales_summary, name='api_monthly_sales_summary'),
+    path('sales/monthly-summary/pdf/', monthly_summary_pdf_api, name='monthly_summary_pdf_api'),
     
     # Customer Payments API
     path('customer-payments/', customer_payments_api, name='customer_payments_api'),

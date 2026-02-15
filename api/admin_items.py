@@ -32,7 +32,7 @@ def get_items_by_category(request):
     if not category:
         return Response({"error": "category parameter is required"}, status=400)
 
-    items = Item.objects.filter(category=category, frozen=False)
+    items = Item.objects.filter(category=category)
 
     data = [
         {

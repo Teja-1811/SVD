@@ -16,6 +16,8 @@ from milk_agency.monthly_sales_summary import (
     calculate_curd_commission
 )
 
+from milk_agency.monthly_sales_pdf_utils import MonthlySalesPDFGenerator as PDFGenerator
+
 @api_view(['GET'])
 def api_monthly_sales_summary(request):
     """
@@ -153,3 +155,14 @@ def api_monthly_sales_summary(request):
             "total_commission": float(total_commission),
         }
     })
+
+@api_view(["GET"])
+def monthly_summary_pdf_api(request):
+    """
+    Direct PDF download API for Android
+    Params:
+        date=YYYY-MM
+        area=<area>
+        customer=<customer_id>
+    """
+    return PDFGenerator(request)
