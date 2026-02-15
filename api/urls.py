@@ -15,7 +15,7 @@ from .admin_orders_dashboard import *
 from .admin_stock_dashboard import *
 from .admin_customer_payments import *
 from .admin_companies import *
-from .admin_monthly_sales_summary import api_monthly_sales_summary
+from .admin_monthly_sales_summary import *
 
 urlpatterns = [
     # Auth / Login
