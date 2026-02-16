@@ -160,27 +160,27 @@ def api_monthly_sales_summary(request):
 
 @api_view(["GET"])
 def monthly_summary_pdf_api(request):
-    date_str = request.GET.get("date")  # "2026-02"
+    date_str = request.GET.get("date")
     customer_id = request.GET.get("customer_id")
     area = request.GET.get("area")
 
     if not date_str:
         return HttpResponse("date is required (YYYY-MM)", status=400)
 
-    # --- Convert YYYY-MM to start & end date ---
+    # --- Month parsing ---
     year, month = map(int, date_str.split("-"))
     start_date = datetime(year, month, 1).date()
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
-    selected_date = datetime(year, month, 1)
 
+    selected_date = start_date  # FIXED
 
     date_range = [
         start_date + timedelta(days=i)
         for i in range((end_date - start_date).days + 1)
     ]
 
-    # --- Fetch customer ---
+    # --- Customer ---
     customer = Customer.objects.filter(id=customer_id).first()
     if not customer:
         return HttpResponse("Customer not found", status=404)
@@ -191,16 +191,18 @@ def monthly_summary_pdf_api(request):
         invoice_date__range=(start_date, end_date)
     ).prefetch_related("items__item").order_by("invoice_date")
 
-    # Map bills by date
-    customer_bills = {bill.invoice_date: bill for bill in bills}
+    customer_bills = {
+        (bill.invoice_date.date() if hasattr(bill.invoice_date, "date") else bill.invoice_date): bill
+        for bill in bills
+    }
 
-    # --- Daily sales summaries ---
+    # --- Daily summaries ---
     summaries = DailySalesSummary.objects.filter(
         retailer_id=customer.retailer_id,
         date__range=(start_date, end_date)
     )
 
-    # --- Item wise data ---
+    # --- Item aggregation ---
     customer_items_data = {}
     unique_codes = set()
 
@@ -233,7 +235,6 @@ def monthly_summary_pdf_api(request):
 
     unique_codes = sorted(unique_codes)
 
-    # --- Totals ---
     total_quantity_per_item = {
         code: data["total_qty"] for code, data in customer_items_data.items()
     }
@@ -248,9 +249,7 @@ def monthly_summary_pdf_api(request):
     opening_due = bills.first().op_due_amount if bills.exists() else customer.due
     due_amount = opening_due + total_sales - paid_amount
 
-    # --------------------------------------------------
-    # Volume + Commission (REQUIRED BY PDF)
-    # --------------------------------------------------
+    # --- Volume + Commission ---
     milk_volume = Decimal("0")
     curd_volume = Decimal("0")
 
@@ -279,7 +278,7 @@ def monthly_summary_pdf_api(request):
 
     remaining_due = due_amount - total_commission
 
-    # --- FINAL context for PDF ---
+    # --- FINAL CONTEXT ---
     context = {
         "date": date_str,
         "area": area,
@@ -296,8 +295,6 @@ def monthly_summary_pdf_api(request):
         "total_sales": total_sales,
         "paid_amount": paid_amount,
         "due_amount": due_amount,
-
-        # Commission block (fix for avg_volume error)
         "milk_volume": milk_volume,
         "curd_volume": curd_volume,
         "avg_milk": avg_milk,
