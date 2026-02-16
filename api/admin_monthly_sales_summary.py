@@ -165,4 +165,16 @@ def monthly_summary_pdf_api(request):
         area=<area>
         customer=<customer_id>
     """
-    return PDFGenerator.generate_monthly_sales_pdf(request)
+    
+    date = request.GET.get("date")
+    customer_id = request.GET.get("customer_id")
+    area = request.GET.get("area")
+
+    context = {
+        "date": date,
+        "customer_id": customer_id,
+        "area": area,
+    }
+
+    pdf = PDFGenerator()
+    return pdf.generate_monthly_sales_pdf(context)
