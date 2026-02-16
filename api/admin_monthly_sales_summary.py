@@ -166,61 +166,63 @@ def monthly_summary_pdf_api(request):
     if not date_str:
         return HttpResponse("date is required (YYYY-MM)", status=400)
 
-    # 1️⃣ Month range
+    # --- Convert YYYY-MM to start & end date ---
     year, month = map(int, date_str.split("-"))
     start_date = datetime(year, month, 1).date()
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
 
-    date_range = f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}"
+    # --- Build full date range list (IMPORTANT for PDF) ---
+    date_range = [
+        start_date + timedelta(days=i)
+        for i in range((end_date - start_date).days + 1)
+    ]
 
-    # 2️⃣ Customer
+    # --- Fetch customer ---
     selected_customer = None
     if customer_id:
         selected_customer = Customer.objects.filter(id=customer_id).first()
 
-    # 3️⃣ Bills (FOR DATE ROWS)
-    customer_bills = Bill.objects.filter(
-        customer=selected_customer,
+    if not selected_customer:
+        return HttpResponse("Customer not found", status=404)
+
+    # --- Fetch bills for that customer (by retailer) ---
+    bills = Bill.objects.filter(
+        customer__retailer_id=selected_customer.retailer_id,
         invoice_date__range=(start_date, end_date)
-    ).order_by("invoice_date")
+    ).prefetch_related("items__item").order_by("invoice_date")
 
-    # 🔥 CRITICAL FIX: Ensure invoice_date is always date object
-    normalized_bills = []
-    for b in customer_bills:
-        inv_date = b.invoice_date
-        if isinstance(inv_date, str):
-            inv_date = datetime.strptime(inv_date, "%Y-%m-%d").date()
-        b.invoice_date = inv_date
-        normalized_bills.append(b)
+    # --- Map bills by date for quick lookup in PDF ---
+    customer_bills_dict = {}
+    for bill in bills:
+        bill_date = bill.invoice_date
+        customer_bills_dict[bill_date] = bill
 
-    # 4️⃣ Daily summaries
+    # --- Fetch daily sales summaries (NO invalid select_related) ---
     summaries = DailySalesSummary.objects.filter(
-        date__range=(start_date, end_date),
-        retailer_id=selected_customer.retailer_id if selected_customer else None
+        retailer_id=selected_customer.retailer_id,
+        date__range=(start_date, end_date)
     )
 
-    # 🔥 Normalize summary dates too
-    normalized_summaries = []
-    for s in summaries:
-        d = s.date
-        if isinstance(d, str):
-            d = datetime.strptime(d, "%Y-%m-%d").date()
-        s.date = d
-        normalized_summaries.append(s)
-
-    # 5️⃣ Build item data using get_item_list()
+    # --- Build item-wise structure ---
     customer_items_data = {}
     unique_codes = set()
 
-    for s in normalized_summaries:
-        items = s.get_item_list()
-        for item in items:
-            name = item["name"]
-            qty = item["quantity"]
-            price = item["price"]
+    for s in summaries:
+        try:
+            items = s.get_item_list()
+        except:
+            items = []
 
-            code = name  # using name as column code
+        for item in items:
+            code = item.get("code")
+            qty = item.get("quantity", 0)
+            price = item.get("price", 0)
+            amount = item.get("amount", 0)
+
+            if not code:
+                continue
+
             unique_codes.add(code)
 
             if code not in customer_items_data:
@@ -231,11 +233,11 @@ def monthly_summary_pdf_api(request):
                 }
 
             customer_items_data[code]["total_qty"] += qty
-            customer_items_data[code]["total_amount"] += qty * price
+            customer_items_data[code]["total_amount"] += amount
 
     unique_codes = sorted(unique_codes)
 
-    # 6️⃣ Totals
+    # --- Totals ---
     total_quantity_per_item = {
         code: data["total_qty"] for code, data in customer_items_data.items()
     }
@@ -244,23 +246,33 @@ def monthly_summary_pdf_api(request):
         code: data["total_amount"] for code, data in customer_items_data.items()
     }
 
-    total_amount = sum(total_amount_per_item.values())
+    total_sales = sum(total_amount_per_item.values())
 
-    # 7️⃣ FINAL CONTEXT (All date objects guaranteed)
+    paid_amount = sum(
+        (bill.last_paid or 0) for bill in bills
+    )
+
+    opening_due = bills.first().op_due_amount if bills.exists() else selected_customer.due
+    due_amount = opening_due + total_sales - paid_amount
+
+    # --- FULL context required by PDF utility ---
     context = {
-        "date": start_date,  # MUST be date object
-        "date_range": date_range,
+        "date": date_str,
         "customer_id": customer_id,
         "area": area,
         "selected_customer_obj": selected_customer,
         "start_date": start_date,
         "end_date": end_date,
-        "customer_bills": normalized_bills,
+        "selected_date": start_date,   # used in header
+        "date_range": date_range,      # IMPORTANT: list of date objects
+        "customer_bills": customer_bills_dict,
         "customer_items_data": customer_items_data,
         "unique_codes": unique_codes,
         "total_quantity_per_item": total_quantity_per_item,
         "total_amount_per_item": total_amount_per_item,
-        "total_amount": total_amount,
+        "total_sales": total_sales,
+        "paid_amount": paid_amount,
+        "due_amount": due_amount,
     }
 
     pdf = PDFGenerator()
