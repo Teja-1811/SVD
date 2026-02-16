@@ -158,28 +158,31 @@ def api_monthly_sales_summary(request):
 
 @api_view(["GET"])
 def monthly_summary_pdf_api(request):
-    """
-    Direct PDF download API for Android
-    Params:
-        date=YYYY-MM
-        area=<area>
-        customer=<customer_id>
-    """
-    
-    date = request.GET.get("date")
+    date_str = request.GET.get("date")  # e.g. "2026-01"
     customer_id = request.GET.get("customer_id")
     area = request.GET.get("area")
 
+    # --- Convert YYYY-MM to start & end date ---
+    year, month = map(int, date_str.split("-"))
+    start_date = datetime(year, month, 1).date()
+    last_day = calendar.monthrange(year, month)[1]
+    end_date = datetime(year, month, last_day).date()
+
+    # --- Fetch customer object ---
     selected_customer = None
     if customer_id:
         selected_customer = Customer.objects.filter(id=customer_id).first()
 
+    # --- FULL context expected by PDF utility ---
     context = {
-        "date": date,
+        "date": date_str,
         "customer_id": customer_id,
         "area": area,
-        "selected_customer_obj": selected_customer,  # <-- REQUIRED
+        "selected_customer_obj": selected_customer,
+        "start_date": start_date,
+        "end_date": end_date,
     }
+
 
     pdf = PDFGenerator()
     return pdf.generate_monthly_sales_pdf(context)
