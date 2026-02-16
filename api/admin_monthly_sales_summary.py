@@ -165,4 +165,4 @@ def monthly_summary_pdf_api(request):
         area=<area>
         customer=<customer_id>
     """
-    return PDFGenerator(request)
+    return PDFGenerator.generate_monthly_sales_pdf(request)
