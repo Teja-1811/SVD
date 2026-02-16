@@ -166,7 +166,9 @@ def monthly_summary_pdf_api(request):
     if not date_str:
         return HttpResponse("date is required (YYYY-MM)", status=400)
 
-    # --- Convert YYYY-MM to start & end date ---
+    # --------------------------------------------------
+    # 1️⃣ Convert YYYY-MM → start_date & end_date
+    # --------------------------------------------------
     year, month = map(int, date_str.split("-"))
     start_date = datetime(year, month, 1).date()
     last_day = calendar.monthrange(year, month)[1]
@@ -174,28 +176,49 @@ def monthly_summary_pdf_api(request):
 
     date_range = f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}"
 
-    # --- Fetch customer ---
+    # --------------------------------------------------
+    # 2️⃣ Fetch customer
+    # --------------------------------------------------
     selected_customer = None
     if customer_id:
         selected_customer = Customer.objects.filter(id=customer_id).first()
 
-    # --- Fetch bills (use correct field invoice_date) ---
+    # --------------------------------------------------
+    # 3️⃣ Fetch bills (IMPORTANT: use invoice_date)
+    # --------------------------------------------------
     customer_bills = Bill.objects.filter(
         customer=selected_customer,
         invoice_date__range=(start_date, end_date)
     ).order_by("invoice_date")
 
-    # --- Fetch summaries ---
+    # Ensure invoice_date is real date object
+    for bill in customer_bills:
+        if isinstance(bill.invoice_date, str):
+            bill.invoice_date = datetime.strptime(bill.invoice_date, "%Y-%m-%d").date()
+
+    # --------------------------------------------------
+    # 4️⃣ Fetch daily summaries
+    # --------------------------------------------------
     summaries = DailySalesSummary.objects.filter(
         date__range=(start_date, end_date),
         retailer_id=selected_customer.retailer_id if selected_customer else None
     )
 
-    # --- Build item-wise structure ---
+    # Normalize summary dates
+    for s in summaries:
+        if isinstance(s.date, str):
+            s.date = datetime.strptime(s.date, "%Y-%m-%d").date()
+
+    # --------------------------------------------------
+    # 5️⃣ Build item-wise structure
+    # --------------------------------------------------
     customer_items_data = {}
     unique_codes = set()
 
     for s in summaries:
+        if not hasattr(s, "item") or not s.item:
+            continue
+
         code = s.item.code
         unique_codes.add(code)
 
@@ -206,11 +229,14 @@ def monthly_summary_pdf_api(request):
                 "price": s.item.selling_price,
             }
 
-        customer_items_data[code]["total_qty"] += s.quantity
-        customer_items_data[code]["total_amount"] += s.amount
+        customer_items_data[code]["total_qty"] += s.quantity or 0
+        customer_items_data[code]["total_amount"] += s.amount or 0
 
     unique_codes = sorted(unique_codes)
 
+    # --------------------------------------------------
+    # 6️⃣ Totals
+    # --------------------------------------------------
     total_quantity_per_item = {
         code: data["total_qty"] for code, data in customer_items_data.items()
     }
@@ -221,9 +247,11 @@ def monthly_summary_pdf_api(request):
 
     total_amount = sum(total_amount_per_item.values())
 
-    # --- IMPORTANT: pass REAL date objects ---
+    # --------------------------------------------------
+    # 7️⃣ FINAL CONTEXT required by PDF utility
+    # --------------------------------------------------
     context = {
-        "date": start_date,  # ✔ FIX: real date, not string
+        "date": start_date,  # must be date object
         "date_range": date_range,
         "customer_id": customer_id,
         "area": area,
@@ -238,5 +266,8 @@ def monthly_summary_pdf_api(request):
         "total_amount": total_amount,
     }
 
+    # --------------------------------------------------
+    # 8️⃣ Generate PDF
+    # --------------------------------------------------
     pdf = PDFGenerator()
     return pdf.generate_monthly_sales_pdf(context)
