@@ -3484,3 +3484,79 @@ Running migrations:
   Applying sessions.0001_initial... OK
 Installed 1705 object(s) from 1 fixture(s)
 ==== Sync Completed Successfully Sat Feb 14 18:30:07 UTC 2026 ====
+==== MySQL → SQLite Sync Started Sun Feb 15 18:30:01 UTC 2026 ====
+Operations to perform:
+  Apply all migrations: admin, auth, authtoken, contenttypes, customer_portal, general_store, milk_agency, sessions
+Running migrations:
+  Applying milk_agency.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying authtoken.0001_initial... OK
+  Applying authtoken.0002_auto_20160226_1747... OK
+  Applying authtoken.0003_tokenproxy... OK
+  Applying authtoken.0004_alter_tokenproxy_options... OK
+  Applying milk_agency.0002_alter_customer_options_customer_groups_and_more... OK
+  Applying customer_portal.0001_initial... OK
+  Applying customer_portal.0002_delete_customerorderitem... OK
+  Applying customer_portal.0003_delete_customerorder... OK
+  Applying customer_portal.0004_initial... OK
+  Applying customer_portal.0005_customerorderitem_discount_total... OK
+  Applying customer_portal.0006_remove_customerorder_additional_notes_and_more... OK
+  Applying general_store.0001_initial... OK
+  Applying general_store.0002_customer_alter_sale_customer... OK
+  Applying general_store.0003_alter_sale_customer... OK
+  Applying general_store.0004_bankbalance_cashbookentry_expense... OK
+  Applying general_store.0005_alter_expense_category... OK
+  Applying general_store.0006_investment_delete_expense... OK
+  Applying general_store.0007_expense... OK
+  Applying general_store.0008_cashbookentry_c10_cashbookentry_c20... OK
+  Applying general_store.0009_remove_product_selling_price... OK
+  Applying milk_agency.0003_remove_customer_curd_commission_and_more... OK
+  Applying milk_agency.0004_bill_created_at... OK
+  Applying milk_agency.0005_delete_dailysalessummary... OK
+  Applying milk_agency.0006_dailysalessummary... OK
+  Applying milk_agency.0007_customermonthlycommission... OK
+  Applying milk_agency.0008_remove_customermonthlycommission_commission_rate_and_more... OK
+  Applying milk_agency.0009_remove_bill_pdf_file_remove_bill_whatsapp_url... OK
+  Applying milk_agency.0010_deliveryagent_deliveryassignment... OK
+  Applying milk_agency.0011_remove_deliveryassignment_delivery_agent_and_more... OK
+  Applying milk_agency.0012_alter_customer_groups_and_more... OK
+  Applying milk_agency.0013_delete_deliveryagent... OK
+  Applying milk_agency.0014_alter_bill_customer... OK
+  Applying milk_agency.0015_remove_customer_last_paid_balance... OK
+  Applying milk_agency.0016_remove_dailypayment_txn_id... OK
+  Applying milk_agency.0017_cashbookentry_c10_cashbookentry_c20... OK
+  Applying milk_agency.0018_cashbookentry_coin1_cashbookentry_coin10_and_more... OK
+  Applying milk_agency.0019_item_frozen... OK
+  Applying milk_agency.0020_bill_commission_deducted_bill_commission_month_and_more... OK
+  Applying milk_agency.0021_customer_is_commissioned... OK
+  Applying milk_agency.0022_company... OK
+  Applying milk_agency.0023_rename_company_item_company_old... OK
+  Applying milk_agency.0024_item_company... OK
+  Applying milk_agency.0025_remove_item_company_old... OK
+  Applying milk_agency.0026_dailypayment_company_new... OK
+  Applying milk_agency.0027_alter_dailypayment_unique_together_and_more... OK
+  Applying milk_agency.0028_rename_company_new_dailypayment_company_and_more... OK
+  Applying milk_agency.0029_alter_item_buying_price_alter_item_selling_price... OK
+  Applying milk_agency.0030_contact... OK
+  Applying milk_agency.0031_customer_is_delivery... OK
+  Applying milk_agency.0032_customerpayment... OK
+  Applying milk_agency.0033_item_description... OK
+  Applying sessions.0001_initial... OK
+Installed 1733 object(s) from 1 fixture(s)
+==== Sync Completed Successfully Sun Feb 15 18:30:07 UTC 2026 ====
