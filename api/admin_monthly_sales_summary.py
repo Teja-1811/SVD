@@ -239,10 +239,9 @@ def monthly_summary_pdf_api(request):
 
     total_amount = sum(total_amount_per_item.values())
 
-    # --- FULL context required by PDF utility ---
     context = {
-        "date": date_str,
-        "date_range": date_range,  # 🔥 REQUIRED (fixes your new error)
+        "date": start_date,  # FIXED: must be date, not string
+        "date_range": date_range,
         "customer_id": customer_id,
         "area": area,
         "selected_customer_obj": selected_customer,
