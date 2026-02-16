@@ -111,6 +111,7 @@ def update_stock_api(request):
     """
 
     items = request.data.get("items", [])
+    print("Received stock update:", items)
     updated = []
 
     for entry in items:
