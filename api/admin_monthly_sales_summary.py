@@ -4,6 +4,7 @@ import calendar
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import HttpResponse
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
 
@@ -158,9 +159,12 @@ def api_monthly_sales_summary(request):
 
 @api_view(["GET"])
 def monthly_summary_pdf_api(request):
-    date_str = request.GET.get("date")  # e.g. "2026-01"
+    date_str = request.GET.get("date")  # "2026-01"
     customer_id = request.GET.get("customer_id")
     area = request.GET.get("area")
+
+    if not date_str or not customer_id:
+        return HttpResponse("date and customer_id are required", status=400)
 
     # --- Convert YYYY-MM to start & end date ---
     year, month = map(int, date_str.split("-"))
@@ -168,12 +172,55 @@ def monthly_summary_pdf_api(request):
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
 
-    # --- Fetch customer object ---
-    selected_customer = None
-    if customer_id:
-        selected_customer = Customer.objects.filter(id=customer_id).first()
+    # --- Fetch customer ---
+    selected_customer = Customer.objects.filter(id=customer_id).first()
+    if not selected_customer:
+        return HttpResponse("Customer not found", status=404)
 
-    # --- FULL context expected by PDF utility ---
+    # --- Fetch bills (IMPORTANT: use invoice_date) ---
+    customer_bills = Bill.objects.filter(
+        customer__retailer_id=selected_customer.retailer_id,
+        invoice_date__range=(start_date, end_date)
+    ).order_by("invoice_date")
+
+    # --- Fetch daily summaries (use retailer_id, not customer FK) ---
+    summaries = DailySalesSummary.objects.filter(
+        retailer_id=selected_customer.retailer_id,
+        date__range=(start_date, end_date)
+    ).select_related("item")
+
+    # --- Build item-wise structure ---
+    customer_items_data = {}
+    unique_codes = set()
+
+    for s in summaries:
+        code = s.item.code
+        unique_codes.add(code)
+
+        if code not in customer_items_data:
+            customer_items_data[code] = {
+                "total_qty": 0,
+                "total_amount": 0,
+                "price": s.item.selling_price,
+            }
+
+        customer_items_data[code]["total_qty"] += s.quantity
+        customer_items_data[code]["total_amount"] += s.amount
+
+    unique_codes = sorted(unique_codes)
+
+    # --- Totals ---
+    total_quantity_per_item = {
+        code: data["total_qty"] for code, data in customer_items_data.items()
+    }
+
+    total_amount_per_item = {
+        code: data["total_amount"] for code, data in customer_items_data.items()
+    }
+
+    total_amount = sum(total_amount_per_item.values())
+
+    # --- FINAL context for PDF ---
     context = {
         "date": date_str,
         "customer_id": customer_id,
@@ -181,8 +228,13 @@ def monthly_summary_pdf_api(request):
         "selected_customer_obj": selected_customer,
         "start_date": start_date,
         "end_date": end_date,
+        "customer_bills": customer_bills,
+        "customer_items_data": customer_items_data,
+        "unique_codes": unique_codes,
+        "total_quantity_per_item": total_quantity_per_item,
+        "total_amount_per_item": total_amount_per_item,
+        "total_amount": total_amount,
     }
-
 
     pdf = PDFGenerator()
     return pdf.generate_monthly_sales_pdf(context)
