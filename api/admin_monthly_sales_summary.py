@@ -172,6 +172,9 @@ def monthly_summary_pdf_api(request):
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
 
+    # --- Date range string required by PDF ---
+    date_range = f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}"
+
     # --- Fetch customer ---
     selected_customer = None
     if customer_id:
@@ -180,7 +183,7 @@ def monthly_summary_pdf_api(request):
     if not selected_customer:
         return HttpResponse("Invalid customer", status=400)
 
-    # --- Fetch bills (based on retailer_id like your summary API) ---
+    # --- Fetch bills ---
     customer_bills = Bill.objects.filter(
         customer__retailer_id=selected_customer.retailer_id,
         invoice_date__range=(start_date, end_date)
@@ -198,7 +201,7 @@ def monthly_summary_pdf_api(request):
 
     for sale in summaries:
         try:
-            items = sale.get_item_list()  # JSON items list
+            items = sale.get_item_list()
         except:
             continue
 
@@ -239,6 +242,7 @@ def monthly_summary_pdf_api(request):
     # --- FULL context required by PDF utility ---
     context = {
         "date": date_str,
+        "date_range": date_range,  # 🔥 REQUIRED (fixes your new error)
         "customer_id": customer_id,
         "area": area,
         "selected_customer_obj": selected_customer,
