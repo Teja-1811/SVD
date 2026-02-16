@@ -114,7 +114,7 @@ def edit_item(request, item_id):
     item.name = request.data.get("name", item.name)
     company_id = request.data.get("company_id")
     if company_id:
-        item.company = company_id
+        item.company_id = int(company_id)
     item.category = request.data.get("category", item.category)
     item.selling_price = request.data.get("selling_price", item.selling_price)
     item.buying_price = request.data.get("buying_price", item.buying_price)
