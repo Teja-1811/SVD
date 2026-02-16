@@ -110,7 +110,7 @@ def update_stock_api(request):
     }
     """
 
-    items = request.data.get("items", [])
+    items = request.data.get("updates", [])
     print("Received stock update:", items)
     updated = []
 
