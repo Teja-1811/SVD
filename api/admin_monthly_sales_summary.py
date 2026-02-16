@@ -172,6 +172,8 @@ def monthly_summary_pdf_api(request):
     start_date = datetime(year, month, 1).date()
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
+    selected_date = datetime(year, month, 1)
+
 
     date_range = [
         start_date + timedelta(days=i)
@@ -281,6 +283,7 @@ def monthly_summary_pdf_api(request):
     context = {
         "date": date_str,
         "area": area,
+        "selected_date": selected_date,
         "selected_customer_obj": customer,
         "start_date": start_date,
         "end_date": end_date,
