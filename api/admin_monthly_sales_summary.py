@@ -179,16 +179,20 @@ def monthly_summary_pdf_api(request):
     if customer_id:
         selected_customer = Customer.objects.filter(id=customer_id).first()
 
-    # 3️⃣ Bills
+    # 3️⃣ Bills (FOR DATE ROWS)
     customer_bills = Bill.objects.filter(
         customer=selected_customer,
         invoice_date__range=(start_date, end_date)
     ).order_by("invoice_date")
 
-    # Ensure invoice_date is date object
+    # 🔥 CRITICAL FIX: Ensure invoice_date is always date object
+    normalized_bills = []
     for b in customer_bills:
-        if isinstance(b.invoice_date, str):
-            b.invoice_date = datetime.strptime(b.invoice_date, "%Y-%m-%d").date()
+        inv_date = b.invoice_date
+        if isinstance(inv_date, str):
+            inv_date = datetime.strptime(inv_date, "%Y-%m-%d").date()
+        b.invoice_date = inv_date
+        normalized_bills.append(b)
 
     # 4️⃣ Daily summaries
     summaries = DailySalesSummary.objects.filter(
@@ -196,21 +200,27 @@ def monthly_summary_pdf_api(request):
         retailer_id=selected_customer.retailer_id if selected_customer else None
     )
 
+    # 🔥 Normalize summary dates too
+    normalized_summaries = []
+    for s in summaries:
+        d = s.date
+        if isinstance(d, str):
+            d = datetime.strptime(d, "%Y-%m-%d").date()
+        s.date = d
+        normalized_summaries.append(s)
+
     # 5️⃣ Build item data using get_item_list()
     customer_items_data = {}
     unique_codes = set()
 
-    for s in summaries:
-        if isinstance(s.date, str):
-            s.date = datetime.strptime(s.date, "%Y-%m-%d").date()
-
+    for s in normalized_summaries:
         items = s.get_item_list()
         for item in items:
             name = item["name"]
             qty = item["quantity"]
             price = item["price"]
 
-            code = name  # using item name as unique code
+            code = name  # using name as column code
             unique_codes.add(code)
 
             if code not in customer_items_data:
@@ -236,7 +246,7 @@ def monthly_summary_pdf_api(request):
 
     total_amount = sum(total_amount_per_item.values())
 
-    # 7️⃣ Context required by PDF utility
+    # 7️⃣ FINAL CONTEXT (All date objects guaranteed)
     context = {
         "date": start_date,  # MUST be date object
         "date_range": date_range,
@@ -245,7 +255,7 @@ def monthly_summary_pdf_api(request):
         "selected_customer_obj": selected_customer,
         "start_date": start_date,
         "end_date": end_date,
-        "customer_bills": customer_bills,
+        "customer_bills": normalized_bills,
         "customer_items_data": customer_items_data,
         "unique_codes": unique_codes,
         "total_quantity_per_item": total_quantity_per_item,
