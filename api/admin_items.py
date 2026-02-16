@@ -132,3 +132,23 @@ def edit_item(request, item_id):
         "success": True,
         "message": "Item updated successfully"
     })
+
+#-------------------------
+#feeze/unfreeze item
+#-------------------------
+@api_view(['POST'])
+def toggle_freeze_item(request, item_id):
+
+    try:
+        item = Item.objects.get(id=item_id)
+    except Item.DoesNotExist:
+        return Response({"error": "Item not found"}, status=404)
+
+    item.frozen = not item.frozen
+    item.save()
+
+    status = "frozen" if item.frozen else "unfrozen"
+    return Response({
+        "success": True,
+        "message": f"Item {status} successfully"
+    })
