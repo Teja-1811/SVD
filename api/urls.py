@@ -42,7 +42,7 @@ urlpatterns = [
     path('items/categories/', get_categories, name='get_categories'),
     path('items/by-category/', get_items_by_category, name='get_items_by_category'),
     path('items/add/', add_item, name='add_item'),
-    path('items/edit/<int:pk>/', edit_item, name='edit_item'),
+    path('items/edit/<int:item_id>/', edit_item, name='edit_item'),
     
     # Bills Management APIs
     path('bills/list/', api_list_bills, name='api_list_bills'),
