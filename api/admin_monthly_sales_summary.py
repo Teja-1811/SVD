@@ -170,10 +170,15 @@ def monthly_summary_pdf_api(request):
     customer_id = request.GET.get("customer_id")
     area = request.GET.get("area")
 
+    selected_customer = None
+    if customer_id:
+        selected_customer = Customer.objects.filter(id=customer_id).first()
+
     context = {
         "date": date,
         "customer_id": customer_id,
         "area": area,
+        "selected_customer_obj": selected_customer,  # <-- REQUIRED
     }
 
     pdf = PDFGenerator()
