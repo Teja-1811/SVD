@@ -159,12 +159,12 @@ def api_monthly_sales_summary(request):
 
 @api_view(["GET"])
 def monthly_summary_pdf_api(request):
-    date_str = request.GET.get("date")  # "2026-01"
+    date_str = request.GET.get("date")  # "2026-02"
     customer_id = request.GET.get("customer_id")
     area = request.GET.get("area")
 
-    if not date_str or not customer_id:
-        return HttpResponse("date and customer_id are required", status=400)
+    if not date_str:
+        return HttpResponse("date is required (YYYY-MM)", status=400)
 
     # --- Convert YYYY-MM to start & end date ---
     year, month = map(int, date_str.split("-"))
@@ -173,39 +173,55 @@ def monthly_summary_pdf_api(request):
     end_date = datetime(year, month, last_day).date()
 
     # --- Fetch customer ---
-    selected_customer = Customer.objects.filter(id=customer_id).first()
-    if not selected_customer:
-        return HttpResponse("Customer not found", status=404)
+    selected_customer = None
+    if customer_id:
+        selected_customer = Customer.objects.filter(id=customer_id).first()
 
-    # --- Fetch bills (IMPORTANT: use invoice_date) ---
+    if not selected_customer:
+        return HttpResponse("Invalid customer", status=400)
+
+    # --- Fetch bills (based on retailer_id like your summary API) ---
     customer_bills = Bill.objects.filter(
         customer__retailer_id=selected_customer.retailer_id,
         invoice_date__range=(start_date, end_date)
     ).order_by("invoice_date")
 
-    # --- Fetch daily summaries (use retailer_id, not customer FK) ---
+    # --- Fetch daily sales summaries ---
     summaries = DailySalesSummary.objects.filter(
         retailer_id=selected_customer.retailer_id,
         date__range=(start_date, end_date)
-    ).select_related("item")
+    )
 
-    # --- Build item-wise structure ---
+    # --- Build item-wise structure from JSON items ---
     customer_items_data = {}
     unique_codes = set()
 
-    for s in summaries:
-        code = s.item.code
-        unique_codes.add(code)
+    for sale in summaries:
+        try:
+            items = sale.get_item_list()  # JSON items list
+        except:
+            continue
 
-        if code not in customer_items_data:
-            customer_items_data[code] = {
-                "total_qty": 0,
-                "total_amount": 0,
-                "price": s.item.selling_price,
-            }
+        for item in items:
+            code = item.get("code")
+            qty = item.get("quantity", 0)
+            price = item.get("price", 0)
+            amount = item.get("amount", 0)
 
-        customer_items_data[code]["total_qty"] += s.quantity
-        customer_items_data[code]["total_amount"] += s.amount
+            if not code:
+                continue
+
+            unique_codes.add(code)
+
+            if code not in customer_items_data:
+                customer_items_data[code] = {
+                    "total_qty": 0,
+                    "total_amount": 0,
+                    "price": price,
+                }
+
+            customer_items_data[code]["total_qty"] += qty
+            customer_items_data[code]["total_amount"] += amount
 
     unique_codes = sorted(unique_codes)
 
@@ -220,7 +236,7 @@ def monthly_summary_pdf_api(request):
 
     total_amount = sum(total_amount_per_item.values())
 
-    # --- FINAL context for PDF ---
+    # --- FULL context required by PDF utility ---
     context = {
         "date": date_str,
         "customer_id": customer_id,
