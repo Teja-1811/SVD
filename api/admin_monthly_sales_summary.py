@@ -167,99 +167,89 @@ def monthly_summary_pdf_api(request):
     if not date_str:
         return HttpResponse("date is required (YYYY-MM)", status=400)
 
-    # --- Convert YYYY-MM to dates ---
     year, month = map(int, date_str.split("-"))
     start_date = datetime(year, month, 1).date()
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
-    selected_date = datetime(year, month, 1)
 
-    # --- Date range list ---
-    date_range = [
-        start_date + timedelta(days=i)
-        for i in range((end_date - start_date).days + 1)
-    ]
-
-    # --- Fetch customer ---
     customer = Customer.objects.filter(id=customer_id).first()
     if not customer:
         return HttpResponse("Customer not found", status=404)
 
-    # --- Bills ---
+    # ---------------------------
+    # Bills aggregation (CRITICAL)
+    # ---------------------------
     bills = Bill.objects.filter(
         customer__retailer_id=customer.retailer_id,
         invoice_date__range=(start_date, end_date)
     ).prefetch_related("items__item").order_by("invoice_date")
 
-    # Map bills by date (used in PDF)
-    customer_bills = {bill.invoice_date: bill for bill in bills}
+    from collections import defaultdict
 
-    # --- Daily sales summaries ---
-    summaries = DailySalesSummary.objects.filter(
-        retailer_id=customer.retailer_id,
-        date__range=(start_date, end_date)
-    )
+    aggregated_bills = defaultdict(lambda: {
+        "total_amount": Decimal("0"),
+        "last_paid": Decimal("0"),
+        "op_due_amount": None,
+        "items": defaultdict(int),
+    })
 
-    # --- Item wise aggregation ---
-    customer_items_data = {}
+    for bill in bills:
+        date_key = bill.invoice_date.strftime('%Y-%m-%d')
+
+        aggregated_bills[date_key]["total_amount"] += bill.total_amount or 0
+        aggregated_bills[date_key]["last_paid"] += bill.last_paid or 0
+
+        if aggregated_bills[date_key]["op_due_amount"] is None:
+            aggregated_bills[date_key]["op_due_amount"] = bill.op_due_amount or 0
+
+        for bi in bill.items.all():
+            code = bi.item.code
+            aggregated_bills[date_key]["items"][code] += bi.quantity or 0
+
+    customer_bills = {}
+    customer_items_data = defaultdict(dict)
     unique_codes = set()
 
-    for s in summaries:
-        try:
-            items = s.get_item_list()
-        except:
-            items = []
+    for date_key, data in aggregated_bills.items():
+        op_due = data["op_due_amount"] or 0
+        customer_bills[date_key] = {
+            "invoice_date": datetime.strptime(date_key, "%Y-%m-%d").date(),
+            "total_amount": data["total_amount"],
+            "paid_amount": data["last_paid"],
+            "due_amount": data["total_amount"] - data["last_paid"] + op_due,
+        }
 
-        for item in items:
-            code = item.get("code")
-            qty = item.get("quantity", 0)
-            price = item.get("price", 0)
-            amount = item.get("amount", 0)
-
-            if not code:
-                continue
-
+        for code, qty in data["items"].items():
             unique_codes.add(code)
-
-            if code not in customer_items_data:
-                customer_items_data[code] = {
-                    "total_qty": 0,
-                    "total_amount": 0,
-                    "price": price,
-                }
-
-            customer_items_data[code]["total_qty"] += qty
-            customer_items_data[code]["total_amount"] += amount
+            customer_items_data[code][date_key] = qty
 
     unique_codes = sorted(unique_codes)
 
-    # --- Totals ---
     total_quantity_per_item = {
-        code: data["total_qty"] for code, data in customer_items_data.items()
+        code: sum(customer_items_data[code].values())
+        for code in unique_codes
     }
 
-    total_amount_per_item = {
-        code: data["total_amount"] for code, data in customer_items_data.items()
-    }
+    # ---------------------------
+    # Totals
+    # ---------------------------
+    total_sales = sum(b["total_amount"] for b in customer_bills.values())
+    paid_amount = sum(b["paid_amount"] for b in customer_bills.values())
 
-    total_sales = sum(total_amount_per_item.values())
-    paid_amount = sum((bill.last_paid or 0) for bill in bills)
-
-    opening_due = bills.first().op_due_amount if bills.exists() else (customer.due or 0)
+    opening_due = bills.first().op_due_amount if bills.exists() else customer.due
     due_amount = opening_due + total_sales - paid_amount
 
-    # --------------------------------------------------
+    # ---------------------------
     # Volume + Commission
-    # --------------------------------------------------
+    # ---------------------------
     milk_volume = Decimal("0")
     curd_volume = Decimal("0")
 
     for bill in bills:
-        for bill_item in bill.items.all():
-            category = (bill_item.item.category or "").lower()
-            qty = bill_item.quantity or 0
-            liters = extract_liters_from_name(bill_item.item.name) or 0
-
+        for bi in bill.items.all():
+            category = (bi.item.category or "").lower()
+            qty = bi.quantity or 0
+            liters = extract_liters_from_name(bi.item.name) or 0
             total_liters = Decimal(str(liters)) * Decimal(str(qty))
 
             if category == "milk":
@@ -268,9 +258,8 @@ def monthly_summary_pdf_api(request):
                 curd_volume += total_liters
 
     days_in_month = calendar.monthrange(year, month)[1]
-
-    avg_milk = (milk_volume / days_in_month) if milk_volume else Decimal("0")
-    avg_curd = (curd_volume / days_in_month) if curd_volume else Decimal("0")
+    avg_milk = milk_volume / days_in_month if milk_volume else Decimal("0")
+    avg_curd = curd_volume / days_in_month if curd_volume else Decimal("0")
     avg_volume = avg_milk + avg_curd
 
     milk_commission = calculate_milk_commission(avg_milk) * days_in_month
@@ -279,11 +268,18 @@ def monthly_summary_pdf_api(request):
 
     remaining_due = due_amount - total_commission
 
-    # --- FINAL context required by PDF utility ---
+    date_range = [
+        start_date + timedelta(days=i)
+        for i in range((end_date - start_date).days + 1)
+    ]
+
+    # ---------------------------
+    # FINAL CONTEXT (MATCH HTML)
+    # ---------------------------
     context = {
         "date": date_str,
         "area": area,
-        "selected_date": selected_date,
+        "selected_date": start_date,
         "selected_customer_obj": customer,
         "start_date": start_date,
         "end_date": end_date,
@@ -292,14 +288,11 @@ def monthly_summary_pdf_api(request):
         "customer_items_data": customer_items_data,
         "unique_codes": unique_codes,
         "total_quantity_per_item": total_quantity_per_item,
-        "total_amount_per_item": total_amount_per_item,
         "total_sales": total_sales,
         "paid_amount": paid_amount,
         "due_amount": due_amount,
-        "milk_volume": milk_volume,
-        "curd_volume": curd_volume,
-        "avg_milk": avg_milk,
-        "avg_curd": avg_curd,
+        "milk_volume": avg_milk,
+        "curd_volume": avg_curd,
         "avg_volume": avg_volume,
         "milk_commission": milk_commission,
         "curd_commission": curd_commission,
