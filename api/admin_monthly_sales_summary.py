@@ -157,6 +157,7 @@ def api_monthly_sales_summary(request):
         }
     })
 
+
 @api_view(["GET"])
 def monthly_summary_pdf_api(request):
     date_str = request.GET.get("date")  # "2026-02"
@@ -172,39 +173,32 @@ def monthly_summary_pdf_api(request):
     last_day = calendar.monthrange(year, month)[1]
     end_date = datetime(year, month, last_day).date()
 
-    # --- Build full date range list (IMPORTANT for PDF) ---
     date_range = [
         start_date + timedelta(days=i)
         for i in range((end_date - start_date).days + 1)
     ]
 
     # --- Fetch customer ---
-    selected_customer = None
-    if customer_id:
-        selected_customer = Customer.objects.filter(id=customer_id).first()
-
-    if not selected_customer:
+    customer = Customer.objects.filter(id=customer_id).first()
+    if not customer:
         return HttpResponse("Customer not found", status=404)
 
-    # --- Fetch bills for that customer (by retailer) ---
+    # --- Bills ---
     bills = Bill.objects.filter(
-        customer__retailer_id=selected_customer.retailer_id,
+        customer__retailer_id=customer.retailer_id,
         invoice_date__range=(start_date, end_date)
     ).prefetch_related("items__item").order_by("invoice_date")
 
-    # --- Map bills by date for quick lookup in PDF ---
-    customer_bills_dict = {}
-    for bill in bills:
-        bill_date = bill.invoice_date
-        customer_bills_dict[bill_date] = bill
+    # Map bills by date
+    customer_bills = {bill.invoice_date: bill for bill in bills}
 
-    # --- Fetch daily sales summaries (NO invalid select_related) ---
+    # --- Daily sales summaries ---
     summaries = DailySalesSummary.objects.filter(
-        retailer_id=selected_customer.retailer_id,
+        retailer_id=customer.retailer_id,
         date__range=(start_date, end_date)
     )
 
-    # --- Build item-wise structure ---
+    # --- Item wise data ---
     customer_items_data = {}
     unique_codes = set()
 
@@ -247,25 +241,51 @@ def monthly_summary_pdf_api(request):
     }
 
     total_sales = sum(total_amount_per_item.values())
+    paid_amount = sum((bill.last_paid or 0) for bill in bills)
 
-    paid_amount = sum(
-        (bill.last_paid or 0) for bill in bills
-    )
-
-    opening_due = bills.first().op_due_amount if bills.exists() else selected_customer.due
+    opening_due = bills.first().op_due_amount if bills.exists() else customer.due
     due_amount = opening_due + total_sales - paid_amount
 
-    # --- FULL context required by PDF utility ---
+    # --------------------------------------------------
+    # Volume + Commission (REQUIRED BY PDF)
+    # --------------------------------------------------
+    milk_volume = Decimal("0")
+    curd_volume = Decimal("0")
+
+    for bill in bills:
+        for bill_item in bill.items.all():
+            category = (bill_item.item.category or "").lower()
+            qty = bill_item.quantity or 0
+            liters = extract_liters_from_name(bill_item.item.name) or 0
+
+            total_liters = Decimal(str(liters)) * Decimal(str(qty))
+
+            if category == "milk":
+                milk_volume += total_liters
+            elif category == "curd":
+                curd_volume += total_liters
+
+    days_in_month = calendar.monthrange(year, month)[1]
+
+    avg_milk = (milk_volume / days_in_month) if milk_volume else Decimal("0")
+    avg_curd = (curd_volume / days_in_month) if curd_volume else Decimal("0")
+    avg_volume = avg_milk + avg_curd
+
+    milk_commission = calculate_milk_commission(avg_milk) * days_in_month
+    curd_commission = calculate_curd_commission(avg_curd) * days_in_month
+    total_commission = milk_commission + curd_commission
+
+    remaining_due = due_amount - total_commission
+
+    # --- FINAL context for PDF ---
     context = {
         "date": date_str,
-        "customer_id": customer_id,
         "area": area,
-        "selected_customer_obj": selected_customer,
+        "selected_customer_obj": customer,
         "start_date": start_date,
         "end_date": end_date,
-        "selected_date": start_date,   # used in header
-        "date_range": date_range,      # IMPORTANT: list of date objects
-        "customer_bills": customer_bills_dict,
+        "date_range": date_range,
+        "customer_bills": customer_bills,
         "customer_items_data": customer_items_data,
         "unique_codes": unique_codes,
         "total_quantity_per_item": total_quantity_per_item,
@@ -273,6 +293,17 @@ def monthly_summary_pdf_api(request):
         "total_sales": total_sales,
         "paid_amount": paid_amount,
         "due_amount": due_amount,
+
+        # Commission block (fix for avg_volume error)
+        "milk_volume": milk_volume,
+        "curd_volume": curd_volume,
+        "avg_milk": avg_milk,
+        "avg_curd": avg_curd,
+        "avg_volume": avg_volume,
+        "milk_commission": milk_commission,
+        "curd_commission": curd_commission,
+        "total_commission": total_commission,
+        "remaining_due": remaining_due,
     }
 
     pdf = PDFGenerator()
