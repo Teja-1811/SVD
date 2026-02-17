@@ -6,18 +6,18 @@
 {% block extra_css %}
 <style>
 
-.company-logo {
-    height: 90px;
-    width: auto;
-    object-fit: contain;
-    padding: 6px;
-    background: white;
-    border-radius: 12px;
-    margin: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-}
+    .company-logo {
+        height: 90px !important;
+        width: 25% !important;
+        object-fit: contain !important;
+        padding: 4px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        margin: 10px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
+    }
 
-/* FULL WIDTH modal */
+    /* FULL WIDTH modal */
 .modal-fullscreen .modal-content {
     border-radius: 10px;
 }
@@ -31,19 +31,19 @@
     max-width: 1500px;
 }
 
-/* Small product grid */
+/* FORCE small product grid */
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 20px;
+    display: grid !important;  /* force override bootstrap */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 20px !important;
     padding: 10px;
-    justify-items: center;
+    justify-items: center !important;
 }
 
-/* Product card */
+/* Small product card */
 .product-card {
     width: 100%;
-    max-width: 150px;
+    max-width: 150px !important;
     min-height: 200px;
     padding: 10px;
     border-radius: 12px;
@@ -52,20 +52,21 @@
     text-align: center;
 }
 
-/* Product image */
+/* Small product image */
 .product-img {
-    max-height: 120px;
-    width: auto;
-    object-fit: contain;
+    max-height: 120px !important;
+    width: auto !important;
+    object-fit: contain !important;
     padding: 5px;
     display: block;
     margin: auto;
     background: white;
 }
 
-/* ===== Company Filter Logos ===== */
+/* ===== Company Filter Logos in Modal ===== */
 .company-filters {
     width: 100%;
+    height: auto;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -86,6 +87,7 @@
     box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
+
 .company-filter-logo:hover {
     transform: scale(1.05);
 }
@@ -99,6 +101,7 @@
 {% endblock extra_css %}
 
 
+
 {% block content %}
 
 <!-- HERO SECTION -->
@@ -108,6 +111,7 @@
             <div class="col-12 text-center">
                 <div class="hero-content">
 
+                    <!-- MAIN LOGO -->
                     <div class="hero-logo-wrapper mb-4">
                         <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
                             <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
@@ -125,12 +129,33 @@
                     <!-- COMPANY LOGOS -->
                     <div class="divider my-4">
                         {% for company in companies %}
-                            <img src="{{ company.logo.url }}" class="company-logo"
-                                 alt="{{ company.name }} Logo">
+                                <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
+                         
                         {% endfor %}
                     </div>
 
+                    <p>
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            Serving Gundugolanu and Surrounding Areas
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-telephone-fill me-2"></i>
+                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
+                                +91 9392890375
+                            </a>
+                        </span>
+                    </p>
+
+                    <!-- BUTTONS -->
                     <div class="mt-4 d-flex justify-content-center gap-3">
+
+                        <!-- OPEN PRODUCTS MODAL -->
                         <button class="btn btn-primary px-5 py-3 fw-semibold"
                                 data-bs-toggle="modal" data-bs-target="#productsModal">
                             Explore Products
@@ -146,9 +171,10 @@
         </div>
     </div>
 </section>
+<!-- ======================================================== -->
+<!--                        PRODUCTS MODAL                    -->
+<!-- ======================================================== -->
 
-
-<!-- ================= PRODUCTS MODAL ================= -->
 <div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
@@ -160,86 +186,181 @@
 
             <div class="modal-body">
 
-                <div class="products-wrapper">
+    <div class="products-wrapper">
 
-                    <div class="text-center mb-4">
-                        <h2>Our Premium Products</h2>
-                        <p class="text-muted">Company-wise Product Availability</p>
+        <div class="text-center mb-4">
+            <h2>Our Premium Products</h2>
+            <p class="text-muted">Company-wise Product Availability</p>
+        </div>
+
+        <!-- ===== FILTER BAR ===== -->
+        <div class="company-filters">
+            <button class="btn btn-outline-secondary btn-sm active"
+                    onclick="filterCompany('all', this)">
+                All
+            </button>
+
+            {% for company in companies %}
+                <img src="{{ company.logo.url }}"
+                     class="company-filter-logo"
+                     data-company="{{ company.id }}"
+                     onclick="filterCompany('{{ company.id }}', this)"
+                     alt="{{ company.name }}">
+            {% endfor %}
+        </div>
+
+        <!-- ===== PRODUCTS BY COMPANY ===== -->
+        {% for company in companies %}
+        <div class="company-section mb-5" data-company="{{ company.id }}">
+
+            <div class="text-center mb-4">
+                <img src="{{ company.logo.url }}"
+                     alt="{{ company.name }} Logo"
+                     style="height:70px; background:white; border-radius:12px; padding:8px;">
+
+                <h3 class="mt-3">{{ company.name }} Products</h3>
+                <p class="text-muted">Available items from {{ company.name }}</p>
+            </div>
+
+            <div style="
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 20px;
+                    padding: 10px;
+                    width: 100%;
+                ">
+
+                {% for product in products %}
+                    {% if product.company == company %}
+                    <div style="width: 250px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.12); text-align: center; margin: auto;">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}"
+                                alt="{{ product.name }}"
+                                style="height: 120px; object-fit: contain; display: block; margin: auto;">
+                        {% else %}
+                            <img src="{% static 'images/no-product.png' %}"
+                                alt="No Image"
+                                style="height: 120px; object-fit: contain; display: block; margin: auto; opacity:0.6;">
+                        {% endif %}
+                        <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
+                        <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+                        {% if product.description %}
+                            <p style="font-size:0.85rem; color:#555;">{{ product.description }}</p>
+                        {% endif %}
                     </div>
-
-                    <!-- FILTER BAR -->
-                    <div class="company-filters">
-                        <button class="btn btn-outline-secondary btn-sm active"
-                                onclick="filterCompany('all', this)">
-                            All
-                        </button>
-
-                        {% for company in companies %}
-                            <img src="{{ company.logo.url }}"
-                                 class="company-filter-logo"
-                                 data-company="{{ company.id }}"
-                                 onclick="filterCompany('{{ company.id }}', this)"
-                                 alt="{{ company.name }}">
-                        {% endfor %}
-                    </div>
-
-                    <!-- PRODUCTS BY COMPANY -->
-                    {% for company in companies %}
-                    <div class="company-section mb-5" data-company="{{ company.id }}">
-
-                        <div class="text-center mb-4">
-                            <img src="{{ company.logo.url }}"
-                                 alt="{{ company.name }} Logo"
-                                 style="height:70px; background:white; border-radius:12px; padding:8px;">
-
-                            <h3 class="mt-3">{{ company.name }} Products</h3>
-                            <p class="text-muted">Available items from {{ company.name }}</p>
-                        </div>
-
-                        <div class="products-grid">
-                            {% for product in products %}
-                                {% if product.company == company %}
-                                <div class="product-card">
-                                    {% if product.image %}
-                                        <img src="{{ product.image.url }}" class="product-img">
-                                    {% else %}
-                                        <img src="{% static 'images/no-product.png' %}" class="product-img" style="opacity:0.6;">
-                                    {% endif %}
-                                    <h6 class="mt-2">{{ product.name }}</h6>
-                                    <p class="fw-bold">₹{{ product.mrp }}</p>
-                                    {% if product.description %}
-                                        <p class="small text-muted">{{ product.description }}</p>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                    </div>
-                    {% endfor %}
-
-                </div>
+                    {% endif %}
+                {% endfor %}
 
             </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
 
         </div>
     </div>
 </div>
 
-
 <!-- CONTACT SECTION -->
 <section class="section py-5" id="contact">
     <div class="container-fluid">
+
         <div class="text-center mb-5">
             <h2 class="mb-3">Get In Touch</h2>
             <p>Find our location or send us a message</p>
         </div>
-        <!-- (Your existing contact section unchanged) -->
+
+        <div class="row g-4">
+
+            <!-- MAP -->
+            <div class="col-lg-6">
+                <div class="location-card h-100 text-center">
+                    <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
+
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+                        width="100%" height="400"
+                        style="border:0; border-radius:10px;" loading="lazy"></iframe>
+
+                    <p class="mt-3 fs-3">
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-clock-fill me-2"></i>
+                            Mon–Sun: 6 AM – 9 PM
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-telephone-fill me-2"></i>
+                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
+                                +91 9392890375
+                            </a>
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-envelope-fill me-2"></i>
+                            <a href="mailto:svdagencies12@gmail.com" class="text-dark text-decoration-none fw-semibold">
+                                svdagencies12@gmail.com
+                            </a>
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- CONTACT FORM -->
+            <div class="col-lg-6">
+                <div class="contact-form-card h-100">
+                    <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
+
+                    <form id="contactForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label>Name *</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Phone *</label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Email</label>
+                                <input type="email" name="email" class="form-control">
+                            </div>
+
+                            <div class="col-12">
+                                <label>Subject *</label>
+                                <input type="text" name="subject" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Message *</label>
+                                <textarea rows="4" name="message" class="form-control" required></textarea>
+                            </div>
+
+                            <div class="col-12 text-center mt-3">
+                                <button type="button" id="whatsappBtn" class="btn btn-whatsapp btn-lg">
+                                    <i class="bi bi-whatsapp me-2"></i> Contact via WhatsApp
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
     </div>
 </section>
 
 {% endblock %}
-
 
 {% block extra_js %}
 <script>
@@ -248,6 +369,7 @@ function filterCompany(companyId, el) {
     document.querySelectorAll('.company-filter-logo').forEach(img => {
         img.classList.remove('active');
     });
+
     document.querySelectorAll('.company-filters button').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -255,25 +377,15 @@ function filterCompany(companyId, el) {
     el.classList.add('active');
 
     const sections = document.querySelectorAll('.company-section');
-    let firstVisible = null;
 
     sections.forEach(section => {
         if (companyId === 'all') {
             section.style.display = 'block';
-            if (!firstVisible) firstVisible = section;
         } else {
-            if (section.dataset.company === companyId) {
-                section.style.display = 'block';
-                firstVisible = section;
-            } else {
-                section.style.display = 'none';
-            }
+            section.style.display =
+                section.dataset.company === companyId ? 'block' : 'none';
         }
     });
-
-    if (firstVisible) {
-        firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
 }
 </script>
 
