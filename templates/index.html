@@ -22,15 +22,15 @@
 }
 
 /* ================= EQUAL COMPANY LOGOS ================= */
-.divider {
+.company-logos-row {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 16px;
+    margin-top: 20px;
 }
 
-/* Fixed equal square logo boxes */
 .logo-box {
     width: 80px;
     height: 80px;
@@ -43,7 +43,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Logo image always fits inside box */
 .logo-box img {
     max-width: 100%;
     max-height: 100%;
@@ -115,22 +114,17 @@
 }
 
 /* ================= RESPONSIVE ================= */
-
-/* Tablets */
 @media (max-width: 992px) {
     .hero-content h3 {
         font-size: 2.2rem;
         line-height: 1.3;
     }
-
     .product-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* Mobile */
 @media (max-width: 576px) {
-
     .hero-section {
         min-height: 80vh;
         padding-top: 30px;
@@ -144,7 +138,6 @@
         font-size: 0.95rem;
     }
 
-    /* Smaller equal logo boxes */
     .logo-box {
         width: 60px;
         height: 60px;
@@ -171,17 +164,14 @@
     }
 }
 
-/* Ultra small phones */
 @media (max-width: 400px) {
     .hero-content h3 {
         font-size: 1.4rem;
     }
-
     .product-grid {
         grid-template-columns: 1fr;
     }
 }
-
 </style>
 {% endblock extra_css %}
 
@@ -209,7 +199,7 @@
                     </p>
 
                     <!-- COMPANY LOGOS -->
-                    <div class="company-logos-row my-4">
+                    <div class="company-logos-row">
                         {% for company in companies %}
                             {% if company.logo %}
                                 <div class="logo-box">
@@ -275,7 +265,6 @@
                     <!-- PRODUCTS BY COMPANY -->
                     {% for company in companies %}
                     <div class="company-section mb-5" data-company="{{ company.id }}">
-
                         <div class="text-center mb-4">
                             <img src="{{ company.logo.url }}"
                                  alt="{{ company.name }}"
