@@ -200,17 +200,28 @@
                 All
             </button>
 
-            <div style="width:1px; background:#ccc; height:30px;">
-                {% for company in companies %}
-                <img src="{{ company.logo.url }}"
-                     class="company-filter-logo"
-                     data-company="{{ company.id }}"
-                     onclick="filterCompany('{{ company.id }}', this)"
-                     alt="{{ company.name }}">
-            {% endfor %}
-            </div>
-
             {% for company in companies %}
+                <div style="display:inline-block; position:relative;">
+                    <img src="{{ company.logo.url }}"
+                         alt="{{ company.name }} Logo"
+                         class="company-filter-logo"
+                         onclick="filterCompany('{{ company.id }}', this)">
+
+                    <span style="
+                        position:absolute;
+                        bottom:0;
+                        left:50%;
+                        transform: translateX(-50%);
+                        background: rgba(0,0,0,0.6);
+                        color:white;
+                        font-size:10px;
+                        padding:2px 6px;
+                        border-radius:8px;
+                        pointer-events:none;
+                    ">
+                        {{ company.name }}
+                    </span>
+            {% endfor %}
         </div>
 
         <!-- ===== PRODUCTS BY COMPANY ===== -->
