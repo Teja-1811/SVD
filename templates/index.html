@@ -1,263 +1,319 @@
 ﻿{% extends 'base.html' %}
-{% load static custom_filters %}
+{% load static %}
 
 {% block title %}SVD Milk Agencies{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* ================= HERO ================= */
-    .hero-section {
-        min-height: 90vh;
-        background: linear-gradient(135deg, #0d6efd, #0a58ca);
-        display: flex;
-        align-items: center;
+
+    .company-logo {
+        height: 90px !important;
+        width: 25% !important;
+        object-fit: contain !important;
+        padding: 4px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        margin: 10px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
 
-    .hero-content h3 { font-size: 3.5rem; }
+    /* FULL WIDTH modal */
+.modal-fullscreen .modal-content {
+    border-radius: 10px;
+}
 
-    .gradient-text {
-        background: linear-gradient(45deg, #ffd700, #fff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+/* Wrapper inside modal */
+.products-wrapper {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+    margin: auto;
+    max-width: 1500px;
+}
 
-    /* ================= COMPANY LOGOS ================= */
-    .company-logos-row {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-top: 25px;
-    }
+/* FORCE small product grid */
+.products-grid {
+    display: grid !important;  /* force override bootstrap */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 20px !important;
+    padding: 10px;
+    justify-items: center !important;
+}
 
-    .logo-box {
-        width: 80px;
-        height: 80px;
-        background: #fff;
-        border-radius: 14px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: transform 0.2s;
-    }
+/* Small product card */
+.product-card {
+    width: 100%;
+    max-width: 150px !important;
+    min-height: 200px;
+    padding: 10px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    text-align: center;
+}
 
-    .logo-box:hover { transform: translateY(-5px); }
+/* Small product image */
+.product-img {
+    max-height: 120px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    padding: 5px;
+    display: block;
+    margin: auto;
+    background: white;
+}
 
-    /* ================= STICKY MODAL FILTERS ================= */
-    .modal-body { padding: 0 !important; } /* Needed for sticky header */
-
-    .sticky-filter-bar {
-        position: sticky;
-        top: 0;
-        background: white;
-        z-index: 1020;
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .company-filters {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .company-filter-logo {
-        width: 80px;
-        height: 40px;
-        object-fit: contain;
-        padding: 5px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: 0.2s;
-    }
-
-    .company-filter-logo.active, .btn-filter.active {
-        border-color: #0d6efd;
-        background: white;
-        box-shadow: 0 0 8px rgba(13,110,253,0.2);
-    }
-
-    /* ================= PRODUCTS ================= */
-    .products-wrapper { padding: 30px 15px; }
-
-    .product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 20px;
-    }
-
-    .product-card {
-        background: white;
-        border-radius: 15px;
-        padding: 15px;
-        border: 1px solid #eee;
-        transition: 0.3s;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-card:hover {
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        border-color: #0d6efd;
-    }
-
-    .product-img {
-        height: 120px; /* Uniform height */
-        width: 100%;
-        object-fit: contain;
-        margin-bottom: 10px;
-    }
-
-    /* ================= RESPONSIVE ================= */
-    @media (max-width: 768px) {
-        .hero-content h3 { font-size: 2.2rem; }
-        .product-grid { grid-template-columns: repeat(2, 1fr); }
-    }
 </style>
 {% endblock extra_css %}
 
+
+
 {% block content %}
 
-<section class="hero-section text-center" id="home">
-    <div class="container">
-        <div class="hero-content">
-            <div class="hero-logo-wrapper mb-4">
-                <div class="d-inline-block p-2 rounded-circle bg-white shadow">
-                    <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:100px;">
-                </div>
-            </div>
+<!-- HERO SECTION -->
+<section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
+    <div class="container-fluid h-100 position-relative z-index-2 mt-5">
+        <div class="row h-100 align-items-center">
+            <div class="col-12 text-center">
+                <div class="hero-content">
 
-            <h3 class="fw-bold mb-4 text-white">
-                Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
-            </h3>
-
-            <p class="lead text-white-50 mb-5">Your Trusted Partner for Quality Dairy Products</p>
-
-            <div class="company-logos-row mb-5">
-                {% for company in companies %}
-                    {% if company.logo %}
-                        <div class="logo-box">
-                            <img src="{{ company.logo.url }}" alt="{{ company.name }}">
+                    <!-- MAIN LOGO -->
+                    <div class="hero-logo-wrapper mb-4">
+                        <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
+                            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
                         </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
+                    </div>
 
-            <div class="d-flex flex-wrap justify-content-center gap-3">
-                <button class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-pill" data-bs-toggle="modal" data-bs-target="#productsModal">
-                    Explore Products
-                </button>
-                <a href="#contact" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill">
-                    Get in Touch
-                </a>
+                    <h3 class="display-3 fw-bold mb-4 text-white">
+                        Fresh <span class="gradient-text">Milk</span> Delivery<br>Every Day
+                    </h3>
+
+                    <p class="lead text-white">
+                        Your Trusted Partner for Quality Dairy Products
+                    </p>
+
+                    <!-- COMPANY LOGOS -->
+                    <div class="divider my-4">
+                        {% for company in companies %}
+                                <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
+                         
+                        {% endfor %}
+                    </div>
+
+                    <p>
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            Serving Gundugolanu and Surrounding Areas
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-telephone-fill me-2"></i>
+                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
+                                +91 9392890375
+                            </a>
+                        </span>
+                    </p>
+
+                    <!-- BUTTONS -->
+                    <div class="mt-4 d-flex justify-content-center gap-3">
+
+                        <!-- OPEN PRODUCTS MODAL -->
+                        <button class="btn btn-primary px-5 py-3 fw-semibold"
+                                data-bs-toggle="modal" data-bs-target="#productsModal">
+                            Explore Products
+                        </button>
+
+                        <a href="#contact" class="btn btn-outline-light px-5 py-3 fw-semibold">
+                            Get in Touch
+                        </a>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
 </section>
+<!-- ======================================================== -->
+<!--                        PRODUCTS MODAL                    -->
+<!-- ======================================================== -->
 
 <div class="modal fade" id="productsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h4 class="modal-title fw-bold">Our Fresh Catalog</h4>
+                <h4 class="modal-title">Our Premium Products</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
-                <div class="sticky-filter-bar">
-                    <div class="company-filters">
-                        <button class="btn btn-light btn-sm btn-filter active fw-bold px-3" onclick="filterCompany('all', this)">All</button>
-                        {% for company in companies %}
-                            {% if company.logo %}
-                                <img src="{{ company.logo.url }}" class="company-filter-logo" 
-                                     data-company="{{ company.id }}" 
-                                     onclick="filterCompany('{{ company.id }}', this)" 
-                                     alt="{{ company.name }}">
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
 
                 <div class="products-wrapper">
+
+                    <div class="text-center mb-4">
+                        <h2>Our Premium Products</h2>
+                        <p class="text-muted">Company-wise Product Availability</p>
+                    </div>
+
                     {% for company in companies %}
-                        {% with products=products_by_company|get_item:company.id %}
-                            {% if products %}
-                            <div class="company-section mb-5" data-company="{{ company.id }}">
-                                <div class="text-center mb-4 border-bottom pb-3">
-                                    <img src="{{ company.logo.url }}" alt="{{ company.name }}" style="height:40px; object-fit:contain;">
-                                    <h3 class="mt-2 fw-bold">{{ company.name }}</h3>
+                        
+                        <div class="text-center mb-5">
+                            <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:70px; background:white; border-radius:12px; padding:8px;">
+
+                            <h3 class="mt-3">{{ company.name }} Products</h3>
+                            <p class="text-muted">Available items from {{ company.name }}</p>
+                        </div>
+                        <div style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                                gap: 20px;
+                                padding: 10px;
+                                width: 100%;
+                            ">
+
+                            {% for product in products %}
+                                {% if product.company == company %}
+
+                                <div style="width: 250px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.12); text-align: center; margin: auto;
+                                ">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}"
+                                            alt="{{ product.name }}"
+                                            style="height: 120px; object-fit: contain; display: block; margin: auto;">
+                                    {% else %}
+                                        <img src="{% static 'images/no-product.png' %}"
+                                            alt="No Image"
+                                            style="height: 120px; object-fit: contain; display: block; margin: auto; opacity:0.6;">
+                                    {% endif %}
+                                    <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
+                                    <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+                                    {% if product.description %}
+                                        <p style="font-size:0.85rem; color:#555;">{{ product.description }}</p>
+                                    {% endif %}
                                 </div>
 
-                                <div class="product-grid">
-                                    {% for product in products %}
-                                        <div class="product-card text-center">
-                                            {% if product.image %}
-                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
-                                            {% else %}
-                                                <img src="{% static 'images/no-product.png' %}" class="product-img opacity-50">
-                                            {% endif %}
-                                            <h6 class="fw-bold mb-1">{{ product.name }}</h6>
-                                            <p class="text-primary fw-bold mb-2">₹{{ product.mrp }}</p>
-                                            {% if product.description %}
-                                                <p class="small text-muted">{{ product.description }}</p>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                </div>
+                               
+                            {% endfor %}
+
                             </div>
-                            {% endif %}
-                        {% endwith %}
+                        </div>
+
+                        {% endif %}
                     {% endfor %}
+
                 </div>
+
             </div>
+
         </div>
     </div>
 </div>
 
+<!-- CONTACT SECTION -->
+<section class="section py-5" id="contact">
+    <div class="container-fluid">
+
+        <div class="text-center mb-5">
+            <h2 class="mb-3">Get In Touch</h2>
+            <p>Find our location or send us a message</p>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- MAP -->
+            <div class="col-lg-6">
+                <div class="location-card h-100 text-center">
+                    <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
+
+                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+                        width="100%" height="400"
+                        style="border:0; border-radius:10px;" loading="lazy"></iframe>
+
+                    <p class="mt-3 fs-3">
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-clock-fill me-2"></i>
+                            Mon–Sun: 6 AM – 9 PM
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-telephone-fill me-2"></i>
+                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
+                                +91 9392890375
+                            </a>
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="badge bg-info text-dark p-3">
+                            <i class="bi bi-envelope-fill me-2"></i>
+                            <a href="mailto:svdagencies12@gmail.com" class="text-dark text-decoration-none fw-semibold">
+                                svdagencies12@gmail.com
+                            </a>
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- CONTACT FORM -->
+            <div class="col-lg-6">
+                <div class="contact-form-card h-100">
+                    <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
+
+                    <form id="contactForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label>Name *</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Phone *</label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Email</label>
+                                <input type="email" name="email" class="form-control">
+                            </div>
+
+                            <div class="col-12">
+                                <label>Subject *</label>
+                                <input type="text" name="subject" class="form-control" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Message *</label>
+                                <textarea rows="4" name="message" class="form-control" required></textarea>
+                            </div>
+
+                            <div class="col-12 text-center mt-3">
+                                <button type="button" id="whatsappBtn" class="btn btn-whatsapp btn-lg">
+                                    <i class="bi bi-whatsapp me-2"></i> Contact via WhatsApp
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function filterCompany(companyId, el) {
-    // 1. Reset Active States
-    document.querySelectorAll('.company-filter-logo, .btn-filter').forEach(item => {
-        item.classList.remove('active');
-    });
-    el.classList.add('active');
-
-    // 2. Filter Sections
-    const sections = document.querySelectorAll('.company-section');
-    let targetSection = null;
-
-    sections.forEach(section => {
-        if (companyId === 'all') {
-            section.style.display = 'block';
-        } else {
-            if (section.dataset.company === companyId) {
-                section.style.display = 'block';
-                targetSection = section;
-            } else {
-                section.style.display = 'none';
-            }
-        }
-    });
-
-    // 3. Smooth Scroll the Modal Body (Not the window)
-    const modalBody = document.querySelector('.modal-body');
-    if (companyId === 'all') {
-        modalBody.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (targetSection) {
-        // Calculate offset relative to the modal body
-        modalBody.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-}
-</script>
-{% endblock %}
+<script src="{% static 'js/contact-whatsapp.js' %}"></script>
+{% endblock extra_js %}
