@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from decimal import Decimal, InvalidOperation
 from django.db import transaction
 import uuid
+
 from milk_agency.models import Customer, CustomerPayment, Bill
 
 
@@ -27,7 +28,7 @@ def api_customer_list(request):
             "name": c.name,
             "shop_name": c.shop_name or "",
             "phone": c.phone or "",
-            "due": float(c.due or 0),
+            "due": float(c.due or 0),  # cached fast value
             "frozen": c.frozen
         })
 
@@ -47,7 +48,7 @@ def api_customer_detail(request, pk):
         "name": c.name,
         "shop_name": c.shop_name or "",
         "phone": c.phone or "",
-        "due": float(c.due or 0),
+        "due": float(c.due or 0),  # cached fast value
         "city": c.city,
         "state": c.state,
         "frozen": c.frozen,
@@ -73,7 +74,7 @@ def api_toggle_freeze(request, pk):
 
 
 # =========================
-# UPDATE BALANCE
+# UPDATE BALANCE (PAYMENT)
 # =========================
 @api_view(['POST'])
 def api_update_balance(request, pk):
@@ -85,48 +86,65 @@ def api_update_balance(request, pk):
     if amount is None:
         return Response({"success": False, "message": "Amount is required"}, status=400)
 
+    # Validate decimal
     try:
         amount = Decimal(str(amount))
     except InvalidOperation:
         return Response({"success": False, "message": "Invalid amount"}, status=400)
 
-    # Get latest bill (not just current month)
+    # Prevent negative or zero payments
+    if amount <= 0:
+        return Response({
+            "success": False,
+            "message": "Amount must be greater than zero"
+        }, status=400)
+
+    # Prevent payment if customer frozen
+    if customer.frozen:
+        return Response({
+            "success": False,
+            "message": "Customer is frozen. Payment not allowed."
+        }, status=400)
+
     latest_bill = Bill.objects.filter(
-        customer=customer
+        customer=customer,
+        is_deleted=False
     ).order_by('-invoice_date', '-id').first()
 
     transaction_id = f"PAY-{uuid.uuid4().hex[:10].upper()}"
 
     with transaction.atomic():
-        # Update latest invoice last_paid
+
+        # 1️⃣ Create payment (source of truth)
+        CustomerPayment.objects.create(
+            customer=customer,
+            bill=latest_bill,
+            amount=amount,
+            transaction_id=transaction_id,
+            method="Cash",
+            status="SUCCESS"
+        )
+
+        # 2️⃣ Update latest bill paid cache (UI purpose)
         if latest_bill:
             latest_bill.last_paid += amount
             latest_bill.save()
 
-        # Update customer due balance
-        customer.due -= amount
+        # 3️⃣ Recalculate cached due
+        customer.due = customer.get_actual_due()
         customer.save()
-
-        # Create payment record
-        CustomerPayment.objects.create(
-            customer=customer,
-            amount=amount,
-            transaction_id=transaction_id,
-            method="Cash",
-            status="Completed"
-        )
 
     return Response({
         "success": True,
         "message": f"Payment of ₹{float(amount):.2f} recorded successfully",
-        "new_balance": float(customer.due),
+        "new_balance": float(customer.get_actual_due()),
         "last_paid_updated": latest_bill.id if latest_bill else None
     })
 
 
-#--------------------------
-# Add and Edit Customer API
-#--------------------------
+# --------------------------
+# ADD / EDIT CUSTOMER
+# --------------------------
 @api_view(['POST'])
 def api_add_edit_customer(request):
     customer_id = request.data.get("customer_id")

@@ -9,15 +9,8 @@ from milk_agency.models import CustomerPayment
 # ==========================================================
 #  LIST CUSTOMER PAYMENTS (WITH FILTERS)
 # ==========================================================
-
 @api_view(["GET"])
 def customer_payments_api(request):
-    """
-    Example calls:
-    /api/customer-payments/
-    /api/customer-payments/?customer=Ravi
-    /api/customer-payments/?transaction_id=TXN123
-    """
 
     customer_filter = request.GET.get("customer", "").strip()
     transaction_id_filter = request.GET.get("transaction_id", "").strip()
@@ -54,18 +47,10 @@ def customer_payments_api(request):
 # ==========================================================
 #  UPDATE PAYMENT STATUS
 # ==========================================================
-
 @api_view(["POST"])
 def update_payment_status_api(request, payment_id):
-    """
-    Android sends:
-    {
-      "status": "SUCCESS"
-    }
-    """
 
     payment = get_object_or_404(CustomerPayment, id=payment_id)
-
     new_status = request.data.get("status")
 
     if not new_status:
@@ -77,6 +62,11 @@ def update_payment_status_api(request, payment_id):
     payment.status = new_status
     payment.save()
 
+    # 🔴 Recalculate cached due after status change
+    customer = payment.customer
+    customer.due = customer.get_actual_due()
+    customer.save()
+
     return JsonResponse({
         "status": "success",
         "payment_id": payment.id,
@@ -87,12 +77,17 @@ def update_payment_status_api(request, payment_id):
 # ==========================================================
 #  DELETE PAYMENT
 # ==========================================================
-
 @api_view(["DELETE"])
 def delete_payment_api(request, payment_id):
 
     payment = get_object_or_404(CustomerPayment, id=payment_id)
+    customer = payment.customer  # store before delete
+
     payment.delete()
+
+    # 🔴 Recalculate cached due after deletion
+    customer.due = customer.get_actual_due()
+    customer.save()
 
     return JsonResponse({
         "status": "success",

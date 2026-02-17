@@ -6,6 +6,7 @@ from django.db.models import Sum, Avg
 from milk_agency.pdf_utils import PDFGenerator
 from milk_agency.models import Bill
 
+
 # =======================================================
 # CUSTOMER INVOICE SUMMARY API
 # =======================================================
@@ -17,15 +18,19 @@ def customer_invoice_summary_api(request):
     year = request.GET.get("year")
 
     if not (month and year):
-        return Response(
-            {"error": "month and year are required"},
-            status=400
-        )
+        return Response({"error": "month and year are required"}, status=400)
 
-    customer = request.user   # ✅ SAME AS WEBSITE
+    try:
+        month = int(month)
+        year = int(year)
+    except ValueError:
+        return Response({"error": "Invalid month or year"}, status=400)
+
+    customer = request.user
 
     bills = Bill.objects.filter(
         customer=customer,
+        is_deleted=False,
         invoice_date__year=year,
         invoice_date__month=month
     ).order_by("-invoice_date")
@@ -54,15 +59,19 @@ def customer_invoice_list_api(request):
     year = request.GET.get("year")
 
     if not (month and year):
-        return Response(
-            {"error": "month and year are required"},
-            status=400
-        )
+        return Response({"error": "month and year are required"}, status=400)
 
-    customer = request.user   # ✅ SAME AS WEBSITE
+    try:
+        month = int(month)
+        year = int(year)
+    except ValueError:
+        return Response({"error": "Invalid month or year"}, status=400)
+
+    customer = request.user
 
     bills = Bill.objects.filter(
         customer=customer,
+        is_deleted=False,
         invoice_date__year=year,
         invoice_date__month=month
     ).order_by("-invoice_date")
@@ -86,17 +95,15 @@ def customer_invoice_download_api(request):
     invoice_number = request.GET.get("invoice_number")
 
     if not invoice_number:
-        return Response(
-            {"error": "invoice_number is required"},
-            status=400
-        )
+        return Response({"error": "invoice_number is required"}, status=400)
 
     customer = request.user
 
     try:
         bill = Bill.objects.get(
             invoice_number=invoice_number,
-            customer=customer   # 🔐 SECURITY CHECK
+            customer=customer,
+            is_deleted=False
         )
     except Bill.DoesNotExist:
         return Response({"error": "Invoice not found"}, status=404)
@@ -115,17 +122,15 @@ def customer_invoice_details_api(request):
     invoice_number = request.GET.get("invoice_number")
 
     if not invoice_number:
-        return Response(
-            {"error": "invoice_number is required"},
-            status=400
-        )
+        return Response({"error": "invoice_number is required"}, status=400)
 
     customer = request.user
 
     try:
         bill = Bill.objects.get(
             invoice_number=invoice_number,
-            customer=customer   # 🔐 SECURITY CHECK
+            customer=customer,
+            is_deleted=False
         )
     except Bill.DoesNotExist:
         return Response({"error": "Invoice not found"}, status=404)
@@ -133,10 +138,10 @@ def customer_invoice_details_api(request):
     items = [{
         "name": i.item.name,
         "code": i.item.code,
-        "price": float(i.price),
+        "price": float(i.price_per_unit),   # ✅ corrected field
         "quantity": i.quantity,
         "discount": float(i.discount),
-        "total": float(i.total)
+        "total": float(i.total_amount)      # ✅ corrected field
     } for i in bill.items.all()]
 
     return Response({

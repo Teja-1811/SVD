@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.views_bills import generate_bill_from_order
+from milk_agency.models import Item
 
 
 # ======================================================
@@ -16,13 +17,10 @@ from milk_agency.views_bills import generate_bill_from_order
 # ======================================================
 @api_view(['GET'])
 def api_admin_orders_dashboard(request):
-    """
-    Returns all pending customer orders
-    """
 
     pending_orders = CustomerOrder.objects.filter(
         status="pending"
-    ).order_by("-order_date")
+    ).select_related("customer").prefetch_related("items__item").order_by("-order_date")
 
     orders = []
 
@@ -33,7 +31,6 @@ def api_admin_orders_dashboard(request):
             "customer_id": order.customer.id if order.customer else None,
             "customer_name": order.customer.name if order.customer else "",
             "total_amount": float(order.total_amount or 0),
-            #pass the items which are ordered
             "items": [
                 {
                     "item_id": oi.item.id,
@@ -53,14 +50,12 @@ def api_admin_orders_dashboard(request):
         "orders": orders
     })
 
+
 # ======================================================
-# 2️⃣ ORDER DETAILS (ITEMS WITH PRICE & QTY)
+# 2️⃣ ORDER DETAILS
 # ======================================================
 @api_view(['GET'])
 def api_order_detail(request, order_id):
-    """
-    Get full order details including items
-    """
 
     order = get_object_or_404(CustomerOrder, id=order_id)
 
@@ -88,23 +83,39 @@ def api_order_detail(request, order_id):
 
 
 # ======================================================
-# 3️⃣ CONFIRM ORDER (APPLY QTY + DISCOUNT + GENERATE BILL)
+# 3️⃣ CONFIRM ORDER (SAFE VERSION)
 # ======================================================
 @api_view(['POST'])
 def api_confirm_order(request, order_id):
-    """
-    Confirms order, updates quantities & discounts,
-    generates bill using generate_bill_from_order()
-    """
 
     order = get_object_or_404(CustomerOrder, id=order_id)
+
+    # 🔴 Prevent duplicate confirmation
+    if order.status != "pending":
+        return Response({
+            "success": False,
+            "message": "Order already processed"
+        }, status=400)
 
     quantities = request.data.get("quantities", [])
 
     try:
         with transaction.atomic():
 
-            # Update each order item
+            # ---- Validate stock first ----
+            for q in quantities:
+                item_id = q.get("item_id")
+                quantity = int(q.get("quantity", 0))
+
+                if item_id:
+                    item = Item.objects.get(id=item_id)
+                    if item.stock_quantity < quantity:
+                        return Response({
+                            "success": False,
+                            "message": f"Insufficient stock for {item.name}"
+                        }, status=400)
+
+            # ---- Update order items ----
             for q in quantities:
                 item_id = q.get("item_id")
                 quantity = q.get("quantity", 0)
@@ -113,21 +124,26 @@ def api_confirm_order(request, order_id):
                 if item_id is None:
                     continue
 
-                try:
-                    order_item = order.items.get(id=item_id)
-                except CustomerOrderItem.DoesNotExist:
+                order_item = order.items.filter(id=item_id).first()
+                if not order_item:
                     continue
 
+                discount_decimal = Decimal(str(discount)) if discount else Decimal("0.00")
+                if discount_decimal < 0:
+                    return Response({
+                        "success": False,
+                        "message": "Discount cannot be negative"
+                    }, status=400)
+
                 order_item.requested_quantity = int(quantity)
-                order_item.discount = Decimal(str(discount)) if discount else Decimal("0.00")
-                order_item.discount_total = order_item.discount * order_item.requested_quantity
+                order_item.discount = discount_decimal
+                order_item.discount_total = discount_decimal * order_item.requested_quantity
                 order_item.requested_total = (
                     order_item.requested_price * order_item.requested_quantity
                 ) - order_item.discount_total
-
                 order_item.save()
 
-            # Recalculate order total
+            # ---- Recalculate order total ----
             total_amount = sum(
                 (oi.requested_total or Decimal("0.00"))
                 for oi in order.items.all()
@@ -137,12 +153,12 @@ def api_confirm_order(request, order_id):
             order.status = "confirmed"
             order.save()
 
-            # Generate bill
+            # ---- Generate Bill ----
             bill = generate_bill_from_order(order)
 
             return Response({
                 "success": True,
-                "message": f"Order confirmed and bill generated",
+                "message": "Order confirmed and bill generated",
                 "bill_id": bill.id,
                 "invoice_number": bill.invoice_number
             })
@@ -155,15 +171,18 @@ def api_confirm_order(request, order_id):
 
 
 # ======================================================
-# 4️⃣ REJECT ORDER
+# 4️⃣ REJECT ORDER (SAFE)
 # ======================================================
 @api_view(['POST'])
 def api_reject_order(request, order_id):
-    """
-    Rejects a pending order
-    """
 
     order = get_object_or_404(CustomerOrder, id=order_id)
+
+    if order.status != "pending":
+        return Response({
+            "success": False,
+            "message": "Only pending orders can be rejected"
+        }, status=400)
 
     order.status = "rejected"
     order.save()

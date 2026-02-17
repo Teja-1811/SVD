@@ -1,28 +1,37 @@
 import os
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+
 from .models import Bill, BillItem, Item, Customer
 from .utils import process_bill_items
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from customer_portal.models import CustomerOrder
 
+
+# =========================================================
+# VIEW BILL
+# =========================================================
+@login_required
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill).select_related('item')
 
-    # Calculate current_due as Opening Due + Total Amount
     current_due = bill.op_due_amount + bill.total_amount
 
-    context = {
+    return render(request, 'milk_agency/bills/view_bill.html', {
         'bill': bill,
         'bill_items': bill_items,
         'current_due': current_due
-    }
-    return render(request, 'milk_agency/bills/view_bill.html', context)
+    })
 
+
+# =========================================================
+# AJAX BILL DETAILS
+# =========================================================
+@login_required
 def get_bill_details_ajax(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill).select_related('item')
@@ -36,20 +45,25 @@ def get_bill_details_ajax(request, bill_id):
             'total_amount': float(bill.total_amount),
             'op_due_amount': float(bill.op_due_amount),
             'last_paid': float(bill.last_paid),
-            'current_due': float(bill.customer.due),
+            'current_due': float(bill.customer.get_actual_due()),
             'profit': float(bill.profit)
         },
         'items': [{
-            'item_name': item.item.name,
-            'quantity': item.quantity,
-            'price_per_unit': float(item.price_per_unit),
-            'discount': float(item.discount),
-            'total_amount': float(item.total_amount)
-        } for item in bill_items]
+            'item_name': bi.item.name,
+            'quantity': bi.quantity,
+            'price_per_unit': float(bi.price_per_unit),
+            'discount': float(bi.discount),
+            'total_amount': float(bi.total_amount)
+        } for bi in bill_items]
     }
 
     return JsonResponse(data)
 
+
+# =========================================================
+# EDIT BILL (SAFE VERSION)
+# =========================================================
+@login_required
 def edit_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill)
@@ -59,19 +73,15 @@ def edit_bill(request, bill_id):
         item_ids = request.POST.getlist('items')
         quantities = request.POST.getlist('quantities')
         discounts = request.POST.getlist('discounts')
+        invoice_date = request.POST.get('invoice_date')
 
         if not customer_id:
             messages.error(request, 'Customer is required.')
             return redirect('milk_agency:edit_bill', bill_id=bill_id)
 
-        try:
-            customer = Customer.objects.get(id=customer_id)
-        except Customer.DoesNotExist:
-            messages.error(request, 'Customer not found.')
-            return redirect('milk_agency:edit_bill', bill_id=bill_id)
-        
-        invoice_date = request.POST.get('invoice_date')
+        customer = get_object_or_404(Customer, id=customer_id)
 
+        # Update invoice date
         if invoice_date:
             try:
                 from datetime import datetime
@@ -80,63 +90,37 @@ def edit_bill(request, bill_id):
                 messages.error(request, 'Invalid invoice date format.')
                 return redirect('milk_agency:edit_bill', bill_id=bill_id)
 
+        # -------- RESTORE STOCK --------
+        for bi in bill_items:
+            bi.item.stock_quantity += bi.quantity
+            bi.item.save()
 
-        # Restore stock quantities from old bill items
-        for bill_item in bill_items:
-            bill_item.item.stock_quantity += bill_item.quantity
-            bill_item.item.save()
-
-        # Delete old bill items
+        # Remove old items
         bill_items.delete()
 
-        # Update bill customer if changed
-        changed = bill.customer != customer
-        if changed:
-            old_customer = bill.customer
-            old_customer.due -= bill.total_amount + bill.op_due_amount
-            old_customer.save()
-            bill.customer = customer
-            bill.save()
-            bill.op_due_amount = customer.due
-        else:
-            bill.op_due_amount = customer.due - bill.total_amount
+        # -------- UPDATE BILL CUSTOMER --------
+        bill.customer = customer
+        bill.op_due_amount = customer.get_actual_due()
 
         try:
             total_bill, total_profit = process_bill_items(bill, item_ids, quantities, discounts)
-        except (Item.DoesNotExist, ValueError):
+        except Exception:
             messages.error(request, 'Invalid items or quantities.')
             return redirect('milk_agency:edit_bill', bill_id=bill_id)
 
-        # Update total_amount and profit based on items
         bill.total_amount = total_bill
         bill.profit = total_profit
         bill.save()
 
-        # Update customer due after bill update
-        customer.due = bill.total_amount + bill.op_due_amount
+        # -------- RECALCULATE DUE SAFELY --------
+        customer.due = customer.get_actual_due()
         customer.save()
-
-        # Monthly purchase calculation no longer available - replaced with direct calculations
 
         messages.success(request, 'Bill updated successfully.')
         return redirect('milk_agency:bills_dashboard')
 
-    # GET request - display edit form
     customers = Customer.objects.all()
-    from django.db.models import Case, When, Value, IntegerField
-    items = Item.objects.filter(frozen=False).annotate(
-        category_priority=Case(
-            When(category__iexact='milk', then=Value(1)),
-            When(category__iexact='curd', then=Value(2)),
-            When(category__iexact='buckets', then=Value(3)),
-            When(category__iexact='panner', then=Value(4)),
-            When(category__iexact='sweets', then=Value(5)),
-            When(category__iexact='flavoured milk', then=Value(6)),
-            When(category__iexact='ghee', then=Value(7)),
-            default=Value(8),
-            output_field=IntegerField()
-        )
-    ).order_by('category_priority', 'name')
+    items = Item.objects.filter(frozen=False).order_by('category', 'name')
 
     return render(request, 'milk_agency/bills/edit_bill.html', {
         'bill': bill,
@@ -145,26 +129,26 @@ def edit_bill(request, bill_id):
         'items': items
     })
 
+
+# =========================================================
+# DELETE BILL (SAFE VERSION)
+# =========================================================
 @login_required
 def delete_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill)
 
     if request.method == 'POST':
-
-        # 1️⃣ REVERT STOCK FOR EACH BILL ITEM
-        for bill_item in bill_items:
-            bill_item.item.stock_quantity += bill_item.quantity
-            bill_item.item.save()
-
-        # 2️⃣ REVERT CUSTOMER DUE (Remove bill amount)
         customer = bill.customer
-        customer.due -= bill.total_amount
-        customer.save()
 
-        # 3️⃣ FIND RELATED CUSTOMER ORDER (IF ANY)
+        # -------- RESTORE STOCK --------
+        for bi in bill_items:
+            bi.item.stock_quantity += bi.quantity
+            bi.item.save()
+
+        # -------- HANDLE LINKED ORDER --------
         order = CustomerOrder.objects.filter(
-            customer=bill.customer,
+            customer=customer,
             order_date__date=bill.invoice_date,
             total_amount=bill.total_amount
         ).order_by('-id').first()
@@ -173,12 +157,16 @@ def delete_bill(request, bill_id):
             order.status = "cancelled"
             order.approved_total_amount = 0
             order.save()
-            
-        # 4️⃣ DELETE BILL ITEMS & BILL
+
         bill_items.delete()
         bill.delete()
 
-        messages.success(request, "Bill deleted. Stock & customer due updated. Order marked as Cancelled.")
+        # -------- RECALCULATE CUSTOMER DUE --------
+        if customer:
+            customer.due = customer.get_actual_due()
+            customer.save()
+
+        messages.success(request, "Bill deleted. Stock restored & due recalculated.")
         return redirect('milk_agency:bills_dashboard')
 
     return render(request, 'milk_agency/bills/delete_bill.html', {

@@ -1,7 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.db.models import Sum, F
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.utils.timezone import now
+
 from milk_agency.models import Customer, Item, Bill
 from customer_portal.models import CustomerOrder
 
@@ -17,19 +18,26 @@ def dashboard_api(request):
 
     today = now().date()
 
-    # Today Sales
-    sales_today = Bill.objects.filter(invoice_date=today).aggregate(
+    # Today Sales (exclude soft-deleted bills)
+    sales_today = Bill.objects.filter(
+        is_deleted=False,
+        invoice_date=today
+    ).aggregate(
         total=Sum("total_amount")
     )["total"] or 0
 
-    # Total dues
+    # Total dues (cached fast value)
     total_dues = Customer.objects.aggregate(total=Sum("due"))["total"] or 0
 
-    # Stock Value
-    stock_value = (
-        Item.objects.aggregate(total=Sum(F("stock_quantity") * F("buying_price")))["total"]
-        or 0
-    )
+    # Stock Value (accurate decimal calculation)
+    stock_value = Item.objects.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("stock_quantity") * F("buying_price"),
+                output_field=DecimalField(max_digits=14, decimal_places=2)
+            )
+        )
+    )["total"] or 0
 
     # Low stock
     low_stock = Item.objects.filter(stock_quantity__lt=10).count()
@@ -42,15 +50,15 @@ def dashboard_api(request):
 
     # ============ CUSTOMERS NOT ORDERED TODAY ============
     customers_no_orders_today_qs = Customer.objects.filter(
-            frozen=False
-        ).exclude(
-            id__in=CustomerOrder.objects.filter(
-                order_date__date=today
-            ).values_list("customer_id", flat=True)
-        )
+        frozen=False
+    ).exclude(
+        id__in=CustomerOrder.objects.filter(
+            order_date__date=today
+        ).values_list("customer_id", flat=True)
+    )
+
     customers_no_orders_today = customers_no_orders_today_qs.count()
 
-    # Return list of customers (name + phone)
     customers_no_orders_list = [
         {
             "id": c.id,
@@ -70,7 +78,6 @@ def dashboard_api(request):
         "out_of_stock_items": out_of_stock,
         "pending_orders": pending_orders,
 
-        # NEW FIELDS
         "customers_no_orders_today_count": customers_no_orders_today,
         "customers_no_orders_today_list": customers_no_orders_list,
     })

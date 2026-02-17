@@ -1,57 +1,54 @@
 import os
+import json
+from decimal import Decimal, ROUND_UP
+from datetime import datetime
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Bill, BillItem, Customer, Item, Company
-from num2words import num2words
-from decimal import Decimal, ROUND_UP
-from datetime import datetime
-from django.contrib.staticfiles import finders
-import json
+
+from .models import Bill, BillItem, Customer, Item, Company, CustomerMonthlyCommission
 from .pdf_utils import PDFGenerator
 
+
+# =========================================================
+# BILLS DASHBOARD
+# =========================================================
 @login_required
 def bills_dashboard(request):
-    # Get filter parameters
     customer_id = request.GET.get('customer', '')
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
 
-    # Start with base queryset
     bills = Bill.objects.select_related('customer')
 
-    # Apply filters
     if customer_id:
         try:
             bills = bills.filter(customer_id=int(customer_id))
         except ValueError:
-            pass  # Invalid customer ID, ignore filter
+            pass
 
     if start_date:
         try:
-            from datetime import datetime
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
             bills = bills.filter(invoice_date__gte=start_date_obj)
         except ValueError:
-            pass  # Invalid date, ignore filter
+            pass
 
     if end_date:
         try:
-            from datetime import datetime
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
             bills = bills.filter(invoice_date__lte=end_date_obj)
         except ValueError:
-            pass  # Invalid date, ignore filter
+            pass
 
-    # Order by invoice date descending
     bills = bills.order_by('-invoice_date')
 
-    # Pagination
+    paginator = Paginator(bills, 25)
     page = request.GET.get('page', 1)
-    paginator = Paginator(bills, 25)  # Show 25 bills per page
 
     try:
         bills = paginator.page(page)
@@ -60,49 +57,33 @@ def bills_dashboard(request):
     except EmptyPage:
         bills = paginator.page(paginator.num_pages)
 
-    # Get all customers for the filter dropdown
     customers = Customer.objects.filter(frozen=False).order_by('name')
 
-    context = {
+    return render(request, 'milk_agency/bills/bills_dashboard.html', {
         'bills': bills,
         'customers': customers,
         'selected_customer': int(customer_id) if customer_id else None,
         'start_date': start_date,
         'end_date': end_date,
-    }
-    return render(request, 'milk_agency/bills/bills_dashboard.html', context)
+    })
 
+
+# =========================================================
+# GENERATE BILL (FINAL SAFE VERSION)
+# =========================================================
 @login_required
 def generate_bill(request):
-    # Get area filter from request
     selected_area = request.GET.get('area', '')
-    
-    # Get all areas for the filter dropdown
+
     areas = Customer.objects.exclude(area__exact='').values_list('area', flat=True).distinct().order_by('area')
-    
-    # Filter customers by area if provided
+
     if selected_area:
         customers = Customer.objects.filter(area=selected_area, frozen=False).order_by('name')
     else:
         customers = Customer.objects.filter(frozen=False).order_by('name')
-    
-    from django.db.models import Case, When, Value, IntegerField
-    items = Item.objects.filter(frozen=False).annotate(
-        category_priority=Case(
-            When(category__iexact='milk', then=Value(1)),
-            When(category__iexact='curd', then=Value(2)),
-            When(category__iexact='buckets', then=Value(3)),
-            When(category__iexact='panner', then=Value(4)),
-            When(category__iexact='sweets', then=Value(5)),
-            When(category__iexact='flavoured milk', then=Value(6)),
-            When(category__iexact='ghee', then=Value(7)),
-            default=Value(8),
-            output_field=IntegerField()
-        )
-    ).order_by('category_priority', 'name')
-    # Get distinct companies for the filter dropdown
+
+    items = Item.objects.filter(frozen=False).order_by('category', 'name')
     companies = Company.objects.filter(items__isnull=False).distinct().order_by('name')
-    # Get distinct categories for the filter dropdown
     categories = Item.objects.exclude(category__exact='').values_list('category', flat=True).distinct().order_by('category')
 
     if request.method == 'POST':
@@ -112,116 +93,90 @@ def generate_bill(request):
         quantities = request.POST.getlist('quantities')
         discounts = request.POST.getlist('discounts')
 
-        # customer_id is now optional for anonymous bills
-
-        # Validate and parse bill date
-        if bill_date:
-            try:
-                from datetime import datetime
-                bill_date_obj = datetime.strptime(bill_date, '%Y-%m-%d').date()
-            except ValueError:
-                messages.error(request, 'Invalid date format. Please use YYYY-MM-DD format.')
-                return redirect('milk_agency:generate_bill')
-        else:
-            bill_date_obj = timezone.now().date()
+        try:
+            bill_date_obj = datetime.strptime(bill_date, '%Y-%m-%d').date() if bill_date else timezone.now().date()
+        except ValueError:
+            messages.error(request, 'Invalid date format.')
+            return redirect('milk_agency:generate_bill')
 
         customer = None
         commission_to_deduct = None
+
         if customer_id:
-            try:
-                customer = Customer.objects.get(id=customer_id)
-                # Check for pending commission to deduct
-                from .models import CustomerMonthlyCommission
-                commission_to_deduct = CustomerMonthlyCommission.objects.filter(
-                    customer=customer,
-                    status=False
-                ).first()
-            except Customer.DoesNotExist:
-                messages.error(request, 'Customer not found.')
-                return redirect('milk_agency:generate_bill')
+            customer = get_object_or_404(Customer, id=customer_id)
+            commission_to_deduct = CustomerMonthlyCommission.objects.filter(
+                customer=customer, status=False
+            ).first()
 
-        today = timezone.now()
-        today_str = today.strftime('%Y%m%d%H%M%S')
+        # ---------- SAFE UNIQUE INVOICE ----------
+        now = timezone.now()
+        prefix = now.strftime('%Y%m%d%H%M%S')
+        last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{prefix}").order_by('-invoice_number').first()
+        counter = int(last_bill.invoice_number.split('-')[-1]) + 1 if last_bill else 1
+        invoice_number = f"INV-{prefix}-{counter:04d}"
 
-        last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{today_str}").order_by('-invoice_number').first()
-
-        if last_bill:
-            # Extract last 4-digit counter
-            last_counter = int(last_bill.invoice_number.split('-')[-1])
-            new_counter = last_counter + 1
-        else:
-            new_counter = 1
-
-        invoice_number = f"INV-{today_str}"
+        updated_items = []
 
         try:
             with transaction.atomic():
-                # Create a new bill
+
                 bill = Bill.objects.create(
                     customer=customer,
                     invoice_number=invoice_number,
                     invoice_date=bill_date_obj,
-                    total_amount=Decimal(0),
-                    op_due_amount=customer.due if customer else Decimal(0),
-                    last_paid=Decimal(0),  # Set to 0 for new bills
-                    profit=Decimal(0)
+                    total_amount=Decimal("0"),
+                    op_due_amount=customer.due if customer else Decimal("0"),
+                    last_paid=Decimal("0"),
+                    profit=Decimal("0")
                 )
 
-                total_amount = Decimal(0)
-                total_profit = Decimal(0)
-                updated_items = []  # Track items for stock reversion if needed
+                total_amount = Decimal("0")
+                total_profit = Decimal("0")
 
-                # Create bill items
                 for i, item_id in enumerate(item_ids):
                     if not item_id:
                         continue
-                    quantity = int(quantities[i]) if i < len(quantities) and quantities[i] else 0
-                    discount = Decimal(discounts[i]) if i < len(discounts) and discounts[i] else Decimal(0)
 
-                    if quantity <= 0:
+                    qty = int(quantities[i]) if quantities[i] else 0
+                    if qty <= 0:
                         continue
 
-                    try:
-                        item = Item.objects.get(id=item_id)
-                    except Item.DoesNotExist:
-                        continue
+                    item = get_object_or_404(Item, id=item_id)
+                    discount = Decimal(discounts[i]) if discounts[i] else Decimal("0")
 
-                    price_per_unit = Decimal(str(item.selling_price))
-                    discount = Decimal(str(discounts[i])) if i < len(discounts) and discounts[i] else Decimal('0')
-
-                    item_total = (price_per_unit * Decimal(quantity)) - (discount * Decimal(quantity))
-                    profit = ((price_per_unit - Decimal(str(item.buying_price))) * Decimal(quantity)) - (discount * Decimal(quantity))
+                    price = Decimal(str(item.selling_price))
+                    item_total = (price * qty) - (discount * qty)
+                    profit = ((price - Decimal(str(item.buying_price))) * qty) - (discount * qty)
 
                     BillItem.objects.create(
                         bill=bill,
                         item=item,
-                        price_per_unit=price_per_unit,
+                        price_per_unit=price,
                         discount=discount,
-                        quantity=quantity,
+                        quantity=qty,
                         total_amount=item_total
                     )
 
-                    # Update stock
-                    item.stock_quantity -= quantity
+                    item.stock_quantity -= qty
                     item.save()
-                    updated_items.append((item, quantity))  # Track for reversion
+                    updated_items.append((item, qty))
 
                     total_amount += item_total
                     total_profit += profit
-                if total_amount == 0:
-                    bill.delete()
-                    messages.error(request, 'At least one item is required')
-                    return redirect('milk_agency:generate_bill')
 
-                # Update bill totals with ceiling
-                rounded_total = Decimal(total_amount).quantize(Decimal('1'), rounding=ROUND_UP)
-                bill.profit = total_profit
+                if total_amount <= 0:
+                    raise Exception("No valid items in bill.")
 
-                # Apply commission deduction if available
-                if commission_to_deduct and total_amount > 0:
-                    commission_amount = commission_to_deduct.commission_amount
-                    bill.total_amount = (rounded_total - commission_amount).quantize(Decimal('1'), rounding=ROUND_UP)
-                    bill.commission_deducted = commission_amount
+                rounded_total = total_amount.quantize(Decimal('1'), rounding=ROUND_UP)
+
+                if commission_to_deduct and rounded_total > 0:
+                    commission_amt = commission_to_deduct.commission_amount
+                    adjusted_total = rounded_total - commission_amt
+                    if adjusted_total < 0:
+                        adjusted_total = Decimal("0")
+
+                    bill.total_amount = adjusted_total
+                    bill.commission_deducted = commission_amt
                     bill.commission_month = commission_to_deduct.month
                     bill.commission_year = commission_to_deduct.year
 
@@ -230,27 +185,25 @@ def generate_bill(request):
                 else:
                     bill.total_amount = rounded_total
 
-                # Keep the last_paid from latest bill (set during creation), don't reset to 0
+                bill.profit = total_profit
                 bill.save()
 
-                # Update customer balance only if customer exists
                 if customer:
-                    customer.due = bill.total_amount + bill.op_due_amount
+                    customer.due = customer.get_actual_due()
                     customer.save()
-                    # Monthly purchase calculation no longer available - replaced with direct calculations
-                    if commission_to_deduct and bill.commission_deducted > 0:
-                        messages.info(request, f'Customer updated. Commission of ₹{bill.commission_deducted} deducted.')
-                    else:
-                        messages.info(request, f'Customer updated')
 
             messages.success(request, f'Bill {invoice_number} generated successfully!')
             return redirect('milk_agency:view_bill', bill_id=bill.id)
 
         except Exception as e:
+            for item, qty in updated_items:
+                item.stock_quantity += qty
+                item.save()
+
             messages.error(request, f'Error generating bill: {str(e)}')
             return redirect('milk_agency:generate_bill')
 
-    context = {
+    return render(request, 'milk_agency/bills/generate_bill.html', {
         'customers': customers,
         'items': items,
         'areas': areas,
@@ -258,97 +211,75 @@ def generate_bill(request):
         'companies': companies,
         'categories': categories,
         'current_date': timezone.now().date()
-    }
-    return render(request, 'milk_agency/bills/generate_bill.html', context)
+    })
 
+
+# =========================================================
+# GENERATE BILL FROM ORDER
+# =========================================================
 def generate_bill_from_order(order):
-    """
-    Helper function to generate a bill from a confirmed CustomerOrder instance.
-    """
-    from django.db import transaction
-    from decimal import Decimal
-    try:
-        with transaction.atomic():
-            customer = order.customer
-            bill_date_obj = order.order_date.date() if order.order_date else timezone.now().date()
+    with transaction.atomic():
+        customer = order.customer
+        bill_date_obj = order.order_date.date() if order.order_date else timezone.now().date()
 
-            # Generate invoice number
-            today = timezone.now()
-            last_bill_today = Bill.objects.filter(created_at__date=today.date()).order_by('-id').first()
-            invoice_number = f"INV-{today.strftime('%Y%m%d%H%M%S')}"
+        now = timezone.now()
+        prefix = now.strftime('%Y%m%d%H%M%S')
+        invoice_number = f"INV-{prefix}"
 
+        bill = Bill.objects.create(
+            customer=customer,
+            invoice_number=invoice_number,
+            invoice_date=bill_date_obj,
+            total_amount=Decimal("0"),
+            op_due_amount=customer.due,
+            last_paid=Decimal("0"),
+            profit=Decimal("0")
+        )
 
-            # Create a new bill
-            bill = Bill.objects.create(
-                customer=customer,
-                invoice_number=invoice_number,
-                invoice_date=bill_date_obj,
-                total_amount=Decimal(0),
-                op_due_amount=customer.due,
-                last_paid=Decimal(0),  # Set to 0 for new bills
-                profit=Decimal(0)
+        total_amount = Decimal("0")
+        total_profit = Decimal("0")
+
+        for oi in order.items.all():
+            item = oi.item
+            qty = oi.requested_quantity
+            price = oi.requested_price
+            discount_total = getattr(oi, 'discount_total', Decimal("0"))
+
+            item_total = (price * qty) - discount_total
+            profit = ((price - item.buying_price) * qty) - discount_total
+
+            BillItem.objects.create(
+                bill=bill,
+                item=item,
+                price_per_unit=price,
+                discount=oi.discount,
+                quantity=qty,
+                total_amount=item_total
             )
 
-            total_amount = Decimal(0)
-            total_profit = Decimal(0)
-            updated_items = []
+            item.stock_quantity -= qty
+            item.save()
 
-            # inside generate_bill_from_order, loop over order.items.all():
-            for order_item in order.items.all():
-                item = order_item.item
-                quantity = order_item.requested_quantity
-                price_per_unit = order_item.requested_price
-                # discount per qty (may be Decimal)
-                discount_per_qty = getattr(order_item, 'discount', Decimal('0.00'))
-                discount_total = getattr(order_item, 'discount_total', Decimal('0.00'))
+            total_amount += item_total
+            total_profit += profit
 
-                item_total = (price_per_unit * quantity) - discount_total
-                profit = ((price_per_unit - item.buying_price) * quantity) - discount_total
+        if total_amount <= 0:
+            raise Exception("Invalid order amount")
 
-                BillItem.objects.create(
-                    bill=bill,
-                    item=item,
-                    price_per_unit=price_per_unit,
-                    discount=discount_per_qty,
-                    quantity=quantity,
-                    total_amount=item_total
-                )
+        bill.total_amount = total_amount
+        bill.profit = total_profit
+        bill.save()
 
-                # Update stock
-                item.stock_quantity -= quantity
-                item.save()
-                updated_items.append((item, quantity))
+        customer.due = customer.get_actual_due()
+        customer.save()
 
-                total_amount += item_total
-                total_profit += profit
-            if total_amount == 0:
-                bill.delete()
-                raise Exception('At least one item is required to generate a bill.')
+        return bill
 
-            # Update bill totals
-            bill.total_amount = total_amount
-            bill.profit = total_profit
-            # Keep the last_paid from latest bill (set during creation), don't reset to 0
-            bill.save()
 
-            # Update customer balance
-            customer.due = bill.total_amount + bill.op_due_amount
-            customer.save()
-
-            # CustomerMonthlyPurchaseCalculator removed - monthly purchase calculation no longer available
-
-            return bill
-    except Exception as e:
-        # Handle exceptions as needed, possibly logging or re-raising
-        raise e
-
+# =========================================================
+# PDF GENERATION
+# =========================================================
 def generate_invoice_pdf(request, bill_id):
-    """
-    Generate invoice PDF and upload to GitHub, generate WhatsApp URL
-    Returns a dictionary with PDF response and links
-    """
     bill = get_object_or_404(Bill, id=bill_id)
     pdf_generator = PDFGenerator()
-    # Regenerate PDF according to new bill model fields
-    response = pdf_generator.generate_and_return_pdf(bill, request)
-    return response
+    return pdf_generator.generate_and_return_pdf(bill, request)

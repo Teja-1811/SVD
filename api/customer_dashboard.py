@@ -10,15 +10,17 @@ from milk_agency.models import Customer
 def customer_dashboard_api(request):
     user_id = request.GET.get("user_id")
 
+    # ---- Validate user_id ----
     if not user_id:
         return Response({"error": "user_id is required"}, status=400)
 
     try:
-        customer = Customer.objects.get(id=user_id)
-    except Customer.DoesNotExist:
+        customer = Customer.objects.get(id=int(user_id))
+    except (Customer.DoesNotExist, ValueError):
         return Response({"error": "Customer not found"}, status=404)
 
-    balance = customer.due or 0
+    # ---- Accurate ledger-based balance ----
+    balance = customer.get_actual_due()
 
     data = {
         "customerName": customer.name,

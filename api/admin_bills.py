@@ -6,10 +6,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
+
 from milk_agency.views_bills import generate_invoice_pdf
-
 from milk_agency.models import Bill, BillItem, Customer, Item
-
 from customer_portal.models import CustomerOrder
 
 
@@ -26,7 +25,7 @@ def api_get_customers(request):
             "name": c.name,
             "phone": c.phone,
             "area": c.area or "",
-            "due": str(c.due)
+            "due": str(c.due)  # cached value (fast UI)
         }
         for c in customers
     ])
@@ -43,7 +42,7 @@ def api_list_bills(request):
     end_date = request.GET.get("end_date")
     page = request.GET.get("page", 1)
 
-    bills = Bill.objects.select_related("customer").order_by('-invoice_date', '-id')
+    bills = Bill.objects.filter(is_deleted=False).select_related("customer").order_by('-invoice_date', '-id')
 
     if customer_id:
         bills = bills.filter(customer_id=customer_id)
@@ -85,7 +84,7 @@ def api_list_bills(request):
 def api_bill_detail(request, bill_id):
 
     bill = get_object_or_404(
-        Bill.objects.select_related('customer'),
+        Bill.objects.filter(is_deleted=False).select_related('customer'),
         id=bill_id
     )
 
@@ -151,7 +150,6 @@ def api_create_bill(request):
         total_profit = Decimal(0)
 
         for i, item_id in enumerate(item_ids):
-
             item = Item.objects.get(id=item_id)
 
             qty = int(quantities[i])
@@ -180,7 +178,7 @@ def api_create_bill(request):
         bill.save()
 
         if customer:
-            customer.due = bill.op_due_amount + total
+            customer.due = customer.get_actual_due()
             customer.save()
 
     return Response({"success": True, "bill_id": bill.id})
@@ -189,11 +187,11 @@ def api_create_bill(request):
 # ------------------------------------------
 # 6️⃣ EDIT BILL
 # ------------------------------------------
-
 @api_view(['POST'])
 def api_edit_bill(request, bill_id):
 
     bill = get_object_or_404(Bill, id=bill_id)
+    old_total = bill.total_amount  # store before changes
 
     new_customer_id = request.data.get("customer")
     item_ids = request.data.get("items", [])
@@ -205,33 +203,21 @@ def api_edit_bill(request, bill_id):
 
     with transaction.atomic():
 
-        # -------------------------------
-        # 1️⃣ Update invoice date
-        # -------------------------------
         if invoice_date:
-            try:
-                bill.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%d").date()
-            except ValueError:
-                return Response({"success": False, "message": "Invalid invoice_date format"}, status=400)
+            bill.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%d").date()
 
-        # -------------------------------
-        # 2️⃣ Restore previous stock
-        # -------------------------------
+        # restore stock
         for bi in bill_items:
             bi.item.stock_quantity += bi.quantity
             bi.item.save()
 
         bill_items.delete()
 
-        # -------------------------------
-        # 3️⃣ Recreate bill items
-        # -------------------------------
         total = Decimal(0)
         total_profit = Decimal(0)
 
         for i, item_id in enumerate(item_ids):
             item = Item.objects.get(id=item_id)
-
             qty = int(quantities[i])
             discount = Decimal(discounts[i]) if discounts else Decimal(0)
 
@@ -256,47 +242,29 @@ def api_edit_bill(request, bill_id):
             total += line_total
             total_profit += profit
 
-        # -------------------------------
-        # 4️⃣ Customer Handling Logic
-        # -------------------------------
-        old_customer = bill.customer
         new_customer = Customer.objects.filter(id=new_customer_id).first() if new_customer_id else None
+        old_customer = bill.customer
 
-        if old_customer and old_customer.id == (new_customer.id if new_customer else None):
-            # 🟢 SAME CUSTOMER → only update totals
-            bill.total_amount = total
-            bill.profit = total_profit
-            bill.save()
+        bill.customer = new_customer
+        bill.op_due_amount = new_customer.due if new_customer else Decimal(0)
+        bill.total_amount = total
+        bill.profit = total_profit
+        bill.save()
 
-            # adjust due difference
-            difference = total - bill.total_amount
-            old_customer.due += difference
+        # refresh due cache safely
+        if old_customer:
+            old_customer.due = old_customer.get_actual_due()
             old_customer.save()
 
-        else:
-            # 🔴 CUSTOMER CHANGED
-            # remove old impact
-            if old_customer:
-                old_customer.due -= bill.total_amount
-                old_customer.save()
-
-            # assign new customer
-            bill.customer = new_customer
-            bill.op_due_amount = new_customer.due if new_customer else Decimal(0)
-            bill.total_amount = total
-            bill.profit = total_profit
-            bill.save()
-
-            # apply new impact
-            if new_customer:
-                new_customer.due += total
-                new_customer.save()
+        if new_customer and new_customer != old_customer:
+            new_customer.due = new_customer.get_actual_due()
+            new_customer.save()
 
     return Response({"success": True})
 
 
 # ------------------------------------------
-# 7️⃣ DELETE BILL (safe rollback)
+# 7️⃣ DELETE BILL (soft delete + rollback)
 # ------------------------------------------
 @api_view(['DELETE'])
 def api_delete_bill(request, bill_id):
@@ -306,20 +274,19 @@ def api_delete_bill(request, bill_id):
 
     with transaction.atomic():
 
-        # Return stock
         for bi in bill_items:
             bi.item.stock_quantity += bi.quantity
             bi.item.save()
 
-        # Adjust due
+        bill.is_deleted = True
+        bill.save()
+
         if bill.customer:
-            bill.customer.due -= bill.total_amount
+            bill.customer.due = bill.customer.get_actual_due()
             bill.customer.save()
 
-        bill_items.delete()
-        bill.delete()
-
     return Response({"success": True})
+
 
 @api_view(['GET'])
 def api_download_bill(request, bill_id):

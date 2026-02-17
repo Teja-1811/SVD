@@ -1,66 +1,91 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from urllib.parse import quote
 from django.db.models import Sum, F, Case, When, Value, IntegerField
 from django.utils import timezone
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from django.contrib import messages
 from django.http import JsonResponse
 from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, Contact
 from datetime import datetime
 import json
 
+
+# =========================================================
+# HOME DASHBOARD
+# =========================================================
 @login_required
 @never_cache
 def home(request):
     company_filter = request.GET.get('company')
     category_filter = request.GET.get('category')
 
-    # Today's date
     today = timezone.now().date()
 
-    # Auto calculate commissions on 5th of every month for previous month
+    # -----------------------------------------------------
+    # AUTO COMMISSION CALCULATION (RUN ONCE SAFELY)
+    # -----------------------------------------------------
     if today.day == 5:
         previous_month = today.month - 1 if today.month > 1 else 12
         previous_year = today.year if today.month > 1 else today.year - 1
 
-        if not CustomerMonthlyCommission.objects.filter(
-            year=previous_year, month=previous_month
-        ).exists():
+        commission_exists = CustomerMonthlyCommission.objects.filter(
+            year=previous_year,
+            month=previous_month
+        ).exists()
+
+        if not commission_exists:
             from .utils import calculate_monthly_commissions
             calculate_monthly_commissions(previous_year, previous_month)
 
-    # Today Sales
+    # -----------------------------------------------------
+    # TODAY SALES
+    # -----------------------------------------------------
     today_bills = Bill.objects.filter(invoice_date=today)
     today_sales = today_bills.aggregate(total=Sum("total_amount"))["total"] or 0
     today_bills_count = today_bills.count()
 
-    # Total due from customers
+    # -----------------------------------------------------
+    # CUSTOMER DUES
+    # -----------------------------------------------------
     total_due = Customer.objects.aggregate(total=Sum("due"))["total"] or 0
 
-    # Cash-in today
+    # -----------------------------------------------------
+    # CASH-IN TODAY (FULL DENOMINATIONS)
+    # -----------------------------------------------------
     cash_entry = CashbookEntry.objects.first()
     if cash_entry:
         today_cash_in = (
-            cash_entry.c500 * 500
-            + cash_entry.c200 * 200
-            + cash_entry.c100 * 100
-            + cash_entry.c50 * 50
+            cash_entry.c500 * 500 +
+            cash_entry.c200 * 200 +
+            cash_entry.c100 * 100 +
+            cash_entry.c50 * 50 +
+            cash_entry.c20 * 20 +
+            cash_entry.c10 * 10 +
+            cash_entry.coin20 * 20 +
+            cash_entry.coin10 * 10 +
+            cash_entry.coin5 * 5 +
+            cash_entry.coin2 * 2 +
+            cash_entry.coin1 * 1
         )
     else:
         today_cash_in = 0
 
-    # Stock summary
+    # -----------------------------------------------------
+    # STOCK SUMMARY
+    # -----------------------------------------------------
     total_stock_value = (
         Item.objects.aggregate(total=Sum(F("stock_quantity") * F("buying_price")))["total"]
         or 0
     )
+
     total_stock_items = Item.objects.filter(frozen=False).count()
     low_stock_items = Item.objects.filter(stock_quantity__lt=F("pcs_count")).count()
     out_of_stock_items = Item.objects.filter(stock_quantity=0).count()
 
-    # All stock items with computed fields
+    # -----------------------------------------------------
+    # ALL STOCK ITEMS WITH COMPUTED FIELDS
+    # -----------------------------------------------------
     all_stock_items = (
         Item.objects.filter(frozen=False)
         .annotate(
@@ -76,28 +101,35 @@ def home(request):
                 When(category__iexact="flavoured milk", then=Value(6)),
                 When(category__iexact="ghee", then=Value(7)),
                 When(category__iexact="cups", then=Value(8)),
-                default=Value(8),
+                default=Value(9),
                 output_field=IntegerField(),
             ),
         )
         .order_by("company__name", "category_priority", "name")
     )
 
-    # Apply filters
+    # -----------------------------------------------------
+    # APPLY FILTERS
+    # -----------------------------------------------------
     if company_filter:
         all_stock_items = all_stock_items.filter(company__name__iexact=company_filter)
 
     if category_filter:
         all_stock_items = all_stock_items.filter(category__iexact=category_filter)
 
-    # Group items by company
+    # -----------------------------------------------------
+    # GROUP STOCK BY COMPANY
+    # -----------------------------------------------------
     stock_by_company = {}
     for company, items in groupby(
-        all_stock_items, key=lambda x: x.company.name if x.company else "No Company"
+        all_stock_items,
+        key=lambda x: x.company.name if x.company else "No Company"
     ):
         stock_by_company[company] = list(items)
 
-    # Dropdown Values
+    # -----------------------------------------------------
+    # DROPDOWN VALUES
+    # -----------------------------------------------------
     companies = (
         Item.objects.filter(frozen=False, company__isnull=False)
         .values_list("company__name", flat=True)
@@ -133,83 +165,71 @@ def home(request):
     return render(request, "milk_agency/home/home_dashboard.html", context)
 
 
+# =========================================================
+# CONTACT FORM SUBMIT
+# =========================================================
 def contact_form_submit(request):
     if request.method == 'POST':
         try:
-            # Get form data
             name = request.POST.get('name', '').strip()
             phone = request.POST.get('phone', '').strip()
             email = request.POST.get('email', '').strip()
             subject = request.POST.get('subject', '').strip()
             message = request.POST.get('message', '').strip()
 
-            # Validate required fields
             if not all([name, phone, subject, message]):
-                return JsonResponse({'success': False, 'message': 'Please fill in all required fields.'})
+                return JsonResponse({'success': False, 'message': 'Please fill all required fields.'})
 
-            # Save to database
-            contact = Contact.objects.create(
+            Contact.objects.create(
                 name=name,
                 phone=phone,
                 email=email if email else None,
                 subject=subject,
                 message=message
             )
-            contact.save()
 
-            # Generate WhatsApp message
             whatsapp_message = f"""
-            New Contact Form Inquiry - SVD Milk Agencies
+New Contact Form Inquiry - SVD Milk Agencies
 
-            Name: {name}
-            Phone: {phone}
-            {'Email: ' + email if email else ''}
-            Subject: {subject}
+Name: {name}
+Phone: {phone}
+Email: {email if email else 'N/A'}
+Subject: {subject}
 
-            Message:
-            {message}
+Message:
+{message}
+"""
 
-            Inquiry received via SVD Milk Agencies website
-            We typically respond within 24 hours
-            """
-
-            # FIXED: Proper URL-encoding
             encoded_message = quote(whatsapp_message)
-
-            # WhatsApp URL
             whatsapp_url = f"https://wa.me/919392890375?text={encoded_message}"
 
             return JsonResponse({
                 'success': True,
-                'message': 'Thank you for your message! We will get back to you soon.',
+                'message': 'Thank you! We will contact you soon.',
                 'whatsapp_url': whatsapp_url
             })
 
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'})
+        except Exception:
+            return JsonResponse({'success': False, 'message': 'Server error. Try again.'})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
-#About Page
+
+# STATIC PAGES
 def about(request):
     return render(request, "about.html")
 
-#Contact Page
 def contact(request):
     return render(request, "contact_us.html")
 
-#Privacy Policy Page
 def privacy(request):
-    return render(request, "privacy.html") 
+    return render(request, "privacy.html")
 
-#Terms and Conditions Page
 def terms(request):
     return render(request, "terms.html")
 
-#Refund Policy Page
 def refund(request):
     return render(request, "refund.html")
 
-#CheckOut Page
 def checkout(request):
-    return render(request, "checkout.html") 
+    return render(request, "checkout.html")

@@ -1,8 +1,7 @@
-from urllib import request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -19,28 +18,21 @@ from .models import (
 @login_required
 def cashbook(request):
     today = timezone.now().date()
-    
-    # Month & Year options for dropdown
+
     months = [
         (1, "January"), (2, "February"), (3, "March"),
         (4, "April"), (5, "May"), (6, "June"),
         (7, "July"), (8, "August"), (9, "September"),
         (10, "October"), (11, "November"), (12, "December"),
     ]
-
     years = list(range(today.year - 5, today.year + 2))
 
-    # Month & Year filter
     selected_month = int(request.GET.get('month', today.month))
     selected_year = int(request.GET.get('year', today.year))
 
+    # ---------------- CASH ENTRY ----------------
+    cash_entry = CashbookEntry.objects.first() or CashbookEntry.objects.create()
 
-    # Get or create cashbook entry
-    cash_entry = CashbookEntry.objects.first()
-    if not cash_entry:
-        cash_entry = CashbookEntry.objects.create()
-
-    # Total cash in
     total_cash_in = (
         cash_entry.c500 * 500 + cash_entry.c200 * 200 +
         cash_entry.c100 * 100 + cash_entry.c50 * 50 +
@@ -50,7 +42,6 @@ def cashbook(request):
         cash_entry.coin1 * 1
     )
 
-    # Denomination totals
     denomination_totals = {
         'c500': cash_entry.c500 * 500,
         'c200': cash_entry.c200 * 200,
@@ -65,31 +56,24 @@ def cashbook(request):
         'coin1': cash_entry.coin1 * 1,
     }
 
-    # Current month details
-    current_month = selected_month
-    current_year = selected_year
-
-    # CASH OUT (Expenses)
+    # ---------------- EXPENSES ----------------
     cash_out_entries = Expense.objects.filter(
-        date__year=current_year, date__month=current_month
+        date__year=selected_year,
+        date__month=selected_month
     ).order_by('-created_at')
 
-    total_cash_out = cash_out_entries.aggregate(
-        total=Sum('amount')
-    )['total'] or 0
+    total_cash_out = cash_out_entries.aggregate(total=Sum('amount'))['total'] or 0
 
-    # BANK BALANCE
-    bank_balance = BankBalance.objects.first()
-    bank_balance = bank_balance.amount if bank_balance else 0
+    # ---------------- BANK BALANCE ----------------
+    bank_balance_obj = BankBalance.objects.first()
+    bank_balance = bank_balance_obj.amount if bank_balance_obj else 0
 
-    # --------------------------------------------
-    # COMPANY DUES (FOREIGN KEY FIX APPLIED HERE)
-    # --------------------------------------------
+    # ---------------- COMPANY DUES ----------------
     company_dues = DailyPayment.objects.filter(
-        date__year=current_year,
-        date__month=current_month
+        date__year=selected_year,
+        date__month=selected_month
     ).values(
-        company_name=F('company__name')  # readable name
+        company_name=F('company__name')
     ).annotate(
         total_invoice=Coalesce(Sum('invoice_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
         total_paid=Coalesce(Sum('paid_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
@@ -100,36 +84,33 @@ def cashbook(request):
         last_updated=Max('date')
     ).order_by('company_name')
 
-    # Remove companies with no dues
     company_dues = [c for c in company_dues if c["total_due"] != 0]
-
-    # Total company dues
     total_company_dues = sum(c["total_due"] for c in company_dues)
 
-    # CUSTOMER DUES
-    total_customer_dues = Customer.objects.aggregate(
-        total_due=Sum('due')
-    )['total_due'] or 0
+    # ---------------- CUSTOMER DUES (REAL-TIME SAFE) ----------------
+    total_customer_dues = sum(c.get_actual_due() for c in Customer.objects.all())
 
-    # MONTHLY PROFIT
+    # ---------------- MONTHLY PROFIT ----------------
     monthly_profit = Bill.objects.filter(
-        invoice_date__year=current_year,
-        invoice_date__month=current_month
+        invoice_date__year=selected_year,
+        invoice_date__month=selected_month
     ).aggregate(total_profit=Sum('profit'))['total_profit'] or 0
 
-    # NET PROFIT
     net_profit = monthly_profit - total_cash_out
-
-    # NET CASH
     net_cash = total_cash_in + bank_balance
 
-    # TOTAL STOCK VALUE
+    # ---------------- STOCK VALUE ----------------
     total_stock_value = Item.objects.aggregate(
         total=Sum(F('stock_quantity') * F('buying_price'))
     )['total'] or 0
 
-    # FINAL REMAINING AMOUNT
-    remaining_amount = net_cash + total_stock_value - net_profit - total_company_dues + total_customer_dues
+    remaining_amount = (
+        net_cash
+        + total_stock_value
+        - net_profit
+        - total_company_dues
+        + total_customer_dues
+    )
 
     context = {
         'cash_entry': cash_entry,
@@ -149,8 +130,8 @@ def cashbook(request):
         'remaining_amount': remaining_amount,
         'months': months,
         'years': years,
-        'selected_month': current_month,
-        'selected_year': current_year,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
     }
 
     return render(request, 'milk_agency/dashboards_other/cashbook.html', context)
@@ -159,6 +140,7 @@ def cashbook(request):
 # -------------------------------------------------------
 # SAVE CASH-IN
 # -------------------------------------------------------
+@login_required
 def save_cash_in(request):
     if request.method == 'POST':
         denominations = [
@@ -174,17 +156,7 @@ def save_cash_in(request):
             setattr(cash_entry, d, int(value) if value else 0)
 
         cash_entry.save()
-
-        amount = (
-            cash_entry.c500 * 500 + cash_entry.c200 * 200 +
-            cash_entry.c100 * 100 + cash_entry.c50 * 50 +
-            cash_entry.c20 * 20 + cash_entry.c10 * 10 +
-            cash_entry.coin20 * 20 + cash_entry.coin10 * 10 +
-            cash_entry.coin5 * 5 + cash_entry.coin2 * 2 +
-            cash_entry.coin1 * 1
-        )
-
-        messages.success(request, f"Cash in updated: ₹{amount}")
+        messages.success(request, "Cash in updated successfully")
 
     return redirect('milk_agency:cashbook')
 
@@ -192,6 +164,7 @@ def save_cash_in(request):
 # -------------------------------------------------------
 # SAVE EXPENSE
 # -------------------------------------------------------
+@login_required
 def save_expense(request):
     if request.method == 'POST':
         try:
@@ -221,7 +194,6 @@ def edit_expense(request, pk):
             expense.description = request.POST.get('description')
             expense.date = request.POST.get('date')
             expense.save()
-
             messages.success(request, "Expense updated successfully")
             return redirect('milk_agency:expenses_list')
         except:
@@ -271,7 +243,6 @@ def expenses_list(request):
 
     total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or 0
 
-    from django.db.models import Count
     chart_data = expenses.values('category').annotate(
         total=Sum('amount'),
         count=Count('id')
@@ -295,6 +266,7 @@ def expenses_list(request):
 # -------------------------------------------------------
 # SAVE BANK BALANCE
 # -------------------------------------------------------
+@login_required
 def save_bank_balance(request):
     if request.method == 'POST':
         try:

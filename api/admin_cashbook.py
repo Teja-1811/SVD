@@ -18,6 +18,7 @@ from milk_agency.models import (
     Item
 )
 
+
 # ======================================================
 # 1️⃣ CASHBOOK DASHBOARD
 # ======================================================
@@ -71,8 +72,8 @@ def api_cashbook_dashboard(request):
         )
     )["total"]
 
-    # ---- Bank Balance ----
-    bank_balance_obj = BankBalance.objects.first()
+    # ---- Bank Balance (latest entry) ----
+    bank_balance_obj = BankBalance.objects.order_by("-date").first()
     bank_balance = bank_balance_obj.amount if bank_balance_obj else Decimal("0.00")
 
     # ---- Company Dues ----
@@ -102,7 +103,7 @@ def api_cashbook_dashboard(request):
     company_dues = [c for c in company_dues if c["total_due"] != 0]
     total_company_dues = sum(c["total_due"] for c in company_dues) or Decimal("0.00")
 
-    # ---- Customer Dues ----
+    # ---- Customer Dues (cached total) ----
     total_customer_dues = Customer.objects.aggregate(
         total=Coalesce(
             Sum("due"),
@@ -111,8 +112,9 @@ def api_cashbook_dashboard(request):
         )
     )["total"]
 
-    # ---- Monthly Profit ----
+    # ---- Monthly Profit (exclude soft-deleted bills) ----
     monthly_profit = Bill.objects.filter(
+        is_deleted=False,
         invoice_date__year=year,
         invoice_date__month=month
     ).aggregate(
@@ -204,9 +206,12 @@ def api_list_expenses(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
-    expenses = Expense.objects.filter(
-        date__range=[start_date, end_date]
-    ).order_by("-date")
+    expenses = Expense.objects.all()
+
+    if start_date and end_date:
+        expenses = expenses.filter(date__range=[start_date, end_date])
+
+    expenses = expenses.order_by("-date")
 
     total = expenses.aggregate(
         total=Coalesce(
@@ -265,16 +270,14 @@ def api_delete_expense(request, expense_id):
 
 
 # ======================================================
-# 7️⃣ SAVE BANK BALANCE
+# 7️⃣ SAVE BANK BALANCE (history-aware)
 # ======================================================
 @api_view(['POST'])
 def api_save_bank_balance(request):
 
     try:
         amount = Decimal(request.data.get("amount"))
-        bank, _ = BankBalance.objects.get_or_create()
-        bank.amount = amount
-        bank.save()
+        BankBalance.objects.create(amount=amount)  # preserve history
         return Response({"success": True})
     except Exception:
         return Response({"error": "Invalid amount"}, status=400)

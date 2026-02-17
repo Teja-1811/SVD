@@ -4,13 +4,14 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from datetime import date, timedelta
 import calendar
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from milk_agency.models import (
     DailyPayment,
     MonthlyPaymentSummary,
     Company
 )
+
 
 # ======================================================
 # 1️⃣ PAYMENTS DASHBOARD (GET)
@@ -19,8 +20,11 @@ from milk_agency.models import (
 def api_payments_dashboard(request):
     today = date.today()
 
-    year = int(request.GET.get("year", today.year))
-    month = int(request.GET.get("month", today.month))
+    try:
+        year = int(request.GET.get("year", today.year))
+        month = int(request.GET.get("month", today.month))
+    except ValueError:
+        return Response({"error": "Invalid year or month"}, status=400)
 
     first_day = date(year, month, 1)
     last_day = date(year, month, calendar.monthrange(year, month)[1])
@@ -28,11 +32,13 @@ def api_payments_dashboard(request):
     companies = Company.objects.all()
 
     payments = []
+    grand_total_invoice = Decimal("0")
+    grand_total_paid = Decimal("0")
 
     for company in companies:
         daily_records = []
-        total_invoice = Decimal(0)
-        total_paid = Decimal(0)
+        total_invoice = Decimal("0")
+        total_paid = Decimal("0")
 
         current_day = first_day
         while current_day <= last_day:
@@ -41,8 +47,8 @@ def api_payments_dashboard(request):
                 date=current_day
             ).first()
 
-            invoice_amount = record.invoice_amount if record and record.invoice_amount else 0
-            paid_amount = record.paid_amount if record and record.paid_amount else 0
+            invoice_amount = record.invoice_amount if record and record.invoice_amount else Decimal("0")
+            paid_amount = record.paid_amount if record and record.paid_amount else Decimal("0")
 
             total_invoice += invoice_amount
             total_paid += paid_amount
@@ -55,6 +61,9 @@ def api_payments_dashboard(request):
 
             current_day += timedelta(days=1)
 
+        grand_total_invoice += total_invoice
+        grand_total_paid += total_paid
+
         payments.append({
             "company_id": company.id,
             "company_name": company.name,
@@ -64,18 +73,15 @@ def api_payments_dashboard(request):
             "remaining_due": float(total_invoice - total_paid)
         })
 
-    # -------- Grand totals --------
-    grand_total_invoice = sum(p["total_invoice"] for p in payments)
-    grand_total_paid = sum(p["total_paid"] for p in payments)
     grand_total_due = grand_total_invoice - grand_total_paid
 
     return Response({
         "year": year,
         "month": month,
         "payments": payments,
-        "grand_total_invoice": grand_total_invoice,
-        "grand_total_paid": grand_total_paid,
-        "grand_total_due": grand_total_due
+        "grand_total_invoice": float(grand_total_invoice),
+        "grand_total_paid": float(grand_total_paid),
+        "grand_total_due": float(grand_total_due)
     })
 
 
@@ -84,20 +90,13 @@ def api_payments_dashboard(request):
 # ======================================================
 @api_view(['POST'])
 def api_save_daily_payments(request):
-    """
-    Expected payload format:
-    {
-      "year": 2026,
-      "month": 1,
-      "data": {
-        "1": { "2026-01-01": {"invoice": 1000, "paid": 800} },
-        "2": { "2026-01-01": {"invoice": 500, "paid": 500} }
-      }
-    }
-    """
 
-    year = int(request.data.get("year"))
-    month = int(request.data.get("month"))
+    try:
+        year = int(request.data.get("year"))
+        month = int(request.data.get("month"))
+    except (TypeError, ValueError):
+        return Response({"error": "year and month are required"}, status=400)
+
     data = request.data.get("data", {})
 
     first_day = date(year, month, 1)
@@ -115,8 +114,16 @@ def api_save_daily_payments(request):
             invoice_val = day_data.get("invoice")
             paid_val = day_data.get("paid")
 
-            invoice_val = None if not invoice_val else Decimal(invoice_val)
-            paid_val = None if not paid_val else Decimal(paid_val)
+            # Correct zero handling
+            try:
+                invoice_val = Decimal(str(invoice_val)) if invoice_val is not None else None
+            except (InvalidOperation, TypeError):
+                invoice_val = None
+
+            try:
+                paid_val = Decimal(str(paid_val)) if paid_val is not None else None
+            except (InvalidOperation, TypeError):
+                paid_val = None
 
             DailyPayment.objects.update_or_create(
                 company=company,
@@ -138,8 +145,8 @@ def api_save_daily_payments(request):
         total_paid=Sum("paid_amount")
     )
 
-    total_invoice = totals["total_invoice"] or 0
-    total_paid = totals["total_paid"] or 0
+    total_invoice = totals["total_invoice"] or Decimal("0")
+    total_paid = totals["total_paid"] or Decimal("0")
     total_due = total_invoice - total_paid
 
     MonthlyPaymentSummary.objects.update_or_create(
@@ -161,8 +168,11 @@ def api_save_daily_payments(request):
 @api_view(['GET'])
 def api_monthly_payment_summary(request):
 
-    year = int(request.GET.get("year"))
-    month = int(request.GET.get("month"))
+    try:
+        year = int(request.GET.get("year"))
+        month = int(request.GET.get("month"))
+    except (TypeError, ValueError):
+        return Response({"error": "year and month are required"}, status=400)
 
     summary = MonthlyPaymentSummary.objects.filter(
         year=year,

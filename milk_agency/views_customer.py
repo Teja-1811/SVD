@@ -5,17 +5,17 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from .models import Customer, Bill, CustomerPayment
-from django.utils.timezone import now
 from django.utils import timezone
 from django.db import transaction
-import uuid  # for unique transaction id
+import uuid
 
+
+# -------------------------------------------------------
+# ADD / EDIT CUSTOMER
+# -------------------------------------------------------
 @login_required
 def add_customer(request, customer_id=None):
-    if customer_id:
-        customer = get_object_or_404(Customer, id=customer_id)
-    else:
-        customer = None
+    customer = get_object_or_404(Customer, id=customer_id) if customer_id else None
 
     if request.method == 'POST':
         name = request.POST.get('party_name')
@@ -28,12 +28,8 @@ def add_customer(request, customer_id=None):
         city = request.POST.get('city')
         state = request.POST.get('state')
         is_commissioned = request.POST.get('is_commissioned') == 'on'
-        # Removed milk_commission and curd_commission from POST handling
-        if customer and customer.city != city:
-            retailer_id = "SVD-"+city+retailer_id[-4:]
-        
+
         if customer:
-            # Update existing customer
             customer.name = name
             customer.shop_name = shop_name
             customer.retailer_id = retailer_id
@@ -47,18 +43,11 @@ def add_customer(request, customer_id=None):
             customer.save()
             messages.success(request, f'Customer {customer.name} updated successfully!')
         else:
-            customer_code = str(Customer.objects.count()+1)
-            if len(customer_code) == 1:
-                customer_code ="-00"+customer_code
-            elif len(customer_code) == 2:
-                customer_code = "-0"+customer_code
-            else:
-                customer_code = "-"+customer_code
-            # Create new customer
+            customer_code = str(Customer.objects.count()+1).zfill(3)
             customer = Customer.objects.create(
                 name=name,
                 shop_name=shop_name,
-                retailer_id="SVD-"+city+customer_code,
+                retailer_id=f"SVD-{city}-{customer_code}",
                 flat_number=flat_number,
                 area=area,
                 phone=phone,
@@ -66,91 +55,69 @@ def add_customer(request, customer_id=None):
                 city=city,
                 state=state,
                 is_commissioned=is_commissioned,
-                password=phone  # Set phone number as default password
+                password=phone
             )
             messages.success(request, f'Customer {customer.name} added successfully!')
 
         return redirect('milk_agency:customer_data')
 
-    context = {
+    return render(request, 'milk_agency/customer/add_customer.html', {
         'customer': customer,
         'is_edit': customer is not None
-    }
-    return render(request, 'milk_agency/customer/add_customer.html', context)
+    })
 
+
+# -------------------------------------------------------
+# CUSTOMER LIST + FILTERS
+# -------------------------------------------------------
 @login_required
 def customer_data(request):
-    # Get filter parameters
-    area_filter = request.GET.get('area')
-    id_filter = request.GET.get('id')
-
-    # Strip whitespace
-    if area_filter:
-        area_filter = area_filter.strip()
-    if id_filter:
-        id_filter = id_filter.strip()
+    area_filter = request.GET.get('area', '').strip()
+    id_filter = request.GET.get('id', '').strip()
 
     customers = Customer.objects.all().order_by('id')
 
-    # Apply filters correctly
     if area_filter and area_filter != "All":
         customers = customers.filter(area__icontains=area_filter)
 
     if id_filter and id_filter != "All":
-        # Check if it's a number (ID filter)
         if id_filter.isdigit():
             customers = customers.filter(id=id_filter)
         else:
-            # If name filter is text, use name filter
             customers = customers.filter(name__icontains=id_filter)
 
-    # Calculate total balance for each customer
-    for customer in customers:
-        customer.total_balance = customer.bills.aggregate(
-            total=Sum('op_due_amount')
-        )['total'] or 0
+    # SAFE: show real due
+    for c in customers:
+        c.total_balance = c.get_actual_due()
 
-    # Check if AJAX request
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        customer_data = []
-        for customer in customers:
-            customer_data.append({
-                'id': customer.id,
-                'name': customer.name,
-                'shop_name': customer.shop_name or '-',
-                'retailer_id': customer.retailer_id or '-',
-                'phone': customer.phone,
-                'balance': customer.due or 0,
-                'frozen': customer.frozen,
-            })
-        # Get filtered areas and ids based on current customers (after applying filters)
-        filtered_areas = customers.exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
-        filtered_ids = list(customers.values_list('id', 'name').order_by('id'))
-        filtered_names = customers.values('id', 'name').order_by('name')
         return JsonResponse({
-            'customers': customer_data,
-            'areas': list(filtered_areas),
-            'names': list(filtered_names)
+            'customers': [{
+                'id': c.id,
+                'name': c.name,
+                'shop_name': c.shop_name or '-',
+                'retailer_id': c.retailer_id or '-',
+                'phone': c.phone,
+                'balance': float(c.get_actual_due()),
+                'frozen': c.frozen,
+            } for c in customers]
         })
 
+    areas = Customer.objects.exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct()
+    names = list(Customer.objects.values_list('id', 'name').order_by('name'))
 
-    # Get data for filter dropdowns
-    areas = Customer.objects.all().exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct().order_by('area')
-    names = list(Customer.objects.all().values_list('id', 'name').order_by('name'))
-    active_customers_count = Customer.objects.filter(frozen=False, is_superuser=False).count()
-    inactive_customers_count = Customer.objects.filter(frozen=True, is_superuser=False).count()
-
-    context = {
+    return render(request, 'milk_agency/customer/customer_data.html', {
         'customers': customers,
         'areas': areas,
         'names': names,
         'selected_area': area_filter,
         'selected_id': id_filter,
-        'active_customers_count': active_customers_count,
-        'inactive_customers_count': inactive_customers_count,
-    }
-    return render(request, 'milk_agency/customer/customer_data.html', context)
+    })
 
+
+# -------------------------------------------------------
+# UPDATE CUSTOMER BALANCE (SAFE + ATOMIC)
+# -------------------------------------------------------
 @login_required
 def update_customer_balance(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
@@ -159,64 +126,55 @@ def update_customer_balance(request, customer_id):
         balance_str = request.POST.get('balance', '0')
 
         try:
-            balance_decimal = Decimal(balance_str)
-
-            current_month = timezone.now().month
-            current_year = timezone.now().year
-
-            recent_bill = Bill.objects.filter(
-                customer=customer,
-                invoice_date__year=current_year,
-                invoice_date__month=current_month
-            ).order_by('-id').first()
-
-            # Generate UNIQUE transaction id (prevents duplicate error)
-            transaction_id = f"PAY-{uuid.uuid4().hex[:10].upper()}"
+            amount = Decimal(balance_str)
 
             with transaction.atomic():
+                current_month = timezone.now().month
+                current_year = timezone.now().year
 
-                if recent_bill and balance_decimal > 0:
-                    recent_bill.last_paid += balance_decimal
+                recent_bill = Bill.objects.filter(
+                    customer=customer,
+                    invoice_date__year=current_year,
+                    invoice_date__month=current_month
+                ).order_by('-id').first()
+
+                if recent_bill and amount > 0:
+                    recent_bill.last_paid += amount
                     recent_bill.save()
 
-                # ✅ Always update customer due (your requirement)
-                customer.due -= balance_decimal
-                customer.save()
-
-                # ✅ Create payment ONLY if balance is positive
-                if balance_decimal > 0:
+                if amount > 0:
                     CustomerPayment.objects.create(
                         customer=customer,
-                        amount=balance_decimal,
-                        transaction_id=transaction_id,
+                        amount=amount,
+                        transaction_id=f"PAY-{uuid.uuid4().hex[:10].upper()}",
                         method='Cash',
                         status='Completed'
                     )
 
-            message = f'Balance updated for {customer.name}'
+                # 🔥 Recalculate due instead of blindly subtracting
+                customer.due = customer.get_actual_due()
+                customer.save()
+
+            msg = f'Balance updated for {customer.name}'
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
-                    'message': message,
+                    'message': msg,
                     'new_balance': float(customer.due)
                 })
 
-            messages.success(request, message)
+            messages.success(request, msg)
 
         except Exception as e:
-            error_message = f'Error: {str(e)}'
-
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'message': error_message
-                })
-
-            messages.error(request, error_message)
+            messages.error(request, str(e))
 
     return redirect('milk_agency:customer_data')
 
+
+# -------------------------------------------------------
+# FREEZE / UNFREEZE CUSTOMER
+# -------------------------------------------------------
 @login_required
 def freeze_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
@@ -224,10 +182,10 @@ def freeze_customer(request, customer_id):
     if request.method == 'POST':
         customer.frozen = not customer.frozen
         customer.save()
+
         status = "frozen" if customer.frozen else "unfrozen"
         messages.success(request, f'Customer {customer.name} has been {status}')
 
-        # Check if AJAX request
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
