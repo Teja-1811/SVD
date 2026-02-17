@@ -44,6 +44,27 @@
     display: block;
     margin: auto;
 }
+
+/* Filter Logos */
+.company-filter-logo {
+    height: 60px;
+    margin: 8px;
+    padding: 6px 12px;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.company-filter-logo:hover {
+    transform: scale(1.05);
+}
+
+.company-filter-logo.active {
+    border: 2px solid #0d6efd;
+}
 </style>
 {% endblock extra_css %}
 
@@ -56,7 +77,6 @@
             <div class="col-12 text-center">
                 <div class="hero-content">
 
-                    <!-- MAIN LOGO -->
                     <div class="hero-logo-wrapper mb-4">
                         <div class="d-inline-block p-0 rounded-circle bg-white shadow-sm">
                             <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo" style="height:120px;">
@@ -75,27 +95,11 @@
                     <div class="divider my-4">
                         {% for company in companies %}
                             <img src="{{ company.logo.url }}"
-                                    alt="{{ company.name }} Logo"
-                                    style="height:80px; background:white; border-radius:12px; padding:8px;">
-                            <p>{{company.name}}</p>
+                                 alt="{{ company.name }} Logo"
+                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
+                            <p>{{ company.name }}</p>
                         {% endfor %}
                     </div>
-
-                    <p>
-                        <span class="badge bg-warning text-dark">
-                            <i class="bi bi-geo-alt-fill me-2"></i>
-                            Serving Gundugolanu and Surrounding Areas
-                        </span>
-                    </p>
-
-                    <p>
-                        <span class="badge bg-warning text-dark">
-                            <i class="bi bi-telephone-fill me-2"></i>
-                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
-                                +91 9392890375
-                            </a>
-                        </span>
-                    </p>
 
                     <div class="mt-4 d-flex justify-content-center gap-3">
                         <button class="btn btn-primary px-5 py-3 fw-semibold"
@@ -132,7 +136,27 @@
                         <p class="text-muted">Company-wise Product Availability</p>
                     </div>
 
+                    <!-- FILTER LOGOS -->
+                    <div class="text-center mb-4">
+                        <button class="btn btn-outline-secondary btn-sm me-2 mb-2 active"
+                                onclick="filterCompany('all', this)">
+                            All
+                        </button>
+
+                        {% for company in companies %}
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}"
+                                     class="company-filter-logo"
+                                     data-company="{{ company.id }}"
+                                     onclick="filterCompany('{{ company.id }}', this)"
+                                     alt="{{ company.name }}">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- COMPANY PRODUCTS -->
                     {% for company in companies %}
+                    <div class="company-section" data-company="{{ company.id }}">
 
                         <div class="text-center mb-5">
                             <img src="{{ company.logo.url }}"
@@ -172,6 +196,7 @@
 
                         </div>
 
+                    </div>
                     {% endfor %}
 
                 </div>
@@ -190,89 +215,25 @@
         </div>
 
         <div class="row g-4">
-
-            <!-- MAP -->
             <div class="col-lg-6">
-                <div class="location-card h-100 text-center">
-                    <h4><i class="bi bi-geo-alt-fill me-2"></i>Our Location</h4>
-
-                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+                <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
                         width="100%" height="400"
                         style="border:0; border-radius:10px;" loading="lazy"></iframe>
-
-                    <p class="mt-3 fs-3">
-                        <span class="badge bg-info text-dark p-3">
-                            <i class="bi bi-clock-fill me-2"></i>
-                            Mon–Sun: 6 AM – 9 PM
-                        </span>
-                    </p>
-
-                    <p>
-                        <span class="badge bg-info text-dark p-3">
-                            <i class="bi bi-telephone-fill me-2"></i>
-                            <a href="tel:+919392890375" class="text-dark text-decoration-none fw-semibold">
-                                +91 9392890375
-                            </a>
-                        </span>
-                    </p>
-
-                    <p>
-                        <span class="badge bg-info text-dark p-3">
-                            <i class="bi bi-envelope-fill me-2"></i>
-                            <a href="mailto:svdagencies12@gmail.com" class="text-dark text-decoration-none fw-semibold">
-                                svdagencies12@gmail.com
-                            </a>
-                        </span>
-                    </p>
-                </div>
             </div>
 
-            <!-- CONTACT FORM -->
             <div class="col-lg-6">
-                <div class="contact-form-card h-100">
-                    <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
-
-                    <form id="contactForm">
-                        {% csrf_token %}
-                        <div class="row g-3">
-
-                            <div class="col-md-6">
-                                <label>Name *</label>
-                                <input type="text" name="name" class="form-control" required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label>Phone *</label>
-                                <input type="tel" name="phone" class="form-control" required>
-                            </div>
-
-                            <div class="col-12">
-                                <label>Email</label>
-                                <input type="email" name="email" class="form-control">
-                            </div>
-
-                            <div class="col-12">
-                                <label>Subject *</label>
-                                <input type="text" name="subject" class="form-control" required>
-                            </div>
-
-                            <div class="col-12">
-                                <label>Message *</label>
-                                <textarea rows="4" name="message" class="form-control" required></textarea>
-                            </div>
-
-                            <div class="col-12 text-center mt-3">
-                                <button type="button" id="whatsappBtn" class="btn btn-success btn-lg">
-                                    <i class="bi bi-whatsapp me-2"></i> Contact via WhatsApp
-                                </button>
-                            </div>
-
-                        </div>
-                    </form>
-
-                </div>
+                <form id="contactForm">
+                    {% csrf_token %}
+                    <input type="text" name="name" class="form-control mb-2" placeholder="Name" required>
+                    <input type="tel" name="phone" class="form-control mb-2" placeholder="Phone" required>
+                    <input type="email" name="email" class="form-control mb-2" placeholder="Email">
+                    <input type="text" name="subject" class="form-control mb-2" placeholder="Subject" required>
+                    <textarea name="message" class="form-control mb-2" rows="4" placeholder="Message" required></textarea>
+                    <button type="button" id="whatsappBtn" class="btn btn-success btn-lg w-100">
+                        Contact via WhatsApp
+                    </button>
+                </form>
             </div>
-
         </div>
     </div>
 </section>
@@ -281,4 +242,30 @@
 
 {% block extra_js %}
 <script src="{% static 'js/contact-whatsapp.js' %}"></script>
+<script>
+function filterCompany(companyId, el) {
+
+    document.querySelectorAll('.company-filter-logo').forEach(img => {
+        img.classList.remove('active');
+    });
+
+    if (el && el.tagName === "IMG") {
+        el.classList.add('active');
+    }
+
+    const sections = document.querySelectorAll('.company-section');
+
+    sections.forEach(section => {
+        if (companyId === 'all') {
+            section.style.display = 'block';
+        } else {
+            if (section.dataset.company === companyId) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+    });
+}
+</script>
 {% endblock extra_js %}
