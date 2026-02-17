@@ -197,14 +197,14 @@
                 All
             </button>
 
-            <div class="divider my-4">
-                        {% for company in companies %}
-                                <img src="{{ company.logo.url }}"
-                                 alt="{{ company.name }} Logo"
-                                 style="height:80px; background:white; border-radius:12px; padding:8px;">
-                         
-                        {% endfor %}
-            </div>
+            {% for company in companies %}
+                <img src="{{ company.logo.url }}"
+                     class="company-filter-logo"
+                     style="height:80px; background:white; border-radius:12px; padding:8px;"
+                     data-company="{{ company.id }}"
+                     onclick="filterCompany('{{ company.id }}', this)"
+                     alt="{{ company.name }}">
+            {% endfor %}
         </div>
 
         <!-- ===== PRODUCTS BY COMPANY ===== -->
