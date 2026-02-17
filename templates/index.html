@@ -5,6 +5,23 @@
 
 {% block extra_css %}
 <style>
+/* ================= HERO ================= */
+.hero-section {
+    min-height: 90vh;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+
+.hero-content h3 {
+    font-size: 3rem;
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #ffd700, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ================= COMPANY LOGOS ================= */
 .company-logo {
     height: 50px;
     object-fit: contain;
@@ -48,6 +65,7 @@
     box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
 }
 
+/* ================= PRODUCTS ================= */
 .products-wrapper {
     background: #ffffff;
     padding: 20px;
@@ -56,14 +74,20 @@
     max-width: 1500px;
 }
 
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 10px;
+    width: 100%;
+}
+
 .product-card {
-    width: 200px;
     background: white;
     border-radius: 12px;
-    padding: 10px;
+    padding: 12px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
     text-align: center;
-    margin: auto;
 }
 
 .product-img {
@@ -71,6 +95,91 @@
     object-fit: contain;
     display: block;
     margin: auto;
+}
+
+/* ================= RESPONSIVE ================= */
+
+/* Tablets */
+@media (max-width: 992px) {
+    .hero-content h3 {
+        font-size: 2.2rem;
+        line-height: 1.3;
+    }
+
+    .company-logo {
+        height: 42px;
+        margin: 6px;
+    }
+
+    .company-filter-logo {
+        width: 90px;
+        height: 36px;
+        padding: 6px 10px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .hero-section {
+        min-height: 80vh;
+        padding-top: 30px;
+    }
+
+    .hero-content h3 {
+        font-size: 1.7rem;
+    }
+
+    .hero-content p {
+        font-size: 0.95rem;
+    }
+
+    .company-filters {
+        gap: 12px;
+    }
+
+    .company-filter-logo {
+        width: 75px;
+        height: 32px;
+        padding: 5px 8px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .product-img {
+        height: 70px;
+    }
+
+    .products-wrapper {
+        padding: 10px;
+    }
+}
+
+/* Ultra small phones */
+@media (max-width: 400px) {
+    .hero-content h3 {
+        font-size: 1.4rem;
+    }
+
+    .company-logo {
+        height: 35px;
+    }
+
+    .company-filter-logo {
+        width: 65px;
+        height: 28px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 {% endblock extra_css %}
@@ -109,7 +218,7 @@
                         {% endfor %}
                     </div>
 
-                    <div class="mt-4 d-flex justify-content-center gap-3">
+                    <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
                         <button class="btn btn-primary px-5 py-3 fw-semibold"
                                 data-bs-toggle="modal" data-bs-target="#productsModal">
                             Explore Products
@@ -174,8 +283,7 @@
                             <p class="text-muted">Available items from {{ company.name }}</p>
                         </div>
 
-                        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:20px; padding:10px; width:100%;">
-
+                        <div class="product-grid">
                             {% for product in products_by_company|get_item:company.id %}
                                 <div class="product-card">
                                     {% if product.image %}
@@ -192,7 +300,6 @@
                             {% empty %}
                                 <p class="text-center text-muted">No products available.</p>
                             {% endfor %}
-
                         </div>
                     </div>
                     {% endfor %}
@@ -213,23 +320,35 @@ function filterCompany(companyId, el) {
     document.querySelectorAll('.company-filter-logo').forEach(img => {
         img.classList.remove('active');
     });
-
-    document.querySelectorAll('.company-filters button').forEach(btn=>{
+    document.querySelectorAll('.company-filters button').forEach(btn => {
         btn.classList.remove('active');
     });
 
     el.classList.add('active');
 
     const sections = document.querySelectorAll('.company-section');
+    let firstVisibleSection = null;
 
     sections.forEach(section => {
         if (companyId === 'all') {
             section.style.display = 'block';
+            if (!firstVisibleSection) firstVisibleSection = section;
         } else {
-            section.style.display =
-                section.dataset.company === companyId ? 'block' : 'none';
+            if (section.dataset.company === companyId) {
+                section.style.display = 'block';
+                firstVisibleSection = section;
+            } else {
+                section.style.display = 'none';
+            }
         }
     });
+
+    if (firstVisibleSection) {
+        firstVisibleSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
 }
 </script>
 {% endblock %}
