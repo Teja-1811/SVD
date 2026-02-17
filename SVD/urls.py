@@ -13,17 +13,22 @@ from milk_agency.models import Item, Company
 def index_view(request):
     from milk_agency.models import Item, Company
 
-    products = Item.objects.filter(frozen=False).select_related('company').order_by('name')
+    # Active products only
+    products = Item.objects.filter(frozen=False).select_related('company')
+
+    # All companies
     companies = Company.objects.all()
 
-    # Group products by company
+    # Group products by company id
     products_by_company = {}
     for product in products:
-        products_by_company.setdefault(product.company_id, []).append(product)
+        if product.company_id:
+            products_by_company.setdefault(product.company_id, []).append(product)
 
     return render(request, 'index.html', {
+        'products': products,  # optional
         'companies': companies,
-        'products_by_company': products_by_company,
+        'products_by_company': products_by_company,  # 🔥 REQUIRED
     })
 
 

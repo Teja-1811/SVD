@@ -74,11 +74,10 @@
                     <!-- COMPANY LOGOS -->
                     <div class="divider my-4">
                         {% for company in companies %}
-                            {% if company.name == "Dodla" %}
-                                <img src="{{ company.logo.url }}"
-                                     alt="{{ company.name }} Logo"
-                                     style="height:80px; background:white; border-radius:12px; padding:8px;">
-                            {% endif %}
+                            <img src="{{ company.logo.url }}"
+                                    alt="{{ company.name }} Logo"
+                                    style="height:80px; background:white; border-radius:12px; padding:8px;">
+                            <p>{{company.name}}</p>
                         {% endfor %}
                     </div>
 
