@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager
@@ -89,6 +90,21 @@ class Customer(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.name
+    
+    def get_actual_due(self):
+        total_billed = self.bills.filter(
+        is_deleted=False
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+
+        total_paid = self.customerpayment_set.filter(
+            status="SUCCESS"
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        total_commission = self.monthly_commissions.filter(
+            status=True
+        ).aggregate(total=Sum('commission_amount'))['total'] or 0
+
+        return total_billed - total_paid - total_commission
 
 class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -130,10 +146,17 @@ class Bill(models.Model):
     commission_month = models.IntegerField(null=True, blank=True, help_text="Month for which commission was deducted")
     commission_year = models.IntegerField(null=True, blank=True, help_text="Year for which commission was deducted")
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         customer_name = self.customer.name if self.customer else "Anonymous"
         return f"Invoice {self.invoice_number} - {customer_name}"
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["invoice_date"]),
+            models.Index(fields=["customer"]),
+        ]
 
 class BillItem(models.Model):
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='items')
@@ -148,6 +171,7 @@ class BillItem(models.Model):
 
 class BankBalance(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(default=timezone.now)
 
     def __str__(self):
         return f"Bank Balance: ₹{self.amount}"
@@ -267,14 +291,29 @@ class CustomerMonthlyCommission(models.Model):
 
     def __str__(self):
         return f"{self.customer.name} - {self.month}/{self.year} - Commission: ₹{self.commission_amount}"
+    
+    def mark_as_deducted(self, bill):
+        if self.status:
+            raise ValueError("Commission already deducted for this month")
+
+        self.status = True
+        self.save()
+
+        bill.commission_deducted += self.commission_amount
+        bill.commission_month = self.month
+        bill.commission_year = self.year
+        bill.save()
+
 
 
 
 class Expense(models.Model):
     CATEGORY_CHOICES = [
-        ('petrol', 'Petrol'),
-        ('food', 'Food'),
-        ('others', 'Others')
+        ('Fuel', 'Fuel'),
+        ('Rent', 'Rent'),
+        ('Electricity', 'Electricity'),
+        ('Repairs', 'Repairs'),
+        ('Others', 'Others'),
     ]
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -302,8 +341,9 @@ class Contact(models.Model):
 
 class CustomerPayment(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    bill = models.ForeignKey('Bill', null=True, blank=True, on_delete=models.SET_NULL, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_id = models.CharField(max_length=100, unique=True)
-    method = models.CharField(max_length=20)  # UPI
+    method = models.CharField(max_length=20)  # UPI / CASH
     status = models.CharField(max_length=20)  # SUCCESS / FAILED
     created_at = models.DateTimeField(auto_now_add=True)

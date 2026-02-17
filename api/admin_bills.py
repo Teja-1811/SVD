@@ -194,45 +194,49 @@ def api_create_bill(request):
 def api_edit_bill(request, bill_id):
 
     bill = get_object_or_404(Bill, id=bill_id)
-    customer = request.data.get("customer")
+
+    new_customer_id = request.data.get("customer")
     item_ids = request.data.get("items", [])
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
-
-    # ✅ NEW: invoice date
     invoice_date = request.data.get("invoice_date")
 
     bill_items = BillItem.objects.filter(bill=bill)
 
     with transaction.atomic():
 
-        # ✅ Update invoice date (before recalculations)
+        # -------------------------------
+        # 1️⃣ Update invoice date
+        # -------------------------------
         if invoice_date:
             try:
                 bill.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%d").date()
             except ValueError:
-                return Response(
-                    {"success": False, "message": "Invalid invoice_date format"},
-                    status=400
-                )
+                return Response({"success": False, "message": "Invalid invoice_date format"}, status=400)
 
-        # 1️⃣ Restore stock
+        # -------------------------------
+        # 2️⃣ Restore previous stock
+        # -------------------------------
         for bi in bill_items:
             bi.item.stock_quantity += bi.quantity
             bi.item.save()
 
         bill_items.delete()
 
+        # -------------------------------
+        # 3️⃣ Recreate bill items
+        # -------------------------------
         total = Decimal(0)
         total_profit = Decimal(0)
 
-        # 2️⃣ Recreate bill items
         for i, item_id in enumerate(item_ids):
-
             item = Item.objects.get(id=item_id)
 
             qty = int(quantities[i])
-            discount = Decimal(discounts[i])
+            discount = Decimal(discounts[i]) if discounts else Decimal(0)
+
+            if item.stock_quantity < qty:
+                return Response({"success": False, "message": f"Insufficient stock for {item.name}"}, status=400)
 
             line_total = (item.selling_price * qty) - (discount * qty)
             profit = ((item.selling_price - item.buying_price) * qty) - (discount * qty)
@@ -252,20 +256,43 @@ def api_edit_bill(request, bill_id):
             total += line_total
             total_profit += profit
 
-        # 3️⃣ Update bill totals
-        bill.op_due_amount = bill.customer.due if bill.customer else 0
-        bill.total_amount = total
-        bill.profit = total_profit
-        bill.customer = Customer.objects.filter(id=customer).first() if customer else None
-        bill.save()
+        # -------------------------------
+        # 4️⃣ Customer Handling Logic
+        # -------------------------------
+        old_customer = bill.customer
+        new_customer = Customer.objects.filter(id=new_customer_id).first() if new_customer_id else None
 
-        # 4️⃣ Update customer due
-        if bill.customer:
-            bill.customer.due = bill.op_due_amount + total
-            bill.customer.save()
+        if old_customer and old_customer.id == (new_customer.id if new_customer else None):
+            # 🟢 SAME CUSTOMER → only update totals
+            bill.total_amount = total
+            bill.profit = total_profit
+            bill.save()
+
+            # adjust due difference
+            difference = total - bill.total_amount
+            old_customer.due += difference
+            old_customer.save()
+
+        else:
+            # 🔴 CUSTOMER CHANGED
+            # remove old impact
+            if old_customer:
+                old_customer.due -= bill.total_amount
+                old_customer.save()
+
+            # assign new customer
+            bill.customer = new_customer
+            bill.op_due_amount = new_customer.due if new_customer else Decimal(0)
+            bill.total_amount = total
+            bill.profit = total_profit
+            bill.save()
+
+            # apply new impact
+            if new_customer:
+                new_customer.due += total
+                new_customer.save()
 
     return Response({"success": True})
-
 
 
 # ------------------------------------------
