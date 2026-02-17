@@ -87,6 +87,11 @@
     box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
+.company-filters img {
+    width : 100px !important;
+    height: 100 !important;
+}
+
 
 .company-filter-logo:hover {
     transform: scale(1.05);
@@ -188,10 +193,6 @@
 
     <div class="products-wrapper">
 
-        <div class="text-center mb-4">
-            <h2>Our Premium Products</h2>
-            <p class="text-muted">Company-wise Product Availability</p>
-        </div>
 
         <!-- ===== FILTER BAR ===== -->
         <div class="company-filters">
@@ -201,26 +202,12 @@
             </button>
 
             {% for company in companies %}
-                <div style="display:inline-block; position:relative;">
-                    <img src="{{ company.logo.url }}"
-                         alt="{{ company.name }} Logo"
-                         class="company-filter-logo"
-                         onclick="filterCompany('{{ company.id }}', this)">
-
-                    <span style="
-                        position:absolute;
-                        bottom:0;
-                        left:50%;
-                        transform: translateX(-50%);
-                        background: rgba(0,0,0,0.6);
-                        color:white;
-                        font-size:10px;
-                        padding:2px 6px;
-                        border-radius:8px;
-                        pointer-events:none;
-                    ">
-                        {{ company.name }}
-                    </span>
+                <img src="{{ company.logo.url }}"
+                     class="company-filter-logo"
+                     data-company="{{ company.id }}"
+                     onclick="filterCompany('{{ company.id }}', this)"
+                     alt="{{ company.name }}"
+                     style="{% widthratio 100px max_value max_width as width%}">
             {% endfor %}
         </div>
 
