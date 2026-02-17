@@ -75,15 +75,18 @@
 }
 
 .company-filter-logo {
-    height: 90px !important;
-    width: 25% !important;
-    object-fit: contain !important;
-    padding: 4px !important;
-    background: white !important;
-    border-radius: 12px !important;
-    margin: 10px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
+    height: 70px;
+    width: 90px;
+    object-fit: contain;
+    padding: 6px 10px;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.25s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
+
 
 .company-filter-logo:hover {
     transform: scale(1.05);
@@ -200,7 +203,6 @@
             {% for company in companies %}
                 <img src="{{ company.logo.url }}"
                      class="company-filter-logo"
-                     style="height:80px; background:white; border-radius:12px; padding:8px;"
                      data-company="{{ company.id }}"
                      onclick="filterCompany('{{ company.id }}', this)"
                      alt="{{ company.name }}">
