@@ -192,24 +192,6 @@
             <div class="modal-body">
 
     <div class="products-wrapper">
-
-
-        <!-- ===== FILTER BAR ===== -->
-        <div class="company-filters">
-            <button class="btn btn-outline-secondary btn-sm active"
-                    onclick="filterCompany('all', this)">
-                All
-            </button>
-
-            {% for company in companies %}
-                <img src="{{ company.logo.url }}"
-                     class="company-filter-logo"
-                     data-company="{{ company.id }}"
-                     onclick="filterCompany('{{ company.id }}', this)"
-                     alt="{{ company.name }}">
-            {% endfor %}
-        </div>
-
         <!-- ===== PRODUCTS BY COMPANY ===== -->
         {% for company in companies %}
         <div class="company-section mb-5" data-company="{{ company.id }}">
@@ -364,31 +346,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function filterCompany(companyId, el) {
-
-    document.querySelectorAll('.company-filter-logo').forEach(img => {
-        img.classList.remove('active');
-    });
-
-    document.querySelectorAll('.company-filters button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    el.classList.add('active');
-
-    const sections = document.querySelectorAll('.company-section');
-
-    sections.forEach(section => {
-        if (companyId === 'all') {
-            section.style.display = 'block';
-        } else {
-            section.style.display =
-                section.dataset.company === companyId ? 'block' : 'none';
-        }
-    });
-}
-</script>
 
 <script src="{% static 'js/contact-whatsapp.js' %}"></script>
 {% endblock extra_js %}
