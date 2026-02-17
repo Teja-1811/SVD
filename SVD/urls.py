@@ -11,14 +11,21 @@ from milk_agency.models import Item, Company
 # PUBLIC INDEX PAGE
 # ======================================================
 def index_view(request):
-    # Show only active (not frozen) items
-    products = Item.objects.filter(frozen=False).order_by('name')
+    from milk_agency.models import Item, Company
+
+    products = Item.objects.filter(frozen=False).select_related('company').order_by('name')
     companies = Company.objects.all()
 
+    # Group products by company
+    products_by_company = {}
+    for product in products:
+        products_by_company.setdefault(product.company_id, []).append(product)
+
     return render(request, 'index.html', {
-        'products': products,
         'companies': companies,
+        'products_by_company': products_by_company,
     })
+
 
 
 # ======================================================
