@@ -5,9 +5,6 @@
 {% block content %}
 
 <style>
-/* ================================
-   GLOBAL CARD STYLING
-================================ */
 .card {
     border-radius: 14px;
     overflow: hidden;
@@ -21,11 +18,11 @@
     font-weight: 600;
 }
 
-/* Table Styling */
 .table td, .table th {
     vertical-align: middle;
     padding: 6px 8px;
 }
+
 .table-hover tbody tr:hover {
     background-color: #f0faff !important;
 }
@@ -35,7 +32,6 @@ input.form-control-sm {
     font-size: 0.85rem;
 }
 
-/* -------- TOTALS DESIGN (MATCHES YOUR SCREENSHOT) -------- */
 .total-box {
     padding: 10px 14px;
     border-radius: 12px;
@@ -47,18 +43,9 @@ input.form-control-sm {
     color: #fff;
 }
 
-.total-red {
-    background: #d9534f !important;  /* Red */
-}
-
-.total-green {
-    background: #28a745 !important;  /* Green */
-}
-
-.total-yellow {
-    background: #ffc107 !important;  /* Yellow */
-    color: #000 !important;
-}
+.total-red { background: #d9534f !important; }
+.total-green { background: #28a745 !important; }
+.total-yellow { background: #ffc107 !important; color: #000 !important; }
 
 .total-wrapper {
     display: flex;
@@ -66,26 +53,19 @@ input.form-control-sm {
     gap: 12px;
 }
 
-/* Save Button */
 .save-btn {
     font-size: 0.9rem;
     padding: 6px 20px;
 }
 
 @media (max-width: 768px) {
-    .total-wrapper {
-        flex-direction: column;
-        gap: 8px;
-    }
+    .total-wrapper { flex-direction: column; gap: 8px; }
 }
 </style>
 
-
 <div class="container-fluid py-3">
 
-    <!-- ================================
-         FILTER FORM
-    ================================= -->
+    <!-- FILTER -->
     <form method="get" class="row g-2 mb-2">
 
         <div class="col-md-1 col-6">
@@ -108,31 +88,23 @@ input.form-control-sm {
             <button type="submit" class="btn btn-outline-primary btn-sm w-100">Filter</button>
         </div>
 
-        <!-- TOTAL VALUES (RED / GREEN / YELLOW BLOCKS) -->
+        <!-- TOTALS -->
         <div class="col-12 d-flex justify-content-center mt-2">
             <div class="total-wrapper">
-
                 <div class="total-box total-red">
                     Total Invoice: ₹{{ grand_total_invoice|floatformat:2 }}
                 </div>
-
                 <div class="total-box total-green">
                     Total Paid: ₹{{ grand_total_paid|floatformat:2 }}
                 </div>
-
                 <div class="total-box total-yellow">
                     Due: ₹{{ grand_total_due|floatformat:2 }}
                 </div>
-
             </div>
         </div>
-
     </form>
 
-
-    <!-- ================================
-         SAVE BUTTON
-    ================================= -->
+    <!-- SAVE -->
     <form method="post">
         {% csrf_token %}
 
@@ -140,19 +112,13 @@ input.form-control-sm {
             <button class="btn btn-outline-success save-btn">💰 Save All</button>
         </div>
 
-
-        <!-- ================================
-             PAYMENT CARDS
-        ================================= -->
         <div class="row g-3">
-
             {% for payment in payments %}
             <div class="col-lg-4 col-md-6">
-
                 <div class="card">
 
                     <div class="card-header bg-primary text-white">
-                        {{ payment.company }}
+                        {{ payment.company.name }}
                     </div>
 
                     <div class="card-body p-0">
@@ -168,18 +134,20 @@ input.form-control-sm {
                                 <tbody>
                                     {% for p in payment.records %}
                                     <tr>
-                                        <td class="text-center fw-bold">{{ p.date|date:"d" }}</td>
+                                        <td class="text-center fw-bold">
+                                            {{ p.date|date:"d" }}
+                                        </td>
 
                                         <td>
                                             <input type="number" step="0.01"
-                                                name="invoice_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
+                                                name="invoice_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}"
                                                 class="form-control form-control-sm border-0 text-center"
                                                 value="{{ p.invoice_amount|default_if_none:'' }}">
                                         </td>
 
                                         <td>
                                             <input type="number" step="0.01"
-                                                name="paid_{{ payment.company|slugify }}_{{ p.date|date:'Y-m-d' }}"
+                                                name="paid_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}"
                                                 class="form-control form-control-sm border-0 text-center"
                                                 value="{{ p.paid_amount|default_if_none:'' }}">
                                         </td>
@@ -197,12 +165,9 @@ input.form-control-sm {
                     </div>
 
                 </div>
-
             </div>
             {% endfor %}
-
         </div>
-
     </form>
 
 </div>

@@ -5,39 +5,40 @@ from .models import Item, DailyPayment, MonthlyPaymentSummary, Company
 from datetime import date, timedelta
 import calendar
 
+
 @login_required
 def payments_dashboard(request):
     today = date.today()
 
-    # Read selected year/month from query params or use current month
+    # Selected month/year
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
 
     first_day = date(year, month, 1)
     last_day = date(year, month, calendar.monthrange(year, month)[1])
 
-    # List all distinct companies from Items table
     companies = Company.objects.all()
 
-    # --------------------------
-    # SAVE DATA (POST request)
-    # --------------------------
+    # ==========================
+    # SAVE DATA (POST)
+    # ==========================
     if request.method == "POST":
         for company in companies:
             current_day = first_day
             while current_day <= last_day:
-                invoice_key = f"invoice_{str(company).lower()}_{current_day}"
-                paid_key = f"paid_{str(company).lower()}_{current_day}"
+                date_str = current_day.strftime("%Y-%m-%d")
+
+                invoice_key = f"invoice_{company.id}_{date_str}"
+                paid_key = f"paid_{company.id}_{date_str}"
 
                 invoice_raw = request.POST.get(invoice_key, "").strip()
                 paid_raw = request.POST.get(paid_key, "").strip()
 
-                invoice_val = None if invoice_raw == "" or float(invoice_raw) == 0 else float(invoice_raw)
-                paid_val = None if paid_raw == "" or float(paid_raw) == 0 else float(paid_raw)
+                invoice_val = float(invoice_raw) if invoice_raw else None
+                paid_val = float(paid_raw) if paid_raw else None
 
-                # Save or update the daily record
                 DailyPayment.objects.update_or_create(
-                    company=company if company else 'Unknown',
+                    company=company,
                     date=current_day,
                     defaults={
                         'invoice_amount': invoice_val,
@@ -47,34 +48,35 @@ def payments_dashboard(request):
 
                 current_day += timedelta(days=1)
 
-        # ✅ Calculate monthly totals AFTER saving daily records
-        totals = DailyPayment.objects.filter(
-            date__range=(first_day, last_day)
-        ).aggregate(
-            total_invoice=Sum('invoice_amount'),
-            total_paid=Sum('paid_amount')
-        )
+        # 🔹 Save monthly summary PER COMPANY
+        for company in companies:
+            totals = DailyPayment.objects.filter(
+                company=company,
+                date__range=(first_day, last_day)
+            ).aggregate(
+                total_invoice=Sum('invoice_amount'),
+                total_paid=Sum('paid_amount')
+            )
 
-        grand_total_invoice = totals['total_invoice'] or 0
-        grand_total_paid = totals['total_paid'] or 0
-        grand_total_due = grand_total_invoice - grand_total_paid
+            total_invoice = totals['total_invoice'] or 0
+            total_paid = totals['total_paid'] or 0
 
-        # Save/update monthly summary
-        MonthlyPaymentSummary.objects.update_or_create(
-            year=year,
-            month=month,
-            defaults={
-                'total_invoice': grand_total_invoice,
-                'total_paid': grand_total_paid,
-                'total_due': grand_total_due
-            }
-        )
+            MonthlyPaymentSummary.objects.update_or_create(
+                company=company,
+                year=year,
+                month=month,
+                defaults={
+                    'total_invoice': total_invoice,
+                    'total_paid': total_paid,
+                    'total_due': total_invoice - total_paid
+                }
+            )
 
         return redirect(request.path + f"?year={year}&month={month}")
 
-    # --------------------------
-    # DISPLAY DATA (GET request)
-    # --------------------------
+    # ==========================
+    # DISPLAY DATA (GET)
+    # ==========================
     payments = []
     for company in companies:
         daily_records = []
@@ -83,9 +85,12 @@ def payments_dashboard(request):
         total_paid = 0
 
         while current_day <= last_day:
-            record = DailyPayment.objects.filter(company=company, date=current_day).first()
-            invoice_amount = record.invoice_amount if record and record.invoice_amount is not None else 0
-            paid_amount = record.paid_amount if record and record.paid_amount is not None else 0
+            record = DailyPayment.objects.filter(
+                company=company, date=current_day
+            ).first()
+
+            invoice_amount = record.invoice_amount if record and record.invoice_amount else 0
+            paid_amount = record.paid_amount if record and record.paid_amount else 0
 
             total_invoice += invoice_amount
             total_paid += paid_amount
@@ -95,23 +100,22 @@ def payments_dashboard(request):
                 'invoice_amount': invoice_amount,
                 'paid_amount': paid_amount,
             })
+
             current_day += timedelta(days=1)
 
         payments.append({
-            'company': company if company else 'Unknown',
+            'company': company,
             'records': daily_records,
             'total_invoice': total_invoice,
             'total_paid': total_paid,
-            'remaining_due': total_invoice - total_paid  # ✅ Add this
+            'remaining_due': total_invoice - total_paid
         })
 
-
-    # Calculate grand totals for footer display
+    # Grand totals
     grand_total_invoice = sum(p['total_invoice'] for p in payments)
     grand_total_paid = sum(p['total_paid'] for p in payments)
     grand_total_due = grand_total_invoice - grand_total_paid
 
-    # Dropdown year/month options
     years = range(today.year - 5, today.year + 1)
     months = [
         (1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'),
