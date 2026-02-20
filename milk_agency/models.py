@@ -203,6 +203,7 @@ class DailyPayment(models.Model):
 class MonthlyPaymentSummary(models.Model):
     year = models.IntegerField()
     month = models.IntegerField()
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='monthly_summaries')
     total_invoice = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_due = models.DecimalField(max_digits=12, decimal_places=2, default=0)
