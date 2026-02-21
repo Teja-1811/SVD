@@ -10,7 +10,6 @@ import calendar
 def payments_dashboard(request):
     today = date.today()
 
-    # Selected month/year
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
 
@@ -48,29 +47,33 @@ def payments_dashboard(request):
 
                 current_day += timedelta(days=1)
 
-        # 🔹 Save monthly summary PER COMPANY
-        for company in companies:
-            totals = DailyPayment.objects.filter(
-                company=company,
-                date__range=(first_day, last_day)
-            ).aggregate(
-                total_invoice=Sum('invoice_amount'),
-                total_paid=Sum('paid_amount')
-            )
+        # 🔥 Correct Global Monthly Summary (no company field)
+        totals = DailyPayment.objects.filter(
+            date__range=(first_day, last_day)
+        ).aggregate(
+            total_invoice=Sum('invoice_amount'),
+            total_paid=Sum('paid_amount')
+        )
 
-            total_invoice = totals['total_invoice'] or 0
-            total_paid = totals['total_paid'] or 0
+        grand_total_invoice = totals['total_invoice'] or 0
+        grand_total_paid = totals['total_paid'] or 0
+        grand_total_due = grand_total_invoice - grand_total_paid
 
-            MonthlyPaymentSummary.objects.update_or_create(
-                company=company,
-                year=year,
-                month=month,
-                defaults={
-                    'total_invoice': total_invoice,
-                    'total_paid': total_paid,
-                    'total_due': total_invoice - total_paid
-                }
-            )
+        summary, created = MonthlyPaymentSummary.objects.get_or_create(
+            year=year,
+            month=month,
+            defaults={
+                'total_invoice': grand_total_invoice,
+                'total_paid': grand_total_paid,
+                'total_due': grand_total_due
+            }
+        )
+
+        if not created:
+            summary.total_invoice = grand_total_invoice
+            summary.total_paid = grand_total_paid
+            summary.total_due = grand_total_due
+            summary.save()
 
         return redirect(request.path + f"?year={year}&month={month}")
 
