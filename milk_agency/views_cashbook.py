@@ -275,13 +275,10 @@ def expenses_list(request):
 def save_bank_balance(request):
     if request.method == 'POST':
         try:
-            amount = float(request.POST.get('amount'))
-            bank_balance, created = BankBalance.objects.get_or_create(defaults={'amount': amount})
-
-            if not created:
-                bank_balance.amount = amount
-                bank_balance.save()
-
+            amount = float(request.POST.get('amount', 0))
+            bank_balance_obj = BankBalance.objects.first() or BankBalance.objects.create()
+            bank_balance_obj.amount = amount
+            bank_balance_obj.save()
             messages.success(request, f"Bank balance updated: ₹{amount}")
         except:
             messages.error(request, "Invalid bank amount")
