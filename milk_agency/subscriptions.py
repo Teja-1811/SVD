@@ -167,19 +167,13 @@ def toggle_subscription(request, subscription_id):
 # CUSTOMER SUBSCRIPTION HISTORY
 # -------------------------------------------------------
 @login_required
-def customer_subscription_history(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
+def customer_subscription_history(request):
 
-    subscriptions = Subscription.objects.filter(
-        customer=customer
-    ).select_related('plan').order_by('-start_date')
+    subscriptions = Subscription.objects.all()
 
-    payments = UserPayment.objects.filter(
-        user=customer
-    ).order_by('-created_at')
+    payments = UserPayment.objects.all()
 
     return render(request, 'milk_agency/subscription/customer_history.html', {
-        'customer': customer,
         'subscriptions': subscriptions,
         'payments': payments
     })
