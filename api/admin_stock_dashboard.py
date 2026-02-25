@@ -35,6 +35,10 @@ def stock_dashboard_api(request):
         "name",
         "stock_quantity",
         "pcs_count",
+        stock_value = ExpressionWrapper(
+            F("stock_quantity") * F("selling_price"),
+            output_field=FloatField()
+        ),
         company_name=F("company__name"),
     )
 
@@ -85,7 +89,7 @@ def stock_dashboard_api(request):
             "total_items": total_items,
             "total_stock_value": float(total_stock_value or 0),
             "low_stock_count": low_stock_count,
-            "stock_in_30d": 0,
+            "stock_in_30d": float(total_stock_value or 0) - float(stock_out or 0),
             "stock_out_30d": float(stock_out or 0),
         },
         "all_items": all_items,
