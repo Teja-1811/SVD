@@ -31,6 +31,12 @@ class CustomerManager(BaseUserManager):
 # Custom User Model (Customer)
 # -----------------------------
 class Customer(AbstractBaseUser, PermissionsMixin):
+    
+    USER_TYPE_CHOICES = [
+        ('retailer', 'Retailer'),
+        ('user', 'User'),
+        ('delivery', 'Delivery'),
+    ]
     phone = models.CharField(max_length=20, unique=True, help_text="Phone number for login")
     name = models.CharField(max_length=255)
     shop_name = models.CharField(max_length=255, blank=True, help_text="Name of the customer's shop")
@@ -43,6 +49,12 @@ class Customer(AbstractBaseUser, PermissionsMixin):
 
     # Financial fields
     due = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Customer's current balance")
+    
+    user_type = models.CharField(
+        max_length=20,
+        choices=USER_TYPE_CHOICES,
+        default='retailer'   # choose safest default for your system
+    )
 
     # Commission eligibility
     is_commissioned = models.BooleanField(default=False, help_text="Whether this customer is eligible for commission calculation")

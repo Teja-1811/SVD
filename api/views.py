@@ -7,9 +7,11 @@ from rest_framework.parsers import JSONParser
 def get_user_role(user):
     if user.is_superuser:
         return "admin"
-    if getattr(user, "is_delivery", False):
-        return "delivery"
-    return "customer"
+    if user.user_type == 'retailer':
+        return "customer"
+    if user.user_type == 'user':
+        return "user"
+    return "delivery"
 
 @api_view(['POST'])
 @parser_classes([JSONParser])
