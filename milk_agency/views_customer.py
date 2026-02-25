@@ -148,7 +148,7 @@ def update_customer_balance(request, customer_id):
                         amount=amount,
                         transaction_id=f"PAY-{uuid.uuid4().hex[:10].upper()}",
                         method='Cash',
-                        status='Completed'
+                        status='SUCCESS',
                     )
 
                 # 🔥 Recalculate due instead of blindly subtracting
