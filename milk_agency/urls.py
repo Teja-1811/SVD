@@ -14,6 +14,9 @@ from . import views_sales_summary
 
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
+from . import views_users
+from . import views_subscription
+
 
 
 app_name = 'milk_agency'
@@ -86,7 +89,31 @@ urlpatterns = [
     path('companies/add/', views_companies.add_company, name='add_company'),
     path('companies/edit/<int:company_id>/', views_companies.edit_company, name='edit_company'),
 
-    # Product Pages - removed unused product pages
+    # User URLs
+    path('add-user/', views_users.add_user, name='add_user'),
+    path('edit-user/<int:customer_id>/', views_users.add_user, name='edit_user'),
+    path('user-data/', views_users.user_data, name='user_data'),
+    
+    # Subscription Dashboard
+    path('subscriptions/', views_subscription.subscription_dashboard, name='subscription_dashboard'),
+
+    # Create Plan
+    path('subscriptions/plan/create/', views_subscription.create_subscription_plan, name='create_subscription_plan'),
+
+    # Add Items to Plan
+    path('subscriptions/plan/<int:plan_id>/add-item/', views_subscription.add_plan_item, name='add_plan_item'),
+
+    # Assign Subscription to Customer
+    path('subscriptions/assign/', views_subscription.assign_subscription, name='assign_subscription'),
+
+    # Activate / Deactivate Subscription
+    path('subscriptions/toggle/<int:subscription_id>/', views_subscription.toggle_subscription, name='toggle_subscription'),
+
+    # Customer Subscription History
+    path('subscriptions/customer/<int:customer_id>/', views_subscription.customer_subscription_history, name='customer_subscription_history'),
+
+    # Record Payment for Subscription
+    path('subscriptions/payment/<int:subscription_id>/', views_subscription.record_subscription_payment, name='record_subscription_payment'),
 
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),

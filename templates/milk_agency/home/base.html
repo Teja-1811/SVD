@@ -117,6 +117,12 @@
             </li>
 
             <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'subscription_dashboard' %}active{% endif %}" href="{% url 'milk_agency:subscription_dashboard' %}">
+                <i class="bi bi-journal-text"></i> Subscriptions
+              </a>
+            </li>
+
+            <li class="nav-item">
               <a class="nav-link" href="/general_store/">
                 <i class="bi bi-shop"></i> General Store
               </a>

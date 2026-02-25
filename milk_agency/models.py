@@ -360,3 +360,99 @@ class CustomerPayment(models.Model):
     method = models.CharField(max_length=20)  # UPI / CASH
     status = models.CharField(max_length=20)  # SUCCESS / FAILED
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+# -------------------------------------------------------
+# SUBSCRIPTION PLAN
+# -------------------------------------------------------
+class SubscriptionPlan(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+# -------------------------------------------------------
+# ITEMS INCLUDED IN A SUBSCRIPTION PLAN
+# -------------------------------------------------------
+class SubscriptionItem(models.Model):
+    subscription_plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()  # safer than IntegerField
+
+    def __str__(self):
+        return f"{self.subscription_plan.name} - {self.item.name} x {self.quantity}"
+
+
+# -------------------------------------------------------
+# CUSTOMER SUBSCRIPTION
+# -------------------------------------------------------
+class Subscription(models.Model):
+    customer = models.ForeignKey(
+        'Customer',
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+    plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['customer', 'plan', 'start_date'],
+                name='unique_customer_plan_start'
+            )
+        ]
+
+    def __str__(self):
+        plan_name = self.plan.name if self.plan else "No Plan"
+        status = "Active" if self.active else "Inactive"
+        return f"{self.customer.name} - {plan_name} ({status})"
+
+
+# -------------------------------------------------------
+# USER / SUBSCRIPTION PAYMENTS
+# -------------------------------------------------------
+class UserPayment(models.Model):
+    STATUS_CHOICES = [
+        ('SUCCESS', 'Success'),
+        ('FAILED', 'Failed'),
+        ('PENDING', 'Pending'),
+    ]
+
+    METHOD_CHOICES = [
+        ('UPI', 'UPI'),
+        ('CASH', 'Cash'),
+    ]
+
+    user = models.ForeignKey(
+        'Customer',
+        on_delete=models.CASCADE,
+        related_name='user_payments'
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_id = models.CharField(max_length=100, unique=True)
+    subscription_plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} - ₹{self.amount} ({self.status})"

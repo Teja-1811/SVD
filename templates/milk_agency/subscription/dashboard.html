@@ -1,0 +1,91 @@
+{% extends "milk_agency/base.html" %}
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <h3 class="mb-4">Subscription Dashboard</h3>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6>Total Active</h6>
+                <h4>{{ total_active }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6>Total Expired</h6>
+                <h4>{{ total_expired }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plans -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between">
+            <h5>Subscription Plans</h5>
+            <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary btn-sm">+ Add Plan</a>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.name }}</td>
+                        <td>₹{{ plan.price }}</td>
+                        <td>{{ plan.description }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">No Plans</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Active Subscriptions -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5>Active Subscriptions</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Plan</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in active_subscriptions %}
+                    <tr>
+                        <td>{{ sub.customer.name }}</td>
+                        <td>{{ sub.plan.name }}</td>
+                        <td>{{ sub.start_date }}</td>
+                        <td>{{ sub.end_date }}</td>
+                        <td>
+                            <a href="{% url 'milk_agency:toggle_subscription' sub.id %}" 
+                               class="btn btn-sm btn-warning">Deactivate</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">No active subscriptions</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

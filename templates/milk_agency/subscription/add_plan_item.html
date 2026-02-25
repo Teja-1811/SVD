@@ -1,0 +1,25 @@
+{% extends "milk_agency/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Add Item to {{ plan.name }}</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Select Item</label>
+            <select name="item" class="form-control">
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Quantity</label>
+            <input type="number" name="quantity" class="form-control" required>
+        </div>
+
+        <button class="btn btn-primary">Add Item</button>
+    </form>
+</div>
+{% endblock %}
