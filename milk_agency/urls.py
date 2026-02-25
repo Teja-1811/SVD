@@ -100,6 +100,9 @@ urlpatterns = [
     # Create Plan
     path('subscriptions/plan/create/', views_subscription.create_subscription_plan, name='create_subscription_plan'),
 
+    # ✏️ Edit Plan (NEW - required for edit button)
+    path('subscriptions/plan/<int:plan_id>/edit/', views_subscription.edit_subscription_plan, name='edit_subscription_plan'),
+
     # Add Items to Plan
     path('subscriptions/plan/<int:plan_id>/add-item/', views_subscription.add_plan_item, name='add_plan_item'),
 

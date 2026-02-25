@@ -1,28 +1,32 @@
 {% extends "milk_agency/home/base.html" %}
+{% block title %}Subscription Dashboard{% endblock %}
+
 {% block content %}
+<div class="container-fluid mt-4">
 
-<div class="container-fluid py-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold">Subscription Dashboard</h3>
-        <div>
-            <a href="{% url 'milk_agency:assign_subscription' %}" class="btn btn-success btn-sm">
-                + Assign Subscription
+    <!-- Header + Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-journal-text me-2"></i> Subscription Dashboard
+        </h2>
+        <div class="btn-group">
+            <a href="{% url 'milk_agency:assign_subscription' %}" class="btn btn-success">
+                <i class="bi bi-person-plus"></i> Assign Subscription
             </a>
-            <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary btn-sm">
-                + Add Plan
+            <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Plan
             </a>
         </div>
     </div>
 
     <!-- KPI CARDS -->
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center">
                 <div class="card-body">
-                    <h6 class="text-muted">Active Subscriptions</h6>
-                    <h3 class="fw-bold text-success">{{ total_active }}</h3>
+                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                    <h6 class="text-muted mt-2">Active Subscriptions</h6>
+                    <h2 class="fw-bold text-success">{{ total_active }}</h2>
                 </div>
             </div>
         </div>
@@ -30,8 +34,9 @@
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center">
                 <div class="card-body">
-                    <h6 class="text-muted">Expired Subscriptions</h6>
-                    <h3 class="fw-bold text-danger">{{ total_expired }}</h3>
+                    <i class="bi bi-x-circle fs-1 text-danger"></i>
+                    <h6 class="text-muted mt-2">Expired Subscriptions</h6>
+                    <h2 class="fw-bold text-danger">{{ total_expired }}</h2>
                 </div>
             </div>
         </div>
@@ -39,8 +44,9 @@
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center">
                 <div class="card-body">
-                    <h6 class="text-muted">Expiring Soon</h6>
-                    <h3 class="fw-bold text-warning">{{ expiring_soon|length }}</h3>
+                    <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                    <h6 class="text-muted mt-2">Expiring Soon</h6>
+                    <h2 class="fw-bold text-warning">{{ expiring_soon|length }}</h2>
                 </div>
             </div>
         </div>
@@ -48,8 +54,9 @@
         <div class="col-md-3">
             <div class="card shadow-sm border-0 text-center">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Plans</h6>
-                    <h3 class="fw-bold text-primary">{{ plans|length }}</h3>
+                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                    <h6 class="text-muted mt-2">Total Plans</h6>
+                    <h2 class="fw-bold text-primary">{{ plans|length }}</h2>
                 </div>
             </div>
         </div>
@@ -57,29 +64,44 @@
 
     <!-- SUBSCRIPTION PLANS -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Subscription Plans</h5>
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0">
+                <i class="bi bi-collection me-2"></i> Subscription Plans
+            </h5>
         </div>
         <div class="card-body p-0">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Name</th>
+                        <th>Plan Name</th>
                         <th>Price</th>
                         <th>Description</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for plan in plans %}
                     <tr>
                         <td class="fw-semibold">{{ plan.name }}</td>
-                        <td>₹{{ plan.price }}</td>
-                        <td>{{ plan.description|default:"-" }}</td>
+                        <td class="text-primary fw-bold">₹{{ plan.price }}</td>
+                        <td class="text-muted">{{ plan.description|default:"-" }}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="{% url 'milk_agency:add_plan_item' plan.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-square"></i>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center text-muted py-4">
-                            No Plans Created Yet
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            No subscription plans available. Click “Add Plan” to create one.
                         </td>
                     </tr>
                     {% endfor %}
@@ -90,11 +112,13 @@
 
     <!-- ACTIVE SUBSCRIPTIONS -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Active Subscriptions</h5>
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0">
+                <i class="bi bi-people me-2"></i> Active Subscriptions
+            </h5>
         </div>
         <div class="card-body p-0">
-            <table class="table table-striped mb-0">
+            <table class="table table-striped align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th>Customer</th>
@@ -107,27 +131,31 @@
                 <tbody>
                     {% for sub in active_subscriptions %}
                     <tr>
-                        <td>{{ sub.customer.name }}</td>
+                        <td class="fw-semibold">{{ sub.customer.name }}</td>
                         <td>{{ sub.plan.name }}</td>
                         <td>{{ sub.start_date }}</td>
                         <td>{{ sub.end_date }}</td>
                         <td class="text-center">
-                            <a href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}"
-                               class="btn btn-info btn-sm">History</a>
-
-                            <a href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
-                               class="btn btn-success btn-sm">Payment</a>
-
-                            <a href="{% url 'milk_agency:toggle_subscription' sub.id %}"
-                               class="btn btn-warning btn-sm">
-                                {% if sub.active %}Deactivate{% else %}Activate{% endif %}
-                            </a>
+                            <div class="btn-group">
+                                <a href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}"
+                                   class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                <a href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-currency-rupee"></i>
+                                </a>
+                                <a href="{% url 'milk_agency:toggle_subscription' sub.id %}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            No active subscriptions
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            No active subscriptions found.
                         </td>
                     </tr>
                     {% endfor %}
@@ -137,12 +165,15 @@
     </div>
 
     <!-- EXPIRING SOON -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0 text-warning">Expiring Soon (Next 5 Days)</h5>
+    <div class="card shadow-sm border-warning">
+        <div class="card-header bg-warning-subtle border-bottom">
+            <h5 class="mb-0 text-warning">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Expiring Soon (Next 5 Days)
+            </h5>
         </div>
         <div class="card-body p-0">
-            <table class="table table-bordered mb-0">
+            <table class="table table-bordered align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th>Customer</th>
@@ -155,12 +186,12 @@
                     <tr>
                         <td>{{ sub.customer.name }}</td>
                         <td>{{ sub.plan.name }}</td>
-                        <td class="text-danger fw-semibold">{{ sub.end_date }}</td>
+                        <td class="fw-bold text-danger">{{ sub.end_date }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center text-muted py-4">
-                            No subscriptions expiring soon
+                        <td colspan="3" class="text-center py-4 text-muted">
+                            No subscriptions expiring soon.
                         </td>
                     </tr>
                     {% endfor %}
@@ -170,5 +201,4 @@
     </div>
 
 </div>
-
 {% endblock %}

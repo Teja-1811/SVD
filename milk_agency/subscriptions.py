@@ -71,7 +71,23 @@ def create_subscription_plan(request):
 
     return render(request, 'milk_agency/subscription/create_plan.html')
 
+@login_required
+def edit_subscription_plan(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
 
+    if request.method == 'POST':
+        plan.name = request.POST.get('name')
+        plan.price = request.POST.get('price')
+        plan.description = request.POST.get('description')
+        plan.save()
+        messages.success(request, "Subscription plan updated successfully")
+        return redirect('milk_agency:subscription_dashboard')
+
+    return render(request, 'milk_agency/subscription/create_plan.html', {
+        'plan': plan,
+        'is_edit': True
+    })
+    
 # -------------------------------------------------------
 # ADD ITEMS TO PLAN
 # -------------------------------------------------------
