@@ -88,7 +88,12 @@ def cashbook(request):
     total_company_dues = sum(c["total_due"] for c in company_dues)
 
     # ---------------- CUSTOMER DUES (REAL-TIME SAFE) ----------------
-    total_customer_dues = sum(c.get_actual_due() for c in Customer.objects.all())
+    total_customer_dues = 0
+    customers = Customer.objects.all()
+    for customer in customers:
+        if customer.get_actual_due() > 0:
+            total_customer_dues += customer.get_actual_due()
+    
 
     # ---------------- MONTHLY PROFIT ----------------
     monthly_profit = Bill.objects.filter(
