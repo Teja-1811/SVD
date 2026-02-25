@@ -64,41 +64,49 @@ def cashbook(request):
 
     total_cash_out = cash_out_entries.aggregate(total=Sum('amount'))['total'] or 0
 
-    # ---------------- BANK BALANCE ----------------
-    bank_balance_obj = BankBalance.objects.first()
-    bank_balance = bank_balance_obj.amount if bank_balance_obj else 0
+    # ---------------- BANK BALANCE (SINGLETON) ----------------
+    bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
+    bank_balance = bank_balance_obj.amount
 
     # ---------------- COMPANY DUES ----------------
     company_dues = DailyPayment.objects.filter(
         date__year=selected_year,
         date__month=selected_month
     ).values(
-        company_name=F('company__name')
+        company_name=F('company__name'),
+        company_id=F('company')
     ).annotate(
         total_invoice=Coalesce(Sum('invoice_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
         total_paid=Coalesce(Sum('paid_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
         total_due=ExpressionWrapper(
             F('total_invoice') - F('total_paid'),
             output_field=DecimalField(max_digits=12, decimal_places=2)
-        ),
-        last_updated=Max('date')
+        )
     ).order_by('company_name')
 
-    company_dues = [c for c in company_dues if c["total_due"] != 0]
+    # attach global last updated date per company (not month filtered)
+    company_dues_list = []
+    for c in company_dues:
+        last_date = DailyPayment.objects.filter(company_id=c['company_id']).aggregate(
+            last=Max('date')
+        )['last']
+        c['last_updated'] = last_date
+        if c['total_due'] != 0:
+            company_dues_list.append(c)
+
+    company_dues = company_dues_list
     total_company_dues = sum(c["total_due"] for c in company_dues)
 
-    # ---------------- CUSTOMER DUES (REAL-TIME SAFE) ----------------
-    total_customer_dues = 0
-    customers = Customer.objects.all()
-    for customer in customers:
-        if customer.get_actual_due() > 0:
-            total_customer_dues += customer.get_actual_due()
-    
+    # ---------------- CUSTOMER DUES (SOURCE OF TRUTH = due field) ----------------
+    total_customer_dues = Customer.objects.filter(due__gt=0).aggregate(
+        total=Coalesce(Sum('due'), 0, output_field=DecimalField(max_digits=12, decimal_places=2))
+    )['total']
 
     # ---------------- MONTHLY PROFIT ----------------
     monthly_profit = Bill.objects.filter(
         invoice_date__year=selected_year,
-        invoice_date__month=selected_month
+        invoice_date__month=selected_month,
+        is_deleted=False
     ).aggregate(total_profit=Sum('profit'))['total_profit'] or 0
 
     net_profit = monthly_profit - total_cash_out
@@ -109,6 +117,7 @@ def cashbook(request):
         total=Sum(F('stock_quantity') * F('buying_price'))
     )['total'] or 0
 
+    # ---------------- REMAINING AMOUNT ----------------
     remaining_amount = (
         net_cash
         + total_stock_value
@@ -142,6 +151,28 @@ def cashbook(request):
     return render(request, 'milk_agency/dashboards_other/cashbook.html', context)
 
 
+# -------------------------------------------------------
+# SAVE BANK BALANCE
+# -------------------------------------------------------
+@login_required
+def save_bank_balance(request):
+    if request.method == 'POST':
+        amount_str = request.POST.get('amount', '').strip()
+
+        if amount_str == '':
+            messages.error(request, "Amount cannot be empty")
+            return redirect('milk_agency:cashbook')
+
+        try:
+            amount = float(amount_str)
+            bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
+            bank_balance_obj.amount = amount
+            bank_balance_obj.save()
+            messages.success(request, f"Bank balance updated: ₹{amount:.2f}")
+        except ValueError:
+            messages.error(request, "Invalid amount format")
+
+    return redirect('milk_agency:cashbook')
 # -------------------------------------------------------
 # SAVE CASH-IN
 # -------------------------------------------------------
@@ -266,21 +297,3 @@ def expenses_list(request):
     }
 
     return render(request, 'milk_agency/dashboards_other/expenses_list.html', context)
-
-
-# -------------------------------------------------------
-# SAVE BANK BALANCE
-# -------------------------------------------------------
-@login_required
-def save_bank_balance(request):
-    if request.method == 'POST':
-        try:
-            amount = float(request.POST.get('amount', 0))
-            bank_balance_obj = BankBalance.objects.first() or BankBalance.objects.create()
-            bank_balance_obj.amount = amount
-            bank_balance_obj.save()
-            messages.success(request, f"Bank balance updated: ₹{amount}")
-        except:
-            messages.error(request, "Invalid bank amount")
-
-    return redirect('milk_agency:cashbook')

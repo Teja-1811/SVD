@@ -171,7 +171,6 @@ class BillItem(models.Model):
 
 class BankBalance(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField(default=timezone.now)
 
     def __str__(self):
         return f"Bank Balance: ₹{self.amount}"
@@ -194,6 +193,7 @@ class DailyPayment(models.Model):
     date = models.DateField()
     invoice_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('company', 'date')

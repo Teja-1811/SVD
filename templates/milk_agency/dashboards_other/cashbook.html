@@ -458,7 +458,7 @@ body {
                             <h4 class="{% if company.total_due > 0 %}text-danger{% else %}text-success{% endif %}">
                                 ₹{{ company.total_due|floatformat:2 }}
                             </h4>
-                            <small class="text-muted">Last updated: {{ company.last_updated|date:"d M Y" }}</small>
+                            <small class="text-muted">Last updated: {{ company.updated_at|date:"d M Y" }}</small>
                         </div>
                     </div>
                     {% endfor %}
