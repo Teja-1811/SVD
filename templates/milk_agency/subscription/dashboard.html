@@ -16,6 +16,12 @@
             <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add Plan
             </a>
+            <a class="btn btn-outline-info" href="{% url 'milk_agency:subscription_history' %}">
+                <i class="bi bi-clock-history"></i> Subscription History
+            </a>
+            <a class="btn btn-outline-secondary" href="{% url 'milk_agency:customer_subscription_payments' %}">
+                <i class="bi bi-currency-rupee"></i> Payment History
+            </a>
         </div>
     </div>
 
@@ -89,11 +95,11 @@
                             <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
                                    class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil-square"></i> Edit
+                                    <i class="bi bi-pencil-square"></i>
                                 </a>
                                 <a href="{% url 'milk_agency:add_plan_item' plan.id %}"
                                    class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-plus-square"></i> Add Items
+                                    <i class="bi bi-plus-square"></i>
                                 </a>
                             </div>
                         </td>

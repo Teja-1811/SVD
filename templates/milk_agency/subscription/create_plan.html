@@ -1,33 +1,70 @@
 {% extends "milk_agency/home/base.html" %}
+{% block title %}
+{% if is_edit %}Edit Subscription Plan{% else %}Create Subscription Plan{% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container py-4">
+    <br>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">
+            <i class="bi bi-collection me-2"></i>
+            {% if is_edit %}Edit Subscription Plan{% else %}Create Subscription Plan{% endif %}
+        </h3>
+        <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
     <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Create Subscription Plan</h5>
-        </div>
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
 
-                <div class="mb-3">
-                    <label class="form-label">Plan Name</label>
-                    <input type="text" name="name" class="form-control" placeholder="e.g. Daily Milk Plan" required>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Plan Name</label>
+                        <input type="text"
+                               name="name"
+                               class="form-control"
+                               value="{{ plan.name|default:'' }}"
+                               placeholder="Enter plan name"
+                               required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Price (₹)</label>
+                        <input type="number"
+                               step="0.01"
+                               name="price"
+                               class="form-control"
+                               value="{{ plan.price|default:'' }}"
+                               placeholder="Enter plan price"
+                               required>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description"
+                                  rows="3"
+                                  class="form-control"
+                                  placeholder="Optional description">{{ plan.description|default:'' }}</textarea>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Price (₹)</label>
-                    <input type="number" step="0.01" name="price" class="form-control" required>
-                </div>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i>
+                        {% if is_edit %}Update Plan{% else %}Create Plan{% endif %}
+                    </button>
 
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control" rows="3"></textarea>
+                    <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
                 </div>
-
-                <button class="btn btn-success">Save Plan</button>
-                <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">Back</a>
             </form>
         </div>
     </div>
+
 </div>
 {% endblock %}
