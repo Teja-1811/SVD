@@ -2,15 +2,14 @@
 {% block title %}Subscription Dashboard{% endblock %}
 
 {% block content %}
-<br>
 <div class="container-fluid py-4">
-
+    <br>
     <!-- Header + Actions -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <h2 class="fw-bold mb-0">
             <i class="bi bi-journal-text me-2"></i> Subscription Dashboard
         </h2>
-        <div class="btn-group">
+        <div class="d-flex flex-wrap gap-2">
             <a href="{% url 'milk_agency:assign_subscription' %}" class="btn btn-success">
                 <i class="bi bi-person-plus"></i> Assign Subscription
             </a>
@@ -22,8 +21,8 @@
 
     <!-- KPI CARDS -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 text-center">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-check-circle fs-1 text-success"></i>
                     <h6 class="text-muted mt-2">Active Subscriptions</h6>
@@ -32,8 +31,8 @@
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 text-center">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-x-circle fs-1 text-danger"></i>
                     <h6 class="text-muted mt-2">Expired Subscriptions</h6>
@@ -42,8 +41,8 @@
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 text-center">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
                     <h6 class="text-muted mt-2">Expiring Soon</h6>
@@ -52,8 +51,8 @@
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 text-center">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center h-100">
                 <div class="card-body">
                     <i class="bi bi-box-seam fs-1 text-primary"></i>
                     <h6 class="text-muted mt-2">Total Plans</h6>
@@ -70,7 +69,7 @@
                 <i class="bi bi-collection me-2"></i> Subscription Plans
             </h5>
         </div>
-        <div class="card-body p-0">
+        <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -87,14 +86,14 @@
                         <td class="text-primary fw-bold">₹{{ plan.price }}</td>
                         <td class="text-muted">{{ plan.description|default:"-" }}</td>
                         <td class="text-center">
-                            <div class="btn-group">
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
                                    class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil-square"></i>
+                                    <i class="bi bi-pencil-square"></i> Edit
                                 </a>
                                 <a href="{% url 'milk_agency:add_plan_item' plan.id %}"
                                    class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-plus-square"></i>
+                                    <i class="bi bi-plus-square"></i> Add Items
                                 </a>
                             </div>
                         </td>
@@ -118,7 +117,7 @@
                 <i class="bi bi-people me-2"></i> Active Subscriptions
             </h5>
         </div>
-        <div class="card-body p-0">
+        <div class="table-responsive">
             <table class="table table-striped align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -137,18 +136,19 @@
                         <td>{{ sub.start_date }}</td>
                         <td>{{ sub.end_date }}</td>
                         <td class="text-center">
-                            <div class="btn-group">
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
                                 <a href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}"
                                    class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-clock-history"></i>
+                                    <i class="bi bi-clock-history"></i> History
                                 </a>
                                 <a href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
                                    class="btn btn-sm btn-outline-success">
-                                    <i class="bi bi-currency-rupee"></i>
+                                    <i class="bi bi-currency-rupee"></i> Payment
                                 </a>
                                 <a href="{% url 'milk_agency:toggle_subscription' sub.id %}"
                                    class="btn btn-sm btn-outline-warning">
                                     <i class="bi bi-arrow-repeat"></i>
+                                    {% if sub.active %}Deactivate{% else %}Activate{% endif %}
                                 </a>
                             </div>
                         </td>
@@ -173,7 +173,7 @@
                 Expiring Soon (Next 5 Days)
             </h5>
         </div>
-        <div class="card-body p-0">
+        <div class="table-responsive">
             <table class="table table-bordered align-middle mb-0">
                 <thead class="table-light">
                     <tr>
