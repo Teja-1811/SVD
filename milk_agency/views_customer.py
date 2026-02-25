@@ -37,6 +37,7 @@ def add_customer(request, customer_id=None):
             customer.area = area
             customer.phone = phone
             customer.pin_code = pin_code
+            customer.user_type = 'retailer'
             customer.city = city
             customer.state = state
             customer.is_commissioned = is_commissioned
@@ -52,6 +53,7 @@ def add_customer(request, customer_id=None):
                 area=area,
                 phone=phone,
                 pin_code=pin_code,
+                user_type='retailer',
                 city=city,
                 state=state,
                 is_commissioned=is_commissioned,
@@ -75,7 +77,7 @@ def customer_data(request):
     area_filter = request.GET.get('area', '').strip()
     id_filter = request.GET.get('id', '').strip()
 
-    customers = Customer.objects.all().order_by('id')
+    customers = Customer.objects.filter(user_type="retailer").order_by('id')
 
     if area_filter and area_filter != "All":
         customers = customers.filter(area__icontains=area_filter)

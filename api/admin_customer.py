@@ -16,7 +16,8 @@ def api_customer_list(request):
 
     customers = Customer.objects.filter(
         is_superuser=False,
-        is_staff=False
+        is_staff=False,
+        user_type='retailer'
     ).order_by('id')
 
     data = []
