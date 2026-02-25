@@ -1,24 +1,31 @@
 {% extends "milk_agency/home/base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <h3>Record Payment - {{ subscription.customer.name }}</h3>
-
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label>Amount</label>
-            <input type="number" step="0.01" name="amount" class="form-control" required>
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Record Payment - {{ subscription.customer.name }}</h5>
         </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
 
-        <div class="mb-3">
-            <label>Method</label>
-            <select name="method" class="form-control">
-                <option value="UPI">UPI</option>
-                <option value="CASH">Cash</option>
-            </select>
+                <div class="mb-3">
+                    <label class="form-label">Amount (₹)</label>
+                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Payment Method</label>
+                    <select name="method" class="form-control">
+                        <option value="UPI">UPI</option>
+                        <option value="CASH">Cash</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success">Save Payment</button>
+                <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">Back</a>
+            </form>
         </div>
-
-        <button class="btn btn-success">Save Payment</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

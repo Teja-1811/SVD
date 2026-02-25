@@ -1,25 +1,32 @@
 {% extends "milk_agency/home/base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <h3>Add Item to {{ plan.name }}</h3>
-
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label>Select Item</label>
-            <select name="item" class="form-control">
-                {% for item in items %}
-                <option value="{{ item.id }}">{{ item.name }}</option>
-                {% endfor %}
-            </select>
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Add Items to {{ plan.name }}</h5>
         </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
 
-        <div class="mb-3">
-            <label>Quantity</label>
-            <input type="number" name="quantity" class="form-control" required>
+                <div class="mb-3">
+                    <label class="form-label">Select Item</label>
+                    <select name="item" class="form-control">
+                        {% for item in items %}
+                        <option value="{{ item.id }}">{{ item.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" name="quantity" class="form-control" required>
+                </div>
+
+                <button class="btn btn-primary">Add Item</button>
+                <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">Back</a>
+            </form>
         </div>
-
-        <button class="btn btn-primary">Add Item</button>
-    </form>
+    </div>
 </div>
 {% endblock %}
