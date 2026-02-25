@@ -69,12 +69,12 @@ def cashbook(request):
     bank_balance = bank_balance_obj.amount
 
     # ---------------- COMPANY DUES ----------------
-    company_dues = DailyPayment.objects.filter(
+    company_dues_qs = DailyPayment.objects.filter(
         date__year=selected_year,
         date__month=selected_month
     ).values(
-        company_name=F('company__name'),
-        company_id=F('company')
+        'company',
+        'company__name'
     ).annotate(
         total_invoice=Coalesce(Sum('invoice_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
         total_paid=Coalesce(Sum('paid_amount'), 0, output_field=DecimalField(max_digits=12, decimal_places=2)),
@@ -82,19 +82,22 @@ def cashbook(request):
             F('total_invoice') - F('total_paid'),
             output_field=DecimalField(max_digits=12, decimal_places=2)
         )
-    ).order_by('company_name')
+    ).order_by('company__name')
 
-    # attach global last updated date per company (not month filtered)
-    company_dues_list = []
-    for c in company_dues:
-        last_date = DailyPayment.objects.filter(company_id=c['company_id']).aggregate(
+    # Attach latest overall date per company
+    company_dues = []
+    for c in company_dues_qs:
+        last_date = DailyPayment.objects.filter(company=c['company']).aggregate(
             last=Max('date')
         )['last']
-        c['last_updated'] = last_date
-        if c['total_due'] != 0:
-            company_dues_list.append(c)
 
-    company_dues = company_dues_list
+        if c['total_due'] != 0:
+            company_dues.append({
+                "company_name": c['company__name'],
+                "total_due": c['total_due'],
+                "last_updated": last_date
+            })
+
     total_company_dues = sum(c["total_due"] for c in company_dues)
 
     # ---------------- CUSTOMER DUES (SOURCE OF TRUTH = due field) ----------------
@@ -173,6 +176,8 @@ def save_bank_balance(request):
             messages.error(request, "Invalid amount format")
 
     return redirect('milk_agency:cashbook')
+
+
 # -------------------------------------------------------
 # SAVE CASH-IN
 # -------------------------------------------------------
