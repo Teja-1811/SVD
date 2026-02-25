@@ -15,7 +15,7 @@ from . import views_sales_summary
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
 from . import views_users
-from . import views_subscription
+from . import subscriptions as views_subscription
 
 
 
