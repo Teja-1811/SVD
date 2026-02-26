@@ -73,7 +73,7 @@ def api_cashbook_dashboard(request):
     )["total"]
 
     # ---- Bank Balance (latest entry) ----
-    bank_balance_obj = BankBalance.objects.order_by("-date").first()
+    bank_balance_obj = BankBalance.objects.get(id=1)  # Assuming a single entry for current balance
     bank_balance = bank_balance_obj.amount if bank_balance_obj else Decimal("0.00")
 
     # ---- Company Dues ----
@@ -277,7 +277,8 @@ def api_save_bank_balance(request):
 
     try:
         amount = Decimal(request.data.get("amount"))
-        BankBalance.objects.create(amount=amount)  # preserve history
+        BankBalance.amount = amount
+        BankBalance.save()
         return Response({"success": True})
     except Exception:
         return Response({"error": "Invalid amount"}, status=400)
