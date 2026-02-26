@@ -19,7 +19,7 @@
             <a class="btn btn-outline-info" href="{% url 'milk_agency:subscription_history' %}">
                 <i class="bi bi-clock-history"></i> Subscription History
             </a>
-            <a class="btn btn-outline-secondary" href="{% url 'milk_agency:customer_subscription_payments' %}">
+            <a class="btn btn-outline-secondary" href="{% url 'milk_agency:record_subscription_payment' sub.id %}">
                 <i class="bi bi-currency-rupee"></i> Payment History
             </a>
         </div>

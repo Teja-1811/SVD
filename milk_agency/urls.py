@@ -113,7 +113,7 @@ urlpatterns = [
     path('subscriptions/toggle/<int:subscription_id>/', views_subscription.toggle_subscription, name='toggle_subscription'),
 
     # Customer Subscription History
-    path('subscriptions/history', views_subscription.customer_subscription_history, name='subscription_history'),
+    path('subscriptions/customer/<int:customer_id>/', views_subscription.customer_subscription_history, name='subscription_history'),
 
     # Record Payment for Subscription
     path('subscriptions/payment/<int:subscription_id>/', views_subscription.record_subscription_payment, name='record_subscription_payment'),
