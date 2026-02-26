@@ -16,15 +16,6 @@
             <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add Plan
             </a>
-            {% if sub.customer %}
-<a href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}"
-   class="btn btn-sm btn-outline-info">
-    <i class="bi bi-clock-history"></i> History
-</a>
-{% endif %}
-            <a class="btn btn-outline-secondary" href="{% url 'milk_agency:record_subscription_payment' sub.id %}">
-                <i class="bi bi-currency-rupee"></i> Payment History
-            </a>
         </div>
     </div>
 
@@ -162,53 +153,10 @@
                             </div>
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">
-                            No active subscriptions found.
-                        </td>
-                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
-    <!-- EXPIRING SOON -->
-    <div class="card shadow-sm border-warning">
-        <div class="card-header bg-warning-subtle border-bottom">
-            <h5 class="mb-0 text-warning">
-                <i class="bi bi-exclamation-circle me-2"></i>
-                Expiring Soon (Next 5 Days)
-            </h5>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Customer</th>
-                        <th>Plan</th>
-                        <th>End Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for sub in expiring_soon %}
-                    <tr>
-                        <td>{{ sub.customer.name }}</td>
-                        <td>{{ sub.plan.name }}</td>
-                        <td class="fw-bold text-danger">{{ sub.end_date }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3" class="text-center py-4 text-muted">
-                            No subscriptions expiring soon.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
 {% endblock %}
