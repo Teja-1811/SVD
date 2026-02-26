@@ -16,9 +16,12 @@
             <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add Plan
             </a>
-            <a class="btn btn-outline-info" href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}">
-                <i class="bi bi-clock-history"></i> Subscription History
-            </a>
+            {% if sub.customer %}
+<a href="{% url 'milk_agency:customer_subscription_history' sub.customer.id %}"
+   class="btn btn-sm btn-outline-info">
+    <i class="bi bi-clock-history"></i> History
+</a>
+{% endif %}
             <a class="btn btn-outline-secondary" href="{% url 'milk_agency:record_subscription_payment' sub.id %}">
                 <i class="bi bi-currency-rupee"></i> Payment History
             </a>
