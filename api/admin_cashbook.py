@@ -277,7 +277,9 @@ def api_save_bank_balance(request):
 
     try:
         amount = Decimal(request.data.get("amount"))
-        BankBalance.objects.get_or_create(id=1, defaults={"amount": amount})
+        bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
+        bank_balance_obj.amount = amount
+        bank_balance_obj.save()
         return Response({"success": True})
     except Exception:
         return Response({"error": "Invalid amount"}, status=400)
