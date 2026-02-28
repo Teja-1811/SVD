@@ -119,7 +119,7 @@ def api_monthly_sales_summary(request):
     curd_commission = calculate_curd_commission(avg_curd) * days_in_month
     total_commission = milk_commission + curd_commission
 
-    remaining_due = due_total - total_commission if total_commission > 0 else due_total
+    remaining_due = customer.get_actual_due() - total_commission if customer else Decimal('0')
 
     return Response({
         "year": year,
