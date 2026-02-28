@@ -237,7 +237,7 @@ def monthly_summary_pdf_api(request):
     paid_amount = sum(b["paid_amount"] for b in customer_bills.values())
 
     opening_due = bills.first().op_due_amount if bills.exists() else customer.due
-    due_amount = opening_due + total_sales - paid_amount
+    due_amount = customer.get_actual_due()
 
     # ---------------------------
     # Volume + Commission
