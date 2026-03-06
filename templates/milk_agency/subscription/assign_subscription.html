@@ -1,25 +1,29 @@
 {% extends "milk_agency/home/base.html" %}
 
-{% block title %}Add Plan Item{% endblock %}
+{% block title %}Assign Subscription{% endblock %}
 
 {% block content %}
 <div class="container py-4">
   <h2 class="fw-bold mb-4">
-    <i class="bi bi-plus-circle"></i> Add Item to Plan
+    <i class="bi bi-person-plus"></i> Assign Subscription
   </h2>
   <form method="post">
     {% csrf_token %}
     <div class="mb-3">
-      <label for="item" class="form-label">Item</label>
-      {{ form.item }}
+      <label for="customer" class="form-label">Customer</label>
+      {{ form.customer }}
     </div>
     <div class="mb-3">
-      <label for="quantity" class="form-label">Quantity</label>
-      {{ form.quantity }}
+      <label for="subscription_plan" class="form-label">Subscription Plan</label>
+      {{ form.subscription_plan }}
+    </div>
+    <div class="mb-3">
+      <label for="start_date" class="form-label">Start Date</label>
+      {{ form.start_date }}
     </div>
     <div class="d-flex justify-content-between">
       <button type="submit" class="btn btn-primary">
-        <i class="bi bi-check-circle"></i> Add Item
+        <i class="bi bi-check-circle"></i> Assign Subscription
       </button>
       <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Back
