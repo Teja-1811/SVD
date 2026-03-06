@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from .models import (
     SubscriptionPlan,
-    Subscription,
+    CustomerSubscription,
     SubscriptionItem,
     UserPayment,
     Customer
@@ -22,26 +22,26 @@ def subscription_dashboard(request):
     today = timezone.now().date()
 
     # Auto deactivate expired subscriptions
-    Subscription.objects.filter(
+    CustomerSubscription.objects.filter(
         end_date__lt=today,
-        active=True
-    ).update(active=False)
+        is_active=True
+    ).update(is_active=False)
 
     plans = SubscriptionPlan.objects.all()
 
-    active_subscriptions = Subscription.objects.filter(
-        active=True,
+    active_subscriptions = CustomerSubscription.objects.filter(
+        is_active=True,
         end_date__gte=today
-    ).select_related("customer","plan")
+    ).select_related("customer", "subscription_plan")
 
-    expired_subscriptions = Subscription.objects.filter(
+    expired_subscriptions = CustomerSubscription.objects.filter(
         end_date__lt=today
-    ).select_related("customer","plan")
+    ).select_related("customer", "subscription_plan")
 
-    expiring_soon = Subscription.objects.filter(
-        active=True,
+    expiring_soon = CustomerSubscription.objects.filter(
+        is_active=True,
         end_date__range=[today, today + timezone.timedelta(days=5)]
-    ).select_related("customer","plan")
+    ).select_related("customer", "subscription_plan")
 
     context = {
         "plans": plans,
@@ -135,12 +135,12 @@ def assign_subscription(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
 
-        Subscription.objects.create(
+        CustomerSubscription.objects.create(
             customer_id=customer_id,
             plan_id=plan_id,
             start_date=start_date,
             end_date=end_date,
-            active=True
+            is_active=True
         )
 
         messages.success(request, "Subscription assigned successfully")
@@ -160,12 +160,12 @@ def assign_subscription(request):
 # -------------------------------------------------------
 @login_required
 def toggle_subscription(request, subscription_id):
-    subscription = get_object_or_404(Subscription, id=subscription_id)
+    subscription = get_object_or_404(CustomerSubscription, id=subscription_id)
 
-    subscription.active = not subscription.active
+    subscription.is_active = not subscription.is_active
     subscription.save()
 
-    status = "activated" if subscription.active else "deactivated"
+    status = "activated" if subscription.is_active else "deactivated"
     messages.success(request, f"Subscription {status} for {subscription.customer.name}")
 
     return redirect('milk_agency:subscription_dashboard')
@@ -177,7 +177,7 @@ def toggle_subscription(request, subscription_id):
 @login_required
 def customer_subscription_history(request):
 
-    subscriptions = Subscription.objects.all()
+    subscriptions = CustomerSubscription.objects.all()
 
     payments = UserPayment.objects.all()
 
