@@ -85,7 +85,7 @@
               <tbody>
                 {% for item in plan.items.all %}
                 <tr>
-                  <td>{{ item.name }}</td>
+                  <td>{{ item.item.name }}</td>
                   <td>{{ item.quantity }}</td>
                 </tr>
                 {% empty %}
