@@ -1,32 +1,38 @@
 {% extends "milk_agency/home/base.html" %}
+
+{% block title %}Record Payment{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <br>
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Record Payment - {{ subscription.customer.name }}</h5>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <label class="form-label">Amount (₹)</label>
-                    <input type="number" step="0.01" name="amount" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Payment Method</label>
-                    <select name="method" class="form-control">
-                        <option value="UPI">UPI</option>
-                        <option value="CASH">Cash</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-success">Save Payment</button>
-                <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">Back</a>
-            </form>
-        </div>
+<div class="container py-4">
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-cash"></i> Record Payment
+  </h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="amount" class="form-label">Amount (₹)</label>
+      {{ form.amount|as_crispy_field }}
     </div>
+    <div class="mb-3">
+      <label for="payment_date" class="form-label">Payment Date</label>
+      {{ form.payment_date|as_crispy_field }}
+    </div>
+    <div class="mb-3">
+      <label for="method" class="form-label">Payment Method</label>
+      {{ form.method|as_crispy_field }}
+    </div>
+    <div class="mb-3">
+      <label for="status" class="form-label">Status</label>
+      {{ form.status|as_crispy_field }}
+    </div>
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-circle"></i> Record Payment
+      </button>
+      <a href="{% url 'milk_agency:subscription_dashboard' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </form>
 </div>
 {% endblock %}

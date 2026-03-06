@@ -1,78 +1,43 @@
 {% extends "milk_agency/home/base.html" %}
+
+{% block title %}Customer History{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-    <br>
-    <h4 class="mb-3">{{ customer.name }} - Subscription History</h4>
-
-    <!-- Subscriptions -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h6 class="mb-0">Subscriptions</h6>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Plan</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for s in subscriptions %}
-                    <tr>
-                        <td>{{ s.plan.name }}</td>
-                        <td>{{ s.start_date }}</td>
-                        <td>{{ s.end_date }}</td>
-                        <td>
-                            {% if s.active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inactive</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="text-center py-3">No subscriptions found</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Payments -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h6 class="mb-0">Payment History</h6>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-bordered mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Amount</th>
-                        <th>Method</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in payments %}
-                    <tr>
-                        <td>₹{{ p.amount }}</td>
-                        <td>{{ p.method }}</td>
-                        <td>
-                            <span class="badge bg-success">{{ p.status }}</span>
-                        </td>
-                        <td>{{ p.created_at|date:"d M Y H:i" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="text-center py-3">No payments found</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-clock-history"></i> Customer History
+  </h2>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Plan</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for history in customer_history %}
+        <tr>
+          <td>{{ history.date }}</td>
+          <td>{{ history.plan.name }}</td>
+          <td>₹{{ history.amount }}</td>
+          <td>
+            {% if history.status == 'Paid' %}
+            <span class="badge bg-success">Paid</span>
+            {% else %}
+            <span class="badge bg-danger">Unpaid</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">No history available</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}
