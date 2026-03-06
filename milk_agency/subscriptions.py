@@ -18,39 +18,47 @@ from .models import (
 # -------------------------------------------------------
 @login_required
 def subscription_dashboard(request):
+
     today = timezone.now().date()
+
+    # Auto deactivate expired subscriptions
+    Subscription.objects.filter(
+        end_date__lt=today,
+        active=True
+    ).update(active=False)
 
     plans = SubscriptionPlan.objects.all()
 
     active_subscriptions = Subscription.objects.filter(
         active=True,
         end_date__gte=today
-    ).select_related('customer', 'plan')
+    ).select_related("customer","plan")
 
     expired_subscriptions = Subscription.objects.filter(
         end_date__lt=today
-    ).select_related('customer', 'plan')
+    ).select_related("customer","plan")
 
     expiring_soon = Subscription.objects.filter(
         active=True,
         end_date__range=[today, today + timezone.timedelta(days=5)]
-    )
-
-    total_active = active_subscriptions.count()
-    total_expired = expired_subscriptions.count()
+    ).select_related("customer","plan")
 
     context = {
-        'plans': plans,
-        'active_subscriptions': active_subscriptions,
-        'expired_subscriptions': expired_subscriptions,
-        'expiring_soon': expiring_soon,
-        'total_active': total_active,
-        'total_expired': total_expired,
+        "plans": plans,
+        "active_subscriptions": active_subscriptions,
+        "expired_subscriptions": expired_subscriptions,
+        "expiring_soon": expiring_soon,
+        "total_active": active_subscriptions.count(),
+        "total_expired": expired_subscriptions.count(),
+        "total_plans": plans.count(),
+        "expiring_count": expiring_soon.count(),
     }
 
-    return render(request, 'milk_agency/subscription/dashboard.html', context)
-
-
+    return render(
+        request,
+        "milk_agency/subscription/dashboard.html",
+        context
+    )
 # -------------------------------------------------------
 # CREATE SUBSCRIPTION PLAN
 # -------------------------------------------------------
@@ -178,30 +186,21 @@ def customer_subscription_history(request):
         'payments': payments
     })
 
-
-# -------------------------------------------------------
-# RECORD PAYMENT FOR SUBSCRIPTION
-# -------------------------------------------------------
+    
 @login_required
-def record_subscription_payment(request, subscription_id):
-    subscription = get_object_or_404(Subscription, id=subscription_id)
+def today_deliveries(request):
 
-    if request.method == 'POST':
-        amount = request.POST.get('amount')
-        method = request.POST.get('method')
+    from .models import SubscriptionOrder
+    from django.utils import timezone
 
-        UserPayment.objects.create(
-            user=subscription.customer,
-            amount=amount,
-            subscription_plan=subscription.plan,
-            method=method,
-            status='SUCCESS',
-            transaction_id=f"SUB-{timezone.now().timestamp()}"
-        )
+    today = timezone.now().date()
 
-        messages.success(request, "Payment recorded successfully")
-        return redirect('milk_agency:subscription_dashboard')
+    deliveries = SubscriptionOrder.objects.filter(
+        date=today
+    ).select_related("customer", "item")
 
-    return render(request, 'milk_agency/subscription/record_payment.html', {
-        'subscription': subscription
-    })
+    return render(
+        request,
+        "milk_agency/subscription/today_deliveries.html",
+        {"deliveries": deliveries}
+    )

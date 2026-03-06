@@ -366,9 +366,11 @@ class CustomerPayment(models.Model):
 # SUBSCRIPTION PLAN
 # -------------------------------------------------------
 class SubscriptionPlan(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=255, unique=True, help_text="Name of the subscription plan")
+    description = models.TextField(blank=True, null=True, help_text="Details about the subscription plan")
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price of the subscription plan")
+    duration_in_days = models.IntegerField(help_text="Duration of the subscription in days")
+    is_active = models.BooleanField(default=True, help_text="Whether the subscription plan is active")
 
     def __str__(self):
         return self.name
@@ -393,33 +395,15 @@ class SubscriptionItem(models.Model):
 # -------------------------------------------------------
 # CUSTOMER SUBSCRIPTION
 # -------------------------------------------------------
-class Subscription(models.Model):
-    customer = models.ForeignKey(
-        'Customer',
-        on_delete=models.CASCADE,
-        related_name='subscriptions'
-    )
-    plan = models.ForeignKey(
-        SubscriptionPlan,
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    start_date = models.DateField()
-    end_date = models.DateField()
-    active = models.BooleanField(default=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['customer', 'plan', 'start_date'],
-                name='unique_customer_plan_start'
-            )
-        ]
+class CustomerSubscription(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='subscriptions')
+    subscription_plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscriptions')
+    start_date = models.DateField(default=timezone.now, help_text="Start date of the subscription")
+    end_date = models.DateField(help_text="End date of the subscription")
+    is_active = models.BooleanField(default=True, help_text="Whether the subscription is currently active")
 
     def __str__(self):
-        plan_name = self.plan.name if self.plan else "No Plan"
-        status = "Active" if self.active else "Inactive"
-        return f"{self.customer.name} - {plan_name} ({status})"
+        return f"{self.customer.name} - {self.subscription_plan.name}"
 
 
 # -------------------------------------------------------
@@ -437,22 +421,63 @@ class UserPayment(models.Model):
         ('CASH', 'Cash'),
     ]
 
+    subscription = models.ForeignKey(
+        'Subscription',
+        on_delete=models.CASCADE,
+        related_name='payments'
+    )
+
     user = models.ForeignKey(
         'Customer',
         on_delete=models.CASCADE,
         related_name='user_payments'
     )
+
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
     transaction_id = models.CharField(max_length=100, unique=True)
-    subscription_plan = models.ForeignKey(
-        SubscriptionPlan,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+
     method = models.CharField(max_length=20, choices=METHOD_CHOICES)
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+class SubscriptionOrder(models.Model):
+
+    subscription = models.ForeignKey(
+        Subscription,
+        on_delete=models.CASCADE
+    )
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE
+    )
+
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.IntegerField()
+
+    date = models.DateField()
+
+    delivered = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.user.name} - ₹{self.amount} ({self.status})"
+    class Meta:
+        unique_together = ('subscription', 'item', 'date')
+        
+class SubscriptionPause(models.Model):
+
+    subscription = models.ForeignKey(
+        Subscription,
+        on_delete=models.CASCADE
+    )
+
+    date = models.DateField()
+
+    reason = models.CharField(max_length=200, blank=True)
