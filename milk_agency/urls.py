@@ -118,6 +118,9 @@ urlpatterns = [
     # Record Payment for Subscription
     path('subscriptions/payment/<int:subscription_id>/', views_subscription.record_subscription_payment, name='record_subscription_payment'),
 
+    # Today's Deliveries
+    path('subscriptions/today-deliveries/', views_subscription.today_deliveries, name='today_deliveries'),
+
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),

@@ -186,24 +186,21 @@ def customer_subscription_history(request):
         'payments': payments
     })
 
-    
+# -------------------------------------------------------
+# TODAY'S DELIVERIES
+# -------------------------------------------------------
 @login_required
 def today_deliveries(request):
-
-    from .models import SubscriptionOrder
-    from django.utils import timezone
-
     today = timezone.now().date()
 
-    deliveries = SubscriptionOrder.objects.filter(
-        date=today
-    ).select_related("customer", "item")
+    deliveries = CustomerSubscription.objects.filter(
+        is_active=True,
+        end_date__gte=today
+    ).select_related("customer", "subscription_plan")
 
-    return render(
-        request,
-        "milk_agency/subscription/today_deliveries.html",
-        {"deliveries": deliveries}
-    )
+    return render(request, 'milk_agency/subscription/today_deliveries.html', {
+        'deliveries': deliveries
+    })
 
 # -------------------------------------------------------
 # RECORD SUBSCRIPTION PAYMENT
