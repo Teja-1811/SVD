@@ -422,7 +422,7 @@ class UserPayment(models.Model):
     ]
 
     subscription = models.ForeignKey(
-        'Subscription',
+        CustomerSubscription,
         on_delete=models.CASCADE,
         related_name='payments'
     )
@@ -446,26 +446,19 @@ class UserPayment(models.Model):
 class SubscriptionOrder(models.Model):
 
     subscription = models.ForeignKey(
-        Subscription,
-        on_delete=models.CASCADE
-    )
-
+        CustomerSubscription,
+        on_delete=models.CASCADE)
     customer = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE
     )
-
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE
     )
-
     quantity = models.IntegerField()
-
     date = models.DateField()
-
     delivered = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -474,7 +467,7 @@ class SubscriptionOrder(models.Model):
 class SubscriptionPause(models.Model):
 
     subscription = models.ForeignKey(
-        Subscription,
+        CustomerSubscription,
         on_delete=models.CASCADE
     )
 
