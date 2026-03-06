@@ -63,45 +63,55 @@
   </div>
 
   <!-- SUBSCRIPTION PLANS -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">Subscription Plans</h5>
+  <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    {% for plan in plans %}
+    <div class="col">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">{{ plan.name }}</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Price:</strong> ₹{{ plan.price }}</p>
+          <p><strong>Description:</strong> {{ plan.description }}</p>
+          <h6>Items</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>Item</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in plan.items %}
+                <tr>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.quantity }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="2" class="text-center">No items in this plan</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+          <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i> Update Plan
+          </a>
+          <a href="{% url 'milk_agency:add_plan_item' plan.id %}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-plus-circle"></i> Add Items
+          </a>
+        </div>
+      </div>
     </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Plan</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for plan in plans %}
-          <tr>
-            <td>{{ plan.name }}</td>
-            <td>₹{{ plan.price }}</td>
-            <td>{{ plan.description }}</td>
-            <td>
-              <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
-              <a href="{% url 'milk_agency:add_plan_item' plan.id %}" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-list"></i> Items
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="4" class="text-center">No plans created</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    {% empty %}
+    <div class="col">
+      <div class="alert alert-warning text-center">No plans created</div>
     </div>
+    {% endfor %}
   </div>
 
   <!-- ACTIVE SUBSCRIPTIONS -->
