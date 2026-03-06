@@ -204,3 +204,31 @@ def today_deliveries(request):
         "milk_agency/subscription/today_deliveries.html",
         {"deliveries": deliveries}
     )
+
+# -------------------------------------------------------
+# RECORD SUBSCRIPTION PAYMENT
+# -------------------------------------------------------
+@login_required
+def record_subscription_payment(request, subscription_id):
+    subscription = get_object_or_404(CustomerSubscription, id=subscription_id)
+
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        method = request.POST.get('method')
+        transaction_id = request.POST.get('transaction_id')
+
+        UserPayment.objects.create(
+            subscription=subscription,
+            user=subscription.customer,
+            amount=amount,
+            transaction_id=transaction_id,
+            method=method,
+            status='SUCCESS'
+        )
+
+        messages.success(request, "Payment recorded successfully.")
+        return redirect('milk_agency:subscription_dashboard')
+
+    return render(request, 'milk_agency/subscription/record_payment.html', {
+        'subscription': subscription
+    })
