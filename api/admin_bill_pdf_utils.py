@@ -10,7 +10,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from .models import BillItem
-from .utils import InvoicePDFUtils
+from milk_agency.utils import InvoicePDFUtils
 
 
 class PDFGenerator:
