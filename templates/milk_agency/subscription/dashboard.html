@@ -6,11 +6,11 @@ Management{% endblock %} {% block content %}
     <i class="bi bi-journal-text"></i> Subscription Management
   </h3>
 
-  <!-- KPI SUMMARY -->
+  <!-- KPI CARDS -->
 
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-      <div class="card text-center shadow-sm">
+      <div class="card shadow-sm text-center">
         <div class="card-body">
           <h6 class="text-muted">Active</h6>
           <h4 class="text-success">{{ total_active }}</h4>
@@ -19,7 +19,7 @@ Management{% endblock %} {% block content %}
     </div>
 
     <div class="col-6 col-md-3">
-      <div class="card text-center shadow-sm">
+      <div class="card shadow-sm text-center">
         <div class="card-body">
           <h6 class="text-muted">Expired</h6>
           <h4 class="text-danger">{{ total_expired }}</h4>
@@ -28,7 +28,7 @@ Management{% endblock %} {% block content %}
     </div>
 
     <div class="col-6 col-md-3">
-      <div class="card text-center shadow-sm">
+      <div class="card shadow-sm text-center">
         <div class="card-body">
           <h6 class="text-muted">Expiring Soon</h6>
           <h4 class="text-warning">{{ expiring_count }}</h4>
@@ -37,7 +37,7 @@ Management{% endblock %} {% block content %}
     </div>
 
     <div class="col-6 col-md-3">
-      <div class="card text-center shadow-sm">
+      <div class="card shadow-sm text-center">
         <div class="card-body">
           <h6 class="text-muted">Plans</h6>
           <h4 class="text-primary">{{ total_plans }}</h4>
@@ -46,7 +46,7 @@ Management{% endblock %} {% block content %}
     </div>
   </div>
 
-  <!-- CREATE PLAN + ASSIGN -->
+  <!-- ACTION BUTTONS -->
 
   <div class="mb-4">
     <button
@@ -70,7 +70,7 @@ Management{% endblock %} {% block content %}
     </a>
   </div>
 
-  <!-- PLAN MANAGEMENT -->
+  <!-- PLAN CARDS -->
 
   <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">
     {% for plan in plans %}
@@ -136,7 +136,7 @@ Management{% endblock %} {% block content %}
                         {% csrf_token %}
 
                         <div class="modal-header">
-                          <h5>Edit Item</h5>
+                          <h5>Edit Item Quantity</h5>
                           <button
                             type="button"
                             class="btn-close"
@@ -167,7 +167,15 @@ Management{% endblock %} {% block content %}
           </div>
         </div>
 
-        <div class="card-footer">
+        <div class="card-footer d-flex justify-content-between">
+          <button
+            class="btn btn-sm btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#editPlanModal-{{ plan.id }}"
+          >
+            Edit Plan
+          </button>
+
           <button
             class="btn btn-sm btn-success"
             data-bs-toggle="modal"
@@ -175,6 +183,54 @@ Management{% endblock %} {% block content %}
           >
             Add Item
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PLAN MODAL -->
+
+    <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form
+            method="post"
+            action="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
+          >
+            {% csrf_token %}
+
+            <div class="modal-header">
+              <h5>Edit Plan</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+
+            <div class="modal-body">
+              <input
+                type="text"
+                name="name"
+                value="{{ plan.name }}"
+                class="form-control mb-3"
+              />
+
+              <input
+                type="number"
+                name="price"
+                value="{{ plan.price }}"
+                class="form-control mb-3"
+              />
+
+              <textarea name="description" class="form-control">
+{{ plan.description }}</textarea
+              >
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-primary">Update Plan</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

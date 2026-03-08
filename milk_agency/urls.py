@@ -97,86 +97,27 @@ urlpatterns = [
     # --------------------------------------------------
     # SUBSCRIPTION DASHBOARD
     # --------------------------------------------------
-    path(
-        "subscriptions/",
-        subscriptions.subscription_dashboard,
-        name="subscription_dashboard"
-    ),
+    path("subscriptions/", subscriptions.subscription_dashboard, name="subscription_dashboard"),
 
-    # --------------------------------------------------
-    # PLAN MANAGEMENT
-    # --------------------------------------------------
-    path(
-        "subscriptions/create-plan/",
-        subscriptions.create_subscription_plan,
-        name="create_subscription_plan"
-    ),
+    path("subscriptions/create-plan/", subscriptions.create_subscription_plan, name="create_subscription_plan"),
 
-    path(
-        "subscriptions/edit-plan/<int:plan_id>/",
-        subscriptions.edit_subscription_plan,
-        name="edit_subscription_plan"
-    ),
+    path("subscriptions/edit-plan/<int:plan_id>/", subscriptions.edit_subscription_plan, name="edit_subscription_plan"),
 
-    path(
-        "subscriptions/plan/<int:plan_id>/add-item/",
-        subscriptions.add_plan_item,
-        name="add_plan_item"
-    ),
+    path("subscriptions/plan/<int:plan_id>/add-item/", subscriptions.add_plan_item, name="add_plan_item"),
 
-    path(
-        "subscriptions/item/<int:item_id>/update/",
-        subscriptions.update_plan_item,
-        name="update_plan_item"
-    ),
+    path("subscriptions/item/<int:item_id>/update/", subscriptions.update_plan_item, name="update_plan_item"),
 
-    path(
-        "subscriptions/item/<int:item_id>/delete/",
-        subscriptions.delete_plan_item,
-        name="delete_plan_item"
-    ),
+    path("subscriptions/item/<int:item_id>/delete/", subscriptions.delete_plan_item, name="delete_plan_item"),
 
-    # --------------------------------------------------
-    # SUBSCRIPTION MANAGEMENT
-    # --------------------------------------------------
-    path(
-        "subscriptions/assign/",
-        subscriptions.assign_subscription,
-        name="assign_subscription"
-    ),
+    path("subscriptions/assign/", subscriptions.assign_subscription, name="assign_subscription"),
 
-    path(
-        "subscriptions/toggle/<int:subscription_id>/",
-        subscriptions.toggle_subscription,
-        name="toggle_subscription"
-    ),
+    path("subscriptions/toggle/<int:subscription_id>/", subscriptions.toggle_subscription, name="toggle_subscription"),
 
-    # --------------------------------------------------
-    # PAYMENT
-    # --------------------------------------------------
-    path(
-        "subscriptions/payment/<int:subscription_id>/",
-        subscriptions.record_subscription_payment,
-        name="record_subscription_payment"
-    ),
+    path("subscriptions/payment/<int:subscription_id>/", subscriptions.record_subscription_payment, name="record_subscription_payment"),
 
-    # --------------------------------------------------
-    # CUSTOMER HISTORY
-    # --------------------------------------------------
-    path(
-        "subscriptions/history/<int:customer_id>/",
-        subscriptions.customer_subscription_history,
-        name="customer_subscription_history"
-    ),
+    path("subscriptions/history/<int:customer_id>/", subscriptions.customer_subscription_history, name="customer_subscription_history"),
 
-    # --------------------------------------------------
-    # DELIVERY DASHBOARD
-    # --------------------------------------------------
-    path(
-        "subscriptions/today-deliveries/",
-        subscriptions.today_deliveries,
-        name="today_deliveries"
-    ),
+    path("subscriptions/today-deliveries/", subscriptions.today_deliveries, name="today_deliveries"),
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
