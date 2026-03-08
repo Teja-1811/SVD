@@ -33,6 +33,11 @@ def subscription_dashboard(request):
         is_active=True,
         end_date__gte=today
     ).select_related("customer", "subscription_plan")
+    
+    de_activated_subscriptions = CustomerSubscription.objects.filter(
+        is_active=False,
+        end_date__gte=today
+    ).select_related("customer", "subscription_plan")   
 
     expired_subscriptions = CustomerSubscription.objects.filter(
         end_date__lt=today
@@ -44,11 +49,12 @@ def subscription_dashboard(request):
     ).select_related("customer", "subscription_plan")
 
     items = Item.objects.all()
-    customers = Customer.objects.filter(frozen=False)
+    customers = Customer.objects.filter(frozen=False, user_type="user")
 
     context = {
         "plans": plans,
         "active_subscriptions": active_subscriptions,
+        "de_activated_subscriptions": de_activated_subscriptions,
         "expired_subscriptions": expired_subscriptions,
         "expiring_soon": expiring_soon,
         "items": items,

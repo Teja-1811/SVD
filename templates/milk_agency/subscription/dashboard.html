@@ -326,6 +326,46 @@ Management{% endblock %} {% block content %}
     </div>
   </div>
 
+  <!-- DE-ACTIVATED SUBSCRIPTIONS -->
+   <div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white">De-Activated Subscriptions</div>
+
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Plan</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for sub in de_activated_subscriptions %}
+
+          <tr>
+            <td>{{ sub.customer.name }}</td>
+            <td>{{ sub.subscription_plan.name }}</td>
+            <td>{{ sub.start_date }}</td>
+            <td>{{ sub.end_date }}</td>
+
+            <td>
+              <a
+                href="{% url 'milk_agency:toggle_subscription' sub.id %}"
+                class="btn btn-sm btn-success"
+              >
+                Activate
+              </a>
+            </td>
+          </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
   <!-- EXPIRED SUBSCRIPTIONS -->
 
   <div class="card shadow-sm mb-4">
