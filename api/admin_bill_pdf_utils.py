@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-from .models import BillItem
+from milk_agency.models import BillItem
 from milk_agency.utils import InvoicePDFUtils
 
 
@@ -299,3 +299,4 @@ class PDFGenerator:
 
         c.setFont("Helvetica-Bold", 8)
         c.drawRightString(x + w - 20, y + 18, "AUTHORISED SIGNATORY")
+
