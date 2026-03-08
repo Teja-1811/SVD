@@ -81,26 +81,29 @@ class PDFGenerator:
         c.save()
 
     def _draw_top_header(self, c, bill, x, y_top, w):
-        row_h = 64
+        row_h = 74
         y = y_top - row_h
         c.rect(x, y, w, row_h)
 
-        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "SVD1.png")
+        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.webp")
         if os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
-                c.drawImage(logo, x + 8, y + 10, width=110, height=44, mask="auto")
+                c.drawImage(logo, x + 8, y + 14, width=110, height=44, mask="auto")
             except Exception:
                 pass
 
-        c.setFont("Helvetica-Bold", 13)
-        c.drawCentredString(x + (w / 2), y + 45, "SRI VIJAYA DURGA MILK AGENCIES")
-        c.setFont("Helvetica", 8)
-        c.drawCentredString(x + (w / 2), y + 32, "Near Santa Market, Main Road, Gundugolanu, Bhimadolu, Eluru, AP - 534427")
-        c.drawCentredString(x + (w / 2), y + 21, "Phone: 9392890375")
+        center_x = x + (w / 2)
+
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(center_x, y + 56, "DODLA DAIRY LIMITED")
+
+        c.setFont("Helvetica", 7)
+        c.drawCentredString(center_x, y + 44, "FSSAI No: 10012044000145, PAN No: AABCD5077E, CIN No: L15209TG1995PLC020324")
+        c.drawCentredString(center_x, y + 34, "GSTIN: 37AACCD5077E1ZQ")
+        c.drawCentredString(center_x, y + 24, "Dhulipalli Village, Guntur, Guntur, 522403, Andhra Pradesh, India")
 
         return y
-
     def _draw_bill_heading(self, c, x, y_top, w):
         row_h = 34
         y = y_top - row_h
@@ -299,4 +302,7 @@ class PDFGenerator:
 
         c.setFont("Helvetica-Bold", 8)
         c.drawRightString(x + w - 20, y + 18, "AUTHORISED SIGNATORY")
+
+
+
 
