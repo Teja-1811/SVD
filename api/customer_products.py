@@ -38,7 +38,7 @@ def products_api(request):
     except:
         return Response({"error": "Invalid category_id"}, status=400)
 
-    items = Item.objects.filter(category=category_name, frozen = False)
+    items = Item.objects.filter(category=category_name, frozen = False, company=1)
 
     product_list = [
         {
