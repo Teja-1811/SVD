@@ -3,7 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Sum, Avg
-from milk_agency.pdf_utils import PDFGenerator
+from api.admin_bill_pdf_utils import PDFGenerator
 from milk_agency.models import Bill
 
 

@@ -17,7 +17,7 @@ def customer_cataloge_api(request):
     company_id = request.GET.get("company_id")
     include_empty = str(request.GET.get("include_empty", "false")).lower() == "true"
 
-    items_qs = Item.objects.filter(frozen=False).select_related("company").order_by("category", "name")
+    items_qs = Item.objects.filter(frozen=False, company_id=1).select_related("company").order_by("category", "name")
     if company_id:
         items_qs = items_qs.filter(company_id=company_id)
 
@@ -38,15 +38,10 @@ def customer_cataloge_api(request):
             {
                 "id": item.id,
                 "name": item.name,
-                "company": item.company.name if item.company else "",
                 "mrp": float(item.mrp),
                 "selling_price": float(item.selling_price),
                 "buying_price": float(item.buying_price),
                 "margin": float(item.selling_price - item.buying_price),
-                "stock": item.stock_quantity,
-                "pcs_count": item.pcs_count,
-                "image": item.image.url if item.image else "",
-                "description": item.description or "",
             }
         )
 
