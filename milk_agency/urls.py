@@ -15,7 +15,7 @@ from . import views_sales_summary
 from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, generate_monthly_sales_pdf
 
 from . import views_users
-from . import subscriptions as views_subscription
+from . import subscriptions
 
 
 
@@ -94,33 +94,89 @@ urlpatterns = [
     path('edit-user/<int:customer_id>/', views_users.add_user, name='edit_user'),
     path('user-data/', views_users.user_data, name='user_data'),
     
-    # Subscription Dashboard
-    path('subscriptions/', views_subscription.subscription_dashboard, name='subscription_dashboard'),
+    # --------------------------------------------------
+    # SUBSCRIPTION DASHBOARD
+    # --------------------------------------------------
+    path(
+        "subscriptions/",
+        subscriptions.subscription_dashboard,
+        name="subscription_dashboard"
+    ),
 
-    # Create Plan
-    path('subscriptions/plan/create/', views_subscription.create_subscription_plan, name='create_subscription_plan'),
+    # --------------------------------------------------
+    # PLAN MANAGEMENT
+    # --------------------------------------------------
+    path(
+        "subscriptions/create-plan/",
+        subscriptions.create_subscription_plan,
+        name="create_subscription_plan"
+    ),
 
-    # ✏️ Edit Plan (NEW - required for edit button)
-    path('subscriptions/plan/<int:plan_id>/edit/', views_subscription.edit_subscription_plan, name='edit_subscription_plan'),
+    path(
+        "subscriptions/edit-plan/<int:plan_id>/",
+        subscriptions.edit_subscription_plan,
+        name="edit_subscription_plan"
+    ),
 
-    # Add Items to Plan
-    path('subscriptions/plan/<int:plan_id>/add-item/', views_subscription.add_plan_item, name='add_plan_item'),
+    path(
+        "subscriptions/plan/<int:plan_id>/add-item/",
+        subscriptions.add_plan_item,
+        name="add_plan_item"
+    ),
 
-    # Assign Subscription to Customer
-    path('subscriptions/assign/', views_subscription.assign_subscription, name='assign_subscription'),
+    path(
+        "subscriptions/item/<int:item_id>/update/",
+        subscriptions.update_plan_item,
+        name="update_plan_item"
+    ),
 
-    # Activate / Deactivate Subscription
-    path('subscriptions/toggle/<int:subscription_id>/', views_subscription.toggle_subscription, name='toggle_subscription'),
+    path(
+        "subscriptions/item/<int:item_id>/delete/",
+        subscriptions.delete_plan_item,
+        name="delete_plan_item"
+    ),
 
-    # Customer Subscription History
-    path('subscriptions/customer/<int:customer_id>/', views_subscription.customer_subscription_history, name='customer_subscription_history'),
+    # --------------------------------------------------
+    # SUBSCRIPTION MANAGEMENT
+    # --------------------------------------------------
+    path(
+        "subscriptions/assign/",
+        subscriptions.assign_subscription,
+        name="assign_subscription"
+    ),
 
-    # Record Payment for Subscription
-    path('subscriptions/payment/<int:subscription_id>/', views_subscription.record_subscription_payment, name='record_subscription_payment'),
+    path(
+        "subscriptions/toggle/<int:subscription_id>/",
+        subscriptions.toggle_subscription,
+        name="toggle_subscription"
+    ),
 
-    # Today's Deliveries
-    path('subscriptions/today-deliveries/', views_subscription.today_deliveries, name='today_deliveries'),
+    # --------------------------------------------------
+    # PAYMENT
+    # --------------------------------------------------
+    path(
+        "subscriptions/payment/<int:subscription_id>/",
+        subscriptions.record_subscription_payment,
+        name="record_subscription_payment"
+    ),
 
+    # --------------------------------------------------
+    # CUSTOMER HISTORY
+    # --------------------------------------------------
+    path(
+        "subscriptions/history/<int:customer_id>/",
+        subscriptions.customer_subscription_history,
+        name="customer_subscription_history"
+    ),
+
+    # --------------------------------------------------
+    # DELIVERY DASHBOARD
+    # --------------------------------------------------
+    path(
+        "subscriptions/today-deliveries/",
+        subscriptions.today_deliveries,
+        name="today_deliveries"
+    ),
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
