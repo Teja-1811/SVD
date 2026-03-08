@@ -11,7 +11,7 @@ from .models import (
     UserPayment,
     Customer
 )
-
+from .models import Item
 
 # -------------------------------------------------------
 # SUBSCRIPTION DASHBOARD
@@ -43,6 +43,8 @@ def subscription_dashboard(request):
         end_date__range=[today, today + timezone.timedelta(days=5)]
     ).select_related("customer", "subscription_plan")
 
+    items = Item.objects.all()
+
     context = {
         "plans": plans,
         "active_subscriptions": active_subscriptions,
@@ -52,6 +54,7 @@ def subscription_dashboard(request):
         "total_expired": expired_subscriptions.count(),
         "total_plans": plans.count(),
         "expiring_count": expiring_soon.count(),
+        "items": items,
     }
 
     return render(
@@ -115,7 +118,6 @@ def add_plan_item(request, plan_id):
         messages.success(request, "Item added to plan")
         return redirect('milk_agency:subscription_dashboard')
 
-    from .models import Item
     items = Item.objects.all()
 
     return render(request, 'milk_agency/subscription/add_plan_item.html', {

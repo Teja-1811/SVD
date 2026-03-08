@@ -101,9 +101,43 @@
           <a href="{% url 'milk_agency:edit_subscription_plan' plan.id %}" class="btn btn-sm btn-outline-primary">
             <i class="bi bi-pencil"></i> Update Plan
           </a>
-          <a href="{% url 'milk_agency:add_plan_item' plan.id %}" class="btn btn-sm btn-outline-success">
+          <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addItemModal-{{ plan.id }}">
             <i class="bi bi-plus-circle"></i> Add Items
           </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Item Modal for each plan -->
+    <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1" aria-labelledby="addItemModalLabel-{{ plan.id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addItemModalLabel-{{ plan.id }}">Add Item to Plan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="post" action="{% url 'milk_agency:add_plan_item' plan.id %}" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="id_item-{{ plan.id }}" class="form-label">Item</label>
+                <select name="item" id="id_item-{{ plan.id }}" class="form-select" required>
+                  <option value="" disabled selected>Select an item</option>
+                  {% for item in items %}
+                  <option value="{{ item.id }}">{{ item.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="id_quantity-{{ plan.id }}" class="form-label">Quantity</label>
+                <input type="number" name="quantity" id="id_quantity-{{ plan.id }}" class="form-control" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Add Item</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
