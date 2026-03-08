@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import login_api
 from .customer_products import *
+from .customer_cataloge import *
 from .customer_place_order import *
 from .admin_dashboard import *
 from .customer_dashboard import *
@@ -93,6 +94,7 @@ urlpatterns = [
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
     
     # Items APIs
+    path('cataloge/', customer_cataloge_api, name='customer_cataloge_api'),
     path('categories/', categories_api, name='categories_api'),
     path('products/', products_api, name='products_api'),
     
@@ -118,3 +120,4 @@ urlpatterns = [
     # Customer Payment API
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
 ]
+
