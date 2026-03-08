@@ -76,11 +76,13 @@ def create_subscription_plan(request):
 
         name = request.POST.get("name")
         price = request.POST.get("price")
+        days = request.POST.get("duration_in_days")
         description = request.POST.get("description")
 
         SubscriptionPlan.objects.create(
             name=name,
             price=price,
+            duration_in_days=days,
             description=description
         )
 
@@ -101,6 +103,7 @@ def edit_subscription_plan(request, plan_id):
 
         plan.name = request.POST.get("name")
         plan.price = request.POST.get("price")
+        plan.duration_in_days = request.POST.get("duration_in_days")
         plan.description = request.POST.get("description")
 
         plan.save()

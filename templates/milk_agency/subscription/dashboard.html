@@ -222,6 +222,13 @@ Management{% endblock %} {% block content %}
                 class="form-control mb-3"
               />
 
+              <input
+                type="number"
+                name="duration_in_days"
+                value="{{ plan.duration_in_days }}"
+                class="form-control mb-3"
+              >
+
               <textarea name="description" class="form-control">
 {{ plan.description }}</textarea
               >
@@ -427,12 +434,21 @@ Management{% endblock %} {% block content %}
               required
             />
 
+            <input
+              type="number"
+              name="duration_in_days"
+              class="form-control mb-3"
+              placeholder="Duration (Days)"
+              required
+            >
+
             <textarea
               name="description"
               class="form-control"
               placeholder="Description"
             ></textarea>
           </div>
+
 
           <div class="modal-footer">
             <button class="btn btn-primary">Create Plan</button>
