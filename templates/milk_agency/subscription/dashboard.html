@@ -11,12 +11,12 @@
       Subscription Management
     </h2>
     <div>
-      <a href="{% url 'milk_agency:create_subscription_plan' %}" class="btn btn-primary me-2">
+      <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createPlanModal">
         <i class="bi bi-plus-circle"></i> Add Plan
-      </a>
-      <a href="{% url 'milk_agency:assign_subscription' %}" class="btn btn-success me-2">
+      </button>
+      <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#assignSubscriptionModal">
         <i class="bi bi-person-plus"></i> Assign Subscription
-      </a>
+      </button>
       <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
         <i class="bi bi-truck"></i> Today's Deliveries
       </a>
@@ -229,6 +229,197 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Add buttons to trigger modals for creating and updating plans -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-journal-text"></i>
+      Subscription Management
+    </h2>
+    <div>
+      <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createPlanModal">
+        <i class="bi bi-plus-circle"></i> Add Plan
+      </button>
+      <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#assignSubscriptionModal">
+        <i class="bi bi-person-plus"></i> Assign Subscription
+      </button>
+      <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
+        <i class="bi bi-truck"></i> Today's Deliveries
+      </a>
+    </div>
+  </div>
+
+  <!-- Create Plan Modal -->
+  <div class="modal fade" id="createPlanModal" tabindex="-1" aria-labelledby="createPlanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createPlanModalLabel">Create Subscription Plan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'milk_agency:create_subscription_plan' %}" class="needs-validation" novalidate>
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="id_name" class="form-label">Plan Name</label>
+              <input type="text" name="name" id="id_name" class="form-control" placeholder="Enter plan name" required>
+            </div>
+            <div class="mb-3">
+              <label for="id_price" class="form-label">Price (₹)</label>
+              <input type="number" name="price" id="id_price" class="form-control" placeholder="Enter price" required>
+            </div>
+            <div class="mb-3">
+              <label for="id_description" class="form-label">Description</label>
+              <textarea name="description" id="id_description" class="form-control" placeholder="Enter description" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="id_duration_in_days" class="form-label">Duration (Days)</label>
+              <input type="number" name="duration_in_days" id="id_duration_in_days" class="form-control" placeholder="Enter duration in days" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Save Plan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Subscription Modal -->
+  <div class="modal fade" id="assignSubscriptionModal" tabindex="-1" aria-labelledby="assignSubscriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="assignSubscriptionModalLabel">Assign Subscription</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'milk_agency:assign_subscription' %}" class="needs-validation" novalidate>
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="id_customer" class="form-label">Customer</label>
+              <select name="customer" id="id_customer" class="form-select" required>
+                <option value="" disabled selected>Select a customer</option>
+                {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="id_subscription_plan" class="form-label">Subscription Plan</label>
+              <select name="subscription_plan" id="id_subscription_plan" class="form-select" required>
+                <option value="" disabled selected>Select a subscription plan</option>
+                {% for plan in plans %}
+                <option value="{{ plan.id }}">{{ plan.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="id_start_date" class="form-label">Start Date</label>
+              <input type="date" name="start_date" id="id_start_date" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Assign Subscription
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add buttons to trigger modals for adding and editing items in plans -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-journal-text"></i>
+      Subscription Management
+    </h2>
+    <div>
+      <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addItemModal">
+        <i class="bi bi-plus-circle"></i> Add Item to Plan
+      </button>
+      <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#editItemModal">
+        <i class="bi bi-pencil"></i> Edit Item in Plan
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addItemModalLabel">Add Item to Plan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'milk_agency:add_plan_item' %}" class="needs-validation" novalidate>
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="id_item" class="form-label">Item</label>
+              <select name="item" id="id_item" class="form-select" required>
+                <option value="" disabled selected>Select an item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="id_quantity" class="form-label">Quantity</label>
+              <input type="number" name="quantity" id="id_quantity" class="form-control" placeholder="Enter quantity" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Add Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editItemModalLabel">Edit Item in Plan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'milk_agency:edit_plan_item' %}" class="needs-validation" novalidate>
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="id_item" class="form-label">Item</label>
+              <select name="item" id="id_item" class="form-select" required>
+                <option value="" disabled selected>Select an item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="id_quantity" class="form-label">Quantity</label>
+              <input type="number" name="quantity" id="id_quantity" class="form-control" placeholder="Enter quantity" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
