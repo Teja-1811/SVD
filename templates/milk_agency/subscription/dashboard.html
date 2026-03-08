@@ -303,11 +303,8 @@ Management{% endblock %} {% block content %}
 
           <tr>
             <td>{{ sub.customer.name }}</td>
-
             <td>{{ sub.subscription_plan.name }}</td>
-
             <td>{{ sub.start_date }}</td>
-
             <td>{{ sub.end_date }}</td>
 
             <td>
@@ -365,7 +362,7 @@ Management{% endblock %} {% block content %}
 
   <!-- EXPIRING SOON -->
 
-  <div class="card shadow-sm">
+  <div class="card shadow-sm mb-4">
     <div class="card-header bg-warning">Expiring Soon</div>
 
     <div class="table-responsive">
@@ -390,6 +387,106 @@ Management{% endblock %} {% block content %}
           {% endfor %}
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- CREATE PLAN MODAL -->
+
+  <div class="modal fade" id="createPlanModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form
+          method="post"
+          action="{% url 'milk_agency:create_subscription_plan' %}"
+        >
+          {% csrf_token %}
+
+          <div class="modal-header">
+            <h5>Create Subscription Plan</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <input
+              type="text"
+              name="name"
+              class="form-control mb-3"
+              placeholder="Plan Name"
+              required
+            />
+
+            <input
+              type="number"
+              name="price"
+              class="form-control mb-3"
+              placeholder="Price"
+              required
+            />
+
+            <textarea
+              name="description"
+              class="form-control"
+              placeholder="Description"
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-primary">Create Plan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN SUBSCRIPTION MODAL -->
+
+  <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form
+          method="post"
+          action="{% url 'milk_agency:assign_subscription' %}"
+        >
+          {% csrf_token %}
+
+          <div class="modal-header">
+            <h5>Assign Subscription</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <select name="customer" class="form-select mb-3">
+              <option disabled selected>Select Customer</option>
+
+              {% for customer in customers %}
+              <option value="{{ customer.id }}">{{ customer.name }}</option>
+              {% endfor %}
+            </select>
+
+            <select name="plan" class="form-select mb-3">
+              <option disabled selected>Select Plan</option>
+
+              {% for plan in plans %}
+              <option value="{{ plan.id }}">{{ plan.name }}</option>
+              {% endfor %}
+            </select>
+
+            <input type="date" name="start_date" class="form-control" />
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-success">Assign Subscription</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
