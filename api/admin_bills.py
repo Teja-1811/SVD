@@ -7,7 +7,7 @@ from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
 
-from admin_bill_pdf_utils import PDFGenerator
+from api.admin_bill_pdf_utils import PDFGenerator
 from milk_agency.models import Bill, BillItem, Customer, Item
 from customer_portal.models import CustomerOrder
 
