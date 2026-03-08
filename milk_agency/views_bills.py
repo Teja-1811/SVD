@@ -112,8 +112,7 @@ def generate_bill(request):
         now = timezone.now()
         prefix = now.strftime('%Y%m%d%H%M%S')
         last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{prefix}").order_by('-invoice_number').first()
-        counter = int(last_bill.invoice_number.split('-')[-1]) + 1 if last_bill else 1
-        invoice_number = f"INV-{prefix}-{counter:04d}"
+        invoice_number = f"INV-{prefix}"
 
         updated_items = []
 

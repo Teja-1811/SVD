@@ -7,7 +7,7 @@ from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
 
-from milk_agency.views_bills import generate_invoice_pdf
+from admin_bill_pdf_utils import PDFGenerator
 from milk_agency.models import Bill, BillItem, Customer, Item
 from customer_portal.models import CustomerOrder
 
@@ -290,4 +290,6 @@ def api_delete_bill(request, bill_id):
 
 @api_view(['GET'])
 def api_download_bill(request, bill_id):
-    return generate_invoice_pdf(request, bill_id)
+    bill = get_object_or_404(Bill, id=bill_id)
+    pdf_generator = PDFGenerator()
+    return pdf_generator.generate_and_return_pdf(bill, request)
