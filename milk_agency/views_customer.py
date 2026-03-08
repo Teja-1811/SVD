@@ -76,8 +76,11 @@ def add_customer(request, customer_id=None):
 def customer_data(request):
     area_filter = request.GET.get('area', '').strip()
     id_filter = request.GET.get('id', '').strip()
+    customer_type = request.GET.get('type', 'retailer').strip().lower()
+    if customer_type not in ['retailer', 'user']:
+        customer_type = 'retailer'
 
-    customers = Customer.objects.filter(user_type="retailer").order_by('id')
+    customers = Customer.objects.filter(user_type=customer_type).order_by('id')
 
     if area_filter and area_filter != "All":
         customers = customers.filter(area__icontains=area_filter)
@@ -102,11 +105,12 @@ def customer_data(request):
                 'phone': c.phone,
                 'balance': float(c.get_actual_due()),
                 'frozen': c.frozen,
+                'user_type': c.user_type,
             } for c in customers]
         })
 
-    areas = Customer.objects.exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct()
-    names = list(Customer.objects.values_list('id', 'name').order_by('name'))
+    areas = Customer.objects.filter(user_type=customer_type).exclude(area__isnull=True).exclude(area='').values_list('area', flat=True).distinct()
+    names = list(Customer.objects.filter(user_type=customer_type).values_list('id', 'name').order_by('name'))
 
     return render(request, 'milk_agency/customer/customer_data.html', {
         'customers': customers,
@@ -114,6 +118,7 @@ def customer_data(request):
         'names': names,
         'selected_area': area_filter,
         'selected_id': id_filter,
+        'selected_type': customer_type,
     })
 
 
@@ -153,7 +158,7 @@ def update_customer_balance(request, customer_id):
                         status='SUCCESS',
                     )
 
-                # 🔥 Recalculate due instead of blindly subtracting
+                # Recalculate due instead of blindly subtracting
                 customer.due = customer.get_actual_due()
                 customer.save()
 
