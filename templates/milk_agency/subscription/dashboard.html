@@ -1,128 +1,136 @@
 {% extends "milk_agency/home/base.html" %} {% block title %}Subscription
 Management{% endblock %} {% block content %}
-<div class="container-fluid py-4">
-  <h2 class="fw-bold mb-4">
-    <i class="bi bi-journal-text"></i>
-    Subscription Management
-  </h2>
 
-  <!-- KPI CARDS -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6 class="text-muted">Active</h6>
-          <h2 class="text-success fw-bold">{{ total_active }}</h2>
-        </div>
-      </div>
-    </div>
+<div class="container-fluid py-5">
+  <br>
+  <!-- HEADER -->
+  <div
+    class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2"
+  >
+    <h3 class="fw-bold mb-0">
+      <i class="bi bi-journal-text"></i>
+      Subscription Management
+    </h3>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6 class="text-muted">Expired</h6>
-          <h2 class="text-danger fw-bold">{{ total_expired }}</h2>
-        </div>
-      </div>
-    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#createPlanModal"
+      >
+        <i class="bi bi-plus-circle"></i>
+        Add Plan
+      </button>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6 class="text-muted">Expiring Soon</h6>
-          <h2 class="text-warning fw-bold">{{ expiring_count }}</h2>
-        </div>
-      </div>
-    </div>
+      <button
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#assignSubscriptionModal"
+      >
+        <i class="bi bi-person-plus"></i>
+        Assign Subscription
+      </button>
 
-    <div class="col-md-3">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6 class="text-muted">Plans</h6>
-          <h2 class="text-primary fw-bold">{{ total_plans }}</h2>
-        </div>
-      </div>
+      <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
+        <i class="bi bi-truck"></i>
+        Today's Deliveries
+      </a>
     </div>
   </div>
 
-  <!-- ACTION BUTTONS -->
+  <!-- KPI CARDS -->
 
-  <div class="mb-4">
-    <button
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#createPlanModal"
-    >
-      Add Plan
-    </button>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Active</h6>
+          <h4 class="text-success fw-bold">{{ total_active }}</h4>
+        </div>
+      </div>
+    </div>
 
-    <button
-      class="btn btn-success"
-      data-bs-toggle="modal"
-      data-bs-target="#assignSubscriptionModal"
-    >
-      Assign Subscription
-    </button>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Expired</h6>
+          <h4 class="text-danger fw-bold">{{ total_expired }}</h4>
+        </div>
+      </div>
+    </div>
 
-    <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
-      Today's Deliveries
-    </a>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Expiring Soon</h6>
+          <h4 class="text-warning fw-bold">{{ expiring_count }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Plans</h6>
+          <h4 class="text-primary fw-bold">{{ total_plans }}</h4>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- SUBSCRIPTION PLANS -->
 
-  <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">
     {% for plan in plans %}
 
     <div class="col">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">{{ plan.name }}</h5>
+          <h6 class="mb-0">{{ plan.name }}</h6>
         </div>
 
         <div class="card-body">
-          <p><strong>Price:</strong> ₹{{ plan.price }}</p>
+          <p class="mb-1"><strong>Price:</strong> ₹{{ plan.price }}</p>
 
-          <p><strong>Description:</strong> {{ plan.description }}</p>
+          <p class="small text-muted">{{ plan.description }}</p>
 
-          <h6>Items</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
 
-          <table class="table table-sm table-bordered">
-            <thead>
-              <tr>
-                <th>Item</th>
+              <tbody>
+                {% for item in plan.items.all %}
 
-                <th>Qty</th>
-              </tr>
-            </thead>
+                <tr>
+                  <td>{{ item.item.name }}</td>
+                  <td>{{ item.quantity }}</td>
+                </tr>
 
-            <tbody>
-              {% for item in plan.items.all %}
+                {% empty %}
 
-              <tr>
-                <td>{{ item.item.name }}</td>
+                <tr>
+                  <td colspan="2" class="text-center text-muted">No items</td>
+                </tr>
 
-                <td>{{ item.quantity }}</td>
-              </tr>
-
-              {% empty %}
-
-              <tr>
-                <td colspan="2" class="text-center">No items</td>
-              </tr>
-
-              {% endfor %}
-            </tbody>
-          </table>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="card-footer d-flex justify-content-between">
-          <a
-            href="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
+          <button
             class="btn btn-sm btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#editPlanModal-{{ plan.id }}"
           >
             Edit
-          </a>
+          </button>
 
           <button
             class="btn btn-sm btn-outline-success"
@@ -135,56 +143,98 @@ Management{% endblock %} {% block content %}
       </div>
     </div>
 
-    <!-- ADD ITEM MODAL (PER PLAN) -->
+    <!-- ADD ITEM MODAL -->
 
     <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Add Item to {{ plan.name }}</h5>
-
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-
           <form
             method="post"
             action="{% url 'milk_agency:add_plan_item' plan.id %}"
           >
             {% csrf_token %}
 
+            <div class="modal-header">
+              <h5 class="modal-title">Add Item to {{ plan.name }}</h5>
+
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+
             <div class="modal-body">
-              <div class="mb-3">
-                <label class="form-label">Item</label>
+              <select name="item" class="form-select mb-3" required>
+                <option disabled selected>Select Item</option>
 
-                <select name="item" class="form-control" required>
-                  <option value="" disabled selected>Select Item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+              </select>
 
-                  {% for item in items %}
-
-                  <option value="{{ item.id }}">{{ item.name }}</option>
-
-                  {% endfor %}
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Quantity</label>
-
-                <input
-                  type="number"
-                  name="quantity"
-                  class="form-control"
-                  required
-                />
-              </div>
+              <input
+                type="number"
+                name="quantity"
+                class="form-control"
+                placeholder="Quantity"
+                required
+              />
             </div>
 
             <div class="modal-footer">
-              <button class="btn btn-primary">Add Item</button>
+              <button class="btn btn-primary w-100">Add Item</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PLAN MODAL -->
+
+    <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form
+            method="post"
+            action="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
+          >
+            {% csrf_token %}
+
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Plan</h5>
+
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+
+            <div class="modal-body">
+              <input
+                type="text"
+                name="name"
+                class="form-control mb-3"
+                value="{{ plan.name }}"
+                required
+              />
+
+              <input
+                type="number"
+                name="price"
+                class="form-control mb-3"
+                value="{{ plan.price }}"
+                required
+              />
+
+              <textarea name="description" class="form-control">
+{{ plan.description }}</textarea
+              >
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-primary w-100">Update Plan</button>
             </div>
           </form>
         </div>
@@ -197,112 +247,103 @@ Management{% endblock %} {% block content %}
   <!-- ACTIVE SUBSCRIPTIONS -->
 
   <div class="card shadow-sm mb-4">
-    <div class="card-header bg-success text-white">
-      <h5 class="mb-0">Active Subscriptions</h5>
+    <div class="card-header bg-success text-white">Active Subscriptions</div>
+
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Plan</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for sub in active_subscriptions %}
+
+          <tr>
+            <td>{{ sub.customer.name }}</td>
+            <td>{{ sub.subscription_plan.name }}</td>
+            <td>{{ sub.start_date }}</td>
+            <td>{{ sub.end_date }}</td>
+
+            <td class="d-flex gap-1">
+              <a
+                href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
+                class="btn btn-sm btn-success"
+              >
+                Pay
+              </a>
+
+              <a
+                href="{% url 'milk_agency:toggle_subscription' sub.id %}"
+                class="btn btn-sm btn-warning"
+              >
+                Deactivate
+              </a>
+            </td>
+          </tr>
+
+          {% empty %}
+
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              No active subscriptions
+            </td>
+          </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Customer</th>
-
-          <th>Plan</th>
-
-          <th>Start</th>
-
-          <th>End</th>
-
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for sub in active_subscriptions %}
-
-        <tr>
-          <td>{{ sub.customer.name }}</td>
-
-          <td>{{ sub.subscription_plan.name }}</td>
-
-          <td>{{ sub.start_date }}</td>
-
-          <td>{{ sub.end_date }}</td>
-
-          <td>
-            <a
-              href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
-              class="btn btn-sm btn-success"
-            >
-              Payment
-            </a>
-
-            <a
-              href="{% url 'milk_agency:toggle_subscription' sub.id %}"
-              class="btn btn-sm btn-warning"
-            >
-              Deactivate
-            </a>
-          </td>
-        </tr>
-
-        {% empty %}
-
-        <tr>
-          <td colspan="5" class="text-center">No active subscriptions</td>
-        </tr>
-
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
 
   <!-- EXPIRING SOON -->
 
   <div class="card shadow-sm">
-    <div class="card-header bg-warning">
-      <h5 class="mb-0">Expiring Soon</h5>
+    <div class="card-header bg-warning">Expiring Soon</div>
+
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Plan</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for sub in expiring_soon %}
+
+          <tr>
+            <td>{{ sub.customer.name }}</td>
+            <td>{{ sub.subscription_plan.name }}</td>
+            <td>{{ sub.end_date }}</td>
+          </tr>
+
+          {% empty %}
+
+          <tr>
+            <td colspan="3" class="text-center text-muted">
+              No expiring subscriptions
+            </td>
+          </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Customer</th>
-
-          <th>Plan</th>
-
-          <th>End Date</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for sub in expiring_soon %}
-
-        <tr>
-          <td>{{ sub.customer.name }}</td>
-
-          <td>{{ sub.subscription_plan.name }}</td>
-
-          <td>{{ sub.end_date }}</td>
-        </tr>
-
-        {% empty %}
-
-        <tr>
-          <td colspan="3" class="text-center">
-            No subscriptions expiring soon
-          </td>
-        </tr>
-
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
 </div>
 
 <!-- CREATE PLAN MODAL -->
 
 <div class="modal fade" id="createPlanModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form
         method="post"
@@ -311,8 +352,7 @@ Management{% endblock %} {% block content %}
         {% csrf_token %}
 
         <div class="modal-header">
-          <h5>Create Subscription Plan</h5>
-
+          <h5>Create Plan</h5>
           <button
             type="button"
             class="btn-close"
@@ -324,16 +364,16 @@ Management{% endblock %} {% block content %}
           <input
             type="text"
             name="name"
-            placeholder="Plan Name"
             class="form-control mb-3"
+            placeholder="Plan Name"
             required
           />
 
           <input
             type="number"
             name="price"
-            placeholder="Price"
             class="form-control mb-3"
+            placeholder="Price"
             required
           />
 
@@ -345,7 +385,7 @@ Management{% endblock %} {% block content %}
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-primary">Create</button>
+          <button class="btn btn-primary w-100">Create Plan</button>
         </div>
       </form>
     </div>
@@ -355,14 +395,13 @@ Management{% endblock %} {% block content %}
 <!-- ASSIGN SUBSCRIPTION MODAL -->
 
 <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form method="post" action="{% url 'milk_agency:assign_subscription' %}">
         {% csrf_token %}
 
         <div class="modal-header">
           <h5>Assign Subscription</h5>
-
           <button
             type="button"
             class="btn-close"
@@ -371,23 +410,19 @@ Management{% endblock %} {% block content %}
         </div>
 
         <div class="modal-body">
-          <select name="customer" class="form-control mb-3" required>
-            <option value="" disabled selected>Select Customer</option>
+          <select name="customer" class="form-select mb-3" required>
+            <option disabled selected>Select Customer</option>
 
             {% for customer in customers %}
-
             <option value="{{ customer.id }}">{{ customer.name }}</option>
-
             {% endfor %}
           </select>
 
-          <select name="plan" class="form-control mb-3" required>
-            <option value="" disabled selected>Select Plan</option>
+          <select name="plan" class="form-select mb-3" required>
+            <option disabled selected>Select Plan</option>
 
             {% for plan in plans %}
-
             <option value="{{ plan.id }}">{{ plan.name }}</option>
-
             {% endfor %}
           </select>
 
@@ -395,7 +430,7 @@ Management{% endblock %} {% block content %}
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-success">Assign</button>
+          <button class="btn btn-success w-100">Assign Subscription</button>
         </div>
       </form>
     </div>
