@@ -115,7 +115,7 @@ urlpatterns = [
 
     path("subscriptions/payment/<int:subscription_id>/", subscriptions.record_subscription_payment, name="record_subscription_payment"),
 
-    path("subscriptions/history/<int:customer_id>/", subscriptions.customer_subscription_history, name="customer_subscription_history"),
+    path("subscriptions/history/", subscriptions.customer_subscription_history, name="customer_subscription_history"),
 
     path("subscriptions/today-deliveries/", subscriptions.today_deliveries, name="today_deliveries"),
     # Admin Orders Dashboard URLs

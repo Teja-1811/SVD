@@ -65,6 +65,13 @@ Management{% endblock %} {% block content %}
       Assign Subscription
     </button>
 
+    <a
+      href="{% url 'milk_agency:customer_subscription_history' %}"
+      class="btn btn-info"
+    >
+      Subscription History
+    </a>
+
     <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
       Today's Deliveries
     </a>
@@ -81,6 +88,7 @@ Management{% endblock %} {% block content %}
 
         <div class="card-body">
           <p><strong>Price:</strong> ₹{{ plan.price }}</p>
+          <p><strong>Duration:</strong> {{ plan.duration_in_days }} days</p>
 
           <p class="text-muted">{{ plan.description }}</p>
 
@@ -99,7 +107,6 @@ Management{% endblock %} {% block content %}
 
                 <tr>
                   <td>{{ item.item.name }}</td>
-
                   <td>{{ item.quantity }}</td>
 
                   <td>
@@ -187,104 +194,6 @@ Management{% endblock %} {% block content %}
       </div>
     </div>
 
-    <!-- EDIT PLAN MODAL -->
-
-    <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form
-            method="post"
-            action="{% url 'milk_agency:edit_subscription_plan' plan.id %}"
-          >
-            {% csrf_token %}
-
-            <div class="modal-header">
-              <h5>Edit Plan</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-
-            <div class="modal-body">
-              <input
-                type="text"
-                name="name"
-                value="{{ plan.name }}"
-                class="form-control mb-3"
-              />
-
-              <input
-                type="number"
-                name="price"
-                value="{{ plan.price }}"
-                class="form-control mb-3"
-              />
-
-              <input
-                type="number"
-                name="duration_in_days"
-                value="{{ plan.duration_in_days }}"
-                class="form-control mb-3"
-              >
-
-              <textarea name="description" class="form-control">
-{{ plan.description }}</textarea
-              >
-            </div>
-
-            <div class="modal-footer">
-              <button class="btn btn-primary">Update Plan</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADD ITEM MODAL -->
-
-    <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form
-            method="post"
-            action="{% url 'milk_agency:add_plan_item' plan.id %}"
-          >
-            {% csrf_token %}
-
-            <div class="modal-header">
-              <h5>Add Item</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-
-            <div class="modal-body">
-              <select name="item" class="form-select mb-3">
-                {% for item in items %}
-                <option value="{{ item.id }}">{{ item.name }}</option>
-                {% endfor %}
-              </select>
-
-              <input
-                type="number"
-                name="quantity"
-                class="form-control"
-                placeholder="Quantity"
-              />
-            </div>
-
-            <div class="modal-footer">
-              <button class="btn btn-success">Add Item</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
     {% endfor %}
   </div>
 
@@ -315,12 +224,13 @@ Management{% endblock %} {% block content %}
             <td>{{ sub.end_date }}</td>
 
             <td>
-              <a
-                href="{% url 'milk_agency:record_subscription_payment' sub.id %}"
+              <button
                 class="btn btn-sm btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#recordPaymentModal-{{ sub.id }}"
               >
                 Pay
-              </a>
+              </button>
 
               <a
                 href="{% url 'milk_agency:toggle_subscription' sub.id %}"
@@ -330,6 +240,85 @@ Management{% endblock %} {% block content %}
               </a>
             </td>
           </tr>
+
+          <!-- PAYMENT MODAL -->
+
+          <div
+            class="modal fade"
+            id="recordPaymentModal-{{ sub.id }}"
+            tabindex="-1"
+          >
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form
+                  method="post"
+                  action="{% url 'milk_agency:record_subscription_payment' sub.id %}"
+                >
+                  {% csrf_token %}
+
+                  <div class="modal-header">
+                    <h5 class="modal-title">Record Payment</h5>
+
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                    ></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <p><strong>Customer:</strong> {{ sub.customer.name }}</p>
+                    <p>
+                      <strong>Plan:</strong> {{ sub.subscription_plan.name }}
+                    </p>
+
+                    <div class="mb-3">
+                      <label class="form-label">Amount</label>
+
+                      <input
+                        type="number"
+                        name="amount"
+                        class="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Payment Method</label>
+
+                      <select name="method" class="form-select">
+                        <option value="UPI">UPI</option>
+                        <option value="CASH">Cash</option>
+                        <option value="BANK">Bank Transfer</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Transaction ID</label>
+
+                      <input
+                        type="text"
+                        name="transaction_id"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+
+                    <button class="btn btn-success">Save Payment</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
 
           {% endfor %}
         </tbody>
@@ -440,7 +429,7 @@ Management{% endblock %} {% block content %}
               class="form-control mb-3"
               placeholder="Duration (Days)"
               required
-            >
+            />
 
             <textarea
               name="description"
@@ -448,7 +437,6 @@ Management{% endblock %} {% block content %}
               placeholder="Description"
             ></textarea>
           </div>
-
 
           <div class="modal-footer">
             <button class="btn btn-primary">Create Plan</button>

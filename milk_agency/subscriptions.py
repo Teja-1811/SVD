@@ -261,22 +261,32 @@ def record_subscription_payment(request, subscription_id):
 # CUSTOMER SUBSCRIPTION HISTORY
 # -------------------------------------------------------
 @login_required
-def customer_subscription_history(request, customer_id):
+def customer_subscription_history(request):
 
-    customer = get_object_or_404(Customer, id=customer_id)
+    customer_id = request.GET.get("customer")
+    plan_id = request.GET.get("plan")
 
-    subscriptions = CustomerSubscription.objects.filter(
-        customer=customer
-    ).select_related("subscription_plan")
-
-    payments = UserPayment.objects.filter(
-        user=customer
+    subscriptions = CustomerSubscription.objects.select_related(
+        "customer", "subscription_plan"
     )
 
+    payments = UserPayment.objects.select_related("user")
+
+    if customer_id:
+        subscriptions = subscriptions.filter(customer_id=customer_id)
+        payments = payments.filter(user_id=customer_id)
+
+    if plan_id:
+        subscriptions = subscriptions.filter(subscription_plan_id=plan_id)
+
+    customers = Customer.objects.all()
+    plans = SubscriptionPlan.objects.all()
+
     context = {
-        "customer": customer,
         "subscriptions": subscriptions,
         "payments": payments,
+        "customers": customers,
+        "plans": plans,
     }
 
     return render(
@@ -284,8 +294,6 @@ def customer_subscription_history(request, customer_id):
         "milk_agency/subscription/customer_history.html",
         context
     )
-
-
 # -------------------------------------------------------
 # TODAY DELIVERIES
 # -------------------------------------------------------
