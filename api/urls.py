@@ -17,6 +17,7 @@ from .admin_stock_dashboard import *
 from .admin_customer_payments import *
 from .admin_companies import *
 from .admin_monthly_sales_summary import *
+from .admin_subscriptions import *
 
 urlpatterns = [
     # Auth / Login
@@ -82,6 +83,17 @@ urlpatterns = [
     # Monthly Sales Summary API
     path('sales/monthly-summary/', api_monthly_sales_summary, name='api_monthly_sales_summary'),
     path('sales/monthly-summary/pdf/', monthly_summary_pdf_api, name='monthly_summary_pdf_api'),
+    
+    # Subscriptions APIs
+    path("subscriptions/dashboard/", api_subscription_dashboard, name="api_subscription_dashboard"),
+    path("subscriptions/plans/", api_get_plans, name="api_get_plans"),
+    path("subscriptions/create-plan/", api_create_plan, name="api_create_plan"),
+    path("subscriptions/customers/", api_subscription_customers, name="api_subscription_customers"),
+    path("subscriptions/assign/", api_assign_subscription, name="api_assign_subscription"),
+    path("subscriptions/list/", api_customer_subscriptions, name="api_customer_subscriptions"),
+    path("subscriptions/toggle/<int:subscription_id>/", api_toggle_subscription, name="api_toggle_subscription"),
+    path("subscriptions/payment/<int:subscription_id>/", api_record_subscription_payment, name="api_record_subscription_payment"),
+    path("subscriptions/today-deliveries/", api_today_deliveries, name="api_today_deliveries"),
     
     # Customer Payments API
     path('customer-payments/', customer_payments_api, name='customer_payments_api'),
