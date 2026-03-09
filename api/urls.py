@@ -88,9 +88,14 @@ urlpatterns = [
     path("subscriptions/dashboard/", api_subscription_dashboard, name="api_subscription_dashboard"),
     path("subscriptions/plans/", api_get_plans, name="api_get_plans"),
     path("subscriptions/create-plan/", api_create_plan, name="api_create_plan"),
+    path("subscriptions/edit-plan/<int:plan_id>/", api_edit_plan, name="api_edit_plan"),
+    path("subscriptions/plan/<int:plan_id>/add-item/", api_add_plan_item, name="api_add_plan_item"),
+    path("subscriptions/item/<int:item_id>/update/", api_update_plan_item, name="api_update_plan_item"),
+    path("subscriptions/item/<int:item_id>/delete/", api_delete_plan_item, name="api_delete_plan_item"),
     path("subscriptions/customers/", api_subscription_customers, name="api_subscription_customers"),
     path("subscriptions/assign/", api_assign_subscription, name="api_assign_subscription"),
     path("subscriptions/list/", api_customer_subscriptions, name="api_customer_subscriptions"),
+    path("subscriptions/history/", api_customer_subscription_history, name="api_customer_subscription_history"),
     path("subscriptions/toggle/<int:subscription_id>/", api_toggle_subscription, name="api_toggle_subscription"),
     path("subscriptions/payment/<int:subscription_id>/", api_record_subscription_payment, name="api_record_subscription_payment"),
     path("subscriptions/today-deliveries/", api_today_deliveries, name="api_today_deliveries"),
@@ -132,4 +137,3 @@ urlpatterns = [
     # Customer Payment API
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
 ]
-

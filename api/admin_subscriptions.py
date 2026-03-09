@@ -1,231 +1,405 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from milk_agency.models import (
-    SubscriptionPlan,
-    CustomerSubscription,
-    SubscriptionItem,
-    UserPayment,
     Customer,
-    Item
+    CustomerSubscription,
+    Item,
+    SubscriptionItem,
+    SubscriptionPlan,
+    UserPayment,
 )
 
-# -----------------------------------------
-# 1️⃣ GET SUBSCRIPTION DASHBOARD DATA
-# -----------------------------------------
-@api_view(['GET'])
-def api_subscription_dashboard(request):
 
+def _parse_date_yyyy_mm_dd(value):
+    if not value:
+        return None
+    try:
+        return timezone.datetime.strptime(value, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
+
+
+def _serialize_plan(plan):
+    return {
+        "id": plan.id,
+        "name": plan.name,
+        "price": str(plan.price),
+        "duration_in_days": plan.duration_in_days,
+        "description": plan.description,
+        "items": [
+            {
+                "id": i.id,
+                "item_id": i.item_id,
+                "item_name": i.item.name if i.item else None,
+                "quantity": i.quantity,
+            }
+            for i in plan.items.select_related("item").all()
+        ],
+    }
+
+
+def _serialize_subscription(sub):
+    return {
+        "id": sub.id,
+        "customer_id": sub.customer_id,
+        "customer": sub.customer.name if sub.customer else None,
+        "plan_id": sub.subscription_plan_id,
+        "plan": sub.subscription_plan.name if sub.subscription_plan else None,
+        "start_date": str(sub.start_date),
+        "end_date": str(sub.end_date),
+        "is_active": sub.is_active,
+    }
+
+
+@api_view(["GET"])
+def api_subscription_dashboard(request):
     today = timezone.now().date()
 
-    active = CustomerSubscription.objects.filter(
+    # Same as web view: expired subscriptions are auto-deactivated.
+    CustomerSubscription.objects.filter(
+        end_date__lt=today,
         is_active=True,
-        end_date__gte=today
+    ).update(is_active=False)
+
+    plans = SubscriptionPlan.objects.prefetch_related("items__item").all()
+
+    active_subscriptions = CustomerSubscription.objects.filter(
+        is_active=True,
+        end_date__gte=today,
     ).select_related("customer", "subscription_plan")
 
-    expired = CustomerSubscription.objects.filter(
+    de_activated_subscriptions = CustomerSubscription.objects.filter(
+        is_active=False,
+        end_date__gte=today,
+    ).select_related("customer", "subscription_plan")
+
+    expired_subscriptions = CustomerSubscription.objects.filter(
         end_date__lt=today
+    ).select_related("customer", "subscription_plan")
+
+    expiring_soon = CustomerSubscription.objects.filter(
+        is_active=True,
+        end_date__range=[today, today + timezone.timedelta(days=5)],
+    ).select_related("customer", "subscription_plan")
+
+    items = Item.objects.all()
+    customers = Customer.objects.filter(frozen=False, user_type="user")
+
+    return Response(
+        {
+            "plans": [_serialize_plan(p) for p in plans],
+            "active_subscriptions": [_serialize_subscription(s) for s in active_subscriptions],
+            "de_activated_subscriptions": [_serialize_subscription(s) for s in de_activated_subscriptions],
+            "expired_subscriptions": [_serialize_subscription(s) for s in expired_subscriptions],
+            "expiring_soon": [_serialize_subscription(s) for s in expiring_soon],
+            "items": [
+                {
+                    "id": i.id,
+                    "name": i.name,
+                    "category": i.category,
+                    "selling_price": str(i.selling_price),
+                    "buying_price": str(i.buying_price),
+                    "mrp": str(i.mrp),
+                }
+                for i in items
+            ],
+            "customers": [
+                {
+                    "id": c.id,
+                    "name": c.name,
+                    "phone": c.phone,
+                    "area": c.area,
+                }
+                for c in customers
+            ],
+            "total_active": active_subscriptions.count(),
+            "total_expired": expired_subscriptions.count(),
+            "total_plans": plans.count(),
+            "expiring_count": expiring_soon.count(),
+        }
     )
 
-    expiring = CustomerSubscription.objects.filter(
-        end_date__range=[today, today + timezone.timedelta(days=5)]
-    )
 
-    return Response({
-        "active_subscriptions": active.count(),
-        "expired_subscriptions": expired.count(),
-        "expiring_soon": expiring.count(),
-        "plans": SubscriptionPlan.objects.count()
-    })
-
-
-# -----------------------------------------
-# 2️⃣ GET SUBSCRIPTION PLANS
-# -----------------------------------------
-@api_view(['GET'])
+@api_view(["GET"])
 def api_get_plans(request):
-
-    plans = SubscriptionPlan.objects.all()
-
-    data = []
-
-    for p in plans:
-        data.append({
-            "id": p.id,
-            "name": p.name,
-            "price": str(p.price),
-            "duration_days": p.duration_in_days,
-            "description": p.description
-        })
-
-    return Response(data)
+    plans = SubscriptionPlan.objects.prefetch_related("items__item").all()
+    return Response([_serialize_plan(p) for p in plans])
 
 
-# -----------------------------------------
-# 3️⃣ CREATE PLAN
-# -----------------------------------------
-@api_view(['POST'])
+@api_view(["POST"])
 def api_create_plan(request):
+    name = request.data.get("name")
+    price = request.data.get("price")
+    duration_in_days = request.data.get("duration_in_days", request.data.get("duration_days"))
+    description = request.data.get("description")
+
+    if not name or not price or not duration_in_days:
+        return Response(
+            {"success": False, "message": "name, price and duration_in_days are required"},
+            status=400,
+        )
 
     plan = SubscriptionPlan.objects.create(
-        name=request.data.get("name"),
-        price=request.data.get("price"),
-        duration_in_days=request.data.get("duration_days"),
-        description=request.data.get("description")
+        name=name,
+        price=price,
+        duration_in_days=duration_in_days,
+        description=description,
     )
-
-    return Response({
-        "success": True,
-        "plan_id": plan.id
-    })
-
-
-# -----------------------------------------
-# 4️⃣ GET CUSTOMERS
-# -----------------------------------------
-@api_view(['GET'])
-def api_subscription_customers(request):
-
-    customers = Customer.objects.filter(
-        frozen=False,
-        user_type="user"
-    )
-
-    return Response([
+    return Response(
         {
-            "id": c.id,
-            "name": c.name,
-            "phone": c.phone,
-            "area": c.area
+            "success": True,
+            "message": "Subscription plan created successfully",
+            "plan_id": plan.id,
         }
-        for c in customers
-    ])
+    )
 
 
-# -----------------------------------------
-# 5️⃣ ASSIGN SUBSCRIPTION
-# -----------------------------------------
-@api_view(['POST'])
+@api_view(["POST"])
+def api_edit_plan(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+
+    plan.name = request.data.get("name", plan.name)
+    plan.price = request.data.get("price", plan.price)
+    plan.duration_in_days = request.data.get("duration_in_days", plan.duration_in_days)
+    plan.description = request.data.get("description", plan.description)
+    plan.save()
+
+    return Response(
+        {
+            "success": True,
+            "message": "Subscription plan updated successfully",
+            "plan_id": plan.id,
+        }
+    )
+
+
+@api_view(["POST"])
+def api_add_plan_item(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    item_id = request.data.get("item")
+    quantity = request.data.get("quantity")
+
+    if not item_id or not quantity:
+        return Response({"success": False, "message": "item and quantity are required"}, status=400)
+
+    plan_item, _ = SubscriptionItem.objects.update_or_create(
+        subscription_plan=plan,
+        item_id=item_id,
+        defaults={"quantity": quantity},
+    )
+
+    return Response(
+        {
+            "success": True,
+            "message": "Item added to plan",
+            "plan_item_id": plan_item.id,
+        }
+    )
+
+
+@api_view(["POST"])
+def api_update_plan_item(request, item_id):
+    plan_item = get_object_or_404(SubscriptionItem, id=item_id)
+    quantity = request.data.get("quantity")
+    if not quantity:
+        return Response({"success": False, "message": "quantity is required"}, status=400)
+
+    plan_item.quantity = quantity
+    plan_item.save()
+
+    return Response({"success": True, "message": "Item quantity updated"})
+
+
+@api_view(["POST", "DELETE"])
+def api_delete_plan_item(request, item_id):
+    plan_item = get_object_or_404(SubscriptionItem, id=item_id)
+    plan_item.delete()
+    return Response({"success": True, "message": "Item removed from plan"})
+
+
+@api_view(["GET"])
+def api_subscription_customers(request):
+    customers = Customer.objects.filter(frozen=False, user_type="user")
+    return Response(
+        [
+            {
+                "id": c.id,
+                "name": c.name,
+                "phone": c.phone,
+                "area": c.area,
+            }
+            for c in customers
+        ]
+    )
+
+
+@api_view(["POST"])
 def api_assign_subscription(request):
-
     customer_id = request.data.get("customer")
     plan_id = request.data.get("plan")
     start_date = request.data.get("start_date")
 
-    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    if not customer_id or not plan_id or not start_date:
+        return Response(
+            {"success": False, "message": "customer, plan and start_date are required"},
+            status=400,
+        )
 
-    start = timezone.datetime.strptime(start_date, "%Y-%m-%d").date()
-    end = start + timezone.timedelta(days=plan.duration_in_days)
+    start = _parse_date_yyyy_mm_dd(start_date)
+    if start is None:
+        return Response({"success": False, "message": "start_date must be YYYY-MM-DD"}, status=400)
+
+    # Kept exactly as web flow: fixed 30-day window.
+    end = start + timezone.timedelta(days=30)
+
+    get_object_or_404(SubscriptionPlan, id=plan_id)
+    get_object_or_404(Customer, id=customer_id)
 
     sub = CustomerSubscription.objects.create(
         customer_id=customer_id,
         subscription_plan_id=plan_id,
         start_date=start,
         end_date=end,
-        is_active=True
+        is_active=True,
+    )
+    return Response(
+        {
+            "success": True,
+            "message": "Subscription assigned successfully",
+            "subscription_id": sub.id,
+        }
     )
 
-    return Response({
-        "success": True,
-        "subscription_id": sub.id
-    })
 
-
-# -----------------------------------------
-# 6️⃣ GET CUSTOMER SUBSCRIPTIONS
-# -----------------------------------------
-@api_view(['GET'])
+@api_view(["GET"])
 def api_customer_subscriptions(request):
-
     customer_id = request.GET.get("customer")
-
-    subs = CustomerSubscription.objects.select_related(
-        "customer",
-        "subscription_plan"
-    )
-
+    subs = CustomerSubscription.objects.select_related("customer", "subscription_plan")
     if customer_id:
         subs = subs.filter(customer_id=customer_id)
-
-    data = []
-
-    for s in subs:
-        data.append({
-            "id": s.id,
-            "customer": s.customer.name,
-            "plan": s.subscription_plan.name,
-            "start_date": str(s.start_date),
-            "end_date": str(s.end_date),
-            "is_active": s.is_active
-        })
-
-    return Response(data)
+    return Response([_serialize_subscription(s) for s in subs])
 
 
-# -----------------------------------------
-# 7️⃣ TOGGLE SUBSCRIPTION
-# -----------------------------------------
-@api_view(['POST'])
-def api_toggle_subscription(request, subscription_id):
+@api_view(["GET"])
+def api_customer_subscription_history(request):
+    customer_id = request.GET.get("customer")
+    plan_id = request.GET.get("plan")
 
-    sub = get_object_or_404(CustomerSubscription, id=subscription_id)
+    subscriptions = CustomerSubscription.objects.select_related("customer", "subscription_plan")
+    payments = UserPayment.objects.select_related("user", "subscription")
 
-    sub.is_active = not sub.is_active
-    sub.save()
+    if customer_id:
+        subscriptions = subscriptions.filter(customer_id=customer_id)
+        payments = payments.filter(user_id=customer_id)
 
-    return Response({
-        "success": True,
-        "is_active": sub.is_active
-    })
+    if plan_id:
+        subscriptions = subscriptions.filter(subscription_plan_id=plan_id)
 
+    customers = Customer.objects.all()
+    plans = SubscriptionPlan.objects.all()
 
-# -----------------------------------------
-# 8️⃣ RECORD PAYMENT
-# -----------------------------------------
-@api_view(['POST'])
-def api_record_subscription_payment(request, subscription_id):
-
-    sub = get_object_or_404(CustomerSubscription, id=subscription_id)
-
-    payment = UserPayment.objects.create(
-        subscription=sub,
-        user=sub.customer,
-        amount=request.data.get("amount"),
-        transaction_id=request.data.get("transaction_id"),
-        method=request.data.get("method"),
-        status="SUCCESS"
+    return Response(
+        {
+            "subscriptions": [_serialize_subscription(s) for s in subscriptions],
+            "payments": [
+                {
+                    "id": p.id,
+                    "user_id": p.user_id,
+                    "user_name": p.user.name if p.user else None,
+                    "subscription_id": p.subscription_id,
+                    "amount": str(p.amount),
+                    "transaction_id": p.transaction_id,
+                    "method": p.method,
+                    "status": p.status,
+                    "created_at": p.created_at.isoformat() if p.created_at else None,
+                }
+                for p in payments
+            ],
+            "customers": [
+                {"id": c.id, "name": c.name, "phone": c.phone}
+                for c in customers
+            ],
+            "plans": [
+                {"id": p.id, "name": p.name}
+                for p in plans
+            ],
+        }
     )
 
-    return Response({
-        "success": True,
-        "payment_id": payment.id
-    })
+
+@api_view(["POST"])
+def api_toggle_subscription(request, subscription_id):
+    subscription = get_object_or_404(CustomerSubscription, id=subscription_id)
+    subscription.is_active = not subscription.is_active
+    subscription.save()
+
+    status = "activated" if subscription.is_active else "deactivated"
+    return Response(
+        {
+            "success": True,
+            "message": f"Subscription {status} for {subscription.customer.name}",
+            "is_active": subscription.is_active,
+        }
+    )
 
 
-# -----------------------------------------
-# 9️⃣ TODAY DELIVERIES
-# -----------------------------------------
-@api_view(['GET'])
+@api_view(["POST"])
+def api_record_subscription_payment(request, subscription_id):
+    subscription = get_object_or_404(CustomerSubscription, id=subscription_id)
+
+    amount = request.data.get("amount")
+    method = request.data.get("method")
+    transaction_id = request.data.get("transaction_id")
+
+    if not amount or not method or not transaction_id:
+        return Response(
+            {
+                "success": False,
+                "message": "amount, method and transaction_id are required",
+            },
+            status=400,
+        )
+
+    payment = UserPayment.objects.create(
+        subscription=subscription,
+        user=subscription.customer,
+        amount=amount,
+        transaction_id=transaction_id,
+        method=method,
+        status="SUCCESS",
+    )
+    return Response(
+        {
+            "success": True,
+            "message": "Payment recorded successfully",
+            "payment_id": payment.id,
+        }
+    )
+
+
+@api_view(["GET"])
 def api_today_deliveries(request):
-
     today = timezone.now().date()
-
     deliveries = CustomerSubscription.objects.filter(
         is_active=True,
-        end_date__gte=today
+        end_date__gte=today,
     ).select_related("customer", "subscription_plan")
 
-    data = []
-
-    for d in deliveries:
-        data.append({
-            "customer": d.customer.name,
-            "phone": d.customer.phone,
-            "plan": d.subscription_plan.name,
-            "start_date": str(d.start_date),
-            "end_date": str(d.end_date)
-        })
-
-    return Response(data)
+    return Response(
+        [
+            {
+                "subscription_id": d.id,
+                "customer_id": d.customer_id,
+                "customer": d.customer.name,
+                "phone": d.customer.phone,
+                "plan_id": d.subscription_plan_id,
+                "plan": d.subscription_plan.name,
+                "start_date": str(d.start_date),
+                "end_date": str(d.end_date),
+            }
+            for d in deliveries
+        ]
+    )
