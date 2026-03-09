@@ -163,7 +163,7 @@ def api_edit_plan(request, plan_id):
 
     plan.name = request.data.get("name", plan.name)
     plan.price = request.data.get("price", plan.price)
-    plan.duration_in_days = request.data.get("duration_in_days", plan.duration_in_days)
+    plan.duration_in_days = request.data.get("duration_days", plan.duration_in_days)
     plan.description = request.data.get("description", plan.description)
     plan.save()
 
