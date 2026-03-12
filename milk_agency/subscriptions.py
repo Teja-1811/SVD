@@ -308,10 +308,37 @@ def today_deliveries(request):
 
     today = timezone.now().date()
 
-    deliveries = CustomerSubscription.objects.filter(
+    subscriptions = CustomerSubscription.objects.filter(
         is_active=True,
         end_date__gte=today
-    ).select_related("customer", "subscription_plan")
+    ).select_related(
+        "customer", "subscription_plan"
+    ).prefetch_related(
+        "subscription_plan__items__item",
+        "subscriptionorder_set"
+    )
+
+    deliveries = []
+    for sub in subscriptions:
+        todays_orders = [o for o in sub.subscriptionorder_set.all() if o.date == today]
+        status = "Pending"
+        if todays_orders and all(order.delivered for order in todays_orders):
+            status = "Delivered"
+
+        deliveries.append(
+            {
+                "customer": sub.customer,
+                "plan": sub.subscription_plan,
+                "items": [
+                    {
+                        "name": plan_item.item.name,
+                        "quantity": plan_item.quantity,
+                    }
+                    for plan_item in sub.subscription_plan.items.all()
+                ],
+                "status": status,
+            }
+        )
 
     return render(
         request,
