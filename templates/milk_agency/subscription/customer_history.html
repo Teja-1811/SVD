@@ -1,59 +1,75 @@
-{% extends "milk_agency/home/base.html" %} 
+{% extends "milk_agency/home/base.html" %}
 {% block title %}Subscription History{% endblock %}
 {% block content %}
+<style>
+  @media (max-width: 767.98px) {
+    .subscription-mobile-table thead {
+      display: none;
+    }
+    .subscription-mobile-table tbody tr {
+      display: block;
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      background: #fff;
+    }
+    .subscription-mobile-table tbody td {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border: 0;
+      border-bottom: 1px solid #f1f3f5;
+      padding: 0.65rem 0.85rem;
+      text-align: right;
+    }
+    .subscription-mobile-table tbody td:last-child {
+      border-bottom: 0;
+    }
+    .subscription-mobile-table tbody td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #495057;
+      text-align: left;
+    }
+  }
+</style>
 
-<div class="container-fluid py-5">
-  <br>
+<div class="container-fluid py-4 px-2 px-md-3">
   <h3 class="mb-4">Subscription History</h3>
 
-  <!-- FILTER FORM -->
-
-  <form method="get" class="row g-3 mb-4">
-    <div class="col-md-4">
+  <form method="get" class="row g-2 g-md-3 mb-4">
+    <div class="col-12 col-md-4">
       <select name="customer" class="form-select">
         <option value="">All Customers</option>
-
         {% for customer in customers %}
-
-        <option value="{{ customer.id }}">{{ customer.name }}</option>
-
+        <option value="{{ customer.id }}" {% if request.GET.customer == customer.id|stringformat:"s" %}selected{% endif %}>{{ customer.name }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
       <select name="plan" class="form-select">
         <option value="">All Plans</option>
-
         {% for plan in plans %}
-
-        <option value="{{ plan.id }}">{{ plan.name }}</option>
-
+        <option value="{{ plan.id }}" {% if request.GET.plan == plan.id|stringformat:"s" %}selected{% endif %}>{{ plan.name }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-6 col-md-2">
       <button class="btn btn-primary w-100">Filter</button>
     </div>
 
-    <div class="col-md-2">
-      <a
-        href="{% url 'milk_agency:customer_subscription_history' %}"
-        class="btn btn-secondary w-100"
-      >
-        Reset
-      </a>
+    <div class="col-6 col-md-2">
+      <a href="{% url 'milk_agency:customer_subscription_history' %}" class="btn btn-secondary w-100">Reset</a>
     </div>
   </form>
-
-  <!-- SUBSCRIPTIONS TABLE -->
 
   <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">Subscriptions</div>
 
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-striped subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -66,17 +82,12 @@
 
         <tbody>
           {% for sub in subscriptions %}
-
           <tr>
-            <td>{{ sub.customer.name }}</td>
-
-            <td>{{ sub.subscription_plan.name }}</td>
-
-            <td>{{ sub.start_date }}</td>
-
-            <td>{{ sub.end_date }}</td>
-
-            <td>
+            <td data-label="Customer">{{ sub.customer.name }}</td>
+            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+            <td data-label="Start">{{ sub.start_date }}</td>
+            <td data-label="End">{{ sub.end_date }}</td>
+            <td data-label="Status">
               {% if sub.is_active %}
               <span class="badge bg-success">Active</span>
               {% else %}
@@ -84,20 +95,21 @@
               {% endif %}
             </td>
           </tr>
-
+          {% empty %}
+          <tr>
+            <td data-label="Info" colspan="5" class="text-center">No subscriptions found.</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- PAYMENTS TABLE -->
-
   <div class="card shadow-sm">
     <div class="card-header bg-success text-white">Payments</div>
 
     <div class="table-responsive">
-      <table class="table table-bordered">
+      <table class="table table-bordered subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -110,19 +122,17 @@
 
         <tbody>
           {% for payment in payments %}
-
           <tr>
-            <td>{{ payment.user.name }}</td>
-
-            <td>₹{{ payment.amount }}</td>
-
-            <td>{{ payment.method }}</td>
-
-            <td>{{ payment.transaction_id }}</td>
-
-            <td>{{ payment.created_at }}</td>
+            <td data-label="Customer">{{ payment.user.name }}</td>
+            <td data-label="Amount">&#8377;{{ payment.amount }}</td>
+            <td data-label="Method">{{ payment.method }}</td>
+            <td data-label="Transaction">{{ payment.transaction_id }}</td>
+            <td data-label="Date">{{ payment.created_at }}</td>
           </tr>
-
+          {% empty %}
+          <tr>
+            <td data-label="Info" colspan="5" class="text-center">No payments found.</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

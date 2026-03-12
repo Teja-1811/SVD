@@ -2,10 +2,18 @@
 {% block title %}Subscription Management{% endblock %} 
 
 {% block content %}
+<style>
+  @media (max-width: 767.98px) {
+    .subscription-mobile-table thead { display: none; }
+    .subscription-mobile-table tbody tr { display: block; border: 1px solid #dee2e6; border-radius: 0.5rem; margin-bottom: 0.75rem; background: #fff; }
+    .subscription-mobile-table tbody td { display: flex; justify-content: space-between; gap: 0.75rem; border: 0; border-bottom: 1px solid #f1f3f5; padding: 0.65rem 0.85rem; text-align: right; }
+    .subscription-mobile-table tbody td:last-child { border-bottom: 0; }
+    .subscription-mobile-table tbody td::before { content: attr(data-label); font-weight: 600; color: #495057; text-align: left; }
+    .card-footer .btn, .subscription-mobile-actions .btn { width: 100%; }
+  }
+</style>
 
-<div class="container-fluid py-4">
-  <br>
-  <br>
+<div class="container-fluid py-4 px-2 px-md-3">
   <h3 class="fw-bold mb-4">
     <i class="bi bi-journal-text"></i> Subscription Management
   </h3>
@@ -52,7 +60,7 @@
 
   <!-- ACTION BUTTONS -->
 
-  <div class="mb-4">
+  <div class="mb-4 d-grid d-sm-flex flex-wrap gap-2 subscription-mobile-actions">
     <button
       class="btn btn-primary"
       data-bs-toggle="modal"
@@ -91,13 +99,13 @@
         <div class="card-header bg-primary text-white">{{ plan.name }}</div>
 
         <div class="card-body">
-          <p><strong>Price:</strong> ₹{{ plan.price }}</p>
+          <p><strong>Price:</strong> &#8377;{{ plan.price }}</p>
           <p><strong>Duration:</strong> {{ plan.duration_in_days }} days</p>
 
           <p class="text-muted">{{ plan.description }}</p>
 
           <div class="table-responsive">
-            <table class="table table-sm table-bordered">
+            <table class="table table-sm table-bordered subscription-mobile-table">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -110,10 +118,10 @@
                 {% for item in plan.items.all %}
 
                 <tr>
-                  <td>{{ item.item.name }}</td>
-                  <td>{{ item.quantity }}</td>
+                  <td data-label="Item">{{ item.item.name }}</td>
+                  <td data-label="Qty">{{ item.quantity }}</td>
 
-                  <td>
+                  <td data-label="Actions">
                     <button
                       class="btn btn-sm btn-outline-primary"
                       data-bs-toggle="modal"
@@ -138,7 +146,7 @@
                   id="editItemModal-{{ item.id }}"
                   tabindex="-1"
                 >
-                  <div class="modal-dialog">
+                  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
                     <div class="modal-content">
                       <form
                         method="post"
@@ -178,7 +186,7 @@
           </div>
         </div>
 
-        <div class="card-footer d-flex justify-content-between">
+        <div class="card-footer d-flex flex-column flex-sm-row gap-2 justify-content-between">
           <button
             class="btn btn-sm btn-outline-primary"
             data-bs-toggle="modal"
@@ -207,7 +215,7 @@
     <div class="card-header bg-success text-white">Active Subscriptions</div>
 
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-striped subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -222,12 +230,12 @@
           {% for sub in active_subscriptions %}
 
           <tr>
-            <td>{{ sub.customer.name }}</td>
-            <td>{{ sub.subscription_plan.name }}</td>
-            <td>{{ sub.start_date }}</td>
-            <td>{{ sub.end_date }}</td>
+            <td data-label="Customer">{{ sub.customer.name }}</td>
+            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+            <td data-label="Start">{{ sub.start_date }}</td>
+            <td data-label="End Date">{{ sub.end_date }}</td>
 
-            <td>
+            <td data-label="Actions">
               <button
                 class="btn btn-sm btn-success"
                 data-bs-toggle="modal"
@@ -252,7 +260,7 @@
             id="recordPaymentModal-{{ sub.id }}"
             tabindex="-1"
           >
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
               <div class="modal-content">
                 <form
                   method="post"
@@ -335,7 +343,7 @@
     <div class="card-header bg-secondary text-white">De-Activated Subscriptions</div>
 
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-striped subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -350,12 +358,12 @@
           {% for sub in de_activated_subscriptions %}
 
           <tr>
-            <td>{{ sub.customer.name }}</td>
-            <td>{{ sub.subscription_plan.name }}</td>
-            <td>{{ sub.start_date }}</td>
-            <td>{{ sub.end_date }}</td>
+            <td data-label="Customer">{{ sub.customer.name }}</td>
+            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+            <td data-label="Start">{{ sub.start_date }}</td>
+            <td data-label="End Date">{{ sub.end_date }}</td>
 
-            <td>
+            <td data-label="Actions">
               <a
                 href="{% url 'milk_agency:toggle_subscription' sub.id %}"
                 class="btn btn-sm btn-success"
@@ -369,6 +377,7 @@
         </tbody>
       </table>
     </div>
+  </div>
 
   <!-- EXPIRED SUBSCRIPTIONS -->
 
@@ -376,7 +385,7 @@
     <div class="card-header bg-danger text-white">Expired Subscriptions</div>
 
     <div class="table-responsive">
-      <table class="table">
+      <table class="table subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -389,9 +398,9 @@
           {% for sub in expired_subscriptions %}
 
           <tr>
-            <td>{{ sub.customer.name }}</td>
-            <td>{{ sub.subscription_plan.name }}</td>
-            <td>{{ sub.end_date }}</td>
+            <td data-label="Customer">{{ sub.customer.name }}</td>
+            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+            <td data-label="End Date">{{ sub.end_date }}</td>
           </tr>
 
           {% endfor %}
@@ -406,7 +415,7 @@
     <div class="card-header bg-warning">Expiring Soon</div>
 
     <div class="table-responsive">
-      <table class="table">
+      <table class="table subscription-mobile-table">
         <thead>
           <tr>
             <th>Customer</th>
@@ -419,9 +428,9 @@
           {% for sub in expiring_soon %}
 
           <tr>
-            <td>{{ sub.customer.name }}</td>
-            <td>{{ sub.subscription_plan.name }}</td>
-            <td>{{ sub.end_date }}</td>
+            <td data-label="Customer">{{ sub.customer.name }}</td>
+            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+            <td data-label="End Date">{{ sub.end_date }}</td>
           </tr>
 
           {% endfor %}
@@ -433,7 +442,7 @@
   <!-- CREATE PLAN MODAL -->
 
   <div class="modal fade" id="createPlanModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
       <div class="modal-content">
         <form
           method="post"
@@ -493,7 +502,7 @@
   <!-- ASSIGN SUBSCRIPTION MODAL -->
 
   <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
       <div class="modal-content">
         <form
           method="post"
@@ -540,3 +549,5 @@
 </div>
 
 {% endblock %}
+
+

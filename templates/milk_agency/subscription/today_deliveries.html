@@ -3,12 +3,45 @@
 {% block title %}Today's Deliveries{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<style>
+  @media (max-width: 767.98px) {
+    .subscription-mobile-table thead {
+      display: none;
+    }
+    .subscription-mobile-table tbody tr {
+      display: block;
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      background: #fff;
+    }
+    .subscription-mobile-table tbody td {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border: 0;
+      border-bottom: 1px solid #f1f3f5;
+      padding: 0.65rem 0.85rem;
+      text-align: right;
+    }
+    .subscription-mobile-table tbody td:last-child {
+      border-bottom: 0;
+    }
+    .subscription-mobile-table tbody td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #495057;
+      text-align: left;
+    }
+  }
+</style>
+<div class="container-fluid py-4 px-2 px-md-3">
   <h2 class="fw-bold mb-4">
     <i class="bi bi-truck"></i> Today's Deliveries
   </h2>
+
   <div class="table-responsive">
-    <table class="table table-striped align-middle">
+    <table class="table table-striped align-middle subscription-mobile-table">
       <thead class="table-light">
         <tr>
           <th>Customer</th>
@@ -20,16 +53,16 @@
       <tbody>
         {% for delivery in deliveries %}
         <tr>
-          <td>{{ delivery.customer.name }}</td>
-          <td>{{ delivery.plan.name }}</td>
-          <td>
+          <td data-label="Customer">{{ delivery.customer.name }}</td>
+          <td data-label="Plan">{{ delivery.plan.name }}</td>
+          <td data-label="Items">
             <ul class="list-unstyled mb-0">
               {% for item in delivery.items %}
               <li>{{ item.name }} - {{ item.quantity }}</li>
               {% endfor %}
             </ul>
           </td>
-          <td>
+          <td data-label="Delivery Status">
             {% if delivery.status == 'Delivered' %}
             <span class="badge bg-success">Delivered</span>
             {% else %}
@@ -39,7 +72,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4" class="text-center">No deliveries scheduled for today</td>
+          <td data-label="Info" colspan="4" class="text-center">No deliveries scheduled for today</td>
         </tr>
         {% endfor %}
       </tbody>
