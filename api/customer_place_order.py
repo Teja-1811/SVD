@@ -97,8 +97,11 @@ def customer_current_day_order_api(request):
     )
 
     if not orders.exists():
-        return Response({"message": "No orders found for today",
-                         "customer": customer}, status=404)
+        return Response({
+            "message": "No orders found for today",
+            "customer_id": customer.id,
+            "customer_name": customer.name
+        }, status=404)
 
     orders_data = []
     for order in orders:
