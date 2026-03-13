@@ -20,7 +20,7 @@ def user_dashboard_api(request):
         return Response({"error": "Customer not found"}, status=404)
     
     try:
-        plan = CustomerSubscription.objects.filter(customer=customer).latest('created_at').plan
+        plan = CustomerSubscription.objects.filter(customer=customer).latest('start_date').plan
         plan_name = plan.subscription_plan.name
     except CustomerSubscription.DoesNotExist:
         plan_name = "No active subscription"
