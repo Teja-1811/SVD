@@ -117,6 +117,7 @@ urlpatterns = [
     
     # Place Order API
     path('place-order/', place_order_api, name='place_order_api'),
+    path('current-day-orders/', customer_current_day_order_api, name='customer_current_day_order_api'),
 
     # -------------------------
     # CUSTOMER INVOICE APIS

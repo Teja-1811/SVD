@@ -83,3 +83,53 @@ def place_order_api(request):
             {"success": False, "message": str(e)},
             status=500
         )
+
+
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def customer_current_day_order_api(request):
+    customer = request.user
+    today = timezone.localdate()
+
+    orders = (
+        CustomerOrder.objects.filter(customer=customer, order_date__date=today)
+        .prefetch_related("items__item")
+        .order_by("-order_date")
+    )
+
+    if not orders.exists():
+        return Response({"message": "No orders found for today"}, status=404)
+
+    orders_data = []
+    for order in orders:
+        order_data = {
+            "order_number": order.order_number,
+            "total_amount": float(order.total_amount),
+            "status": order.status,
+            "order_date": timezone.localtime(order.order_date).strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M:%S"),
+            "items": [],
+        }
+
+        for item in order.items.all():
+            order_data["items"].append(
+                {
+                    "item_id": item.item.id,
+                    "item_name": item.item.name,
+                    "requested_quantity": item.requested_quantity,
+                    "requested_price": float(item.requested_price),
+                    "requested_total": float(item.requested_total),
+                }
+            )
+
+        orders_data.append(order_data)
+
+    return Response(
+        {
+            "date": str(today),
+            "orders": orders_data,
+        },
+        status=200,
+    )
+
