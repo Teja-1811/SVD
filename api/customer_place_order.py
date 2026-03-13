@@ -86,8 +86,6 @@ def place_order_api(request):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def customer_current_day_order_api(request):
     customer = request.user
     today = timezone.localdate()
