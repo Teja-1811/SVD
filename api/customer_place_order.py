@@ -45,7 +45,6 @@ def place_order_api(request):
 
                 order = CustomerOrder.objects.create(
                     order_number=order_number,
-                    order_date=timezone.now(),
                     customer=customer,
                     created_by=customer,
                 )
