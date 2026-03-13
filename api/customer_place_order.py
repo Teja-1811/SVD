@@ -108,7 +108,7 @@ def customer_current_day_order_api(request):
     today = timezone.localdate()
 
     orders = (
-        CustomerOrder.objects.filter(customer=customer, status="pending", order_date__date=today)
+        CustomerOrder.objects.filter(customer=customer, status="pending")
         .prefetch_related("items__item")
         .order_by("-order_date")
     )
