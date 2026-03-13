@@ -36,7 +36,7 @@ def place_order_api(request):
             # 🔎 CHECK TODAY ORDER
             order = CustomerOrder.objects.filter(
                 customer=customer,
-                order_date__date=today
+                order_date=today
             ).first()
 
             # 🆕 CREATE ORDER IF NOT EXISTS
@@ -108,7 +108,7 @@ def customer_current_day_order_api(request):
     today = timezone.localdate()
 
     orders = (
-        CustomerOrder.objects.filter(customer=customer, status="pending", order_date__date=today)
+        CustomerOrder.objects.filter(customer=customer, status="pending", order_date=today)
         .prefetch_related("items__item")
         .order_by("-order_date")
     )
