@@ -126,7 +126,7 @@ def customer_current_day_order_api(request):
             "order_number": order.order_number,
             "total_amount": float(order.total_amount),
             "status": order.status,
-            "order_date": timezone.localtime(order.order_date).strftime("%Y-%m-%d %H:%M:%S"),
+            "order_date": order.order_date.strftime("%Y-%m-%d"),
             "created_at": timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M:%S"),
             "items": [],
         }
