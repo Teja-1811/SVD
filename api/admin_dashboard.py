@@ -53,7 +53,7 @@ def dashboard_api(request):
         frozen=False
     ).exclude(
         id__in=CustomerOrder.objects.filter(
-            order_date__date=today
+            order_date=today
         ).values_list("customer_id", flat=True)
     )
 
