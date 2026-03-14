@@ -3,9 +3,38 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<style>
 
-<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+.modal-dialog{
+max-width:600px;
+}
+
+@media (max-width:768px){
+.modal-dialog{
+max-width:95%;
+margin:auto;
+}
+}
+
+.modal-body{
+max-height:70vh;
+overflow-y:auto;
+}
+
+.offer-card{
+transition:0.2s;
+}
+
+.offer-card:hover{
+transform:translateY(-4px);
+}
+
+</style>
+
+
+<div class="container-fluid mt-4">
+
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
 
 <h3 class="mb-2">Offers Dashboard</h3>
 
@@ -16,6 +45,7 @@ data-bs-target="#createOfferModal">
 </button>
 
 </div>
+
 
 
 <!-- SWITCH BUTTONS -->
@@ -38,13 +68,13 @@ Retailer Offers
 
 
 
-<!-- OFFERS CARDS -->
+<!-- OFFER CARDS -->
 
-<div class="row" id="offersContainer">
+<div class="row g-3">
 
 {% for offer in offers %}
 
-<div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4 offer-card"
+<div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 offer-card"
 data-offer="{{ offer.offer_for }}">
 
 <div class="card shadow-sm h-100">
@@ -54,7 +84,7 @@ data-offer="{{ offer.offer_for }}">
 <h5 class="card-title">{{ offer.name }}</h5>
 
 <p class="text-muted small">
-{{ offer.description|default:"No description available" }}
+{{ offer.description|default:"No description" }}
 </p>
 
 <h6 class="text-primary mb-3">
@@ -90,7 +120,6 @@ No Items
 {% endfor %}
 
 </ul>
-
 
 
 <div class="mt-auto d-flex flex-wrap gap-2">
@@ -132,7 +161,7 @@ Delete
 
 <div class="modal fade" id="createOfferModal">
 
-<div class="modal-dialog">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 
 <div class="modal-content">
 
@@ -195,7 +224,7 @@ Create Offer
 
 <div class="modal fade" id="editOfferModal{{ offer.id }}">
 
-<div class="modal-dialog">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 
 <div class="modal-content">
 
@@ -249,7 +278,7 @@ Update
 <div class="modal fade"
 id="addItemModal{{ offer.id }}">
 
-<div class="modal-dialog">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 
 <div class="modal-content">
 
@@ -317,7 +346,7 @@ Add Item
 <div class="modal fade"
 id="editItemModal{{ item.id }}">
 
-<div class="modal-dialog">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 
 <div class="modal-content">
 
@@ -402,7 +431,7 @@ card.style.display = "none";
 document.getElementById("offerForInput").value = type;
 
 
-// switch button style
+// switch button styling
 
 if(type === "user"){
 
@@ -425,7 +454,7 @@ document.getElementById("userBtn").classList.remove("btn-primary");
 }
 
 
-// default page load
+// default view
 
 document.addEventListener("DOMContentLoaded", function(){
 
