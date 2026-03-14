@@ -7,6 +7,7 @@ from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
+from .customer_offers import *
 from .admin_customer import *
 from .admin_items import *
 from .admin_bills import *
@@ -19,6 +20,7 @@ from .admin_companies import *
 from .admin_monthly_sales_summary import *
 from .admin_subscriptions import *
 from .user_dashboard import *
+from .user_offers import *
 
 urlpatterns = [
     # Auth / Login
@@ -127,7 +129,10 @@ urlpatterns = [
     path('customer/invoice/details/', customer_invoice_details_api, name='customer_invoice_details_api'),
     # Customer Payment API
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
+    # Customer Offers
+    path('customer/offers/', customer_offers, name='customer_offers_api'),
     
     # User Api
     path('user_dashboard/', user_dashboard_api, name="user_dashboard_api"),
+    path('user/offers/', user_offers, name='user_offers_api'),
 ]

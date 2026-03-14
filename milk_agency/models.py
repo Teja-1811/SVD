@@ -474,3 +474,29 @@ class SubscriptionPause(models.Model):
     date = models.DateField()
 
     reason = models.CharField(max_length=200, blank=True)
+    
+class Offers(models.Model):
+    
+    CHOICES = [
+        ('retailer', 'Retailer'),
+        ('user', 'User')
+    ]
+    
+    name = models.CharField(max_length=255, unique=True)
+    offer_for = models.CharField(max_length=20, choices=CHOICES)
+    offer_type = models.CharField(max_length=50, help_text="Type of offer (e.g., 'Buy 1 Get 1', '20% Off')")
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, null=True)
+    start_date = models.DateField(default=timezone.localdate)
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+    
+class OfferItems(models.Model):
+    offer = models.ForeignKey(Offers, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    buy_qty = models.IntegerField(default=0)
+    offer_qty = models.IntegerField(default=0)
+    offer_price = models.DecimalField(ax_digits=10, decimal_places=2)

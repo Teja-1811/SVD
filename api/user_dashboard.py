@@ -25,7 +25,6 @@ def user_dashboard_api(request):
     except CustomerSubscription.DoesNotExist:
         plan_name = "No active subscription"
 
-
     data = {
         "customerName": customer.name,
         "plan": plan_name,
