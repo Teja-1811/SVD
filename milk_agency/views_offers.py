@@ -12,7 +12,7 @@ def offers_dashboard(request):
 
     items = Item.objects.all()
 
-    return render(request, "offers_dashboard.html", {
+    return render(request, "milk_agency/dashboards_other/offers_dashboard.html", {
         "user_offers": user_offers,
         "retailer_offers": retailer_offers,
         "items": items
