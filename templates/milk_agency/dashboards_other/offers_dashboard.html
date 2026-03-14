@@ -29,6 +29,10 @@ transition:0.2s;
 transform:translateY(-4px);
 }
 
+.switch-group .btn{
+min-width:140px;
+}
+
 </style>
 
 
@@ -47,41 +51,60 @@ data-bs-target="#createOfferModal">
 </div>
 
 
-<div class="text-center mb-4">
 
-<button class="btn btn-primary me-2"
+<!-- SWITCH BUTTON GROUP -->
+
+<div class="d-flex justify-content-center mb-4">
+
+<div class="btn-group switch-group">
+
+<button
+class="btn btn-primary"
 id="userBtn"
 onclick="switchOffers('user')">
+
 User Offers
+
 </button>
 
-<button class="btn btn-outline-primary"
+<button
+class="btn btn-outline-primary"
 id="retailerBtn"
 onclick="switchOffers('retailer')">
+
 Retailer Offers
+
 </button>
 
 </div>
 
+</div>
+
+
+
+<!-- OFFER CARDS -->
 
 <div class="row g-3">
 
 {% for offer in offers %}
 
-<div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 offer-card"
+<div
+class="col-xl-3 col-lg-4 col-md-6 col-sm-12 offer-card"
 data-offer="{{ offer.offer_for }}">
 
 <div class="card shadow-sm h-100">
 
 <div class="card-body d-flex flex-column">
 
-<h5 class="card-title">{{ offer.name }}</h5>
+<h5 class="card-title">
+{{ offer.name }}
+</h5>
 
 <p class="text-muted small">
 {{ offer.description|default:"No description" }}
 </p>
 
-<h6 class="text-primary mb-3">
+<h6 class="text-primary mb-2">
 ₹{{ offer.price }}
 </h6>
 
@@ -119,23 +142,33 @@ No Items
 
 </ul>
 
+
 <div class="mt-auto d-flex flex-wrap gap-2">
 
-<button class="btn btn-sm btn-success"
+<button
+class="btn btn-sm btn-success"
 data-bs-toggle="modal"
 data-bs-target="#addItemModal{{ offer.id }}">
+
 Add Item
+
 </button>
 
-<button class="btn btn-sm btn-warning"
+<button
+class="btn btn-sm btn-warning"
 data-bs-toggle="modal"
 data-bs-target="#editOfferModal{{ offer.id }}">
+
 Edit
+
 </button>
 
-<a href="{% url 'milk_agency:delete_offer' offer.id %}"
+<a
+href="{% url 'milk_agency:delete_offer' offer.id %}"
 class="btn btn-sm btn-danger">
+
 Delete
+
 </a>
 
 </div>
@@ -173,7 +206,8 @@ Delete
 
 <div class="modal-body">
 
-<input type="text"
+<input
+type="text"
 name="name"
 class="form-control mb-2"
 placeholder="Offer Name"
@@ -184,27 +218,28 @@ name="description"
 class="form-control mb-2"
 placeholder="Description"></textarea>
 
-<input type="number"
+<input
+type="number"
 name="price"
 class="form-control mb-2"
 placeholder="Price"
 required>
 
 <label class="small text-muted">Start Date</label>
-<input type="date"
+<input
+type="date"
 name="start_date"
 class="form-control mb-2"
 required>
 
 <label class="small text-muted">End Date</label>
-<input type="date"
+<input
+type="date"
 name="end_date"
 class="form-control mb-2"
 required>
 
-<input type="hidden"
-name="offer_for"
-id="offerForInput">
+<input type="hidden" name="offer_for" id="offerForInput">
 
 </div>
 
@@ -223,6 +258,148 @@ Create Offer
 </div>
 
 </div>
+
+
+
+<!-- EDIT OFFER MODALS -->
+
+{% for offer in offers %}
+
+<div class="modal fade" id="editOfferModal{{ offer.id }}">
+
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+
+<div class="modal-content">
+
+<form method="post"
+action="{% url 'milk_agency:update_offer' offer.id %}">
+
+{% csrf_token %}
+
+<div class="modal-header">
+<h5>Edit Offer</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<input
+type="text"
+name="name"
+class="form-control mb-2"
+value="{{ offer.name }}">
+
+<textarea
+name="description"
+class="form-control mb-2">{{ offer.description }}</textarea>
+
+<input
+type="number"
+name="price"
+class="form-control mb-2"
+value="{{ offer.price }}">
+
+<label class="small">Start Date</label>
+<input
+type="date"
+name="start_date"
+class="form-control mb-2"
+value="{{ offer.start_date|date:'Y-m-d' }}">
+
+<label class="small">End Date</label>
+<input
+type="date"
+name="end_date"
+class="form-control"
+value="{{ offer.end_date|date:'Y-m-d' }}">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-primary">
+Update Offer
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+
+
+<!-- ADD ITEM MODALS -->
+
+{% for offer in offers %}
+
+<div class="modal fade" id="addItemModal{{ offer.id }}">
+
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+
+<div class="modal-content">
+
+<form method="post"
+action="{% url 'milk_agency:add_offer_item' offer.id %}">
+
+{% csrf_token %}
+
+<div class="modal-header">
+<h5>Add Offer Item</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<select name="item" class="form-control mb-2">
+{% for i in items %}
+<option value="{{ i.id }}">{{ i.name }}</option>
+{% endfor %}
+</select>
+
+<input
+type="number"
+name="buy_qty"
+class="form-control mb-2"
+placeholder="Buy Quantity">
+
+<input
+type="number"
+name="offer_qty"
+class="form-control mb-2"
+placeholder="Offer Quantity">
+
+<input
+type="number"
+name="offer_price"
+class="form-control"
+placeholder="Offer Price">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-success">
+Add Item
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
 
 
 
@@ -247,6 +424,28 @@ card.style.display = "none";
 });
 
 document.getElementById("offerForInput").value = type;
+
+
+// active button styling
+
+if(type === "user"){
+
+document.getElementById("userBtn").classList.add("btn-primary");
+document.getElementById("userBtn").classList.remove("btn-outline-primary");
+
+document.getElementById("retailerBtn").classList.add("btn-outline-primary");
+document.getElementById("retailerBtn").classList.remove("btn-primary");
+
+}
+else{
+
+document.getElementById("retailerBtn").classList.add("btn-primary");
+document.getElementById("retailerBtn").classList.remove("btn-outline-primary");
+
+document.getElementById("userBtn").classList.add("btn-outline-primary");
+document.getElementById("userBtn").classList.remove("btn-primary");
+
+}
 
 }
 
