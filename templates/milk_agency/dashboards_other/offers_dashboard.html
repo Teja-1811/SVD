@@ -1,340 +1,443 @@
-{% extends "milk_agency/home/base.html" %} 
-{% block title %}Offers Dashboard{% endblock %} 
+{% extends "milk_agency/home/base.html" %}
+{% block title %}Offers Dashboard{% endblock %}
 {% block content %}
 
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Offers Dashboard</h3>
 
-    <button
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#createOfferModal"
-    >
-      <i class="bi bi-plus-circle"></i> Create Offer
-    </button>
-  </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h3>Offers Dashboard</h3>
 
-  <!-- SWITCH BUTTONS -->
-
-  <div class="text-center mb-4">
-    <button
-      class="btn btn-primary me-2"
-      id="userBtn"
-      onclick="switchOffers('user')"
-    >
-      User Offers
-    </button>
-
-    <button
-      class="btn btn-outline-primary"
-      id="retailerBtn"
-      onclick="switchOffers('retailer')"
-    >
-      Retailer Offers
-    </button>
-  </div>
-
-  <table class="table table-bordered table-striped">
-    <thead class="table-dark">
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Price</th>
-        <th>Items</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {% for offer in offers %}
-
-      <tr data-offer="{{ offer.offer_for }}">
-        <td>{{ offer.id }}</td>
-        <td>{{ offer.name }}</td>
-        <td>{{ offer.description }}</td>
-        <td>₹{{ offer.price }}</td>
-
-        <td>
-          <ul class="list-group">
-            {% for item in offer.offeritems_set.all %}
-
-            <li class="list-group-item d-flex justify-content-between">
-              <span>
-                {{ item.item.name }} (Buy {{ item.buy_qty }} Get {{
-                item.offer_qty }})
-              </span>
-
-              <div>
-                <button
-                  class="btn btn-sm btn-warning"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editItemModal{{ item.id }}"
-                >
-                  Edit
-                </button>
-
-                <a
-                  href="{% url 'delete_offer_item' item.id %}"
-                  class="btn btn-sm btn-danger"
-                >
-                  Delete
-                </a>
-              </div>
-            </li>
-
-            {% empty %}
-
-            <li class="list-group-item text-muted">No Items</li>
-
-            {% endfor %}
-          </ul>
-
-          <button
-            class="btn btn-success btn-sm mt-2"
-            data-bs-toggle="modal"
-            data-bs-target="#addItemModal{{ offer.id }}"
-          >
-            Add Item
-          </button>
-        </td>
-
-        <td>
-          <button
-            class="btn btn-warning btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#editOfferModal{{ offer.id }}"
-          >
-            Edit
-          </button>
-
-          <a
-            href="{% url 'delete_offer' offer.id %}"
-            class="btn btn-danger btn-sm"
-          >
-            Delete
-          </a>
-        </td>
-      </tr>
-
-      {% endfor %}
-    </tbody>
-  </table>
+<button class="btn btn-primary"
+data-bs-toggle="modal"
+data-bs-target="#createOfferModal">
+<i class="bi bi-plus-circle"></i> Create Offer
+</button>
 </div>
+
+
+<!-- SWITCH BUTTONS -->
+
+<div class="text-center mb-4">
+
+<button class="btn btn-primary me-2"
+id="userBtn"
+onclick="switchOffers('user')">
+User Offers
+</button>
+
+<button class="btn btn-outline-primary"
+id="retailerBtn"
+onclick="switchOffers('retailer')">
+Retailer Offers
+</button>
+
+</div>
+
+
+<table class="table table-bordered table-striped">
+
+<thead class="table-dark">
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Description</th>
+<th>Price</th>
+<th>Items</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for offer in offers %}
+
+<tr data-offer="{{ offer.offer_for }}">
+
+<td>{{ offer.id }}</td>
+<td>{{ offer.name }}</td>
+<td>{{ offer.description }}</td>
+<td>₹{{ offer.price }}</td>
+
+<td>
+
+<ul class="list-group">
+
+{% for item in offer.offeritems_set.all %}
+
+<li class="list-group-item d-flex justify-content-between">
+
+<span>
+{{ item.item.name }} (Buy {{ item.buy_qty }} Get {{ item.offer_qty }})
+</span>
+
+<div>
+
+<button class="btn btn-sm btn-warning"
+data-bs-toggle="modal"
+data-bs-target="#editItemModal{{ item.id }}">
+Edit
+</button>
+
+<a href="{% url 'milk_agency:delete_offer_item' item.id %}"
+class="btn btn-sm btn-danger">
+Delete
+</a>
+
+</div>
+
+</li>
+
+{% empty %}
+
+<li class="list-group-item text-muted">No Items</li>
+
+{% endfor %}
+
+</ul>
+
+
+<button class="btn btn-success btn-sm mt-2"
+data-bs-toggle="modal"
+data-bs-target="#addItemModal{{ offer.id }}">
+Add Item
+</button>
+
+</td>
+
+
+<td>
+
+<button class="btn btn-warning btn-sm"
+data-bs-toggle="modal"
+data-bs-target="#editOfferModal{{ offer.id }}">
+Edit
+</button>
+
+<a href="{% url 'milk_agency:delete_offer' offer.id %}"
+class="btn btn-danger btn-sm">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
 
 <!-- CREATE OFFER MODAL -->
 
 <div class="modal fade" id="createOfferModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'create_offer' %}">
-        {% csrf_token %}
 
-        <div class="modal-header">
-          <h5>Create Offer</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+<div class="modal-dialog">
 
-        <div class="modal-body">
-          <input
-            type="text"
-            name="name"
-            class="form-control mb-2"
-            placeholder="Offer Name"
-            required
-          />
+<div class="modal-content">
 
-          <textarea
-            name="description"
-            class="form-control mb-2"
-            placeholder="Description"
-          ></textarea>
+<form method="post" action="{% url 'milk_agency:create_offer' %}">
 
-          <input
-            type="number"
-            name="price"
-            class="form-control mb-2"
-            placeholder="Price"
-            required
-          />
+{% csrf_token %}
 
-          <input type="hidden" name="offer_for" id="offerForInput" />
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-success">Create Offer</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="modal-header">
+<h5>Create Offer</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
 </div>
+
+<div class="modal-body">
+
+<input type="text"
+name="name"
+class="form-control mb-2"
+placeholder="Offer Name"
+required>
+
+<textarea
+name="description"
+class="form-control mb-2"
+placeholder="Description"></textarea>
+
+<input
+type="number"
+name="price"
+class="form-control mb-2"
+placeholder="Price"
+required>
+
+<input type="hidden"
+name="offer_for"
+id="offerForInput">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-success">
+Create Offer
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+
 
 {% for offer in offers %}
 
 <!-- EDIT OFFER MODAL -->
 
 <div class="modal fade" id="editOfferModal{{ offer.id }}">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'update_offer' offer.id %}">
-        {% csrf_token %}
 
-        <div class="modal-header">
-          <h5>Edit Offer</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+<div class="modal-dialog">
 
-        <div class="modal-body">
-          <input
-            type="text"
-            name="name"
-            class="form-control mb-2"
-            value="{{ offer.name }}"
-          />
+<div class="modal-content">
 
-          <textarea name="description" class="form-control mb-2">
-{{ offer.description }}</textarea
-          >
+<form method="post"
+action="{% url 'milk_agency:update_offer' offer.id %}">
 
-          <input
-            type="number"
-            name="price"
-            class="form-control"
-            value="{{ offer.price }}"
-          />
-        </div>
+{% csrf_token %}
 
-        <div class="modal-footer">
-          <button class="btn btn-primary">Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="modal-header">
+<h5>Edit Offer</h5>
+<button class="btn-close"
+data-bs-dismiss="modal"></button>
 </div>
+
+<div class="modal-body">
+
+<input type="text"
+name="name"
+class="form-control mb-2"
+value="{{ offer.name }}">
+
+<textarea name="description"
+class="form-control mb-2">{{ offer.description }}</textarea>
+
+<input type="number"
+name="price"
+class="form-control"
+value="{{ offer.price }}">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-primary">
+Update
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+
 
 <!-- ADD ITEM MODAL -->
 
-<div class="modal fade" id="addItemModal{{ offer.id }}">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'add_offer_item' offer.id %}">
-        {% csrf_token %}
+<div class="modal fade"
+id="addItemModal{{ offer.id }}">
 
-        <div class="modal-header">
-          <h5>Add Offer Item</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+<div class="modal-dialog">
 
-        <div class="modal-body">
-          <select name="item" class="form-control mb-2">
-            {% for i in items %}
-            <option value="{{ i.id }}">{{ i.name }}</option>
-            {% endfor %}
-          </select>
+<div class="modal-content">
 
-          <input
-            type="number"
-            name="buy_qty"
-            class="form-control mb-2"
-            placeholder="Buy Quantity"
-          />
+<form method="post"
+action="{% url 'milk_agency:add_offer_item' offer.id %}">
 
-          <input
-            type="number"
-            name="offer_qty"
-            class="form-control mb-2"
-            placeholder="Offer Quantity"
-          />
+{% csrf_token %}
 
-          <input
-            type="number"
-            name="offer_price"
-            class="form-control"
-            placeholder="Offer Price"
-          />
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-success">Add Item</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="modal-header">
+<h5>Add Offer Item</h5>
+<button class="btn-close"
+data-bs-dismiss="modal"></button>
 </div>
+
+<div class="modal-body">
+
+<select name="item"
+class="form-control mb-2">
+
+{% for i in items %}
+<option value="{{ i.id }}">{{ i.name }}</option>
+{% endfor %}
+
+</select>
+
+<input type="number"
+name="buy_qty"
+class="form-control mb-2"
+placeholder="Buy Quantity">
+
+<input type="number"
+name="offer_qty"
+class="form-control mb-2"
+placeholder="Offer Quantity">
+
+<input type="number"
+name="offer_price"
+class="form-control"
+placeholder="Offer Price">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-success">
+Add Item
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+
 
 {% for item in offer.offeritems_set.all %}
 
 <!-- EDIT ITEM MODAL -->
 
-<div class="modal fade" id="editItemModal{{ item.id }}">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'update_offer_item' item.id %}">
-        {% csrf_token %}
+<div class="modal fade"
+id="editItemModal{{ item.id }}">
 
-        <div class="modal-header">
-          <h5>Edit Offer Item</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+<div class="modal-dialog">
 
-        <div class="modal-body">
-          <input
-            type="number"
-            name="buy_qty"
-            class="form-control mb-2"
-            value="{{ item.buy_qty }}"
-          />
+<div class="modal-content">
 
-          <input
-            type="number"
-            name="offer_qty"
-            class="form-control mb-2"
-            value="{{ item.offer_qty }}"
-          />
+<form method="post"
+action="{% url 'milk_agency:update_offer_item' item.id %}">
 
-          <input
-            type="number"
-            name="offer_price"
-            class="form-control"
-            value="{{ item.offer_price }}"
-          />
-        </div>
+{% csrf_token %}
 
-        <div class="modal-footer">
-          <button class="btn btn-primary">Update Item</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="modal-header">
+<h5>Edit Offer Item</h5>
+<button class="btn-close"
+data-bs-dismiss="modal"></button>
 </div>
 
-{% endfor %} {% endfor %}
+<div class="modal-body">
+
+<input type="number"
+name="buy_qty"
+class="form-control mb-2"
+value="{{ item.buy_qty }}">
+
+<input type="number"
+name="offer_qty"
+class="form-control mb-2"
+value="{{ item.offer_qty }}">
+
+<input type="number"
+name="offer_price"
+class="form-control"
+value="{{ item.offer_price }}">
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-primary">
+Update Item
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% endfor %}
+
+
 
 <script>
-  let currentOfferType = "user";
 
-  function switchOffers(type) {
-    currentOfferType = type;
+let currentOfferType = "user";
 
-    let rows = document.querySelectorAll("tbody tr");
 
-    rows.forEach((row) => {
-      if (row.dataset.offer === type) {
-        row.style.display = "";
-      } else {
-        row.style.display = "none";
-      }
-    });
+function switchOffers(type){
 
-    document.getElementById("offerForInput").value = type;
-  }
+currentOfferType = type;
 
-  // default page load
+let rows = document.querySelectorAll("tbody tr");
 
-  document.addEventListener("DOMContentLoaded", function () {
-    switchOffers("user");
-  });
+rows.forEach(row => {
+
+if(row.dataset.offer === type){
+
+row.style.display = "";
+
+}else{
+
+row.style.display = "none";
+
+}
+
+});
+
+
+document.getElementById("offerForInput").value = type;
+
+
+// toggle button styles
+
+if(type === "user"){
+
+document.getElementById("userBtn").classList.add("btn-primary");
+document.getElementById("userBtn").classList.remove("btn-outline-primary");
+
+document.getElementById("retailerBtn").classList.add("btn-outline-primary");
+document.getElementById("retailerBtn").classList.remove("btn-primary");
+
+}else{
+
+document.getElementById("retailerBtn").classList.add("btn-primary");
+document.getElementById("retailerBtn").classList.remove("btn-outline-primary");
+
+document.getElementById("userBtn").classList.add("btn-outline-primary");
+document.getElementById("userBtn").classList.remove("btn-primary");
+
+}
+
+}
+
+
+// default page load
+
+document.addEventListener("DOMContentLoaded", function(){
+
+switchOffers("user");
+
+});
+
 </script>
+
 
 {% endblock %}
