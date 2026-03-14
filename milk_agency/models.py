@@ -499,4 +499,4 @@ class OfferItems(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     buy_qty = models.IntegerField(default=0)
     offer_qty = models.IntegerField(default=0)
-    offer_price = models.DecimalField(ax_digits=10, decimal_places=2)
+    offer_price = models.DecimalField(max_digits=10, decimal_places=2)
