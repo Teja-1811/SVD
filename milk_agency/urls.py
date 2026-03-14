@@ -125,11 +125,13 @@ urlpatterns = [
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),
     
-    #Offers URLs
+   # Offers
     path("offers/", views_offers.offers_dashboard, name="offers_dashboard"),
-    path("offers/create_offer/", views_offers.create_offer, name="create_offer"),
+    path("offers/create/", views_offers.create_offer, name="create_offer"),
     path("offers/update/<int:offer_id>/", views_offers.update_offer, name="update_offer"),
     path("offers/delete/<int:offer_id>/", views_offers.delete_offer, name="delete_offer"),
+
+    # Offer Items
     path("offers/item/add/<int:offer_id>/", views_offers.add_offer_item, name="add_offer_item"),
     path("offers/item/update/<int:item_id>/", views_offers.update_offer_item, name="update_offer_item"),
     path("offers/item/delete/<int:item_id>/", views_offers.delete_offer_item, name="delete_offer_item"),
