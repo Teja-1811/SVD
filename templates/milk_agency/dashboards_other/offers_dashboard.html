@@ -14,6 +14,26 @@ block content %}
     </button>
   </div>
 
+  <!-- SWITCH BUTTONS -->
+
+  <div class="mb-3 text-center">
+    <button
+      class="btn btn-primary me-2"
+      id="userBtn"
+      onclick="switchOffers('user')"
+    >
+      User Offers
+    </button>
+
+    <button
+      class="btn btn-outline-primary"
+      id="retailerBtn"
+      onclick="switchOffers('retailer')"
+    >
+      Retailer Offers
+    </button>
+  </div>
+
   <table class="table table-bordered table-striped">
     <thead class="table-dark">
       <tr>
@@ -29,7 +49,7 @@ block content %}
     <tbody>
       {% for offer in offers %}
 
-      <tr>
+      <tr data-offer="{{ offer.offer_for }}">
         <td>{{ offer.id }}</td>
         <td>{{ offer.name }}</td>
         <td>{{ offer.description }}</td>
@@ -121,6 +141,7 @@ block content %}
             name="name"
             class="form-control mb-2"
             placeholder="Offer Name"
+            required
           />
 
           <textarea
@@ -132,9 +153,14 @@ block content %}
           <input
             type="number"
             name="price"
-            class="form-control"
+            class="form-control mb-2"
             placeholder="Price"
+            required
           />
+
+          <!-- hidden field for offer_for -->
+
+          <input type="hidden" name="offer_for" id="offerForInput" />
         </div>
 
         <div class="modal-footer">
@@ -169,8 +195,7 @@ block content %}
           />
 
           <textarea name="description" class="form-control mb-2">
-{{ offer.description }}
-</textarea
+{{ offer.description }}</textarea
           >
 
           <input
@@ -205,9 +230,7 @@ block content %}
         <div class="modal-body">
           <select name="item" class="form-control mb-2">
             {% for i in items %}
-
             <option value="{{ i.id }}">{{ i.name }}</option>
-
             {% endfor %}
           </select>
 
@@ -287,4 +310,31 @@ block content %}
   </div>
 </div>
 
-{% endfor %} {% endfor %} {% endblock %}
+{% endfor %} {% endfor %}
+
+<script>
+  let currentOfferType = "user";
+
+  function switchOffers(type) {
+    currentOfferType = type;
+
+    let rows = document.querySelectorAll("tbody tr");
+
+    rows.forEach((row) => {
+      if (row.dataset.offer === type) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+
+    document.getElementById("offerForInput").value = type;
+  }
+
+  // default load
+  document.addEventListener("DOMContentLoaded", function () {
+    switchOffers("user");
+  });
+</script>
+
+{% endblock %}

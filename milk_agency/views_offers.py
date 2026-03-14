@@ -1,16 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Offers, OfferItems
+from .models import Offers, OfferItems, Item
 
 
 @login_required
 def offers_dashboard(request):
 
-    offers = Offers.objects.filter(agency=request.user.agency)
+    user_offers = Offers.objects.filter(offer_for="user").order_by("-id")
+    retailer_offers = Offers.objects.filter(offer_for="retailer").order_by("-id")
+
+    items = Item.objects.all()
 
     return render(request, "offers_dashboard.html", {
-        "offers": offers
+        "user_offers": user_offers,
+        "retailer_offers": retailer_offers,
+        "items": items
     })
 
 
