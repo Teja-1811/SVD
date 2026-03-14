@@ -31,7 +31,7 @@ transform:translateY(-4px);
 
 </style>
 
-<br>
+
 <div class="container-fluid mt-4">
 
 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
@@ -46,9 +46,6 @@ data-bs-target="#createOfferModal">
 
 </div>
 
-
-
-<!-- SWITCH BUTTONS -->
 
 <div class="text-center mb-4">
 
@@ -66,9 +63,6 @@ Retailer Offers
 
 </div>
 
-
-
-<!-- OFFER CARDS -->
 
 <div class="row g-3">
 
@@ -90,6 +84,10 @@ data-offer="{{ offer.offer_for }}">
 <h6 class="text-primary mb-3">
 ₹{{ offer.price }}
 </h6>
+
+<p class="small text-muted">
+{{ offer.start_date }} → {{ offer.end_date }}
+</p>
 
 <hr>
 
@@ -120,7 +118,6 @@ No Items
 {% endfor %}
 
 </ul>
-
 
 <div class="mt-auto d-flex flex-wrap gap-2">
 
@@ -187,11 +184,22 @@ name="description"
 class="form-control mb-2"
 placeholder="Description"></textarea>
 
-<input
-type="number"
+<input type="number"
 name="price"
 class="form-control mb-2"
 placeholder="Price"
+required>
+
+<label class="small text-muted">Start Date</label>
+<input type="date"
+name="start_date"
+class="form-control mb-2"
+required>
+
+<label class="small text-muted">End Date</label>
+<input type="date"
+name="end_date"
+class="form-control mb-2"
 required>
 
 <input type="hidden"
@@ -218,194 +226,9 @@ Create Offer
 
 
 
-{% for offer in offers %}
-
-<!-- EDIT OFFER MODAL -->
-
-<div class="modal fade" id="editOfferModal{{ offer.id }}">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'milk_agency:update_offer' offer.id %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Edit Offer</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-
-<div class="modal-body">
-
-<input type="text"
-name="name"
-class="form-control mb-2"
-value="{{ offer.name }}">
-
-<textarea name="description"
-class="form-control mb-2">{{ offer.description }}</textarea>
-
-<input type="number"
-name="price"
-class="form-control"
-value="{{ offer.price }}">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-primary">
-Update
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- ADD ITEM MODAL -->
-
-<div class="modal fade"
-id="addItemModal{{ offer.id }}">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'milk_agency:add_offer_item' offer.id %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Add Offer Item</h5>
-<button class="btn-close"
-data-bs-dismiss="modal"></button>
-</div>
-
-<div class="modal-body">
-
-<select name="item"
-class="form-control mb-2">
-
-{% for i in items %}
-<option value="{{ i.id }}">{{ i.name }}</option>
-{% endfor %}
-
-</select>
-
-<input type="number"
-name="buy_qty"
-class="form-control mb-2"
-placeholder="Buy Quantity">
-
-<input type="number"
-name="offer_qty"
-class="form-control mb-2"
-placeholder="Offer Quantity">
-
-<input type="number"
-name="offer_price"
-class="form-control"
-placeholder="Offer Price">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-success">
-Add Item
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-{% for item in offer.offeritems_set.all %}
-
-<!-- EDIT ITEM MODAL -->
-
-<div class="modal fade"
-id="editItemModal{{ item.id }}">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'milk_agency:update_offer_item' item.id %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Edit Offer Item</h5>
-<button class="btn-close"
-data-bs-dismiss="modal"></button>
-</div>
-
-<div class="modal-body">
-
-<input type="number"
-name="buy_qty"
-class="form-control mb-2"
-value="{{ item.buy_qty }}">
-
-<input type="number"
-name="offer_qty"
-class="form-control mb-2"
-value="{{ item.offer_qty }}">
-
-<input type="number"
-name="offer_price"
-class="form-control"
-value="{{ item.offer_price }}">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-primary">
-Update Item
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-{% endfor %}
-
-
-
 <script>
 
 let currentOfferType = "user";
-
 
 function switchOffers(type){
 
@@ -416,50 +239,19 @@ let cards = document.querySelectorAll(".offer-card");
 cards.forEach(card => {
 
 if(card.dataset.offer === type){
-
 card.style.display = "block";
-
 }else{
-
 card.style.display = "none";
-
 }
 
 });
 
-
 document.getElementById("offerForInput").value = type;
 
-
-// switch button styling
-
-if(type === "user"){
-
-document.getElementById("userBtn").classList.add("btn-primary");
-document.getElementById("userBtn").classList.remove("btn-outline-primary");
-
-document.getElementById("retailerBtn").classList.add("btn-outline-primary");
-document.getElementById("retailerBtn").classList.remove("btn-primary");
-
-}else{
-
-document.getElementById("retailerBtn").classList.add("btn-primary");
-document.getElementById("retailerBtn").classList.remove("btn-outline-primary");
-
-document.getElementById("userBtn").classList.add("btn-outline-primary");
-document.getElementById("userBtn").classList.remove("btn-primary");
-
 }
-
-}
-
-
-// default view
 
 document.addEventListener("DOMContentLoaded", function(){
-
 switchOffers("user");
-
 });
 
 </script>

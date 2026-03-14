@@ -30,16 +30,20 @@ def create_offer(request):
         description = request.POST.get("description")
         price = request.POST.get("price")
         offer_for = request.POST.get("offer_for")
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
 
-        if not name or not price:
-            messages.error(request, "Offer name and price required")
+        if not name or not price or not start_date or not end_date:
+            messages.error(request, "All fields are required")
             return redirect("milk_agency:offers_dashboard")
 
         Offers.objects.create(
             name=name,
             description=description,
             price=price,
-            offer_for=offer_for
+            offer_for=offer_for,
+            start_date=start_date,
+            end_date=end_date
         )
 
         messages.success(request, "Offer created successfully")
@@ -58,6 +62,8 @@ def update_offer(request, offer_id):
         offer.name = request.POST.get("name")
         offer.description = request.POST.get("description")
         offer.price = request.POST.get("price")
+        offer.start_date = request.POST.get("start_date")
+        offer.end_date = request.POST.get("end_date")
 
         offer.save()
 
