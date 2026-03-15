@@ -133,6 +133,8 @@ urlpatterns = [
     path('customer/offers/', customer_offers, name='customer_offers_api'),
     
     # User Api
+    path('user/dashboard/full/', user_dashboard_api, name="user_full_dashboard_api"),
+    path('user/offers/active/', user_offers, name='user_active_offers_api'),
     path('user_dashboard/', user_dashboard_api, name="user_dashboard_api"),
     path('user/offers/', user_offers, name='user_offers_api'),
 ]
