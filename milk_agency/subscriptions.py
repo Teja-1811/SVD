@@ -17,18 +17,9 @@ from .models import (
 
 def recalculate_plan_price(plan):
     """
-    Recompute the total subscription plan price from its items.
-    Formula: sum(item.price * quantity) for the plan * duration_in_days.
+    Wrapper to keep existing callers using the model-level calculation.
     """
-    total_daily = Decimal("0")
-    for plan_item in plan.items.all():
-        item_price = plan_item.price or Decimal("0")
-        quantity = plan_item.quantity or 0
-        total_daily += item_price * Decimal(quantity)
-
-    duration = plan.duration_in_days or 0
-    plan.price = total_daily * Decimal(duration)
-    plan.save(update_fields=["price"])
+    plan.recalculate_price()
 
 
 # -------------------------------------------------------
@@ -148,6 +139,7 @@ def add_plan_item(request, plan_id):
 
         item_id = request.POST.get("item")
         quantity = request.POST.get("quantity")
+        per = request.POST.get("per") or "day"
         price = request.POST.get("price") or 0
 
         SubscriptionItem.objects.update_or_create(
@@ -155,6 +147,7 @@ def add_plan_item(request, plan_id):
             item_id=item_id,
             defaults={
                 "quantity": quantity,
+                "per": per,
                 "price": price,
             }
         )
@@ -177,12 +170,15 @@ def update_plan_item(request, item_id):
 
         quantity = request.POST.get("quantity")
         price = request.POST.get("price")
+        per = request.POST.get("per")
 
         if quantity is not None and quantity != "":
             plan_item.quantity = quantity
 
         if price is not None and price != "":
             plan_item.price = price
+        if per:
+            plan_item.per = per
 
         plan_item.save()
         recalculate_plan_price(plan_item.subscription_plan)

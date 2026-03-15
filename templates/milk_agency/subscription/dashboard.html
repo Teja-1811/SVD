@@ -106,7 +106,10 @@
           <p><strong>Price:</strong> &#8377;{{ plan.price }}</p>
           <p><strong>Duration:</strong> {{ plan.duration_in_days }} days</p>
 
-          <p class="text-muted">{{ plan.description }}</p>
+          <p class="text-muted mb-1">{{ plan.description }}</p>
+          <div class="small text-secondary">
+            Pricing rule: day = price×qty×plan days, week = price×qty×4, month = price×qty×1.
+          </div>
 
           <div class="table-responsive">
             <table class="table table-sm table-bordered subscription-mobile-table">
@@ -115,6 +118,7 @@
                   <th>Item</th>
                   <th>Qty</th>
                   <th>Price</th>
+                  <th>Per</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -125,6 +129,7 @@
                 <tr>
                   <td data-label="Item">{{ item.item.name }}</td>
                   <td data-label="Qty">{{ item.quantity }}</td>
+                  <td data-label="Per">{{ item.get_per_display }}</td>
                   <td data-label="Price">&#8377;{{ item.price }}</td>
 
                   <td data-label="Actions">
@@ -190,6 +195,16 @@
                             min="0"
                             required
                           />
+
+                          <label class="form-label mt-3">Per</label>
+                          <select name="per" class="form-select">
+                            <option value="day" {% if item.per == "day" %}selected{% endif %}>Per Day</option>
+                            <option value="week" {% if item.per == "week" %}selected{% endif %}>Per Week</option>
+                            <option value="month" {% if item.per == "month" %}selected{% endif %}>Per Month</option>
+                          </select>
+                          <div class="form-text">
+                            Day multiplies by plan days; week by 4; month by 1.
+                          </div>
                         </div>
 
                         <div class="modal-footer">
@@ -316,6 +331,16 @@
                 min="0"
                 required
               />
+
+              <label class="form-label mt-3">Per</label>
+              <select name="per" class="form-select">
+                <option value="day" selected>Per Day</option>
+                <option value="week">Per Week</option>
+                <option value="month">Per Month</option>
+              </select>
+              <div class="form-text">
+                Day multiplies by plan days; week by 4; month by 1.
+              </div>
             </div>
 
             <div class="modal-footer">

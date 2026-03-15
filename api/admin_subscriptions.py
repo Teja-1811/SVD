@@ -38,6 +38,7 @@ def _serialize_plan(plan):
                 "item_name": i.item.name if i.item else None,
                 "quantity": i.quantity,
                 "price": str(i.price),
+                "per": i.per,
             }
             for i in plan.items.select_related("item").all()
         ],
@@ -59,17 +60,27 @@ def _serialize_subscription(sub):
 
 def _recalculate_plan_price(plan: SubscriptionPlan):
     """
-    Recompute total price for the plan:
-    sum(item.price * quantity) * duration_in_days
+    Recompute total price for the plan following:
+    day -> price * qty * plan.days
+    week -> price * qty * 4
+    month -> price * qty * 1
     """
-    total_daily = Decimal("0")
+    total = Decimal("0")
     for plan_item in plan.items.all():
-        item_price = plan_item.price or Decimal("0")
+        price = plan_item.price or Decimal("0")
         qty = plan_item.quantity or 0
-        total_daily += item_price * Decimal(qty)
+        per = plan_item.per or "day"
 
-    duration = plan.duration_in_days or 0
-    plan.price = total_daily * Decimal(duration)
+        if per == "day":
+            multiplier = Decimal(plan.duration_in_days or 0)
+        elif per == "week":
+            multiplier = Decimal("4")
+        else:
+            multiplier = Decimal("1")
+
+        total += price * Decimal(qty) * multiplier
+
+    plan.price = total
     plan.save(update_fields=["price"])
 
 
@@ -200,14 +211,15 @@ def api_add_plan_item(request, plan_id):
     item_id = request.data.get("item")
     quantity = request.data.get("quantity")
     price = request.data.get("price")
+    per = request.data.get("per", "day")
 
     if not item_id or not quantity or price is None:
-        return Response({"success": False, "message": "item, quantity and price are required"}, status=400)
+        return Response({"success": False, "message": "item, quantity, price and per are required"}, status=400)
 
     plan_item, _ = SubscriptionItem.objects.update_or_create(
         subscription_plan=plan,
         item_id=item_id,
-        defaults={"quantity": quantity, "price": price},
+        defaults={"quantity": quantity, "price": price, "per": per},
     )
     _recalculate_plan_price(plan)
 
@@ -225,13 +237,16 @@ def api_update_plan_item(request, item_id):
     plan_item = get_object_or_404(SubscriptionItem, id=item_id)
     quantity = request.data.get("quantity")
     price = request.data.get("price")
-    if quantity is None and price is None:
-        return Response({"success": False, "message": "quantity or price is required"}, status=400)
+    per = request.data.get("per")
+    if quantity is None and price is None and per is None:
+        return Response({"success": False, "message": "quantity, price or per is required"}, status=400)
 
     if quantity is not None:
         plan_item.quantity = quantity
     if price is not None:
         plan_item.price = price
+    if per is not None:
+        plan_item.per = per
     plan_item.save()
     _recalculate_plan_price(plan_item.subscription_plan)
 

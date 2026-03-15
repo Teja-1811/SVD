@@ -383,16 +383,27 @@ class SubscriptionPlan(models.Model):
 
     def recalculate_price(self):
         """
-        Compute total price = sum(item.price * quantity) * duration_in_days.
+        Compute total price using per-period multiplier:
+        - per day: price * qty * duration_in_days
+        - per week: price * qty * 4
+        - per month: price * qty * 1
         """
-        total_daily = Decimal("0")
+        total = Decimal("0")
         for plan_item in self.items.all():
             item_price = plan_item.price or Decimal("0")
             qty = plan_item.quantity or 0
-            total_daily += item_price * Decimal(qty)
+            per = plan_item.per or "day"
 
-        duration = self.duration_in_days or 0
-        self.price = total_daily * Decimal(duration)
+            if per == "day":
+                multiplier = Decimal(self.duration_in_days or 0)
+            elif per == "week":
+                multiplier = Decimal("4")
+            else:  # month
+                multiplier = Decimal("1")
+
+            total += item_price * Decimal(qty) * multiplier
+
+        self.price = total
         self.save(update_fields=["price"])
 
 
@@ -400,6 +411,12 @@ class SubscriptionPlan(models.Model):
 # ITEMS INCLUDED IN A SUBSCRIPTION PLAN
 # -------------------------------------------------------
 class SubscriptionItem(models.Model):
+    PER_CHOICES = [
+        ("day", "Per Day"),
+        ("week", "Per Week"),
+        ("month", "Per Month"),
+    ]
+
     subscription_plan = models.ForeignKey(
         SubscriptionPlan,
         on_delete=models.CASCADE,
@@ -407,6 +424,7 @@ class SubscriptionItem(models.Model):
     )
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price of this item within the subscription")
+    per = models.CharField(max_length=10, choices=PER_CHOICES, default="day", help_text="Billing period for this item price")
     quantity = models.PositiveIntegerField()  # safer than IntegerField
 
     def __str__(self):
