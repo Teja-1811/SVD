@@ -206,14 +206,31 @@ def user_profile_update(request):
 @api_view(["GET"])
 def plans_available_api(request):
     plans = SubscriptionPlan.objects.filter(is_active=True)
+
+    items = SubscriptionItem.objects.filter(
+        subscription_plan__in=plans
+    ).select_related("item", "subscription_plan")
+
+    items_by_plan = {}
+
+    for item in items:
+        items_by_plan.setdefault(item.subscription_plan_id, []).append({
+            "item_id": item.item.id,
+            "item_name": item.item.name,
+            "quantity": item.quantity,
+        })
+
     data = []
+
     for plan in plans:
         data.append({
             "id": plan.id,
             "name": plan.name,
             "price": plan.price,
             "description": plan.description,
+            "items": items_by_plan.get(plan.id, [])
         })
+
     return Response({"plans": data}, status=200)
 
 
@@ -245,9 +262,10 @@ def subscribed_plan_api(request):
         "price" : plan.subscription_plan.price,
         "description" : plan.subscription_plan.description,
         # items in the subscription
-        "items": item_list
-        
+        "items": item_list 
     }
+    
+    return Response(data, status=200)
     
 @api_view(["GET"])
 def subscription_history_api(request):
