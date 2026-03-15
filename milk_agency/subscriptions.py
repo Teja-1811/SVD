@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,6 +13,22 @@ from .models import (
     Customer,
     Item
 )
+
+
+def recalculate_plan_price(plan):
+    """
+    Recompute the total subscription plan price from its items.
+    Formula: sum(item.price * quantity) for the plan * duration_in_days.
+    """
+    total_daily = Decimal("0")
+    for plan_item in plan.items.all():
+        item_price = plan_item.price or Decimal("0")
+        quantity = plan_item.quantity or 0
+        total_daily += item_price * Decimal(quantity)
+
+    duration = plan.duration_in_days or 0
+    plan.price = total_daily * Decimal(duration)
+    plan.save(update_fields=["price"])
 
 
 # -------------------------------------------------------
@@ -81,13 +99,12 @@ def create_subscription_plan(request):
     if request.method == "POST":
 
         name = request.POST.get("name")
-        price = request.POST.get("price")
         days = request.POST.get("duration_in_days")
         description = request.POST.get("description")
 
         SubscriptionPlan.objects.create(
             name=name,
-            price=price,
+            price=0,
             duration_in_days=days,
             description=description
         )
@@ -108,11 +125,11 @@ def edit_subscription_plan(request, plan_id):
     if request.method == "POST":
 
         plan.name = request.POST.get("name")
-        plan.price = request.POST.get("price")
         plan.duration_in_days = request.POST.get("duration_in_days")
         plan.description = request.POST.get("description")
 
         plan.save()
+        recalculate_plan_price(plan)
 
         messages.success(request, "Subscription plan updated successfully")
 
@@ -131,13 +148,18 @@ def add_plan_item(request, plan_id):
 
         item_id = request.POST.get("item")
         quantity = request.POST.get("quantity")
+        price = request.POST.get("price") or 0
 
         SubscriptionItem.objects.update_or_create(
             subscription_plan=plan,
             item_id=item_id,
-            defaults={"quantity": quantity}
+            defaults={
+                "quantity": quantity,
+                "price": price,
+            }
         )
 
+        recalculate_plan_price(plan)
         messages.success(request, "Item added to plan")
 
     return redirect("milk_agency:subscription_dashboard")
@@ -154,9 +176,16 @@ def update_plan_item(request, item_id):
     if request.method == "POST":
 
         quantity = request.POST.get("quantity")
+        price = request.POST.get("price")
 
-        plan_item.quantity = quantity
+        if quantity is not None and quantity != "":
+            plan_item.quantity = quantity
+
+        if price is not None and price != "":
+            plan_item.price = price
+
         plan_item.save()
+        recalculate_plan_price(plan_item.subscription_plan)
 
         messages.success(request, "Item quantity updated")
 
@@ -170,8 +199,10 @@ def update_plan_item(request, item_id):
 def delete_plan_item(request, item_id):
 
     plan_item = get_object_or_404(SubscriptionItem, id=item_id)
+    plan = plan_item.subscription_plan
 
     plan_item.delete()
+    recalculate_plan_price(plan)
 
     messages.success(request, "Item removed from plan")
 

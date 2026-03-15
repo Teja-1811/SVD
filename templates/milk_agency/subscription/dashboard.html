@@ -114,6 +114,7 @@
                 <tr>
                   <th>Item</th>
                   <th>Qty</th>
+                  <th>Price</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -124,6 +125,7 @@
                 <tr>
                   <td data-label="Item">{{ item.item.name }}</td>
                   <td data-label="Qty">{{ item.quantity }}</td>
+                  <td data-label="Price">&#8377;{{ item.price }}</td>
 
                   <td data-label="Actions">
                     <button
@@ -159,7 +161,7 @@
                         {% csrf_token %}
 
                         <div class="modal-header">
-                          <h5>Edit Item Quantity</h5>
+                          <h5>Edit Item</h5>
                           <button
                             type="button"
                             class="btn-close"
@@ -168,11 +170,25 @@
                         </div>
 
                         <div class="modal-body">
+                          <label class="form-label">Quantity</label>
                           <input
                             type="number"
                             name="quantity"
                             value="{{ item.quantity }}"
+                            class="form-control mb-3"
+                            min="1"
+                            required
+                          />
+
+                          <label class="form-label">Price</label>
+                          <input
+                            type="number"
+                            name="price"
+                            value="{{ item.price }}"
                             class="form-control"
+                            step="0.01"
+                            min="0"
+                            required
                           />
                         </div>
 
@@ -206,6 +222,106 @@
           >
             Add Item
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PLAN MODAL -->
+    <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+          <form method="post" action="{% url 'milk_agency:edit_subscription_plan' plan.id %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+              <h5>Edit Plan</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+              <label class="form-label">Plan Name</label>
+              <input
+                type="text"
+                name="name"
+                value="{{ plan.name }}"
+                class="form-control mb-3"
+                required
+              />
+
+              <label class="form-label">Duration (Days)</label>
+              <input
+                type="number"
+                name="duration_in_days"
+                value="{{ plan.duration_in_days }}"
+                class="form-control mb-3"
+                min="1"
+                required
+              />
+
+              <label class="form-label">Description</label>
+              <textarea
+                name="description"
+                class="form-control"
+              >{{ plan.description }}</textarea>
+
+              <div class="form-text mt-2">
+                Plan price is auto-calculated from its items and duration.
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-primary">Update Plan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD ITEM MODAL -->
+    <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+          <form method="post" action="{% url 'milk_agency:add_plan_item' plan.id %}">
+            {% csrf_token %}
+
+            <div class="modal-header">
+              <h5>Add Item to {{ plan.name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+              <label class="form-label">Item</label>
+              <select name="item" class="form-select mb-3" required>
+                <option disabled selected>Select Item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+              </select>
+
+              <label class="form-label">Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                class="form-control mb-3"
+                min="1"
+                required
+              />
+
+              <label class="form-label">Price</label>
+              <input
+                type="number"
+                name="price"
+                class="form-control"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-success">Add Item</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -474,14 +590,6 @@
 
             <input
               type="number"
-              name="price"
-              class="form-control mb-3"
-              placeholder="Price"
-              required
-            />
-
-            <input
-              type="number"
               name="duration_in_days"
               class="form-control mb-3"
               placeholder="Duration (Days)"
@@ -493,6 +601,10 @@
               class="form-control"
               placeholder="Description"
             ></textarea>
+
+            <div class="form-text mt-2">
+              Plan price is auto-calculated from added items and duration.
+            </div>
           </div>
 
           <div class="modal-footer">

@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager
 )
+from decimal import Decimal
 
 # -----------------------------
 # Custom User Manager
@@ -368,12 +369,31 @@ class CustomerPayment(models.Model):
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=255, unique=True, help_text="Name of the subscription plan")
     description = models.TextField(blank=True, null=True, help_text="Details about the subscription plan")
-    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price of the subscription plan")
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="Auto-calculated price of the subscription plan"
+    )
     duration_in_days = models.IntegerField(help_text="Duration of the subscription in days")
     is_active = models.BooleanField(default=True, help_text="Whether the subscription plan is active")
 
     def __str__(self):
         return self.name
+
+    def recalculate_price(self):
+        """
+        Compute total price = sum(item.price * quantity) * duration_in_days.
+        """
+        total_daily = Decimal("0")
+        for plan_item in self.items.all():
+            item_price = plan_item.price or Decimal("0")
+            qty = plan_item.quantity or 0
+            total_daily += item_price * Decimal(qty)
+
+        duration = self.duration_in_days or 0
+        self.price = total_daily * Decimal(duration)
+        self.save(update_fields=["price"])
 
 
 # -------------------------------------------------------
@@ -386,10 +406,21 @@ class SubscriptionItem(models.Model):
         related_name='items'
     )
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price of this item within the subscription")
     quantity = models.PositiveIntegerField()  # safer than IntegerField
 
     def __str__(self):
         return f"{self.subscription_plan.name} - {self.item.name} x {self.quantity}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # keep plan price in sync
+        self.subscription_plan.recalculate_price()
+
+    def delete(self, *args, **kwargs):
+        plan = self.subscription_plan
+        super().delete(*args, **kwargs)
+        plan.recalculate_price()
 
 
 # -------------------------------------------------------

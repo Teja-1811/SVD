@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.decorators import api_view
@@ -35,6 +37,7 @@ def _serialize_plan(plan):
                 "item_id": i.item_id,
                 "item_name": i.item.name if i.item else None,
                 "quantity": i.quantity,
+                "price": str(i.price),
             }
             for i in plan.items.select_related("item").all()
         ],
@@ -52,6 +55,22 @@ def _serialize_subscription(sub):
         "end_date": str(sub.end_date),
         "is_active": sub.is_active,
     }
+
+
+def _recalculate_plan_price(plan: SubscriptionPlan):
+    """
+    Recompute total price for the plan:
+    sum(item.price * quantity) * duration_in_days
+    """
+    total_daily = Decimal("0")
+    for plan_item in plan.items.all():
+        item_price = plan_item.price or Decimal("0")
+        qty = plan_item.quantity or 0
+        total_daily += item_price * Decimal(qty)
+
+    duration = plan.duration_in_days or 0
+    plan.price = total_daily * Decimal(duration)
+    plan.save(update_fields=["price"])
 
 
 @api_view(["GET"])
@@ -132,19 +151,18 @@ def api_get_plans(request):
 @api_view(["POST"])
 def api_create_plan(request):
     name = request.data.get("name")
-    price = request.data.get("price")
     duration_in_days = request.data.get("duration_in_days", request.data.get("duration_days"))
     description = request.data.get("description")
 
-    if not name or not price or not duration_in_days:
+    if not name or not duration_in_days:
         return Response(
-            {"success": False, "message": "name, price and duration_in_days are required"},
+            {"success": False, "message": "name and duration_in_days are required"},
             status=400,
         )
 
     plan = SubscriptionPlan.objects.create(
         name=name,
-        price=price,
+        price=0,
         duration_in_days=duration_in_days,
         description=description,
     )
@@ -162,10 +180,10 @@ def api_edit_plan(request, plan_id):
     plan = get_object_or_404(SubscriptionPlan, id=plan_id)
 
     plan.name = request.data.get("name", plan.name)
-    plan.price = request.data.get("price", plan.price)
     plan.duration_in_days = request.data.get("duration_days", plan.duration_in_days)
     plan.description = request.data.get("description", plan.description)
     plan.save()
+    _recalculate_plan_price(plan)
 
     return Response(
         {
@@ -181,15 +199,17 @@ def api_add_plan_item(request, plan_id):
     plan = get_object_or_404(SubscriptionPlan, id=plan_id)
     item_id = request.data.get("item")
     quantity = request.data.get("quantity")
+    price = request.data.get("price")
 
-    if not item_id or not quantity:
-        return Response({"success": False, "message": "item and quantity are required"}, status=400)
+    if not item_id or not quantity or price is None:
+        return Response({"success": False, "message": "item, quantity and price are required"}, status=400)
 
     plan_item, _ = SubscriptionItem.objects.update_or_create(
         subscription_plan=plan,
         item_id=item_id,
-        defaults={"quantity": quantity},
+        defaults={"quantity": quantity, "price": price},
     )
+    _recalculate_plan_price(plan)
 
     return Response(
         {
@@ -204,11 +224,16 @@ def api_add_plan_item(request, plan_id):
 def api_update_plan_item(request, item_id):
     plan_item = get_object_or_404(SubscriptionItem, id=item_id)
     quantity = request.data.get("quantity")
-    if not quantity:
-        return Response({"success": False, "message": "quantity is required"}, status=400)
+    price = request.data.get("price")
+    if quantity is None and price is None:
+        return Response({"success": False, "message": "quantity or price is required"}, status=400)
 
-    plan_item.quantity = quantity
+    if quantity is not None:
+        plan_item.quantity = quantity
+    if price is not None:
+        plan_item.price = price
     plan_item.save()
+    _recalculate_plan_price(plan_item.subscription_plan)
 
     return Response({"success": True, "message": "Item quantity updated"})
 
@@ -216,7 +241,9 @@ def api_update_plan_item(request, item_id):
 @api_view(["POST", "DELETE"])
 def api_delete_plan_item(request, item_id):
     plan_item = get_object_or_404(SubscriptionItem, id=item_id)
+    plan = plan_item.subscription_plan
     plan_item.delete()
+    _recalculate_plan_price(plan)
     return Response({"success": True, "message": "Item removed from plan"})
 
 
