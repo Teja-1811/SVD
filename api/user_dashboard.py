@@ -1,8 +1,61 @@
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .user_offers import get_active_user_offers
-from milk_agency.models import Customer, CustomerSubscription, SubscriptionItem, SubscriptionPause, SubscriptionPlan
+from milk_agency.models import (
+    AutoUPISetting,
+    Customer,
+    CustomerSubscription,
+    SubscriptionItem,
+    SubscriptionPause,
+    SubscriptionPlan,
+)
+
+
+def _serialize_customer(customer):
+    due_amount = customer.get_actual_due() or 0
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "phone": customer.phone,
+        "shop_name": customer.shop_name,
+        "retailer_id": customer.retailer_id,
+        "flat_number": customer.flat_number,
+        "area": customer.area,
+        "city": customer.city,
+        "state": customer.state,
+        "pin_code": customer.pin_code,
+        "account_status": "Active" if customer.is_active else "Inactive",
+        "is_commissioned": customer.is_commissioned,
+        "is_delivery": customer.is_delivery,
+        "frozen": customer.frozen,
+        "user_type": customer.user_type,
+        "due": float(due_amount),
+    }
+
+
+# =======================================================
+def _get_customer_or_response(user_id):
+    if not user_id:
+        return None, Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        return Customer.objects.get(id=int(user_id)), None
+    except (Customer.DoesNotExist, ValueError):
+        return None, Response({"error": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+def _coerce_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return None
+    val = str(value).strip().lower()
+    if val in ("true", "1", "yes"):
+        return True
+    if val in ("false", "0", "no"):
+        return False
+    return None
 
 
 # =======================================================
@@ -12,13 +65,9 @@ from milk_agency.models import Customer, CustomerSubscription, SubscriptionItem,
 def user_dashboard_api(request):
     user_id = request.GET.get("user_id")
 
-    if not user_id:
-        return Response({"error": "user_id is required"}, status=400)
-
-    try:
-        customer = Customer.objects.get(id=int(user_id))
-    except (Customer.DoesNotExist, ValueError):
-        return Response({"error": "Customer not found"}, status=404)
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
 
     latest_subscription = CustomerSubscription.objects.filter(customer=customer).order_by('-start_date').first()
 
@@ -68,34 +117,30 @@ def user_dashboard_api(request):
         for sub in history_qs
     ]
 
-    pause_qs = SubscriptionPause.objects.filter(subscription__customer=customer).select_related("subscription__subscription_plan").order_by('-date')
+    pause_qs = SubscriptionPause.objects.filter(
+        subscription__customer=customer
+    ).select_related("subscription__subscription_plan").order_by('-pause_date')
     pauses = [
         {
             "plan": pause.subscription.subscription_plan.name,
-            "pause_date": pause.date,
+            "pause_date": pause.pause_date,
+            "resume_date": pause.resume_date,
             "reason": pause.reason,
-            "status": "Paused",
+            "status": "Paused" if not pause.is_resumed else "Resumed",
         }
         for pause in pause_qs
     ]
 
-    profile = {
-        "id": customer.id,
-        "name": customer.name,
-        "phone": customer.phone,
-        "shop_name": customer.shop_name,
-        "retailer_id": customer.retailer_id,
-        "flat_number": customer.flat_number,
-        "area": customer.area,
-        "city": customer.city,
-        "state": customer.state,
-        "pin_code": customer.pin_code,
-        "account_status": "Active" if customer.is_active else "Inactive",
-        "is_commissioned": customer.is_commissioned,
-        "is_delivery": customer.is_delivery,
-        "frozen": customer.frozen,
-        "user_type": customer.user_type,
-        "due": float(customer.get_actual_due() or 0),
+    profile = _serialize_customer(customer)
+
+    auto_setting = getattr(customer, "auto_upi_setting", None)
+
+    auto_upi_payload = {
+        "is_active": auto_setting.is_active if auto_setting else False,
+        "upi_id": auto_setting.upi_id if auto_setting else "",
+        "max_amount": float(auto_setting.max_amount) if auto_setting else 0,
+        "last_payment_amount": float(auto_setting.last_payment_amount) if auto_setting else 0,
+        "last_payment_date": auto_setting.last_payment_date if auto_setting else None,
     }
 
     response_payload = {
@@ -105,9 +150,58 @@ def user_dashboard_api(request):
         "subscription_history": history,
         "subscription_pauses": pauses,
         "offers": get_active_user_offers(),
+        "auto_upi": auto_upi_payload,
     }
 
     return Response(response_payload, status=200)
+
+
+@api_view(["POST"])
+def user_profile_update(request):
+    user_id = request.data.get("user_id")
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
+
+    allowed_fields = [
+        "name",
+        "phone",
+        "shop_name",
+        "flat_number",
+        "area",
+        "city",
+        "state",
+        "pin_code",
+        "is_delivery",
+    ]
+    updates = {}
+    for field in allowed_fields:
+        value = request.data.get(field)
+        if value is None:
+            continue
+        if field in ("is_commissioned", "is_delivery"):
+            bool_value = _coerce_bool(value)
+            if bool_value is None:
+                continue
+            updates[field] = bool_value
+        else:
+            updates[field] = value
+
+    if "phone" in updates and updates["phone"] != customer.phone:
+        if Customer.objects.filter(phone=updates["phone"]).exclude(pk=customer.pk).exists():
+            return Response({"error": "Phone already in use"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not updates:
+        return Response({"error": "no profile updates provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    for field, value in updates.items():
+        setattr(customer, field, value)
+    customer.save(update_fields=list(updates.keys()))
+
+    return Response(
+        {"status": "success", "customer": _serialize_customer(customer)},
+        status=200,
+    )
 
 @api_view(["GET"])
 def plans_available_api(request):
@@ -190,4 +284,3 @@ def subscription_pauses_api(request):
         pause_list = []
     
     return Response({"pauses": pause_list}, status=200)
-

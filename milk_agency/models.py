@@ -468,13 +468,46 @@ class SubscriptionPause(models.Model):
 
     subscription = models.ForeignKey(
         CustomerSubscription,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="pauses"
     )
 
-    date = models.DateField()
+    pause_date = models.DateField(default=timezone.localdate)
+
+    resume_date = models.DateField(blank=True, null=True)
 
     reason = models.CharField(max_length=200, blank=True)
-    
+
+    is_resumed = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-pause_date"]
+
+    def __str__(self):
+        return f"{self.subscription} paused on {self.pause_date} ({'resumed' if self.is_resumed else 'active'})"
+
+    def resume(self, resume_date=None):
+        self.is_resumed = True
+        self.resume_date = resume_date or timezone.localdate()
+        self.save()
+
+class AutoUPISetting(models.Model):
+
+    customer = models.OneToOneField(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="auto_upi_setting"
+    )
+
+    upi_id = models.CharField(max_length=100, blank=True)
+    max_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=False)
+    last_payment_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    last_payment_date = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Auto UPI for {self.customer.phone} (active={self.is_active})"
 class Offers(models.Model):
     
     CHOICES = [
