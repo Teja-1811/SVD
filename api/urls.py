@@ -144,6 +144,7 @@ urlpatterns = [
     path('user/offers/active/', user_offers, name='user_active_offers_api'),
     path('user_dashboard/', user_dashboard_api, name="user_dashboard_api"),
     path('user/offers/', user_offers, name='user_offers_api'),
+    path('user/plans_available', plans_available_api, name='user_plans_available_api'),
 
     path('user/payment/options/', user_payment_options, name='user_payment_options_api'),
     path('user/payment/record/', user_payment_record, name='user_payment_record_api'),
