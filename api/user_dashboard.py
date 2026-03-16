@@ -79,6 +79,8 @@ def user_dashboard_api(request):
                 "item_id": item.item.id,
                 "item_name": item.item.name,
                 "quantity": item.quantity,
+                "price": float(item.price),
+                "per": item.per,
             }
             for item in plan_items
         ]
@@ -86,7 +88,7 @@ def user_dashboard_api(request):
             "id": latest_subscription.id,
             "plan_id": plan.id,
             "plan": plan.name,
-            "price": plan.price,
+            "price": float(plan.price),
             "description": plan.description,
             "duration_in_days": plan.duration_in_days,
             "start_date": latest_subscription.start_date,
@@ -218,6 +220,8 @@ def plans_available_api(request):
             "item_id": item.item.id,
             "item_name": item.item.name,
             "quantity": item.quantity,
+            "price": float(item.price),
+            "per": item.per,
         })
 
     data = []
@@ -226,7 +230,7 @@ def plans_available_api(request):
         data.append({
             "id": plan.id,
             "name": plan.name,
-            "price": plan.price,
+            "price": float(plan.price),
             "description": plan.description,
             "items": items_by_plan.get(plan.id, [])
         })
@@ -237,6 +241,7 @@ def plans_available_api(request):
 @api_view(["GET"])
 def subscribed_plan_api(request):
     customer_id = request.GET.get("customer_id")
+    plan = None
     try:
         plan = CustomerSubscription.objects.filter(customer=customer_id).latest('start_date')
         plan_name = plan.subscription_plan.name
@@ -244,14 +249,19 @@ def subscribed_plan_api(request):
         plan_name = "No active subscription"
         
     try:
-        items = SubscriptionItem.objects.filter(subscription_plan=plan.subscription_plan)
-        item_list = []
-        for item in items:
-            item_list.append({
-                "item_id": item.item.id,
-                "item_name": item.item.name,
-                "quantity": item.quantity,
-            })
+        if plan:
+            items = SubscriptionItem.objects.filter(subscription_plan=plan.subscription_plan)
+            item_list = []
+            for item in items:
+                item_list.append({
+                    "item_id": item.item.id,
+                    "item_name": item.item.name,
+                    "quantity": item.quantity,
+                    "price": float(item.price),
+                    "per": item.per,
+                })
+        else:
+            item_list = []
     except SubscriptionItem.DoesNotExist:
         item_list = []
         
@@ -259,8 +269,8 @@ def subscribed_plan_api(request):
     #plan details
     data = {
         "plan": plan_name,
-        "price" : plan.subscription_plan.price,
-        "description" : plan.subscription_plan.description,
+        "price" : float(plan.subscription_plan.price) if plan else 0,
+        "description" : plan.subscription_plan.description if plan else "",
         # items in the subscription
         "items": item_list 
     }
