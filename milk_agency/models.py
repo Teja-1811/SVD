@@ -524,7 +524,7 @@ class SubscriptionPause(models.Model):
     pause_date = models.DateField(default=timezone.localdate)
 
     resume_date = models.DateField(blank=True, null=True)
-
+    
     reason = models.CharField(max_length=200, blank=True)
 
     is_resumed = models.BooleanField(default=False)

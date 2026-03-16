@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.utils import timezone
 
 from .user_offers import get_active_user_offers
 from milk_agency.models import (
@@ -304,11 +305,11 @@ def subscription_pauses_api(request):
         for pause in pauses:
             pause_list.append({
                 "plan": pause.subscription.subscription_plan.name,
-                "pause_date": pause.pause_date,
-                "resume_date": pause.resume_date,
+                "pause_date": timezone.localtime(pause.pause_date),
                 "status": "Paused" if not pause.is_resumed else "Resumed",
             })
     except SubscriptionPause.DoesNotExist:
         pause_list = []
     
     return Response({"pauses": pause_list}, status=200)
+
