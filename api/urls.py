@@ -21,13 +21,7 @@ from .admin_monthly_sales_summary import *
 from .admin_subscriptions import *
 from .user_dashboard import *
 from .user_offers import *
-from .user_payments import (
-    user_payment_options,
-    user_payment_record,
-    user_auto_upi_toggle,
-    user_auto_upi_pay,
-    user_subscription_pause,
-)
+from .user_subscriptions import subscription_pause_resume_api
 
 urlpatterns = [
     # Auth / Login
@@ -146,10 +140,6 @@ urlpatterns = [
     path('user/offers/', user_offers, name='user_offers_api'),
     path('user/plans/available/', plans_available_api, name='user_plans_available_api'),
 
-    path('user/payment/options/', user_payment_options, name='user_payment_options_api'),
-    path('user/payment/record/', user_payment_record, name='user_payment_record_api'),
-    path('user/payment/auto-toggle/', user_auto_upi_toggle, name='user_auto_upi_toggle_api'),
-    path('user/payment/auto-pay/', user_auto_upi_pay, name='user_auto_upi_pay_api'),
-    path('user/payment/subscription/pause/', user_subscription_pause, name='user_subscription_pause_api'),
+    path('user/subscription/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
     path('user/profile/update/', user_profile_update, name='user_profile_update_api'),
 ]
