@@ -140,6 +140,7 @@ urlpatterns = [
     path('user/offers/', user_offers, name='user_offers_api'),
     path('user/plans/available/', plans_available_api, name='user_plans_available_api'),
 
+    path('user/current-subscription/', current_subscription_api, name='user_current_subscription_api'),
     path('user/subscription/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
     path('user/profile/update/', user_profile_update, name='user_profile_update_api'),
 ]

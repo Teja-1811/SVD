@@ -277,6 +277,45 @@ def subscribed_plan_api(request):
     }
     
     return Response(data, status=200)
+
+@api_view(["GET"])
+def current_subscription_api(request):
+    customer_id = request.GET.get("customer_id")
+    subscription = None
+    try:
+        subscription = CustomerSubscription.objects.filter(customer=customer_id, is_active=True).latest('start_date')
+        plan_name = subscription.subscription_plan.name
+    except CustomerSubscription.DoesNotExist:
+        plan_name = "No active subscription"
+        
+    try:
+        if subscription:
+            items = SubscriptionItem.objects.filter(subscription_plan=subscription.subscription_plan)
+            item_list = []
+            for item in items:
+                item_list.append({
+                    "item_id": item.item.id,
+                    "item_name": item.item.name,
+                    "quantity": item.quantity,
+                    "price": float(item.price),
+                    "per": item.per,
+                })
+        else:
+            item_list = []
+    except SubscriptionItem.DoesNotExist:
+        item_list = []
+        
+        
+    #plan details
+    data = {
+        "plan": plan_name,
+        "price" : float(subscription.subscription_plan.price) if subscription else 0,
+        "description" : subscription.subscription_plan.description if subscription else "",
+        # items in the subscription
+        "items": item_list 
+    }
+    
+    return Response(data, status=200)
     
 @api_view(["GET"])
 def subscription_history_api(request):
@@ -295,21 +334,4 @@ def subscription_history_api(request):
         subscription_list = []
     
     return Response({"subscriptions": subscription_list}, status=200)
-
-@api_view(["GET"])
-def subscription_pauses_api(request):
-    customer_id = request.GET.get("customer_id")
-    try:
-        pauses = SubscriptionPause.objects.filter(subscription__customer=customer_id).order_by('-pause_date')
-        pause_list = []
-        for pause in pauses:
-            pause_list.append({
-                "plan": pause.subscription.subscription_plan.name,
-                "pause_date": timezone.localtime(pause.pause_date),
-                "status": "Paused" if not pause.is_resumed else "Resumed",
-            })
-    except SubscriptionPause.DoesNotExist:
-        pause_list = []
-    
-    return Response({"pauses": pause_list}, status=200)
 
