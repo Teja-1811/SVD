@@ -150,8 +150,6 @@ def delete_order(customer: Customer, order_id: int) -> bool:
 # API endpoints (token protected)
 # -------------------------------------------------------------------
 @api_view(["POST"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def user_create_order(request):
     try:
         order = create_or_replace_order(
@@ -170,8 +168,6 @@ def user_create_order(request):
 
 
 @api_view(["PUT", "PATCH"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def user_edit_order(request, order_id: int):
     try:
         order = edit_order(
@@ -191,8 +187,6 @@ def user_edit_order(request, order_id: int):
 
 
 @api_view(["DELETE"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def user_delete_order(request, order_id: int):
     if delete_order(request.user, order_id):
         return Response({"success": True, "message": "Order deleted"})
@@ -200,8 +194,6 @@ def user_delete_order(request, order_id: int):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def user_pending_orders(request):
     orders = (
         CustomerOrder.objects.filter(customer=request.user, status="pending")
