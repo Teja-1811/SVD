@@ -150,7 +150,11 @@ def delete_order(customer: Customer, order_id: int) -> bool:
 # API endpoints (token protected)
 # -------------------------------------------------------------------
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def user_create_order(request):
+    if not request.user or not request.user.is_authenticated:
+        return Response({"detail": "Authentication credentials were not provided."}, status=401)
     try:
         order = create_or_replace_order(
             customer=request.user,
@@ -168,7 +172,11 @@ def user_create_order(request):
 
 
 @api_view(["PUT", "PATCH"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def user_edit_order(request, order_id: int):
+    if not request.user or not request.user.is_authenticated:
+        return Response({"detail": "Authentication credentials were not provided."}, status=401)
     try:
         order = edit_order(
             customer=request.user,
@@ -187,14 +195,22 @@ def user_edit_order(request, order_id: int):
 
 
 @api_view(["DELETE"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def user_delete_order(request, order_id: int):
+    if not request.user or not request.user.is_authenticated:
+        return Response({"detail": "Authentication credentials were not provided."}, status=401)
     if delete_order(request.user, order_id):
         return Response({"success": True, "message": "Order deleted"})
     return Response({"success": False, "message": "Order not found"}, status=404)
 
 
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def user_pending_orders(request):
+    if not request.user or not request.user.is_authenticated:
+        return Response({"detail": "Authentication credentials were not provided."}, status=401)
     orders = (
         CustomerOrder.objects.filter(customer=request.user, status="pending")
         .prefetch_related(
