@@ -91,7 +91,7 @@ def create_or_replace_order(
 
     with transaction.atomic():
         order = CustomerOrder.objects.filter(
-            customer=customer, devivery_date=delivery_date
+            customer=customer, delivery_date=delivery_date
         ).first()
 
         if order:
@@ -102,7 +102,7 @@ def create_or_replace_order(
                 order_number=order_number,
                 customer=customer,
                 created_by=customer,
-                devivery_date=delivery_date,
+                delivery_date=delivery_date,
                 delivery_address=_build_address(customer),
                 status="pending",
             )
@@ -128,7 +128,7 @@ def edit_order(
 
     with transaction.atomic():
         order = get_object_or_404(CustomerOrder, id=order_id, customer=customer)
-        order.devivery_date = delivery_date
+        order.delivery_date = delivery_date
         order.items.all().delete()
 
         total = Decimal("0")
@@ -137,7 +137,7 @@ def edit_order(
 
         order.total_amount = total
         order.approved_total_amount = total
-        order.save(update_fields=["devivery_date", "total_amount", "approved_total_amount"])
+        order.save(update_fields=["delivery_date", "total_amount", "approved_total_amount"])
         return order
 
 
@@ -160,7 +160,7 @@ def user_create_order(request):
         return Response({
             "success": True,
             "order_number": order.order_number,
-            "delivery_date": str(order.devivery_date),
+            "delivery_date": str(order.delivery_date),
             "message": "Order saved successfully",
         })
     except Exception as e:
@@ -179,7 +179,7 @@ def user_edit_order(request, order_id: int):
         return Response({
             "success": True,
             "order_number": order.order_number,
-            "delivery_date": str(order.devivery_date),
+            "delivery_date": str(order.delivery_date),
             "message": "Order updated successfully",
         })
     except Exception as e:
@@ -203,7 +203,7 @@ def user_pending_orders(request):
                 queryset=CustomerOrderItem.objects.select_related("item"),
             )
         )
-        .order_by("devivery_date", "-order_date", "-created_at")
+        .order_by("delivery_date", "-order_date", "-created_at")
     )
 
     data = []
@@ -211,7 +211,7 @@ def user_pending_orders(request):
         data.append({
             "order_id": order.id,
             "order_number": order.order_number,
-            "delivery_date": str(order.devivery_date),
+            "delivery_date": str(order.delivery_date),
             "order_date": str(order.order_date),
             "total_amount": float(order.total_amount),
             "items": [

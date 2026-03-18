@@ -15,7 +15,7 @@ class CustomerOrder(models.Model):
 
     order_number = models.CharField(max_length=50, unique=True, help_text='Unique order number')
     order_date = models.DateField(default=timezone.localdate)
-    devivery_date = models.DateField(help_text='Expected delivery date')
+    delivery_date = models.DateField(help_text='Expected delivery date', db_column='delivery_date')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     delivery_address = models.TextField(help_text='Delivery address')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Total order amount')
