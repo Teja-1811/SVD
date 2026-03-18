@@ -62,6 +62,8 @@ def subscription_pause_resume_api(request):
             reason=reason,
             is_resumed=False,
         )
+        subscription.is_active = False
+        subscription.save(update_fields=["is_active"])
         return Response(
             {
                 "status": "paused",

@@ -536,27 +536,19 @@ class SubscriptionPause(models.Model):
         return f"{self.subscription} paused on {self.pause_date} ({'resumed' if self.is_resumed else 'active'})"
 
     def resume(self, resume_date=None):
+        effective_resume = resume_date or timezone.localdate()
         self.is_resumed = True
-        self.resume_date = resume_date or timezone.localdate()
-        self.save()
+        self.resume_date = effective_resume
+        self.save(update_fields=["is_resumed", "resume_date"])
 
-class AutoUPISetting(models.Model):
+        # Extend subscription to preserve unused days
+        delta_days = (effective_resume - self.pause_date).days
+        if delta_days > 0:
+            sub = self.subscription
+            sub.end_date = sub.end_date + timezone.timedelta(days=delta_days)
+            sub.is_active = True
+            sub.save(update_fields=["end_date", "is_active"])
 
-    customer = models.OneToOneField(
-        Customer,
-        on_delete=models.CASCADE,
-        related_name="auto_upi_setting"
-    )
-
-    upi_id = models.CharField(max_length=100, blank=True)
-    max_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    is_active = models.BooleanField(default=False)
-    last_payment_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    last_payment_date = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Auto UPI for {self.customer.phone} (active={self.is_active})"
 class Offers(models.Model):
     
     CHOICES = [

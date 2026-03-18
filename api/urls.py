@@ -22,6 +22,12 @@ from .admin_subscriptions import *
 from .user_dashboard import *
 from .user_offers import *
 from .user_subscriptions import subscription_pause_resume_api
+from .order_creator import (
+    user_create_order,
+    user_edit_order,
+    user_delete_order,
+    user_pending_orders,
+)
 
 urlpatterns = [
     # Auth / Login
@@ -143,4 +149,10 @@ urlpatterns = [
     path('user/current-subscription/', current_subscription_api, name='user_current_subscription_api'),
     path('user/subscription/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
     path('user/profile/update/', user_profile_update, name='user_profile_update_api'),
+    
+    # User orders (create/edit/delete, including prebooking via delivery_date)
+    path('user/orders/create/', user_create_order, name='user_create_order'),
+    path('user/orders/<int:order_id>/edit/', user_edit_order, name='user_edit_order'),
+    path('user/orders/<int:order_id>/delete/', user_delete_order, name='user_delete_order'),
+    path('user/orders/pending/', user_pending_orders, name='user_pending_orders'),
 ]
