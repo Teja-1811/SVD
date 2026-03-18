@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from .user_offers import get_active_user_offers
 from milk_agency.models import (
-    AutoUPISetting,
     Customer,
     CustomerSubscription,
     SubscriptionItem,
