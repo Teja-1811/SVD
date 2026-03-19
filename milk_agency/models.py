@@ -670,6 +670,14 @@ class SubscriptionDelivery(models.Model):
         on_delete=models.SET_NULL,
         related_name="subscription_deliveries",
     )
+    bill = models.ForeignKey(
+        "Bill",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="subscription_deliveries",
+        help_text="Bill generated for this subscription delivery",
+    )
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
