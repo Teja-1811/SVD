@@ -35,7 +35,10 @@ def _build_address(customer: Customer) -> str:
     return ", ".join(cleaned) if cleaned else "Not provided"
 
 
-def _parse_delivery_date(raw: Optional[str]) -> Tuple[datetime.date, bool]:
+def _parse_delivery_date(
+    raw: Optional[str],
+    allow_past_if_same: Optional[datetime.date] = None,
+) -> Tuple[datetime.date, bool]:
     """
     Returns (delivery_date, is_prebooking)
     - None/"" => today (not prebooking)
@@ -45,7 +48,9 @@ def _parse_delivery_date(raw: Optional[str]) -> Tuple[datetime.date, bool]:
     if not raw:
         return today, False
     delivery_date = datetime.strptime(raw, "%Y-%m-%d").date()
-    if delivery_date < today:
+    if delivery_date < today and not (
+        allow_past_if_same and delivery_date == allow_past_if_same
+    ):
         raise ValueError("Delivery date cannot be in the past")
     return delivery_date, delivery_date != today
 
@@ -124,10 +129,14 @@ def edit_order(
     delivery_date_str: Optional[str] = None,
 ) -> CustomerOrder:
     items = _coerce_items(items)
-    delivery_date, _ = _parse_delivery_date(delivery_date_str)
 
     with transaction.atomic():
         order = get_object_or_404(CustomerOrder, id=order_id, customer=customer)
+        # Allow editing an existing order even if its delivery date is now in the past,
+        # as long as the client does not move it further back in time.
+        delivery_date, _ = _parse_delivery_date(
+            delivery_date_str, allow_past_if_same=order.delivery_date
+        )
         order.delivery_date = delivery_date
         order.items.all().delete()
 
