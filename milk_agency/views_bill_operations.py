@@ -149,7 +149,7 @@ def delete_bill(request, bill_id):
         # -------- HANDLE LINKED ORDER --------
         order = CustomerOrder.objects.filter(
             customer=customer,
-            order_date__date=bill.invoice_date,
+            order_date=bill.invoice_date,
             total_amount=bill.total_amount
         ).order_by('-id').first()
 

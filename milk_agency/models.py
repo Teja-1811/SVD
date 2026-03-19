@@ -574,3 +574,139 @@ class OfferItems(models.Model):
     buy_qty = models.IntegerField(default=0)
     offer_qty = models.IntegerField(default=0)
     offer_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+# -------------------------------------------------------
+# DELIVERY TRACKING (links to customer_portal.CustomerOrder)
+# -------------------------------------------------------
+class OrderDelivery(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("out_for_delivery", "Out for delivery"),
+        ("delivered", "Delivered"),
+        ("failed", "Failed"),
+    ]
+
+    order = models.OneToOneField(
+        "customer_portal.CustomerOrder",
+        on_delete=models.CASCADE,
+        related_name="delivery_tracking",
+        help_text="Linked customer order",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    eta = models.DateTimeField(null=True, blank=True, help_text="Estimated delivery time")
+    delivered_at = models.DateTimeField(null=True, blank=True, help_text="Actual delivery time")
+    delivered_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Collected amount on delivery (if COD/UPI)",
+    )
+    delivered_by = models.ForeignKey(
+        "auth.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="completed_deliveries",
+        help_text="Staff user who delivered",
+    )
+    notes = models.TextField(blank=True, help_text="Delivery notes / failure reason")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["eta"]),
+            models.Index(fields=["delivered_at"]),
+        ]
+
+    def __str__(self):
+        return f"Delivery for {self.order.order_number} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # keep linked order status aligned when saving delivery
+        if self.order and self.status:
+            # map delivery status to order status where sensible
+            if self.status == "pending":
+                self.order.status = "pending"
+            elif self.status == "out_for_delivery":
+                self.order.status = "processing"
+            elif self.status == "delivered":
+                self.order.status = "delivered"
+            elif self.status == "failed":
+                self.order.status = "cancelled"
+            self.order.save(update_fields=["status"])
+        super().save(*args, **kwargs)
+
+
+# -------------------------------------------------------
+# SUBSCRIPTION DELIVERY TRACKING
+# -------------------------------------------------------
+class SubscriptionDelivery(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("out_for_delivery", "Out for delivery"),
+        ("delivered", "Delivered"),
+        ("skipped", "Skipped"),
+        ("failed", "Failed"),
+    ]
+
+    subscription_order = models.OneToOneField(
+        "SubscriptionOrder",
+        on_delete=models.CASCADE,
+        related_name="delivery_tracking",
+        help_text="Linked subscription order (one per day/item)",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    eta = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    delivered_by = models.ForeignKey(
+        "auth.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="subscription_deliveries",
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["eta"]),
+            models.Index(fields=["delivered_at"]),
+        ]
+
+    def __str__(self):
+        return f"Subscription delivery for {self.subscription_order.date} - {self.subscription_order.customer.name}"
+
+    def save(self, *args, **kwargs):
+        # keep subscription order delivered flag in sync
+        if self.subscription_order:
+            if self.status == "delivered":
+                self.subscription_order.delivered = True
+            elif self.status in ("pending", "out_for_delivery"):
+                self.subscription_order.delivered = False
+            elif self.status in ("skipped", "failed"):
+                self.subscription_order.delivered = False
+            self.subscription_order.save(update_fields=["delivered"])
+        super().save(*args, **kwargs)
+
+
+# -------------------------------------------------------------------
+# SIGNALS: ensure delivery tracking exists for every SubscriptionOrder
+# -------------------------------------------------------------------
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save, sender=SubscriptionOrder)
+def ensure_subscription_delivery(sender, instance, created, **kwargs):
+    """
+    Always keep a SubscriptionDelivery row in sync with each SubscriptionOrder.
+    """
+    SubscriptionDelivery.objects.get_or_create(subscription_order=instance)

@@ -28,6 +28,8 @@ from .order_creator import (
     user_delete_order,
     user_pending_orders,
 )
+from .delivery import delivery_today_list
+from .delivery import delivery_update
 
 urlpatterns = [
     # Auth / Login
@@ -159,4 +161,8 @@ urlpatterns = [
     path('user/orders/<int:order_id>/edit/', user_edit_order, name='user_edit_order'),
     path('user/orders/<int:order_id>/delete/', user_delete_order, name='user_delete_order'),
     path('user/orders/pending/', user_pending_orders, name='user_pending_orders'),
+    
+    # Delivery agent view (today's pending/completed deliveries for orders + subscriptions)
+    path('delivery/today/', delivery_today_list, name='delivery_today_list'),
+    path('delivery/update/', delivery_update, name='delivery_update'),
 ]
