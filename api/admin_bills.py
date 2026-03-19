@@ -247,6 +247,7 @@ def api_edit_bill(request, bill_id):
     old_total = bill.total_amount  # store before changes
 
     new_customer_id = request.data.get("customer")
+    new_customer = Customer.objects.filter(id=new_customer_id).first() if new_customer_id else None
     item_ids = request.data.get("items", [])
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
@@ -278,10 +279,7 @@ def api_edit_bill(request, bill_id):
             if qty <= 0:
                 continue
 
-            if item.stock_quantity < qty:
-                return Response({"success": False, "message": f"Insufficient stock for {item.name}"}, status=400)
-
-            unit_price = _unit_price(item, bill.customer or Customer.objects.filter(id=new_customer_id).first())
+            unit_price = _unit_price(item, new_customer or bill.customer)
 
             line_total = (unit_price * qty) - (discount * qty)
             profit = ((unit_price - item.buying_price) * qty) - (discount * qty)
@@ -323,7 +321,6 @@ def api_edit_bill(request, bill_id):
             total += DELIVERY_CHARGE_AMOUNT
             total_profit += DELIVERY_CHARGE_AMOUNT
 
-        new_customer = Customer.objects.filter(id=new_customer_id).first() if new_customer_id else None
         old_customer = bill.customer
 
         bill.customer = new_customer

@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.views_bills import generate_bill_from_order
-from milk_agency.models import Item
 
 
 # ======================================================
@@ -101,20 +100,6 @@ def api_confirm_order(request, order_id):
 
     try:
         with transaction.atomic():
-
-            # ---- Validate stock first ----
-            for q in quantities:
-                item_id = q.get("item_id")
-                quantity = int(q.get("quantity", 0))
-
-                if item_id:
-                    item = Item.objects.get(id=item_id)
-                    if item.stock_quantity < quantity:
-                        return Response({
-                            "success": False,
-                            "message": f"Insufficient stock for {item.name}"
-                        }, status=400)
-
             # ---- Update order items ----
             for q in quantities:
                 item_id = q.get("item_id")
