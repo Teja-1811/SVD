@@ -219,7 +219,8 @@ def generate_bill(request):
 def generate_bill_from_order(order):
     with transaction.atomic():
         customer = order.customer
-        bill_date_obj = order.order_date.date() if order.order_date else timezone.now().date()
+        # order_date is a DateField already; no .date() attribute on datetime.date
+        bill_date_obj = order.order_date if order.order_date else timezone.now().date()
 
         now = timezone.now()
         prefix = now.strftime('%Y%m%d%H%M%S')
