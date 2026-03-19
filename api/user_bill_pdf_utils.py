@@ -9,23 +9,21 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-from milk_agency.models import BillItem
-from milk_agency.utils import InvoicePDFUtils
 from customer_portal.models import CustomerOrder
-
-DELIVERY_ITEM_CODE = "DELIVERY_CHARGE"
+from milk_agency.models import BillItem
+from milk_agency.order_pricing import DELIVERY_ITEM_CODE
+from milk_agency.utils import InvoicePDFUtils
 
 
 class UserPDFGenerator:
-    """PDF generator tailored for user (direct customer) invoices that bill at MRP."""
+    """User invoice PDF generator aligned with the admin invoice layout."""
 
     def __init__(self):
         self.width, self.height = landscape(letter)
         self.margin = 20
 
-    # ---------- Public API ----------
     def generate_invoice_pdf(self, bill):
-        bill_items = BillItem.objects.filter(bill=bill).select_related("item")
+        bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
 
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=landscape(letter))
@@ -43,7 +41,7 @@ class UserPDFGenerator:
         return pdf_path
 
     def generate_and_return_pdf(self, bill, request=None):
-        bill_items = BillItem.objects.filter(bill=bill).select_related("item")
+        bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
 
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=landscape(letter))
@@ -57,17 +55,12 @@ class UserPDFGenerator:
         response.write(pdf)
         return response
 
-    # ---------- Helpers ----------
     def _money(self, value):
         return f"{Decimal(value or 0):.2f}"
 
     def _safe(self, value):
         return str(value or "").strip()
 
-    def _is_delivery_bill(self, bill_items):
-        return any(getattr(bi.item, "code", "") == DELIVERY_ITEM_CODE for bi in bill_items)
-
-    # ---------- Drawing routines ----------
     def _draw_invoice_template(self, c, bill, bill_items):
         c.setTitle(f"Invoice - {bill.invoice_number}")
         c.setLineWidth(1)
@@ -80,17 +73,17 @@ class UserPDFGenerator:
         c.rect(x0, y0, w, h)
 
         y = self.height - self.margin
-        y = self._draw_top_header(c, bill, x0, y, w)
+        y = self._draw_top_header(c, x0, y, w)
         y = self._draw_bill_heading(c, x0, y, w)
-        y = self._draw_invoice_meta(c, bill, x0, y, w, self._is_delivery_bill(bill_items))
+        y = self._draw_invoice_meta(c, bill, x0, y, w)
         y = self._draw_party_section(c, bill, x0, y, w)
         y, totals = self._draw_items_table(c, bill_items, x0, y, w)
-        self._draw_footer_sections(c, bill, x0, y, w, totals)
+        self._draw_footer_sections(c, bill, bill_items, x0, y, w, totals)
 
         c.save()
 
-    def _draw_top_header(self, c, bill, x, y_top, w):
-        row_h = 70
+    def _draw_top_header(self, c, x, y_top, w):
+        row_h = 74
         y = y_top - row_h
         c.rect(x, y, w, row_h)
 
@@ -98,51 +91,53 @@ class UserPDFGenerator:
         if os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
-                c.drawImage(logo, x + 8, y + 12, width=110, height=44, mask="auto")
+                c.drawImage(logo, x + 8, y + 14, width=110, height=44, mask="auto")
             except Exception:
                 pass
 
         center_x = x + (w / 2)
+
         c.setFont("Helvetica-Bold", 12)
-        c.drawCentredString(center_x, y + 46, "Sri Vijaya Durga Milk Agencies")
-        c.setFont("Helvetica", 8)
-        c.drawCentredString(center_x, y + 32, "Consumer Invoice (MRP Billing)")
-        c.drawCentredString(center_x, y + 20, "Phone: 9392890375 | GSTIN: 37AACCD5077E1ZQ")
+        c.drawCentredString(center_x, y + 56, "DODLA DAIRY LIMITED")
+
+        c.setFont("Helvetica", 7)
+        c.drawCentredString(center_x, y + 44, "FSSAI No: 10012044000145, PAN No: AABCD5077E, CIN No: L15209TG1995PLC020324")
+        c.drawCentredString(center_x, y + 34, "GSTIN: 37AACCD5077E1ZQ")
+        c.drawCentredString(center_x, y + 24, "Dhulipalli Village, Guntur, Guntur, 522403, Andhra Pradesh, India")
 
         return y
 
     def _draw_bill_heading(self, c, x, y_top, w):
-        row_h = 30
+        row_h = 34
         y = y_top - row_h
         c.rect(x, y, w, row_h)
 
         c.setFont("Helvetica-Bold", 11)
-        c.drawCentredString(x + (w / 2), y + 17, "Tax Invoice")
+        c.drawCentredString(x + (w / 2), y + 21, "Bill of Supply")
         c.setFont("Helvetica", 9)
-        c.drawCentredString(x + (w / 2), y + 6, "(For Direct Users)")
+        c.drawCentredString(x + (w / 2), y + 8, "(Original/Duplicate/Triplicate)")
+
         return y
 
-    def _draw_invoice_meta(self, c, bill, x, y_top, w, is_delivery):
-        row_h = 22
+    def _draw_invoice_meta(self, c, bill, x, y_top, w):
+        row_h = 34
         y = y_top - row_h
         c.rect(x, y, w, row_h)
 
         c.setFont("Helvetica", 8.5)
-        c.drawString(x + 8, y + 7, f"Invoice No: {self._safe(bill.invoice_number)}")
-        c.drawString(x + 190, y + 7, f"Invoice Date: {bill.invoice_date.strftime('%Y-%m-%d')}")
+        c.drawString(x + 8, y + 18, f"Invoice No: {self._safe(bill.invoice_number)}")
+        c.drawString(x + 220, y + 18, f"Invoice Date: {bill.invoice_date.strftime('%Y-%m-%d')}")
 
         order_date, delivery_date = self._get_order_dates(bill)
         if order_date:
-            c.drawString(x + 370, y + 7, f"Order: {order_date.strftime('%Y-%m-%d')}")
+            c.drawString(x + 420, y + 18, f"Order Date: {order_date.strftime('%Y-%m-%d')}")
         if delivery_date:
-            c.drawString(x + 520, y + 7, f"Delivery: {delivery_date.strftime('%Y-%m-%d')}")
+            c.drawCentredString(x + (w / 2), y + 7, f"Delivery: {delivery_date.strftime('%Y-%m-%d')}")
 
-        delivery_text = "Delivered (₹10 charge)" if is_delivery else "Take Away (No charge)"
-        c.drawString(x + 8, y - 10, delivery_text)
         return y
 
     def _draw_party_section(self, c, bill, x, y_top, w):
-        row_h = 86
+        row_h = 92
         y = y_top - row_h
         c.rect(x, y, w, row_h)
 
@@ -150,8 +145,8 @@ class UserPDFGenerator:
         c.line(mid_x, y, mid_x, y + row_h)
 
         c.setFont("Helvetica-Bold", 9)
-        c.drawString(x + 8, y + row_h - 14, "Sold By")
-        c.drawString(mid_x + 8, y + row_h - 14, "Bill To")
+        c.drawString(x + 8, y + row_h - 14, "Ship From")
+        c.drawString(mid_x + 8, y + row_h - 14, "Bill/Ship To")
 
         c.setFont("Helvetica", 8)
         c.drawString(x + 8, y + row_h - 28, "Sri Vijaya Durga Milk Agencies")
@@ -161,7 +156,9 @@ class UserPDFGenerator:
 
         customer = bill.customer
         cust_name = self._safe(getattr(customer, "name", ""))
+        shop_name = self._safe(getattr(customer, "shop_name", ""))
         phone = self._safe(getattr(customer, "phone", ""))
+
         address_parts = [
             self._safe(getattr(customer, "flat_number", "")),
             self._safe(getattr(customer, "area", "")),
@@ -172,8 +169,10 @@ class UserPDFGenerator:
         address = ", ".join([p for p in address_parts if p])
 
         c.drawString(mid_x + 8, y + row_h - 28, cust_name)
-        c.drawString(mid_x + 8, y + row_h - 40, address)
-        c.drawString(mid_x + 8, y + row_h - 52, f"Phone: {phone}")
+        if shop_name:
+            c.drawString(mid_x + 8, y + row_h - 40, f"Shop: {shop_name}")
+        c.drawString(mid_x + 8, y + row_h - 52, address)
+        c.drawString(mid_x + 8, y + row_h - 64, f"Phone: {phone}")
 
         return y
 
@@ -182,8 +181,8 @@ class UserPDFGenerator:
         y = y_top - table_h
         c.rect(x, y, w, table_h)
 
-        headers = ["#", "Item Code", "Product Description", "MRP (₹)", "Discount", "Qty", "Amount (₹)"]
-        col_widths = [24, 82, 326, 78, 70, 60, 90]
+        headers = ["#", "Item Code", "Product Description", "MRP", "Rate", "Disc", "Qty", "Amount"]
+        col_widths = [24, 66, 294, 58, 58, 58, 52, 82]
         header_h = 24
 
         x_cursor = x
@@ -215,7 +214,8 @@ class UserPDFGenerator:
 
             code = self._safe(getattr(bill_item.item, "code", ""))
             name = self._safe(getattr(bill_item.item, "name", ""))
-            mrp = Decimal(bill_item.price_per_unit or 0)
+            mrp = Decimal(getattr(bill_item.item, "mrp", 0) or 0)
+            rate = Decimal(bill_item.price_per_unit or 0)
             disc = Decimal(bill_item.discount or 0)
             qty = int(bill_item.quantity or 0)
             amount = Decimal(bill_item.total_amount or 0)
@@ -229,6 +229,7 @@ class UserPDFGenerator:
                 code,
                 name[:58],
                 f"{mrp:.2f}",
+                f"{rate:.2f}",
                 f"{disc:.2f}",
                 str(qty),
                 f"{amount:.2f}",
@@ -242,9 +243,9 @@ class UserPDFGenerator:
         subtotal_y = y + 6
         c.setFont("Helvetica-Bold", 8.5)
         c.drawString(x + col_widths[0] + col_widths[1] + 4, subtotal_y + 4, "Totals")
-        c.drawString(x + sum(col_widths[:4]) + 4, subtotal_y + 4, f"{total_discount:.2f}")
-        c.drawString(x + sum(col_widths[:5]) + 4, subtotal_y + 4, str(total_qty))
-        c.drawString(x + sum(col_widths[:6]) + 4, subtotal_y + 4, f"{total_amount:.2f}")
+        c.drawString(x + sum(col_widths[:5]) + 4, subtotal_y + 4, f"{total_discount:.2f}")
+        c.drawString(x + sum(col_widths[:6]) + 4, subtotal_y + 4, str(total_qty))
+        c.drawString(x + sum(col_widths[:7]) + 4, subtotal_y + 4, f"{total_amount:.2f}")
 
         return y, {
             "total_discount": total_discount,
@@ -252,13 +253,12 @@ class UserPDFGenerator:
             "total_amount": total_amount,
         }
 
-    def _draw_footer_sections(self, c, bill, x, y_top, w, totals):
+    def _draw_footer_sections(self, c, bill, bill_items, x, y_top, w, totals):
         footer_h = y_top - self.margin
         y = self.margin
         c.rect(x, y, w, footer_h)
 
         left_w = w * 0.65
-        right_w = w - left_w
         c.line(x + left_w, y, x + left_w, y + footer_h)
 
         c.setFont("Helvetica-Bold", 8)
@@ -266,7 +266,14 @@ class UserPDFGenerator:
         c.setFont("Helvetica", 8)
         c.drawString(x + 8, y + footer_h - 28, "Mode: Cash / UPI")
 
-        in_words = num2words(Decimal(totals["total_amount"]), to="cardinal", lang="en_IN")
+        opening_due = Decimal(bill.op_due_amount or 0)
+        delivery_charge = self._get_delivery_charge(bill, bill_items)
+        bill_amount = Decimal(bill.total_amount or 0) - delivery_charge
+        grand_total = opening_due + bill_amount + delivery_charge
+        paid_amount = Decimal(bill.last_paid or 0)
+        due_amount = grand_total - paid_amount
+
+        in_words = num2words(grand_total, to="cardinal", lang="en_IN")
         c.drawString(x + 8, y + footer_h - 44, f"Amount in words: {in_words.title()} only")
 
         c.setFont("Helvetica", 7.5)
@@ -277,25 +284,20 @@ class UserPDFGenerator:
         summary_x = x + left_w + 8
         base_y = y + footer_h - 18
 
-        opening_due = Decimal(bill.op_due_amount or 0)
-        bill_amount = Decimal(bill.total_amount or 0)
-        grand_total = opening_due + bill_amount
-        paid_amount = Decimal(bill.last_paid or 0)
-        due_amount = grand_total - paid_amount
-
         c.setFont("Helvetica-Bold", 8.5)
         c.drawString(summary_x, base_y, "Summary")
 
         c.setFont("Helvetica", 8)
         c.drawString(summary_x, base_y - 14, f"Opening Due   : {self._money(opening_due)}")
         c.drawString(summary_x, base_y - 26, f"Bill Amount   : {self._money(bill_amount)}")
-        c.drawString(summary_x, base_y - 38, f"Grand Total   : {self._money(grand_total)}")
-        c.drawString(summary_x, base_y - 50, f"Paid Amount   : {self._money(paid_amount)}")
+        c.drawString(summary_x, base_y - 38, f"Delivery Chg  : {self._money(delivery_charge)}")
+        c.drawString(summary_x, base_y - 50, f"Grand Total   : {self._money(grand_total)}")
+        c.drawString(summary_x, base_y - 62, f"Paid Amount   : {self._money(paid_amount)}")
 
         if due_amount >= 0:
-            c.drawString(summary_x, base_y - 62, f"Balance Due   : {self._money(due_amount)}")
+            c.drawString(summary_x, base_y - 74, f"Balance Due   : {self._money(due_amount)}")
         else:
-            c.drawString(summary_x, base_y - 62, f"Wallet Amount : {self._money(-due_amount)}")
+            c.drawString(summary_x, base_y - 74, f"Wallet Amount : {self._money(-due_amount)}")
 
         signature_path = os.path.join(settings.BASE_DIR, "static", "images", "signature.png")
         if os.path.exists(signature_path):
@@ -308,29 +310,40 @@ class UserPDFGenerator:
         c.setFont("Helvetica-Bold", 8)
         c.drawRightString(x + w - 20, y + 18, "AUTHORISED SIGNATORY")
 
-    def _get_order_dates(self, bill):
-        """Best-effort lookup of order and delivery dates related to this bill."""
+    def _get_related_order(self, bill):
         if not bill.customer:
-            return None, None
+            return None
 
         order = CustomerOrder.objects.filter(
             customer=bill.customer,
             approved_total_amount=bill.total_amount,
-            order_date=bill.invoice_date
-        ).order_by('-id').first()
+            order_date=bill.invoice_date,
+        ).order_by("-id").first()
 
         if not order:
             order = CustomerOrder.objects.filter(
                 customer=bill.customer,
-                order_date=bill.invoice_date
-            ).order_by('-id').first()
+                order_date=bill.invoice_date,
+            ).order_by("-id").first()
 
         if not order:
-            order = CustomerOrder.objects.filter(
-                customer=bill.customer
-            ).order_by('-order_date', '-id').first()
+            order = CustomerOrder.objects.filter(customer=bill.customer).order_by("-order_date", "-id").first()
 
+        return order
+
+    def _get_order_dates(self, bill):
+        order = self._get_related_order(bill)
         if not order:
             return None, None
-
         return order.order_date, order.delivery_date
+
+    def _get_delivery_charge(self, bill, bill_items):
+        for bill_item in bill_items:
+            if getattr(bill_item.item, "code", "") == DELIVERY_ITEM_CODE:
+                return Decimal(bill_item.total_amount or 0)
+
+        order = self._get_related_order(bill)
+        if order:
+            return Decimal(order.delivery_charge or 0)
+
+        return Decimal("0")
