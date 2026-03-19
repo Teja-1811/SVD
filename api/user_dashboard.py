@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
 
+from api.user_bill_pdf_utils import UserPDFGenerator
 from .user_offers import get_active_user_offers
 from milk_agency.models import (
     Customer,
@@ -10,7 +11,10 @@ from milk_agency.models import (
     SubscriptionItem,
     SubscriptionPause,
     SubscriptionPlan,
+    Bill,
+    BillItem,
 )
+from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
 def _serialize_customer(customer):
@@ -156,6 +160,147 @@ def user_dashboard_api(request):
     }
 
     return Response(response_payload, status=200)
+
+
+# =======================================================
+# USER BILLS (list + detail + download)
+# =======================================================
+@api_view(["GET"])
+def user_bills_api(request):
+    user_id = request.GET.get("user_id")
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
+
+    bills = (
+        Bill.objects.filter(customer=customer, is_deleted=False)
+        .order_by("-invoice_date", "-id")
+    )
+
+    data = [
+        {
+            "id": b.id,
+            "invoice_number": b.invoice_number,
+            "invoice_date": b.invoice_date,
+            "total_amount": float(b.total_amount),
+            "opening_due": float(b.op_due_amount),
+            "profit": float(b.profit),
+            "current_due": float(customer.get_actual_due()),
+        }
+        for b in bills
+    ]
+    return Response({"bills": data}, status=200)
+
+
+@api_view(["GET"])
+def user_bill_detail_api(request, bill_id):
+    user_id = request.GET.get("user_id")
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
+
+    bill = (
+        Bill.objects.filter(customer=customer, id=bill_id, is_deleted=False)
+        .select_related("customer")
+        .first()
+    )
+    if not bill:
+        return Response({"error": "Bill not found"}, status=404)
+
+    items = BillItem.objects.filter(bill=bill).select_related("item")
+    item_payload = [
+        {
+            "item_id": bi.item.id,
+            "code": bi.item.code,
+            "name": bi.item.name,
+            "mrp": float(bi.item.mrp),
+            "price_per_unit": float(bi.price_per_unit),
+            "discount": float(bi.discount),
+            "quantity": bi.quantity,
+            "total_amount": float(bi.total_amount),
+        }
+        for bi in items
+    ]
+
+    bill_payload = {
+        "id": bill.id,
+        "invoice_number": bill.invoice_number,
+        "invoice_date": bill.invoice_date,
+        "total_amount": float(bill.total_amount),
+        "opening_due": float(bill.op_due_amount),
+        "last_paid": float(bill.last_paid),
+        "profit": float(bill.profit),
+        "current_due": float(customer.get_actual_due()),
+    }
+    return Response({"bill": bill_payload, "items": item_payload}, status=200)
+
+
+@api_view(["GET"])
+def user_bill_download_api(request, bill_id):
+    user_id = request.GET.get("user_id")
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
+
+    bill = Bill.objects.filter(customer=customer, id=bill_id, is_deleted=False).first()
+    if not bill:
+        return Response({"error": "Bill not found"}, status=404)
+
+    pdf_gen = UserPDFGenerator()
+    return pdf_gen.generate_and_return_pdf(bill, request)
+
+
+# =======================================================
+# USER ORDERS (detail view)
+# =======================================================
+@api_view(["GET"])
+def user_order_detail_api(request, order_id):
+    user_id = request.GET.get("user_id")
+    customer, error = _get_customer_or_response(user_id)
+    if error:
+        return error
+
+    order = (
+        CustomerOrder.objects.filter(customer=customer, id=order_id)
+        .select_related("customer")
+        .first()
+    )
+    if not order:
+        return Response({"error": "Order not found"}, status=404)
+
+    items = CustomerOrderItem.objects.filter(order=order).select_related("item")
+    item_payload = [
+        {
+            "item_id": oi.item.id,
+            "code": oi.item.code,
+            "name": oi.item.name,
+            "requested_quantity": oi.requested_quantity,
+            "requested_price": float(oi.requested_price),
+            "approved_quantity": oi.approved_quantity,
+            "approved_price": float(oi.approved_price),
+            "discount": float(oi.discount),
+            "discount_total": float(oi.discount_total),
+            "requested_total": float(oi.requested_total),
+            "approved_total": float(oi.approved_total),
+        }
+        for oi in items
+    ]
+
+    order_payload = {
+        "id": order.id,
+        "order_number": order.order_number,
+        "order_date": order.order_date,
+        "delivery_date": order.delivery_date,
+        "status": order.status,
+        "delivery_address": order.delivery_address,
+        "total_amount": float(order.total_amount),
+        "delivery_charge": float(order.delivery_charge),
+        "approved_total_amount": float(order.approved_total_amount),
+        "created_at": order.created_at,
+        "updated_at": order.updated_at,
+    }
+
+    return Response({"order": order_payload, "items": item_payload}, status=200)
 
 
 @api_view(["POST"])

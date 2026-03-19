@@ -8,9 +8,28 @@ from decimal import Decimal
 from datetime import datetime
 
 from api.admin_bill_pdf_utils import PDFGenerator
+from api.user_bill_pdf_utils import UserPDFGenerator, DELIVERY_ITEM_CODE
 from milk_agency.models import Bill, BillItem, Customer, Item
 from customer_portal.models import CustomerOrder
 
+DELIVERY_CHARGE_AMOUNT = Decimal("10")
+
+
+def _unit_price(item, customer):
+    """Use selling price for retailers and MRP for direct users."""
+    if customer and getattr(customer, "user_type", "").lower() == "user":
+        return Decimal(item.mrp or item.selling_price)
+    return Decimal(item.selling_price)
+
+
+def _is_delivery_mode(request_data):
+    mode = str(
+        request_data.get("delivery_mode")
+        or request_data.get("delivery_type")
+        or request_data.get("delivery")
+        or "takeaway"
+    ).lower()
+    return mode in ("delivery", "delivered", "home_delivery", "home-delivery")
 
 # ------------------------------------------
 # 1️⃣ GET CUSTOMERS
@@ -132,14 +151,22 @@ def api_create_bill(request):
     item_ids = request.data.get("items", [])
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
+    invoice_date = request.data.get("invoice_date")
+    is_delivery = _is_delivery_mode(request.data)
 
     customer = Customer.objects.filter(id=customer_id).first()
+
+    try:
+        bill_date = datetime.strptime(invoice_date, "%Y-%m-%d").date() if invoice_date else timezone.localdate()
+    except ValueError:
+        return Response({"success": False, "message": "Invalid invoice_date"}, status=400)
 
     with transaction.atomic():
 
         bill = Bill.objects.create(
             customer=customer,
             invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+            invoice_date=bill_date,
             total_amount=Decimal(0),
             op_due_amount=customer.due if customer else 0,
             last_paid=Decimal(0),
@@ -152,16 +179,20 @@ def api_create_bill(request):
         for i, item_id in enumerate(item_ids):
             item = Item.objects.get(id=item_id)
 
-            qty = int(quantities[i])
-            discount = Decimal(discounts[i]) if discounts else Decimal(0)
+            qty = int(quantities[i]) if i < len(quantities) and quantities[i] else 0
+            discount = Decimal(discounts[i]) if (discounts and i < len(discounts) and discounts[i]) else Decimal(0)
+            if qty <= 0:
+                continue
 
-            line_total = (item.selling_price * qty) - (discount * qty)
-            profit = ((item.selling_price - item.buying_price) * qty) - (discount * qty)
+            unit_price = _unit_price(item, customer)
+
+            line_total = (unit_price * qty) - (discount * qty)
+            profit = ((unit_price - item.buying_price) * qty) - (discount * qty)
 
             BillItem.objects.create(
                 bill=bill,
                 item=item,
-                price_per_unit=item.selling_price,
+                price_per_unit=unit_price,
                 discount=discount,
                 quantity=qty,
                 total_amount=line_total
@@ -172,6 +203,28 @@ def api_create_bill(request):
 
             total += line_total
             total_profit += profit
+
+        if is_delivery and customer and getattr(customer, "user_type", "").lower() == "user":
+            delivery_item, _ = Item.objects.get_or_create(
+                code=DELIVERY_ITEM_CODE,
+                defaults={
+                    "name": "Delivery Charge",
+                    "selling_price": DELIVERY_CHARGE_AMOUNT,
+                    "buying_price": Decimal(0),
+                    "mrp": DELIVERY_CHARGE_AMOUNT,
+                    "stock_quantity": 0,
+                },
+            )
+            BillItem.objects.create(
+                bill=bill,
+                item=delivery_item,
+                price_per_unit=DELIVERY_CHARGE_AMOUNT,
+                discount=Decimal(0),
+                quantity=1,
+                total_amount=DELIVERY_CHARGE_AMOUNT,
+            )
+            total += DELIVERY_CHARGE_AMOUNT
+            total_profit += DELIVERY_CHARGE_AMOUNT
 
         bill.total_amount = total
         bill.profit = total_profit
@@ -198,6 +251,7 @@ def api_edit_bill(request, bill_id):
     quantities = request.data.get("quantities", [])
     discounts = request.data.get("discounts", [])
     invoice_date = request.data.get("invoice_date")
+    is_delivery = _is_delivery_mode(request.data)
 
     bill_items = BillItem.objects.filter(bill=bill)
 
@@ -218,19 +272,24 @@ def api_edit_bill(request, bill_id):
 
         for i, item_id in enumerate(item_ids):
             item = Item.objects.get(id=item_id)
-            qty = int(quantities[i])
-            discount = Decimal(discounts[i]) if discounts else Decimal(0)
+            qty = int(quantities[i]) if i < len(quantities) and quantities[i] else 0
+            discount = Decimal(discounts[i]) if (discounts and i < len(discounts) and discounts[i]) else Decimal(0)
+
+            if qty <= 0:
+                continue
 
             if item.stock_quantity < qty:
                 return Response({"success": False, "message": f"Insufficient stock for {item.name}"}, status=400)
 
-            line_total = (item.selling_price * qty) - (discount * qty)
-            profit = ((item.selling_price - item.buying_price) * qty) - (discount * qty)
+            unit_price = _unit_price(item, bill.customer or Customer.objects.filter(id=new_customer_id).first())
+
+            line_total = (unit_price * qty) - (discount * qty)
+            profit = ((unit_price - item.buying_price) * qty) - (discount * qty)
 
             BillItem.objects.create(
                 bill=bill,
                 item=item,
-                price_per_unit=item.selling_price,
+                price_per_unit=unit_price,
                 discount=discount,
                 quantity=qty,
                 total_amount=line_total
@@ -241,6 +300,28 @@ def api_edit_bill(request, bill_id):
 
             total += line_total
             total_profit += profit
+
+        if is_delivery and new_customer and getattr(new_customer, "user_type", "").lower() == "user":
+            delivery_item, _ = Item.objects.get_or_create(
+                code=DELIVERY_ITEM_CODE,
+                defaults={
+                    "name": "Delivery Charge",
+                    "selling_price": DELIVERY_CHARGE_AMOUNT,
+                    "buying_price": Decimal(0),
+                    "mrp": DELIVERY_CHARGE_AMOUNT,
+                    "stock_quantity": 0,
+                },
+            )
+            BillItem.objects.create(
+                bill=bill,
+                item=delivery_item,
+                price_per_unit=DELIVERY_CHARGE_AMOUNT,
+                discount=Decimal(0),
+                quantity=1,
+                total_amount=DELIVERY_CHARGE_AMOUNT,
+            )
+            total += DELIVERY_CHARGE_AMOUNT
+            total_profit += DELIVERY_CHARGE_AMOUNT
 
         new_customer = Customer.objects.filter(id=new_customer_id).first() if new_customer_id else None
         old_customer = bill.customer
@@ -291,5 +372,9 @@ def api_delete_bill(request, bill_id):
 @api_view(['GET'])
 def api_download_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
-    pdf_generator = PDFGenerator()
+    customer_type = getattr(bill.customer, "user_type", "retailer") if bill.customer else "retailer"
+    if customer_type == "user":
+        pdf_generator = UserPDFGenerator()
+    else:
+        pdf_generator = PDFGenerator()
     return pdf_generator.generate_and_return_pdf(bill, request)

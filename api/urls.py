@@ -149,6 +149,10 @@ urlpatterns = [
     path('user/current-subscription/', current_subscription_api, name='user_current_subscription_api'),
     path('user/subscription/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
     path('user/profile/update/', user_profile_update, name='user_profile_update_api'),
+    path('user/bills/', user_bills_api, name='user_bills_api'),
+    path('user/bills/<int:bill_id>/', user_bill_detail_api, name='user_bill_detail_api'),
+    path('user/bills/<int:bill_id>/download/', user_bill_download_api, name='user_bill_download_api'),
+    path('user/orders/<int:order_id>/', user_order_detail_api, name='user_order_detail_api'),
     
     # User orders (create/edit/delete, including prebooking via delivery_date)
     path('user/orders/create/', user_create_order, name='user_create_order'),
