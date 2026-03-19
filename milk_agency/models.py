@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.db.models import Sum
 from django.utils import timezone
 from django.contrib.auth.models import (
@@ -603,7 +604,7 @@ class OrderDelivery(models.Model):
         help_text="Collected amount on delivery (if COD/UPI)",
     )
     delivered_by = models.ForeignKey(
-        "auth.User",
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -663,7 +664,7 @@ class SubscriptionDelivery(models.Model):
     eta = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     delivered_by = models.ForeignKey(
-        "auth.User",
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
