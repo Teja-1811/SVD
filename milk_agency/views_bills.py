@@ -30,7 +30,7 @@ def bills_dashboard(request):
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
 
-    bills = Bill.objects.select_related('customer')
+    bills = Bill.objects.filter(is_deleted=False).select_related('customer')
 
     if customer_id:
         try:
@@ -306,6 +306,6 @@ def generate_bill_from_order(order):
 # PDF GENERATION
 # =========================================================
 def generate_invoice_pdf(request, bill_id):
-    bill = get_object_or_404(Bill, id=bill_id)
+    bill = get_object_or_404(Bill, id=bill_id, is_deleted=False)
     pdf_generator = PDFGenerator()
     return pdf_generator.generate_and_return_pdf(bill, request)

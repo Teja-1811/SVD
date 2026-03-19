@@ -57,7 +57,7 @@ def _find_linked_customer_order(bill):
 # =========================================================
 @login_required
 def view_bill(request, bill_id):
-    bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
+    bill = get_object_or_404(Bill.objects.select_related('customer').filter(is_deleted=False), id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill).select_related('item')
     linked_order = _find_linked_customer_order(bill)
     delivery_charge_item = bill_items.filter(item__code=DELIVERY_ITEM_CODE).first()
@@ -82,7 +82,7 @@ def view_bill(request, bill_id):
 # =========================================================
 @login_required
 def get_bill_details_ajax(request, bill_id):
-    bill = get_object_or_404(Bill, id=bill_id)
+    bill = get_object_or_404(Bill, id=bill_id, is_deleted=False)
     bill_items = BillItem.objects.filter(bill=bill).select_related('item')
 
     data = {
@@ -114,7 +114,7 @@ def get_bill_details_ajax(request, bill_id):
 # =========================================================
 @login_required
 def edit_bill(request, bill_id):
-    bill = get_object_or_404(Bill, id=bill_id)
+    bill = get_object_or_404(Bill, id=bill_id, is_deleted=False)
     bill_items = BillItem.objects.filter(bill=bill)
 
     if request.method == 'POST':
@@ -184,7 +184,7 @@ def edit_bill(request, bill_id):
 # =========================================================
 @login_required
 def delete_bill(request, bill_id):
-    bill = get_object_or_404(Bill, id=bill_id)
+    bill = get_object_or_404(Bill, id=bill_id, is_deleted=False)
     bill_items = BillItem.objects.filter(bill=bill)
 
     if request.method == 'POST':
