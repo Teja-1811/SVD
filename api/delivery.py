@@ -1,13 +1,24 @@
 from django.utils import timezone
+from django.apps import apps
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from milk_agency.models import OrderDelivery, SubscriptionDelivery
+
+def _order_delivery_model():
+    return apps.get_model("milk_agency", "OrderDelivery")
 
 
-def _serialize_order_delivery(od: OrderDelivery):
+def _subscription_delivery_model():
+    return apps.get_model("milk_agency", "SubscriptionDelivery")
+
+
+def _subscription_order_model():
+    return apps.get_model("milk_agency", "SubscriptionOrder")
+
+
+def _serialize_order_delivery(od):
     return {
         "type": "order",
         "id": od.id,
@@ -20,7 +31,7 @@ def _serialize_order_delivery(od: OrderDelivery):
     }
 
 
-def _serialize_subscription_delivery(sd: SubscriptionDelivery):
+def _serialize_subscription_delivery(sd):
     return {
         "type": "subscription",
         "id": sd.id,
@@ -42,6 +53,8 @@ def delivery_today_list(request):
     - completed: delivered for today
     """
     today = timezone.localdate()
+    OrderDelivery = _order_delivery_model()
+    SubscriptionDelivery = _subscription_delivery_model()
 
     pending_orders = OrderDelivery.objects.filter(
         order__delivery_date=today,
@@ -71,7 +84,7 @@ def delivery_today_list(request):
     })
 
 
-def _update_order_delivery(obj: OrderDelivery, data, user):
+def _update_order_delivery(obj, data, user):
     status = data.get("status")
     if status:
         obj.status = status
@@ -87,7 +100,7 @@ def _update_order_delivery(obj: OrderDelivery, data, user):
     obj.save()
 
 
-def _update_subscription_delivery(obj: SubscriptionDelivery, data, user):
+def _update_subscription_delivery(obj, data, user):
     status = data.get("status")
     if status:
         obj.status = status
@@ -128,6 +141,9 @@ def delivery_update(request):
     if delivery_type not in ("order", "subscription"):
         return Response({"success": False, "message": "type is required (order|subscription)"}, status=400)
 
+    OrderDelivery = _order_delivery_model()
+    SubscriptionDelivery = _subscription_delivery_model()
+
     try:
         if delivery_type == "order":
             from customer_portal.models import CustomerOrder
@@ -148,7 +164,7 @@ def delivery_update(request):
                 sub_order_id = data.get("subscription_order_id")
                 if not sub_order_id:
                     return Response({"success": False, "message": "subscription_order_id is required to create delivery"}, status=400)
-                from milk_agency.models import SubscriptionOrder
+                SubscriptionOrder = _subscription_order_model()
                 so = SubscriptionOrder.objects.get(id=sub_order_id)
                 obj, _ = SubscriptionDelivery.objects.get_or_create(subscription_order=so)
             _update_subscription_delivery(obj, data, request.user)

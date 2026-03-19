@@ -1,6 +1,7 @@
 import os
 from decimal import Decimal
 
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
@@ -9,6 +10,22 @@ from django.contrib.auth.decorators import login_required
 from .models import Bill, BillItem, Item, Customer
 from .utils import process_bill_items
 from customer_portal.models import CustomerOrder
+
+
+def _find_linked_customer_order(bill):
+    if not bill.customer_id:
+        return None
+
+    # `order_date` is already a DateField, so this must stay an exact date match.
+    return (
+        CustomerOrder.objects.filter(
+            customer_id=bill.customer_id,
+            order_date=bill.invoice_date,
+            total_amount=bill.total_amount,
+        )
+        .order_by("-id")
+        .first()
+    )
 
 
 # =========================================================
@@ -141,30 +158,27 @@ def delete_bill(request, bill_id):
     if request.method == 'POST':
         customer = bill.customer
 
-        # -------- RESTORE STOCK --------
-        for bi in bill_items:
-            bi.item.stock_quantity += bi.quantity
-            bi.item.save()
+        with transaction.atomic():
+            # -------- RESTORE STOCK --------
+            for bi in bill_items.select_related('item'):
+                bi.item.stock_quantity += bi.quantity
+                bi.item.save(update_fields=['stock_quantity'])
 
-        # -------- HANDLE LINKED ORDER --------
-        order = CustomerOrder.objects.filter(
-            customer=customer,
-            order_date=bill.invoice_date,
-            total_amount=bill.total_amount
-        ).order_by('-id').first()
+            # -------- HANDLE LINKED ORDER --------
+            order = _find_linked_customer_order(bill)
 
-        if order:
-            order.status = "cancelled"
-            order.approved_total_amount = 0
-            order.save()
+            if order:
+                order.status = "cancelled"
+                order.approved_total_amount = 0
+                order.save(update_fields=['status', 'approved_total_amount'])
 
-        bill_items.delete()
-        bill.delete()
+            bill_items.delete()
+            bill.delete()
 
-        # -------- RECALCULATE CUSTOMER DUE --------
-        if customer:
-            customer.due = customer.get_actual_due()
-            customer.save()
+            # -------- RECALCULATE CUSTOMER DUE --------
+            if customer:
+                customer.due = customer.get_actual_due()
+                customer.save(update_fields=['due'])
 
         messages.success(request, "Bill deleted. Stock restored & due recalculated.")
         return redirect('milk_agency:bills_dashboard')
