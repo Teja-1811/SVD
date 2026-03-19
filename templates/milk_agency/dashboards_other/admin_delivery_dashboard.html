@@ -1,0 +1,376 @@
+{% extends "milk_agency/home/base.html" %}
+{% load tz %}
+{% block title %}Admin Delivery Dashboard{% endblock %}
+
+{% block content %}
+<style>
+.delivery-page {
+    background: linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
+    min-height: calc(100vh - 90px);
+}
+
+.delivery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.delivery-title {
+    margin: 0;
+    color: #16305f;
+    font-weight: 700;
+}
+
+.delivery-subtitle {
+    margin: 6px 0 0;
+    color: #5f6f85;
+}
+
+.delivery-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.delivery-stat {
+    min-width: 150px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(22, 48, 95, 0.12);
+}
+
+.delivery-stat.pending {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.delivery-stat.delivered {
+    background: linear-gradient(135deg, #16a34a, #059669);
+}
+
+.delivery-stat .count {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.section-card {
+    background: #fff;
+    border: 1px solid #e6ecf4;
+    border-radius: 20px;
+    box-shadow: 0 10px 26px rgba(22, 48, 95, 0.08);
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.section-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #19345d;
+}
+
+.section-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.section-pill.pending {
+    background: #fff3cd;
+    color: #8a5a00;
+}
+
+.section-pill.delivered {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.delivery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+    padding: 20px;
+}
+
+.delivery-item {
+    border: 1px solid #e9eef5;
+    border-radius: 18px;
+    padding: 18px;
+    background: #fbfdff;
+}
+
+.delivery-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.delivery-item-top h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e355d;
+}
+
+.delivery-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #e8f1ff;
+    color: #2450a6;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #8a5a00;
+}
+
+.status-badge.out_for_delivery {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-badge.delivered {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.delivery-meta {
+    display: grid;
+    gap: 10px;
+}
+
+.delivery-meta-row {
+    display: grid;
+    grid-template-columns: 104px 1fr;
+    gap: 10px;
+    font-size: 0.93rem;
+}
+
+.delivery-meta-row strong {
+    color: #5d6b80;
+}
+
+.empty-state {
+    padding: 28px 20px 34px;
+    text-align: center;
+    color: #69788e;
+}
+
+@media (max-width: 768px) {
+    .delivery-page {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .delivery-grid {
+        padding: 14px;
+    }
+
+    .section-head {
+        padding: 16px;
+    }
+
+    .delivery-meta-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+</style>
+
+<div class="container-fluid py-4 delivery-page">
+    <div class="delivery-header">
+        <div>
+            <h1 class="delivery-title">Delivery Status Dashboard</h1>
+            <p class="delivery-subtitle">Track pending and delivered deliveries as of {{ today|date:"M d, Y" }}.</p>
+        </div>
+        <div class="delivery-stats">
+            <div class="delivery-stat pending">
+                <span class="count">{{ pending_total }}</span>
+                <span>Pending Deliveries</span>
+            </div>
+            <div class="delivery-stat delivered">
+                <span class="count">{{ delivered_total }}</span>
+                <span>Delivered Deliveries</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-head">
+            <h2>Pending Customer Orders</h2>
+            <span class="section-pill pending">{{ pending_orders.count }} orders</span>
+        </div>
+        {% if pending_orders %}
+        <div class="delivery-grid">
+            {% for order in pending_orders %}
+            <article class="delivery-item">
+                <div class="delivery-item-top">
+                    <div>
+                        <span class="delivery-kind"><i class="bi bi-bag-check"></i> Order</span>
+                        <h3 class="mt-2">{{ order.order_number }}</h3>
+                    </div>
+                    <span class="status-badge {% if order.delivery_tracking and order.delivery_tracking.status %}{{ order.delivery_tracking.status }}{% else %}pending{% endif %}">
+                        {% if order.delivery_tracking %}
+                            {{ order.delivery_tracking.get_status_display }}
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="delivery-meta">
+                    <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
+                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
+                    <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
+                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|floatformat:2 }}</span></div>
+                    <div class="delivery-meta-row"><strong>Address</strong><span>{{ order.delivery_address|default:"-" }}</span></div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No pending customer order deliveries.</div>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
+        <div class="section-head">
+            <h2>Pending Subscriptions</h2>
+            <span class="section-pill pending">{{ pending_subscriptions.count }} subscriptions</span>
+        </div>
+        {% if pending_subscriptions %}
+        <div class="delivery-grid">
+            {% for delivery in pending_subscriptions %}
+            <article class="delivery-item">
+                <div class="delivery-item-top">
+                    <div>
+                        <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
+                        <h3 class="mt-2">{{ delivery.subscription_order.customer.name }}</h3>
+                    </div>
+                    <span class="status-badge {{ delivery.status }}">{{ delivery.get_status_display }}</span>
+                </div>
+                <div class="delivery-meta">
+                    <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
+                    <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
+                    <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
+                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ delivery.subscription_order.customer.phone }}</span></div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No pending subscription deliveries.</div>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
+        <div class="section-head">
+            <h2>Delivered Customer Orders</h2>
+            <span class="section-pill delivered">{{ delivered_orders.count }} orders</span>
+        </div>
+        {% if delivered_orders %}
+        <div class="delivery-grid">
+            {% for order in delivered_orders %}
+            <article class="delivery-item">
+                <div class="delivery-item-top">
+                    <div>
+                        <span class="delivery-kind"><i class="bi bi-bag-check-fill"></i> Order</span>
+                        <h3 class="mt-2">{{ order.order_number }}</h3>
+                    </div>
+                    <span class="status-badge delivered">Delivered</span>
+                </div>
+                <div class="delivery-meta">
+                    <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
+                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
+                    <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
+                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|floatformat:2 }}</span></div>
+                    <div class="delivery-meta-row">
+                        <strong>Delivered At</strong>
+                        <span>
+                            {% if order.delivery_tracking and order.delivery_tracking.delivered_at %}
+                                {{ order.delivery_tracking.delivered_at|localtime|date:"M d, Y h:i A" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No delivered customer orders yet.</div>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
+        <div class="section-head">
+            <h2>Delivered Subscriptions</h2>
+            <span class="section-pill delivered">{{ delivered_subscriptions.count }} subscriptions</span>
+        </div>
+        {% if delivered_subscriptions %}
+        <div class="delivery-grid">
+            {% for delivery in delivered_subscriptions %}
+            <article class="delivery-item">
+                <div class="delivery-item-top">
+                    <div>
+                        <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
+                        <h3 class="mt-2">{{ delivery.subscription_order.customer.name }}</h3>
+                    </div>
+                    <span class="status-badge delivered">Delivered</span>
+                </div>
+                <div class="delivery-meta">
+                    <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
+                    <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
+                    <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
+                    <div class="delivery-meta-row">
+                        <strong>Delivered At</strong>
+                        <span>
+                            {% if delivery.delivered_at %}
+                                {{ delivery.delivered_at|localtime|date:"M d, Y h:i A" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No delivered subscriptions yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

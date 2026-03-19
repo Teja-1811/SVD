@@ -1,11 +1,14 @@
 import json
 from decimal import Decimal
 from django.db import transaction
+from django.db.models import Q
 from milk_agency.views_bills import generate_bill_from_order
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
+from django.utils import timezone
+from milk_agency.models import SubscriptionDelivery
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
@@ -21,6 +24,61 @@ def admin_orders_dashboard(request):
         'pending_orders': pending_orders,
         'total_pending': pending_orders.count()
     })
+
+
+@never_cache
+@login_required
+def admin_delivery_dashboard(request):
+    today = timezone.localdate()
+
+    pending_orders = (
+        CustomerOrder.objects
+        .select_related("customer")
+        .filter(
+            Q(status__in=["pending", "confirmed", "processing", "ready"]) |
+            Q(delivery_tracking__status__in=["pending", "out_for_delivery", "failed"])
+        )
+        .exclude(status__in=["rejected", "cancelled", "delivered"])
+        .distinct()
+        .order_by("delivery_date", "-order_date")
+    )
+
+    delivered_orders = (
+        CustomerOrder.objects
+        .select_related("customer", "approved_by", "delivery_tracking__delivered_by")
+        .filter(Q(status="delivered") | Q(delivery_tracking__status="delivered"))
+        .distinct()
+        .order_by("-delivery_date", "-updated_at")
+    )
+
+    pending_subscriptions = (
+        SubscriptionDelivery.objects
+        .select_related("subscription_order__customer", "subscription_order__item")
+        .filter(status__in=["pending", "out_for_delivery"])
+        .order_by("subscription_order__date", "subscription_order__customer__name")
+    )
+
+    delivered_subscriptions = (
+        SubscriptionDelivery.objects
+        .select_related(
+            "subscription_order__customer",
+            "subscription_order__item",
+            "delivered_by",
+        )
+        .filter(status="delivered")
+        .order_by("-subscription_order__date", "-delivered_at", "-updated_at")
+    )
+
+    context = {
+        "today": today,
+        "pending_orders": pending_orders,
+        "delivered_orders": delivered_orders,
+        "pending_subscriptions": pending_subscriptions,
+        "delivered_subscriptions": delivered_subscriptions,
+        "pending_total": pending_orders.count() + pending_subscriptions.count(),
+        "delivered_total": delivered_orders.count() + delivered_subscriptions.count(),
+    }
+    return render(request, "milk_agency/dashboards_other/admin_delivery_dashboard.html", context)
 
 
 # -------------------------------------------------------

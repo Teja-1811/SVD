@@ -6,6 +6,23 @@
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
 
 <style>
+.dashboard-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0d6efd, #1d4ed8);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(13, 110, 253, 0.24);
+}
+
+.dashboard-shortcut:hover {
+    color: #fff;
+    transform: translateY(-1px);
+}
 
     /* Summary Cards */
     .summary-card {
@@ -56,6 +73,13 @@
 
 {% block content %}
 <div class="container-fluid py-4" style="min-height: 100vh; background:#f8f9fa;">
+
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="dashboard-shortcut">
+            <i class="bi bi-truck"></i>
+            <span>Delivery Status</span>
+        </a>
+    </div>
 
 
     <!-- ----------------------------------- -->

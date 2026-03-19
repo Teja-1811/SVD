@@ -70,7 +70,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'milk_agency:admin_orders_dashboard' %}">
+              <a class="nav-link {% if request.resolver_match.url_name == 'admin_orders_dashboard' or request.resolver_match.url_name == 'admin_delivery_dashboard' %}active{% endif %}" href="{% url 'milk_agency:admin_orders_dashboard' %}">
                 <i class="bi bi-clipboard-check"></i> Orders
               </a>
             </li>
