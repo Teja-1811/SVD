@@ -239,10 +239,23 @@ def generate_bill_from_order(order):
         total_amount = Decimal("0")
         total_profit = Decimal("0")
 
+        def _unit_price(item, customer):
+            """
+            Use selling price for retailers; use MRP for direct users.
+            Falls back to selling price if MRP is missing.
+            """
+            if customer and getattr(customer, "user_type", "").lower() == "user":
+                return Decimal(item.mrp or item.selling_price)
+            return Decimal(item.selling_price)
+
+        # Treat blank/explicit takeaway address as pickup (no delivery charge)
+        addr = (order.delivery_address or "").strip().lower()
+        is_takeaway = addr in ("takeaway", "take away", "pickup", "pick up", "self pickup", "self-pickup")
+
         for oi in order.items.all():
             item = oi.item
             qty = oi.requested_quantity
-            price = oi.requested_price
+            price = _unit_price(item, customer)
             discount_total = getattr(oi, 'discount_total', Decimal("0"))
 
             item_total = (price * qty) - discount_total
@@ -262,6 +275,15 @@ def generate_bill_from_order(order):
 
             total_amount += item_total
             total_profit += profit
+
+        delivery_charge = Decimal("0")
+        if not is_takeaway:
+            delivery_charge = Decimal("10")
+            total_amount += delivery_charge
+            total_profit += delivery_charge  # delivery charge is pure margin
+            # keep order record in sync
+            order.delivery_charge = delivery_charge
+            order.save(update_fields=["delivery_charge"])
 
         if total_amount <= 0:
             raise Exception("Invalid order amount")
