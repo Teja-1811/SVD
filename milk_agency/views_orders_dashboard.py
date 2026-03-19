@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+from datetime import datetime
 from django.db import connection, transaction
 from django.db.models import Q
 from milk_agency.views_bills import generate_bill_from_order
@@ -61,6 +62,96 @@ def _order_grand_total(order):
     return Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
 
+def _present_order_status(raw_status):
+    return "out_for_delivery" if raw_status == "confirmed" else (raw_status or "pending")
+
+
+def _present_order_status_label(raw_status):
+    return _present_order_status(raw_status).replace("_", " ").title()
+
+
+def _clean_text(value):
+    return str(value or "").strip().lower()
+
+
+def _parse_filter_date(raw):
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _resolve_order_status(order, has_order_delivery_table):
+    delivery_tracking = getattr(order, "delivery_tracking", None) if has_order_delivery_table else None
+    raw_status = (
+        getattr(delivery_tracking, "status", None)
+        or getattr(order, "status", None)
+        or "pending"
+    )
+    return _present_order_status(raw_status)
+
+
+def _matches_order(order, filters, has_order_delivery_table):
+    if filters["kind"] not in ("all", "order"):
+        return False
+    if filters["stage"] == "pending" and _resolve_order_status(order, has_order_delivery_table) == "delivered":
+        return False
+    if filters["stage"] == "delivered" and _resolve_order_status(order, has_order_delivery_table) != "delivered":
+        return False
+    if filters["status"] != "all" and _resolve_order_status(order, has_order_delivery_table) != filters["status"]:
+        return False
+    if filters["date"] and getattr(order, "delivery_date", None) != filters["date"]:
+        return False
+    if filters["q"]:
+        haystack = " ".join([
+            getattr(order, "order_number", ""),
+            getattr(getattr(order, "customer", None), "name", ""),
+            getattr(getattr(order, "customer", None), "phone", ""),
+            getattr(order, "delivery_address", ""),
+        ]).lower()
+        if filters["q"] not in haystack:
+            return False
+    return True
+
+
+def _matches_subscription(delivery, filters, delivered_status):
+    if filters["kind"] not in ("all", "subscription"):
+        return False
+    if filters["stage"] == "pending" and delivered_status == "delivered":
+        return False
+    if filters["stage"] == "delivered" and delivered_status != "delivered":
+        return False
+    if filters["status"] != "all" and delivery.status != filters["status"]:
+        return False
+
+    sub_order = delivery.subscription_order
+    if filters["date"] and getattr(sub_order, "date", None) != filters["date"]:
+        return False
+    if filters["q"]:
+        haystack = " ".join([
+            getattr(getattr(sub_order, "customer", None), "name", ""),
+            getattr(getattr(sub_order, "customer", None), "phone", ""),
+            getattr(getattr(sub_order, "item", None), "name", ""),
+        ]).lower()
+        if filters["q"] not in haystack:
+            return False
+    return True
+
+
+def _get_delivery_filters(request):
+    raw_date = (request.GET.get("date") or "").strip()
+    return {
+        "q": _clean_text(request.GET.get("q")),
+        "kind": (request.GET.get("kind") or "all").strip().lower(),
+        "stage": (request.GET.get("stage") or "all").strip().lower(),
+        "status": (request.GET.get("status") or "all").strip().lower(),
+        "date_raw": raw_date,
+        "date": _parse_filter_date(raw_date),
+    }
+
+
 # -------------------------------------------------------
 # ADMIN ORDERS DASHBOARD
 # -------------------------------------------------------
@@ -79,6 +170,7 @@ def admin_orders_dashboard(request):
 @login_required
 def admin_delivery_dashboard(request):
     today = timezone.localdate()
+    filters = _get_delivery_filters(request)
     has_order_delivery_table = _model_is_queryable(OrderDelivery)
     has_subscription_delivery_table = _model_is_queryable(SubscriptionDelivery)
 
@@ -151,6 +243,28 @@ def admin_delivery_dashboard(request):
             .order_by("-date", "customer__name")
         ]
 
+    pending_orders = [
+        order for order in pending_orders
+        if _matches_order(order, filters, has_order_delivery_table)
+    ]
+    delivered_orders = [
+        order for order in delivered_orders
+        if _matches_order(order, filters, has_order_delivery_table)
+    ]
+    pending_subscriptions = [
+        delivery for delivery in pending_subscriptions
+        if _matches_subscription(delivery, filters, "pending")
+    ]
+    delivered_subscriptions = [
+        delivery for delivery in delivered_subscriptions
+        if _matches_subscription(delivery, filters, "delivered")
+    ]
+
+    for order in pending_orders + delivered_orders:
+        raw_status = getattr(getattr(order, "delivery_tracking", None), "status", None) or getattr(order, "status", "pending")
+        order.display_delivery_status = _present_order_status(raw_status)
+        order.display_delivery_status_label = _present_order_status_label(raw_status)
+
     pending_orders_count = _safe_len_or_count(pending_orders)
     delivered_orders_count = _safe_len_or_count(delivered_orders)
     pending_subscriptions_count = _safe_len_or_count(pending_subscriptions)
@@ -170,6 +284,7 @@ def admin_delivery_dashboard(request):
         "delivered_subscriptions_count": delivered_subscriptions_count,
         "pending_total": pending_orders_count + pending_subscriptions_count,
         "delivered_total": delivered_orders_count + delivered_subscriptions_count,
+        "filters": filters,
     }
     return render(request, "milk_agency/dashboards_other/admin_delivery_dashboard.html", context)
 

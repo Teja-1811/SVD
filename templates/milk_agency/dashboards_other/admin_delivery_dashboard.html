@@ -115,6 +115,53 @@
     gap: 18px;
 }
 
+.delivery-filters {
+    margin-bottom: 18px;
+    padding: 20px 22px;
+}
+
+.delivery-filter-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.6fr) repeat(4, minmax(140px, 1fr)) auto auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.delivery-filter-field {
+    display: grid;
+    gap: 6px;
+}
+
+.delivery-filter-field label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--delivery-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.delivery-filter-field input,
+.delivery-filter-field select {
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--delivery-border);
+    padding: 10px 12px;
+    color: var(--delivery-text);
+    background: #fff;
+}
+
+.delivery-filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.delivery-filter-note {
+    margin-top: 12px;
+    color: var(--delivery-muted);
+    font-size: 0.92rem;
+}
+
 .section-head {
     display: flex;
     justify-content: space-between;
@@ -310,6 +357,14 @@
         padding: 16px;
     }
 
+    .delivery-filters {
+        padding: 16px;
+    }
+
+    .delivery-filter-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .delivery-meta-row {
         grid-template-columns: 1fr;
         gap: 4px;
@@ -326,8 +381,14 @@
 }
 
 @media (max-width: 480px) {
+    .delivery-filter-form,
     .delivery-actions {
         grid-template-columns: 1fr;
+    }
+
+    .delivery-filter-actions {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 </style>
@@ -355,6 +416,52 @@
     </div>
 
     <div class="delivery-section-grid">
+    <div class="section-card delivery-filters">
+        <form method="get" class="delivery-filter-form">
+            <div class="delivery-filter-field">
+                <label for="delivery-q">Search</label>
+                <input id="delivery-q" type="text" name="q" value="{{ filters.q }}" placeholder="Customer, phone, order, item, address">
+            </div>
+            <div class="delivery-filter-field">
+                <label for="delivery-date">Date</label>
+                <input id="delivery-date" type="date" name="date" value="{{ filters.date_raw }}">
+            </div>
+            <div class="delivery-filter-field">
+                <label for="delivery-kind">Kind</label>
+                <select id="delivery-kind" name="kind">
+                    <option value="all" {% if filters.kind == "all" %}selected{% endif %}>All</option>
+                    <option value="order" {% if filters.kind == "order" %}selected{% endif %}>Orders</option>
+                    <option value="subscription" {% if filters.kind == "subscription" %}selected{% endif %}>Subscriptions</option>
+                </select>
+            </div>
+            <div class="delivery-filter-field">
+                <label for="delivery-stage">Stage</label>
+                <select id="delivery-stage" name="stage">
+                    <option value="all" {% if filters.stage == "all" %}selected{% endif %}>All</option>
+                    <option value="pending" {% if filters.stage == "pending" %}selected{% endif %}>Pending</option>
+                    <option value="delivered" {% if filters.stage == "delivered" %}selected{% endif %}>Delivered</option>
+                </select>
+            </div>
+            <div class="delivery-filter-field">
+                <label for="delivery-status">Status</label>
+                <select id="delivery-status" name="status">
+                    <option value="all" {% if filters.status == "all" %}selected{% endif %}>All</option>
+                    <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>Pending</option>
+                    <option value="out_for_delivery" {% if filters.status == "out_for_delivery" %}selected{% endif %}>Out for delivery</option>
+                    <option value="confirmed" {% if filters.status == "confirmed" %}selected{% endif %}>Confirmed</option>
+                    <option value="processing" {% if filters.status == "processing" %}selected{% endif %}>Processing</option>
+                    <option value="ready" {% if filters.status == "ready" %}selected{% endif %}>Ready</option>
+                    <option value="delivered" {% if filters.status == "delivered" %}selected{% endif %}>Delivered</option>
+                    <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+            <div class="delivery-filter-actions">
+                <button type="submit" class="delivery-action primary">Apply Filters</button>
+                <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="delivery-action secondary">Reset</a>
+            </div>
+        </form>
+        <div class="delivery-filter-note">These same query params are supported by the app APIs: <code>q</code>, <code>date</code>, <code>kind</code>, <code>stage</code>, and <code>status</code>.</div>
+    </div>
     <div class="section-card">
         <div class="section-head">
             <h2>Pending Customer Orders</h2>
@@ -369,12 +476,8 @@
                         <span class="delivery-kind"><i class="bi bi-bag-check"></i> Order</span>
                         <h3 class="mt-2">{{ order.order_number }}</h3>
                     </div>
-                    <span class="status-badge {% if has_order_delivery_table and order.delivery_tracking and order.delivery_tracking.status %}{{ order.delivery_tracking.status }}{% else %}pending{% endif %}">
-                        {% if has_order_delivery_table and order.delivery_tracking %}
-                            {{ order.delivery_tracking.get_status_display }}
-                        {% else %}
-                            Pending
-                        {% endif %}
+                    <span class="status-badge {{ order.display_delivery_status|default:'pending' }}">
+                        {{ order.display_delivery_status_label|default:"Pending" }}
                     </span>
                 </div>
                 <div class="delivery-meta">

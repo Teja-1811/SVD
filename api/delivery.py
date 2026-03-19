@@ -1,5 +1,7 @@
 from django.apps import apps
 from django.db import connection
+from django.db.models import Q
+from datetime import datetime
 from django.utils import timezone
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
@@ -28,6 +30,13 @@ class SubscriptionDeliveryFallback:
         self.status = status
 
 
+class OrderDeliveryFallback:
+    def __init__(self, order, status):
+        self.id = None
+        self.order = order
+        self.status = status
+
+
 def _model_is_queryable(model):
     try:
         table_names = connection.introspection.table_names()
@@ -47,15 +56,98 @@ def _model_is_queryable(model):
         return False
 
 
+def _present_order_status(raw_status):
+    return "out_for_delivery" if raw_status == "confirmed" else (raw_status or "pending")
+
+
+def _clean_text(value):
+    return str(value or "").strip().lower()
+
+
+def _parse_filter_date(raw):
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _get_filters(request):
+    raw_date = (request.GET.get("date") or "").strip()
+    return {
+        "q": _clean_text(request.GET.get("q")),
+        "kind": (request.GET.get("kind") or "all").strip().lower(),
+        "stage": (request.GET.get("stage") or "all").strip().lower(),
+        "status": (request.GET.get("status") or "all").strip().lower(),
+        "date_raw": raw_date,
+        "date": _parse_filter_date(raw_date),
+    }
+
+
+def _matches_order_delivery(item, filters):
+    display_status = _present_order_status(item.status)
+    if filters["kind"] not in ("all", "order"):
+        return False
+    if filters["stage"] == "pending" and display_status == "delivered":
+        return False
+    if filters["stage"] == "delivered" and display_status != "delivered":
+        return False
+    if filters["status"] != "all" and display_status != filters["status"]:
+        return False
+    if filters["date"] and getattr(item.order, "delivery_date", None) != filters["date"]:
+        return False
+    if filters["q"]:
+        haystack = " ".join([
+            getattr(item.order, "order_number", ""),
+            getattr(getattr(item.order, "customer", None), "name", ""),
+            getattr(getattr(item.order, "customer", None), "phone", ""),
+            getattr(item.order, "delivery_address", ""),
+        ]).lower()
+        if filters["q"] not in haystack:
+            return False
+    return True
+
+
+def _matches_subscription_delivery(item, filters):
+    if filters["kind"] not in ("all", "subscription"):
+        return False
+    if filters["stage"] == "pending" and item.status == "delivered":
+        return False
+    if filters["stage"] == "delivered" and item.status != "delivered":
+        return False
+    if filters["status"] != "all" and item.status != filters["status"]:
+        return False
+    if filters["date"] and getattr(item.subscription_order, "date", None) != filters["date"]:
+        return False
+    if filters["q"]:
+        haystack = " ".join([
+            getattr(getattr(item.subscription_order, "customer", None), "name", ""),
+            getattr(getattr(item.subscription_order, "customer", None), "phone", ""),
+            getattr(getattr(item.subscription_order, "item", None), "name", ""),
+        ]).lower()
+        if filters["q"] not in haystack:
+            return False
+    return True
+
+
 def _serialize_order_delivery(od):
+    delivery_charge = getattr(od.order, "delivery_charge", 0) or 0
+    grand_total = float((od.order.total_amount or 0) + delivery_charge)
+    status = _present_order_status(od.status)
     return {
         "type": "order",
         "id": od.id,
         "order_number": od.order.order_number,
+        "order_id": od.order.id,
         "customer_name": od.order.customer.name,
         "delivery_date": str(od.order.delivery_date) if hasattr(od.order, "delivery_date") else str(od.order.order_date),
-        "status": od.status,
-        "total_amount": float(od.order.total_amount),
+        "status": status,
+        "status_label": status.replace("_", " ").title(),
+        "total_amount": grand_total,
+        "items_total": float(od.order.total_amount or 0),
+        "delivery_charge": float(delivery_charge),
+        "grand_total": grand_total,
         "address": getattr(od.order, "delivery_address", ""),
     }
 
@@ -81,21 +173,89 @@ def delivery_today_list(request):
     - pending: pending + out_for_delivery for today
     - completed: delivered for today
     """
-    today = timezone.localdate()
+    filters = _get_filters(request)
+    today = filters["date"] or timezone.localdate()
     OrderDelivery = _order_delivery_model()
     SubscriptionDelivery = _subscription_delivery_model()
     SubscriptionOrder = _subscription_order_model()
+    has_order_delivery_table = _model_is_queryable(OrderDelivery)
     has_subscription_delivery_table = _model_is_queryable(SubscriptionDelivery)
 
-    pending_orders = OrderDelivery.objects.filter(
-        order__delivery_date=today,
-        status__in=["pending", "out_for_delivery"]
-    ).select_related("order", "order__customer")
-
-    completed_orders = OrderDelivery.objects.filter(
-        order__delivery_date=today,
-        status="delivered"
-    ).select_related("order", "order__customer")
+    if has_order_delivery_table:
+        pending_orders = [
+            OrderDeliveryFallback(
+                order=order,
+                status=(
+                    _present_order_status(getattr(getattr(order, "delivery_tracking", None), "status", None))
+                    if getattr(getattr(order, "delivery_tracking", None), "status", None)
+                    else None
+                ) or (
+                    _present_order_status(order.status)
+                    if getattr(order, "status", None)
+                    else None
+                )
+                or "pending",
+            )
+            for order in (
+                CustomerOrder.objects
+                .select_related("customer")
+                .filter(
+                    delivery_date=today
+                )
+                .filter(
+                    Q(status__in=["pending", "confirmed", "processing", "ready"]) |
+                    Q(delivery_tracking__status__in=["pending", "out_for_delivery", "failed"])
+                )
+                .exclude(status__in=["rejected", "cancelled", "delivered"])
+                .distinct()
+                .order_by("delivery_date", "-order_date", "-created_at")
+            )
+        ]
+        completed_orders = [
+            OrderDeliveryFallback(
+                order=order,
+                status=(
+                    _present_order_status(getattr(getattr(order, "delivery_tracking", None), "status", None))
+                    if getattr(getattr(order, "delivery_tracking", None), "status", None)
+                    else None
+                ) or (
+                    _present_order_status(order.status)
+                    if getattr(order, "status", None)
+                    else None
+                ) or "delivered",
+            )
+            for order in (
+                CustomerOrder.objects
+                .select_related("customer")
+                .filter(delivery_date=today)
+                .filter(Q(status="delivered") | Q(delivery_tracking__status="delivered"))
+                .distinct()
+                .order_by("-delivery_date", "-updated_at")
+            )
+        ]
+    else:
+        pending_orders = [
+            OrderDeliveryFallback(order=order, status=_present_order_status(order.status or "pending"))
+            for order in (
+                CustomerOrder.objects
+                .select_related("customer")
+                .filter(
+                    delivery_date=today,
+                    status__in=["pending", "confirmed", "processing", "ready"],
+                )
+                .exclude(status__in=["rejected", "cancelled", "delivered"])
+                .order_by("delivery_date", "-order_date", "-created_at")
+            )
+        ]
+        completed_orders = [
+            OrderDeliveryFallback(order=order, status=_present_order_status("delivered"))
+            for order in (
+                CustomerOrder.objects
+                .select_related("customer")
+                .filter(delivery_date=today, status="delivered")
+                .order_by("-delivery_date", "-updated_at")
+            )
+        ]
 
     if has_subscription_delivery_table:
         pending_subs = SubscriptionDelivery.objects.filter(
@@ -117,7 +277,20 @@ def delivery_today_list(request):
             for obj in SubscriptionOrder.objects.filter(date=today, delivered=True).select_related("customer", "item")
         ]
 
+    pending_orders = [item for item in pending_orders if _matches_order_delivery(item, filters)]
+    completed_orders = [item for item in completed_orders if _matches_order_delivery(item, filters)]
+    pending_subs = [item for item in pending_subs if _matches_subscription_delivery(item, filters)]
+    completed_subs = [item for item in completed_subs if _matches_subscription_delivery(item, filters)]
+
     return Response({
+        "date": str(today),
+        "filters": {
+            "q": filters["q"],
+            "kind": filters["kind"],
+            "stage": filters["stage"],
+            "status": filters["status"],
+            "date": filters["date_raw"] or str(today),
+        },
         "pending": [_serialize_order_delivery(o) for o in pending_orders] +
                    [_serialize_subscription_delivery(s) for s in pending_subs],
         "completed": [_serialize_order_delivery(o) for o in completed_orders] +
