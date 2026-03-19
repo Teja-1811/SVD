@@ -97,7 +97,9 @@ def create_or_replace_order(
 
     with transaction.atomic():
         order = CustomerOrder.objects.filter(
-            customer=customer, delivery_date=delivery_date
+            customer=customer,
+            delivery_date=delivery_date,
+            status="pending",
         ).first()
 
         if order:

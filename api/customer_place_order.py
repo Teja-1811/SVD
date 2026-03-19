@@ -37,7 +37,8 @@ def place_order_api(request):
             # 🔎 CHECK TODAY ORDER
             order = CustomerOrder.objects.filter(
                 customer=customer,
-                order_date=today
+                order_date=today,
+                status="pending",
             ).first()
 
             # 🆕 CREATE ORDER IF NOT EXISTS
