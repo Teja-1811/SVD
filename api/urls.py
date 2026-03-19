@@ -14,6 +14,7 @@ from .admin_bills import *
 from .admin_cashbook import *
 from .admin_payments import *
 from .admin_orders_dashboard import *
+from .admin_delivery_dashboard import *
 from .admin_stock_dashboard import *
 from .admin_customer_payments import *
 from .admin_companies import *
@@ -84,6 +85,7 @@ urlpatterns = [
     
     #Admin Orders Dashboard APIs
     path('orders/dashboard/', api_admin_orders_dashboard, name='api_admin_orders_dashboard'),
+    path('orders/delivery-dashboard/', api_admin_delivery_dashboard, name='api_admin_delivery_dashboard'),
     path('orders/<int:order_id>/detail/', api_order_detail, name='api_order_detail'),
     path('orders/<int:order_id>/confirm/', api_confirm_order, name='api_confirm_order'),
     path('orders/<int:order_id>/cancel/', api_reject_order, name='api_cancel_order'),
