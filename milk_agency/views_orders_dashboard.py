@@ -49,6 +49,13 @@ def _model_is_queryable(model):
         return False
 
 
+def _safe_len_or_count(value):
+    try:
+        return value.count()
+    except TypeError:
+        return len(value)
+
+
 # -------------------------------------------------------
 # ADMIN ORDERS DASHBOARD
 # -------------------------------------------------------
@@ -139,10 +146,10 @@ def admin_delivery_dashboard(request):
             .order_by("-date", "customer__name")
         ]
 
-    pending_orders_count = pending_orders.count() if hasattr(pending_orders, "count") else len(pending_orders)
-    delivered_orders_count = delivered_orders.count() if hasattr(delivered_orders, "count") else len(delivered_orders)
-    pending_subscriptions_count = pending_subscriptions.count() if hasattr(pending_subscriptions, "count") else len(pending_subscriptions)
-    delivered_subscriptions_count = delivered_subscriptions.count() if hasattr(delivered_subscriptions, "count") else len(delivered_subscriptions)
+    pending_orders_count = _safe_len_or_count(pending_orders)
+    delivered_orders_count = _safe_len_or_count(delivered_orders)
+    pending_subscriptions_count = _safe_len_or_count(pending_subscriptions)
+    delivered_subscriptions_count = _safe_len_or_count(delivered_subscriptions)
 
     context = {
         "today": today,

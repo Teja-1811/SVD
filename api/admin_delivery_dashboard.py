@@ -39,6 +39,13 @@ def _model_is_queryable(model):
         return False
 
 
+def _safe_len_or_count(value):
+    try:
+        return value.count()
+    except TypeError:
+        return len(value)
+
+
 def _bill_payload(request, bill):
     if not bill:
         return None
@@ -178,12 +185,12 @@ def api_admin_delivery_dashboard(request):
         "has_order_delivery_tracking": has_order_delivery_table,
         "has_subscription_delivery_tracking": has_subscription_delivery_table,
         "summary": {
-            "pending_orders": len(pending_orders_list),
-            "pending_subscriptions": len(pending_subscriptions_list),
-            "delivered_orders": len(delivered_orders_list),
-            "delivered_subscriptions": len(delivered_subscriptions_list),
-            "pending_total": len(pending_orders_list) + len(pending_subscriptions_list),
-            "delivered_total": len(delivered_orders_list) + len(delivered_subscriptions_list),
+            "pending_orders": _safe_len_or_count(pending_orders_list),
+            "pending_subscriptions": _safe_len_or_count(pending_subscriptions_list),
+            "delivered_orders": _safe_len_or_count(delivered_orders_list),
+            "delivered_subscriptions": _safe_len_or_count(delivered_subscriptions_list),
+            "pending_total": _safe_len_or_count(pending_orders_list) + _safe_len_or_count(pending_subscriptions_list),
+            "delivered_total": _safe_len_or_count(delivered_orders_list) + _safe_len_or_count(delivered_subscriptions_list),
         },
         "pending_customer_orders": pending_orders_list,
         "pending_subscriptions": pending_subscriptions_list,
