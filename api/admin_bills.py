@@ -356,8 +356,9 @@ def api_delete_bill(request, bill_id):
             bi.item.stock_quantity += bi.quantity
             bi.item.save()
 
+        bill_items.delete()
         bill.is_deleted = True
-        bill.save()
+        bill.save(update_fields=["is_deleted"])
 
         if bill.customer:
             bill.customer.due = bill.customer.get_actual_due()

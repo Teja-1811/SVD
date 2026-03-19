@@ -381,7 +381,7 @@
                     <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
                     <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
                     <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|floatformat:2 }}</span></div>
+                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
                     <div class="delivery-meta-row"><strong>Address</strong><span>{{ order.delivery_address|default:"-" }}</span></div>
                 </div>
             </article>
@@ -456,7 +456,7 @@
                     <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
                     <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
                     <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|floatformat:2 }}</span></div>
+                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
                     <div class="delivery-meta-row">
                         <strong>Delivered At</strong>
                         <span>

@@ -68,6 +68,7 @@ def _serialize_order(order, has_order_delivery_table):
     status = delivery_tracking.status if delivery_tracking and delivery_tracking.status else "pending"
     delivered_at = delivery_tracking.delivered_at if delivery_tracking and delivery_tracking.delivered_at else None
 
+    grand_total = float((order.total_amount or 0) + (order.delivery_charge or 0))
     return {
         "type": "order",
         "order_id": order.id,
@@ -80,6 +81,8 @@ def _serialize_order(order, has_order_delivery_table):
         "status": status,
         "status_label": delivery_tracking.get_status_display() if delivery_tracking else status.replace("_", " ").title(),
         "total_amount": float(order.total_amount or 0),
+        "delivery_charge": float(order.delivery_charge or 0),
+        "grand_total": grand_total,
         "delivery_address": order.delivery_address or "",
         "delivered_at": delivered_at.isoformat() if delivered_at else None,
     }

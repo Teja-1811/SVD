@@ -9,6 +9,7 @@ from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 from django.utils import timezone
 from milk_agency.models import OrderDelivery, SubscriptionDelivery, SubscriptionOrder
+from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
@@ -54,6 +55,10 @@ def _safe_len_or_count(value):
         return value.count()
     except TypeError:
         return len(value)
+
+
+def _order_grand_total(order):
+    return Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
 
 # -------------------------------------------------------
@@ -212,12 +217,17 @@ def confirm_order(request, order_id):
                 except CustomerOrderItem.DoesNotExist:
                     continue
 
+                unit_price = get_customer_unit_price(order_item.item, order.customer)
                 order_item.requested_quantity = quantity
+                order_item.requested_price = unit_price
+                order_item.approved_quantity = quantity
+                order_item.approved_price = unit_price
                 order_item.discount = discount
                 order_item.discount_total = discount * quantity
                 order_item.requested_total = (
-                    order_item.requested_price * quantity
+                    unit_price * quantity
                 ) - order_item.discount_total
+                order_item.approved_total = order_item.requested_total
                 order_item.save()
 
             # -------- RECALCULATE ORDER TOTAL --------

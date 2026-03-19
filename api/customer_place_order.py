@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 from milk_agency.models import Item
+from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
@@ -62,7 +63,7 @@ def place_order_api(request):
                 qty = int(i.get("quantity", 0))
 
                 item = get_object_or_404(Item, id=item_id)
-                price = item.selling_price
+                price = get_customer_unit_price(item, customer)
 
                 if qty <= 0 or price <= 0:
                     return Response(
@@ -84,6 +85,7 @@ def place_order_api(request):
                 total_amount += line_total
 
             # UPDATE TOTAL
+            order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
             order.total_amount = total_amount
             order.approved_total_amount = total_amount
             order.save()

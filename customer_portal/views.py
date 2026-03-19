@@ -11,6 +11,7 @@ from decimal import Decimal, InvalidOperation
 import json
 
 from milk_agency.models import Customer, Item, Bill, CustomerPayment
+from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
 from milk_agency.payment_gateway import (
     generate_upi_link,
     generate_upi_qr,
@@ -19,6 +20,19 @@ from milk_agency.payment_gateway import (
 )
 
 from .models import CustomerOrder, CustomerOrderItem
+
+
+def _find_linked_customer_order_for_bill(bill):
+    orders = CustomerOrder.objects.filter(
+        customer=bill.customer,
+        order_date=bill.invoice_date
+    ).order_by('-id')
+    for order in orders:
+        if Decimal(order.approved_total_amount or 0) + Decimal(order.delivery_charge or 0) == Decimal(bill.total_amount or 0):
+            return order
+        if Decimal(order.approved_total_amount or 0) == Decimal(bill.total_amount or 0):
+            return order
+    return orders.first()
 
 
 # ======================================================
@@ -88,7 +102,7 @@ def customer_orders_dashboard(request):
             for i in items:
                 item = get_object_or_404(Item, id=i["item_id"])
                 qty = i["quantity"]
-                price = i["price"]
+                price = get_customer_unit_price(item, request.user)
                 line_total = qty * price
 
                 CustomerOrderItem.objects.create(
@@ -101,6 +115,7 @@ def customer_orders_dashboard(request):
 
                 total_amount += line_total
 
+            order.delivery_charge = get_delivery_charge_amount(customer=request.user, address=order.delivery_address)
             order.total_amount = total_amount
             order.save()
 
@@ -112,6 +127,7 @@ def customer_orders_dashboard(request):
     items = Item.objects.select_related("company").filter(company__name__iexact="Dodla")
 
     for item in items:
+        item.display_price = get_customer_unit_price(item, request.user)
         if item.mrp and item.mrp > 0:
             item.margin_percent = round(((item.mrp - item.selling_price) / item.mrp) * 100, 1)
         else:
@@ -135,6 +151,8 @@ def customer_orders_dashboard(request):
     last_order = CustomerOrder.objects.filter(
         customer=request.user
     ).order_by('-order_date').first()
+    if last_order:
+        last_order.display_total_amount = Decimal(last_order.total_amount or 0) + Decimal(last_order.delivery_charge or 0)
 
     return render(request, 'customer_portal/customer_orders_dashboard.html', {
         'items_by_company': items_by_company,
@@ -192,7 +210,7 @@ def place_order(request):
             if qty <= 0:
                 continue
 
-            price = float(item.selling_price)
+            price = float(get_customer_unit_price(item, customer))
             line_total = qty * price
 
             CustomerOrderItem.objects.create(
@@ -210,6 +228,7 @@ def place_order(request):
             return JsonResponse({"success": False, "message": "Invalid quantity"}, status=400)
 
         order.total_amount = total_amount
+        order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
         order.approved_total_amount = total_amount
         order.save()
 
@@ -258,6 +277,8 @@ def reports_dashboard(request):
 @login_required
 def last_order_details(request):
     order = CustomerOrder.objects.filter(customer=request.user).order_by('-order_date').first()
+    if order:
+        order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
     bill = None
     if order:
@@ -280,10 +301,17 @@ def last_order_details(request):
 def bill_details(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id, customer=request.user)
     bill_items = bill.items.all().select_related('item')
+    linked_order = _find_linked_customer_order_for_bill(bill)
+    delivery_charge_item = bill_items.filter(item__code=DELIVERY_ITEM_CODE).first()
+    delivery_charge = Decimal(delivery_charge_item.total_amount if delivery_charge_item else 0)
+    if delivery_charge == 0 and linked_order:
+        delivery_charge = Decimal(linked_order.delivery_charge or 0)
 
     return render(request, 'customer_portal/bill_details.html', {
         'bill': bill,
         'bill_items': bill_items,
+        'delivery_charge': delivery_charge,
+        'items_subtotal': Decimal(bill.total_amount or 0) - delivery_charge,
     })
 
 

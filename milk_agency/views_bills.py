@@ -11,6 +11,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Bill, BillItem, Customer, Item, Company, CustomerMonthlyCommission
+from .order_pricing import (
+    DELIVERY_CHARGE_AMOUNT,
+    get_customer_unit_price,
+    get_delivery_charge_amount,
+    get_or_create_delivery_charge_item,
+    is_takeaway_address,
+)
 from .pdf_utils import PDFGenerator
 
 
@@ -239,27 +246,14 @@ def generate_bill_from_order(order):
         total_amount = Decimal("0")
         total_profit = Decimal("0")
 
-        def _unit_price(item, customer):
-            """
-            Use selling price for retailers; use MRP for direct users.
-            Falls back to selling price if MRP is missing.
-            """
-            if customer and getattr(customer, "user_type", "").lower() == "user":
-                return Decimal(item.mrp or item.selling_price)
-            return Decimal(item.selling_price)
-
-        # Treat blank/explicit takeaway address as pickup (no delivery charge)
-        addr = (order.delivery_address or "").strip().lower()
-        is_takeaway = addr in ("takeaway", "take away", "pickup", "pick up", "self pickup", "self-pickup")
-
         for oi in order.items.all():
             item = oi.item
             qty = oi.requested_quantity
-            price = _unit_price(item, customer)
+            price = get_customer_unit_price(item, customer)
             discount_total = getattr(oi, 'discount_total', Decimal("0"))
 
             item_total = (price * qty) - discount_total
-            profit = ((price - item.buying_price) * qty) - discount_total
+            profit = ((Decimal(item.selling_price) - Decimal(item.buying_price)) * qty) - discount_total
 
             BillItem.objects.create(
                 bill=bill,
@@ -276,13 +270,23 @@ def generate_bill_from_order(order):
             total_amount += item_total
             total_profit += profit
 
-        delivery_charge = Decimal("0")
-        if not is_takeaway:
-            delivery_charge = Decimal("10")
+        delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
+        if delivery_charge > 0:
+            delivery_item = get_or_create_delivery_charge_item()
+            BillItem.objects.create(
+                bill=bill,
+                item=delivery_item,
+                price_per_unit=DELIVERY_CHARGE_AMOUNT,
+                discount=Decimal("0.00"),
+                quantity=1,
+                total_amount=DELIVERY_CHARGE_AMOUNT,
+            )
             total_amount += delivery_charge
-            total_profit += delivery_charge  # delivery charge is pure margin
-            # keep order record in sync
+            total_profit += delivery_charge
             order.delivery_charge = delivery_charge
+            order.save(update_fields=["delivery_charge"])
+        elif order.delivery_charge != 0:
+            order.delivery_charge = Decimal("0.00")
             order.save(update_fields=["delivery_charge"])
 
         if total_amount <= 0:

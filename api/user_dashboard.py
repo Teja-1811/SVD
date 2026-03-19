@@ -15,6 +15,7 @@ from milk_agency.models import (
     BillItem,
 )
 from customer_portal.models import CustomerOrder, CustomerOrderItem
+from milk_agency.order_pricing import DELIVERY_ITEM_CODE
 
 
 def _serialize_customer(customer):
@@ -208,6 +209,11 @@ def user_bill_detail_api(request, bill_id):
         return Response({"error": "Bill not found"}, status=404)
 
     items = BillItem.objects.filter(bill=bill).select_related("item")
+    delivery_charge = 0.0
+    for bi in items:
+        if getattr(bi.item, "code", "") == DELIVERY_ITEM_CODE:
+            delivery_charge = float(bi.total_amount or 0)
+            break
     item_payload = [
         {
             "item_id": bi.item.id,
@@ -227,6 +233,8 @@ def user_bill_detail_api(request, bill_id):
         "invoice_number": bill.invoice_number,
         "invoice_date": bill.invoice_date,
         "total_amount": float(bill.total_amount),
+        "items_subtotal": float(bill.total_amount) - delivery_charge,
+        "delivery_charge": delivery_charge,
         "opening_due": float(bill.op_due_amount),
         "last_paid": float(bill.last_paid),
         "profit": float(bill.profit),
@@ -295,6 +303,7 @@ def user_order_detail_api(request, order_id):
         "delivery_address": order.delivery_address,
         "total_amount": float(order.total_amount),
         "delivery_charge": float(order.delivery_charge),
+        "grand_total": float(order.total_amount + order.delivery_charge),
         "approved_total_amount": float(order.approved_total_amount),
         "created_at": order.created_at,
         "updated_at": order.updated_at,

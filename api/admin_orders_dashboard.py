@@ -8,6 +8,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
+from milk_agency.order_pricing import get_customer_unit_price
 from milk_agency.views_bills import generate_bill_from_order
 
 
@@ -113,6 +114,7 @@ def api_confirm_order(request, order_id):
                 if not order_item:
                     continue
 
+                unit_price = get_customer_unit_price(order_item.item, order.customer)
                 discount_decimal = Decimal(str(discount)) if discount else Decimal("0.00")
                 if discount_decimal < 0:
                     return Response({
@@ -121,11 +123,15 @@ def api_confirm_order(request, order_id):
                     }, status=400)
 
                 order_item.requested_quantity = int(quantity)
+                order_item.requested_price = unit_price
+                order_item.approved_quantity = int(quantity)
+                order_item.approved_price = unit_price
                 order_item.discount = discount_decimal
                 order_item.discount_total = discount_decimal * order_item.requested_quantity
                 order_item.requested_total = (
-                    order_item.requested_price * order_item.requested_quantity
+                    unit_price * order_item.requested_quantity
                 ) - order_item.discount_total
+                order_item.approved_total = order_item.requested_total
                 order_item.save()
 
             # ---- Recalculate order total ----

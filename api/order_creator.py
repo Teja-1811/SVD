@@ -18,6 +18,7 @@ from rest_framework.response import Response
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Customer, Item
+from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 
 
 # -------------------------------------------------------------------
@@ -70,7 +71,7 @@ def _create_line(order: CustomerOrder, entry: Mapping) -> Decimal:
         raise ValueError("Quantity must be greater than zero")
 
     item = get_object_or_404(Item, id=item_id)
-    unit_price = Decimal(str(price if price is not None else item.selling_price))
+    unit_price = get_customer_unit_price(item, order.customer)
     line_total = unit_price * qty
 
     CustomerOrderItem.objects.create(
@@ -116,9 +117,10 @@ def create_or_replace_order(
         for entry in items:
             total += _create_line(order, entry)
 
+        order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
         order.total_amount = total
         order.approved_total_amount = total
-        order.save(update_fields=["total_amount", "approved_total_amount"])
+        order.save(update_fields=["total_amount", "approved_total_amount", "delivery_charge"])
         return order
 
 
@@ -144,9 +146,10 @@ def edit_order(
         for entry in items:
             total += _create_line(order, entry)
 
+        order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
         order.total_amount = total
         order.approved_total_amount = total
-        order.save(update_fields=["delivery_date", "total_amount", "approved_total_amount"])
+        order.save(update_fields=["delivery_date", "total_amount", "approved_total_amount", "delivery_charge"])
         return order
 
 

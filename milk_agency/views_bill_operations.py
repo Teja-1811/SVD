@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from .models import Bill, BillItem, Item, Customer
+from .order_pricing import DELIVERY_ITEM_CODE
 from .utils import process_bill_items
 from customer_portal.models import CustomerOrder
 
@@ -17,7 +18,7 @@ def _find_linked_customer_order(bill):
         return None
 
     # `order_date` is already a DateField, so this must stay an exact date match.
-    return (
+    order = (
         CustomerOrder.objects.filter(
             customer_id=bill.customer_id,
             order_date=bill.invoice_date,
@@ -26,6 +27,29 @@ def _find_linked_customer_order(bill):
         .order_by("-id")
         .first()
     )
+    if order:
+        return order
+
+    order = (
+        CustomerOrder.objects.filter(
+            customer_id=bill.customer_id,
+            order_date=bill.invoice_date,
+            approved_total_amount=bill.total_amount,
+        )
+        .order_by("-id")
+        .first()
+    )
+    if order:
+        return order
+
+    candidates = CustomerOrder.objects.filter(
+        customer_id=bill.customer_id,
+        order_date=bill.invoice_date,
+    ).order_by("-id")
+    for candidate in candidates:
+        if Decimal(candidate.approved_total_amount or 0) + Decimal(candidate.delivery_charge or 0) == Decimal(bill.total_amount or 0):
+            return candidate
+    return candidates.first()
 
 
 # =========================================================
@@ -35,13 +59,21 @@ def _find_linked_customer_order(bill):
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill.objects.select_related('customer'), id=bill_id)
     bill_items = BillItem.objects.filter(bill=bill).select_related('item')
+    linked_order = _find_linked_customer_order(bill)
+    delivery_charge_item = bill_items.filter(item__code=DELIVERY_ITEM_CODE).first()
+    delivery_charge = Decimal(delivery_charge_item.total_amount if delivery_charge_item else 0)
+    if delivery_charge == 0 and linked_order:
+        delivery_charge = Decimal(linked_order.delivery_charge or 0)
 
     current_due = bill.op_due_amount + bill.total_amount
 
     return render(request, 'milk_agency/bills/view_bill.html', {
         'bill': bill,
         'bill_items': bill_items,
-        'current_due': current_due
+        'current_due': current_due,
+        'linked_order': linked_order,
+        'delivery_charge': delivery_charge,
+        'items_subtotal': Decimal(bill.total_amount or 0) - delivery_charge,
     })
 
 
@@ -173,7 +205,8 @@ def delete_bill(request, bill_id):
                 order.save(update_fields=['status', 'approved_total_amount'])
 
             bill_items.delete()
-            bill.delete()
+            bill.is_deleted = True
+            bill.save(update_fields=['is_deleted'])
 
             # -------- RECALCULATE CUSTOMER DUE --------
             if customer:

@@ -204,7 +204,7 @@
             <div class="mt-2 small">
                 <strong>Order #:</strong> {{ last_order.order_number }} <br>
                 <strong>Date:</strong> {{ last_order.order_date|date:"M d, Y h:i A" }} <br>
-                <strong>Amount:</strong> ₹{{ last_order.total_amount|floatformat:2 }}
+                <strong>Amount:</strong> ₹{{ last_order.display_total_amount|floatformat:2 }}
             </div>
 
             <div class="text-end mt-2">
@@ -292,7 +292,7 @@
                                                         </div>
 
                                                         <div class="product-price">
-                                                            ₹{{ item.selling_price|floatformat:2 }}
+                                                            ₹{{ item.display_price|floatformat:2 }}
                                                         </div>
 
                                                         <div style="font-size: 13px; color: #6c757d;">
@@ -311,7 +311,7 @@
                                                                 value="0"
                                                                 min="0"
                                                                 data-item-id="{{ item.id }}"
-                                                                data-item-price="{{ item.selling_price }}"
+                                                                data-item-price="{{ item.display_price }}"
                                                                 style="text-align:center;">
 
                                                             <button type="button" class="btn btn-outline-secondary btn-incr">+</button>
@@ -364,6 +364,10 @@
                 <div class="card-body">
                     <div id="orderSummary"><p class="text-muted small">No items selected</p></div>
                     <hr>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Delivery Charge</span>
+                        <strong id="deliveryCharge">₹0.00</strong>
+                    </div>
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
                         <strong id="grandTotal">₹0.00</strong>
@@ -460,6 +464,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateTotals() {
         let grandTotal = 0;
         let summary = "";
+        let hasItems = false;
+        const deliveryCharge = 10;
 
         document.querySelectorAll(".product-card").forEach(card => {
             const qtyInput = card.querySelector(".qty-input");
@@ -471,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function () {
             card.querySelector(".item-total").innerText = "₹" + total.toFixed(2);
 
             if (qty > 0) {
+                hasItems = true;
                 grandTotal += total;
                 summary += `
                     <div class="d-flex justify-content-between small mb-1">
@@ -482,7 +489,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         orderSummaryEl.innerHTML = summary || `<p class="text-muted small">No items selected</p>`;
-        grandTotalEl.innerText = "₹" + grandTotal.toFixed(2);
+        document.getElementById("deliveryCharge").innerText = hasItems ? "₹10.00" : "₹0.00";
+        grandTotalEl.innerText = "₹" + (grandTotal + (hasItems ? deliveryCharge : 0)).toFixed(2);
     }
 
     /* =====================================================

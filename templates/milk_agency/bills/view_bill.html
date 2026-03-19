@@ -179,6 +179,16 @@
                             <td><strong>Total Amount:</strong></td>
                             <td class="text-end">₹{{ bill.total_amount }}</td>
                         </tr>
+                        {% if delivery_charge > 0 %}
+                        <tr>
+                            <td><strong>Items Subtotal:</strong></td>
+                            <td class="text-end">₹{{ items_subtotal|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Delivery Charge:</strong></td>
+                            <td class="text-end">₹{{ delivery_charge|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
 
                         <tr>
                             <td><strong>Opening Due:</strong></td>
@@ -248,6 +258,16 @@
                     </tbody>
 
                     <tfoot>
+                        {% if delivery_charge > 0 %}
+                        <tr class="table-light">
+                            <td colspan="5" class="text-end"><strong>Items Subtotal:</strong></td>
+                            <td><strong>₹{{ items_subtotal|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr class="table-light">
+                            <td colspan="5" class="text-end"><strong>Delivery Charge:</strong></td>
+                            <td><strong>₹{{ delivery_charge|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endif %}
                         <tr class="table-dark">
                             <td colspan="5" class="text-end"><strong>Total:</strong></td>
                             <td><strong>₹{{ bill.total_amount }}</strong></td>

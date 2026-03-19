@@ -46,6 +46,14 @@
                                 <strong>Total Amount:</strong>
                                 <span class="h4 text-success fw-bold">₹{{ bill.total_amount|floatformat:2 }}</span>
                             </div>
+                            {% if delivery_charge > 0 %}
+                            <div class="mb-3">
+                                <strong>Items Subtotal:</strong> ₹{{ items_subtotal|floatformat:2 }}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Delivery Charge:</strong> ₹{{ delivery_charge|floatformat:2 }}
+                            </div>
+                            {% endif %}
                             <div class="mb-3">
                                 <strong>Opening Due:</strong> ₹{{ bill.op_due_amount|floatformat:2 }}
                             </div>
@@ -98,6 +106,16 @@
                                     {% endfor %}
                                 </tbody>
                                 <tfoot class="table-light">
+                                    {% if delivery_charge > 0 %}
+                                    <tr>
+                                        <th colspan="4" class="text-end">Items Subtotal:</th>
+                                        <th class="text-primary fw-bold">₹{{ items_subtotal|floatformat:2 }}</th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4" class="text-end">Delivery Charge:</th>
+                                        <th class="text-primary fw-bold">₹{{ delivery_charge|floatformat:2 }}</th>
+                                    </tr>
+                                    {% endif %}
                                     <tr>
                                         <th colspan="4" class="text-end">Grand Total:</th>
                                         <th class="text-primary fw-bold">₹{{ bill.total_amount|floatformat:2 }}</th>
