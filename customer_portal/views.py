@@ -306,10 +306,11 @@ def bill_details(request, bill_id):
     delivery_charge = Decimal(delivery_charge_item.total_amount if delivery_charge_item else 0)
     if delivery_charge == 0 and linked_order:
         delivery_charge = Decimal(linked_order.delivery_charge or 0)
+    display_items = bill_items.exclude(item__code=DELIVERY_ITEM_CODE)
 
     return render(request, 'customer_portal/bill_details.html', {
         'bill': bill,
-        'bill_items': bill_items,
+        'bill_items': display_items,
         'delivery_charge': delivery_charge,
         'items_subtotal': Decimal(bill.total_amount or 0) - delivery_charge,
     })

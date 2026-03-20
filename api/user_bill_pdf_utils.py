@@ -24,10 +24,11 @@ class UserPDFGenerator:
 
     def generate_invoice_pdf(self, bill):
         bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
+        display_items = [item for item in bill_items if getattr(item.item, "code", "") != DELIVERY_ITEM_CODE]
 
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=landscape(letter))
-        self._draw_invoice_template(c, bill, bill_items)
+        self._draw_invoice_template(c, bill, bill_items, display_items)
 
         pdf = buffer.getvalue()
         pdf_path = InvoicePDFUtils.get_invoice_pdf_path(bill.invoice_number)
@@ -42,10 +43,11 @@ class UserPDFGenerator:
 
     def generate_and_return_pdf(self, bill, request=None):
         bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
+        display_items = [item for item in bill_items if getattr(item.item, "code", "") != DELIVERY_ITEM_CODE]
 
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=landscape(letter))
-        self._draw_invoice_template(c, bill, bill_items)
+        self._draw_invoice_template(c, bill, bill_items, display_items)
 
         pdf = buffer.getvalue()
         buffer.close()
@@ -61,7 +63,7 @@ class UserPDFGenerator:
     def _safe(self, value):
         return str(value or "").strip()
 
-    def _draw_invoice_template(self, c, bill, bill_items):
+    def _draw_invoice_template(self, c, bill, bill_items, display_items):
         c.setTitle(f"Invoice - {bill.invoice_number}")
         c.setLineWidth(1)
 
@@ -77,7 +79,7 @@ class UserPDFGenerator:
         y = self._draw_bill_heading(c, x0, y, w)
         y = self._draw_invoice_meta(c, bill, x0, y, w)
         y = self._draw_party_section(c, bill, x0, y, w)
-        y, totals = self._draw_items_table(c, bill_items, x0, y, w)
+        y, totals = self._draw_items_table(c, display_items, x0, y, w)
         self._draw_footer_sections(c, bill, bill_items, x0, y, w, totals)
 
         c.save()

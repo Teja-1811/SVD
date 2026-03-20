@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
+from decimal import Decimal
 
 from api.user_bill_pdf_utils import UserPDFGenerator
 from .user_offers import get_active_user_offers
@@ -16,6 +17,32 @@ from milk_agency.models import (
 )
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE
+
+
+def _find_linked_order_for_bill(customer, bill):
+    if not customer:
+        return None
+
+    order = (
+        CustomerOrder.objects.filter(
+            customer=customer,
+            order_date=bill.invoice_date,
+            approved_total_amount=bill.total_amount,
+        )
+        .order_by("-id")
+        .first()
+    )
+    if order:
+        return order
+
+    candidates = CustomerOrder.objects.filter(
+        customer=customer,
+        order_date=bill.invoice_date,
+    ).order_by("-id")
+    for candidate in candidates:
+        if Decimal(candidate.approved_total_amount or 0) + Decimal(candidate.delivery_charge or 0) == Decimal(bill.total_amount or 0):
+            return candidate
+    return candidates.first()
 
 
 def _serialize_customer(customer):
@@ -209,11 +236,14 @@ def user_bill_detail_api(request, bill_id):
         return Response({"error": "Bill not found"}, status=404)
 
     items = BillItem.objects.filter(bill=bill).select_related("item")
+    linked_order = _find_linked_order_for_bill(customer, bill)
     delivery_charge = 0.0
     for bi in items:
         if getattr(bi.item, "code", "") == DELIVERY_ITEM_CODE:
             delivery_charge = float(bi.total_amount or 0)
             break
+    if delivery_charge == 0 and linked_order:
+        delivery_charge = float(linked_order.delivery_charge or 0)
     item_payload = [
         {
             "item_id": bi.item.id,
@@ -226,6 +256,7 @@ def user_bill_detail_api(request, bill_id):
             "total_amount": float(bi.total_amount),
         }
         for bi in items
+        if getattr(bi.item, "code", "") != DELIVERY_ITEM_CODE
     ]
 
     bill_payload = {

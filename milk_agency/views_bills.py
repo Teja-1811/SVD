@@ -15,7 +15,6 @@ from .order_pricing import (
     DELIVERY_CHARGE_AMOUNT,
     get_customer_unit_price,
     get_delivery_charge_amount,
-    get_or_create_delivery_charge_item,
     is_takeaway_address,
 )
 from .pdf_utils import PDFGenerator
@@ -271,23 +270,13 @@ def generate_bill_from_order(order):
             total_profit += profit
 
         delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
-        if delivery_charge > 0:
-            delivery_item = get_or_create_delivery_charge_item()
-            BillItem.objects.create(
-                bill=bill,
-                item=delivery_item,
-                price_per_unit=DELIVERY_CHARGE_AMOUNT,
-                discount=Decimal("0.00"),
-                quantity=1,
-                total_amount=DELIVERY_CHARGE_AMOUNT,
-            )
-            total_amount += delivery_charge
-            total_profit += delivery_charge
+        if order.delivery_charge != delivery_charge:
             order.delivery_charge = delivery_charge
             order.save(update_fields=["delivery_charge"])
-        elif order.delivery_charge != 0:
-            order.delivery_charge = Decimal("0.00")
-            order.save(update_fields=["delivery_charge"])
+
+        if delivery_charge > 0:
+            total_amount += delivery_charge
+            total_profit += delivery_charge
 
         if total_amount <= 0:
             raise Exception("Invalid order amount")

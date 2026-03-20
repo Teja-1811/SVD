@@ -64,12 +64,13 @@ def view_bill(request, bill_id):
     delivery_charge = Decimal(delivery_charge_item.total_amount if delivery_charge_item else 0)
     if delivery_charge == 0 and linked_order:
         delivery_charge = Decimal(linked_order.delivery_charge or 0)
+    display_items = bill_items.exclude(item__code=DELIVERY_ITEM_CODE)
 
     current_due = bill.op_due_amount + bill.total_amount
 
     return render(request, 'milk_agency/bills/view_bill.html', {
         'bill': bill,
-        'bill_items': bill_items,
+        'bill_items': display_items,
         'current_due': current_due,
         'linked_order': linked_order,
         'delivery_charge': delivery_charge,
