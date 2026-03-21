@@ -424,45 +424,6 @@ def plans_available_api(request):
 
 
 @api_view(["GET"])
-def subscribed_plan_api(request):
-    customer_id = request.GET.get("customer_id")
-    plan = None
-    try:
-        plan = CustomerSubscription.objects.filter(customer=customer_id).latest('start_date')
-        plan_name = plan.subscription_plan.name
-    except CustomerSubscription.DoesNotExist:
-        plan_name = "No active subscription"
-        
-    try:
-        if plan:
-            items = SubscriptionItem.objects.filter(subscription_plan=plan.subscription_plan)
-            item_list = []
-            for item in items:
-                item_list.append({
-                    "item_id": item.item.id,
-                    "item_name": item.item.name,
-                    "quantity": item.quantity,
-                    "price": float(item.price),
-                    "per": item.per,
-                })
-        else:
-            item_list = []
-    except SubscriptionItem.DoesNotExist:
-        item_list = []
-        
-        
-    #plan details
-    data = {
-        "plan": plan_name,
-        "price" : float(plan.subscription_plan.price) if plan else 0,
-        "description" : plan.subscription_plan.description if plan else "",
-        # items in the subscription
-        "items": item_list 
-    }
-    
-    return Response(data, status=200)
-
-@api_view(["GET"])
 def current_subscription_api(request):
     customer_id = request.GET.get("customer_id")
     subscription = None

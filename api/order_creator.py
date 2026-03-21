@@ -20,6 +20,8 @@ from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Customer, Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 
+ACTIVE_ORDER_STATUSES = ("pending", "confirmed", "processing", "ready")
+
 
 # -------------------------------------------------------------------
 # Helpers
@@ -226,14 +228,17 @@ def user_pending_orders(request):
     if not request.user or not request.user.is_authenticated:
         return Response({"detail": "Authentication credentials were not provided."}, status=401)
     orders = (
-        CustomerOrder.objects.filter(customer=request.user, status="pending")
+        CustomerOrder.objects.filter(
+            customer=request.user,
+            status__in=ACTIVE_ORDER_STATUSES,
+        )
         .prefetch_related(
             Prefetch(
                 "items",
                 queryset=CustomerOrderItem.objects.select_related("item"),
             )
         )
-        .order_by("delivery_date", "-order_date", "-created_at")
+        .order_by("-delivery_date", "-order_date", "-created_at")
     )
 
     data = []
@@ -241,6 +246,7 @@ def user_pending_orders(request):
         data.append({
             "order_id": order.id,
             "order_number": order.order_number,
+            "status": order.status,
             "delivery_date": str(order.delivery_date),
             "order_date": str(order.order_date),
             "total_amount": float(order.total_amount),
