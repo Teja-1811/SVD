@@ -344,11 +344,24 @@ class Expense(models.Model):
         return f"{self.category} - ₹{self.amount} - {self.date}"
 
 class Contact(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("resolved", "Resolved"),
+    ]
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="contact_tickets",
+    )
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
     email = models.EmailField(blank=True, null=True)
     subject = models.CharField(max_length=255)
     message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

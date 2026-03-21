@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import login_api
 from .customer_products import *
 from .customer_cataloge import *
@@ -7,6 +8,12 @@ from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
+from .customer_contact import customer_contact_api, api_support_ticket_summary
+from .admin_enquiry import (
+    api_active_enquiries,
+    api_resolved_enquiries,
+    api_update_enquiry_status,
+)
 from .customer_offers import *
 from .admin_customer import *
 from .admin_items import *
@@ -119,6 +126,10 @@ urlpatterns = [
     path('customer-payments/update-status/<int:payment_id>/', update_payment_status_api, name='update_payment_status_api'),
     path('customer-payments/delete/<int:payment_id>/', delete_payment_api, name='delete_payment_api'),
     
+    path('admin/enquiries/active/', api_active_enquiries, name='api_active_enquiries'),
+    path('admin/enquiries/resolved/', api_resolved_enquiries, name='api_resolved_enquiries'),
+    path('admin/enquiries/<int:enquiry_id>/status/', api_update_enquiry_status, name='api_update_enquiry_status'),
+    
     
     # Customer Dashboard
     path('customer-dashboard/', customer_dashboard_api, name='customer_dashboard_api'),
@@ -140,6 +151,8 @@ urlpatterns = [
     path('customer/invoice/details/', customer_invoice_details_api, name='customer_invoice_details_api'),
     # Customer Payment API
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
+    path('contact/', customer_contact_api, name='customer_contact_api'),
+    path('enquiries/summary/', api_support_ticket_summary, name='api_support_ticket_summary'),
     # Customer Offers
     path('customer/offers/', customer_offers, name='customer_offers_api'),
     
