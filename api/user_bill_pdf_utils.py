@@ -9,10 +9,11 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-from customer_portal.models import CustomerOrder
 from milk_agency.models import BillItem
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE
 from milk_agency.utils import InvoicePDFUtils
+
+from .user_api_helpers import find_linked_order_for_bill, get_delivery_charge_for_bill
 
 
 class UserPDFGenerator:
@@ -35,8 +36,8 @@ class UserPDFGenerator:
         pdf_dir = os.path.dirname(pdf_path)
         os.makedirs(pdf_dir, exist_ok=True)
 
-        with open(pdf_path, "wb") as f:
-            f.write(pdf)
+        with open(pdf_path, "wb") as pdf_file:
+            pdf_file.write(pdf)
 
         buffer.close()
         return pdf_path
@@ -168,7 +169,7 @@ class UserPDFGenerator:
             self._safe(getattr(customer, "state", "")),
             self._safe(getattr(customer, "pin_code", "")),
         ]
-        address = ", ".join([p for p in address_parts if p])
+        address = ", ".join([part for part in address_parts if part])
 
         c.drawString(mid_x + 8, y + row_h - 28, cust_name)
         if shop_name:
@@ -313,25 +314,7 @@ class UserPDFGenerator:
         c.drawRightString(x + w - 20, y + 18, "AUTHORISED SIGNATORY")
 
     def _get_related_order(self, bill):
-        if not bill.customer:
-            return None
-
-        order = CustomerOrder.objects.filter(
-            customer=bill.customer,
-            approved_total_amount=bill.total_amount,
-            order_date=bill.invoice_date,
-        ).order_by("-id").first()
-
-        if not order:
-            order = CustomerOrder.objects.filter(
-                customer=bill.customer,
-                order_date=bill.invoice_date,
-            ).order_by("-id").first()
-
-        if not order:
-            order = CustomerOrder.objects.filter(customer=bill.customer).order_by("-order_date", "-id").first()
-
-        return order
+        return find_linked_order_for_bill(getattr(bill, "customer", None), bill)
 
     def _get_order_dates(self, bill):
         order = self._get_related_order(bill)
@@ -340,12 +323,8 @@ class UserPDFGenerator:
         return order.order_date, order.delivery_date
 
     def _get_delivery_charge(self, bill, bill_items):
-        for bill_item in bill_items:
-            if getattr(bill_item.item, "code", "") == DELIVERY_ITEM_CODE:
-                return Decimal(bill_item.total_amount or 0)
-
-        order = self._get_related_order(bill)
-        if order:
-            return Decimal(order.delivery_charge or 0)
-
-        return Decimal("0")
+        return get_delivery_charge_for_bill(
+            bill,
+            bill_items=bill_items,
+            linked_order=self._get_related_order(bill),
+        )

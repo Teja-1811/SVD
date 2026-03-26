@@ -156,21 +156,19 @@ urlpatterns = [
     # Customer Offers
     path('customer/offers/', customer_offers, name='customer_offers_api'),
     
-    # User Api
-    path('user/dashboard/full/', user_dashboard_api, name="user_full_dashboard_api"),
-    path('user/offers/active/', user_offers, name='user_active_offers_api'),
-    path('user_dashboard/', user_dashboard_api, name="user_dashboard_api"),
+    # User APIs
+    path('user/dashboard/', user_dashboard_api, name="user_dashboard_api"),
     path('user/offers/', user_offers, name='user_offers_api'),
-    path('user/plans/available/', plans_available_api, name='user_plans_available_api'),
-
-    path('user/current-subscription/', current_subscription_api, name='user_current_subscription_api'),
-    path('user/subscription/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
-    path('user/profile/update/', user_profile_update, name='user_profile_update_api'),
+    path('user/subscriptions/plans/', plans_available_api, name='user_plans_available_api'),
+    path('user/subscriptions/current/', current_subscription_api, name='user_current_subscription_api'),
+    path('user/subscriptions/history/', subscription_history_api, name='user_subscription_history_api'),
+    path('user/subscriptions/pause-resume/', subscription_pause_resume_api, name='user_subscription_pause_resume_api'),
+    path('user/profile/', user_profile_update, name='user_profile_update_api'),
     path('user/bills/', user_bills_api, name='user_bills_api'),
     path('user/bills/<int:bill_id>/', user_bill_detail_api, name='user_bill_detail_api'),
     path('user/bills/<int:bill_id>/download/', user_bill_download_api, name='user_bill_download_api'),
     path('user/orders/<int:order_id>/', user_order_detail_api, name='user_order_detail_api'),
-    
+
     # User orders (create/edit/delete, including prebooking via delivery_date)
     path('user/orders/create/', user_create_order, name='user_create_order'),
     path('user/orders/<int:order_id>/edit/', user_edit_order, name='user_edit_order'),

@@ -1,48 +1,43 @@
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 
-from milk_agency.models import CustomerSubscription, SubscriptionPause, Customer
+from milk_agency.models import SubscriptionPause
 
-
-def _get_latest_subscription(customer_id):
-    return CustomerSubscription.objects.filter(customer_id=customer_id, is_active=True).order_by("-start_date").first()
+from .user_api_helpers import get_customer_or_response, get_latest_subscription
 
 
 @api_view(["POST"])
 def subscription_pause_resume_api(request):
-    """
-    Pause or resume a user's latest active subscription.
-    Request body:
-      - user_id (required)
-      - action: "pause" or "resume" (required)
-      - reason: optional (only for pause)
-    """
     user_id = request.data.get("user_id")
-    action = (request.data.get("action") or "").lower()
+    action = (request.data.get("action") or "").strip().lower()
 
-    if not user_id:
-        return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    if action not in {"pause", "resume"}:
+        return Response(
+            {"error": "action must be 'pause' or 'resume'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-    if action not in ("pause", "resume"):
-        return Response({"error": "action must be 'pause' or 'resume'"}, status=status.HTTP_400_BAD_REQUEST)
-
-    customer = get_object_or_404(Customer, id=user_id, frozen=False)
-    subscription = _get_latest_subscription(customer.id)
-    if not subscription:
-        return Response({"error": "No active subscription found"}, status=status.HTTP_404_NOT_FOUND)
-
-    today = timezone.localdate()
+    customer, error = get_customer_or_response(user_id, allow_frozen=False)
+    if error:
+        return error
 
     if action == "pause":
+        active_subscription = get_latest_subscription(customer, active_only=True)
+        if not active_subscription:
+            return Response({"error": "No active subscription found"}, status=status.HTTP_404_NOT_FOUND)
+
+        today = timezone.localdate()
         reason = (request.data.get("reason") or "").strip()
         if not reason:
-            return Response({"error": "reason is required for pause"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "reason is required for pause"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         existing_pause = SubscriptionPause.objects.filter(
-            subscription=subscription,
+            subscription=active_subscription,
             pause_date=today,
             is_resumed=False,
         ).first()
@@ -50,6 +45,7 @@ def subscription_pause_resume_api(request):
             return Response(
                 {
                     "status": "already_paused",
+                    "subscription_id": active_subscription.id,
                     "pause_date": existing_pause.pause_date,
                     "reason": existing_pause.reason,
                 },
@@ -57,27 +53,31 @@ def subscription_pause_resume_api(request):
             )
 
         pause = SubscriptionPause.objects.create(
-            subscription=subscription,
+            subscription=active_subscription,
             pause_date=today,
             reason=reason,
             is_resumed=False,
         )
-        subscription.is_active = False
-        subscription.save(update_fields=["is_active"])
+        active_subscription.is_active = False
+        active_subscription.save(update_fields=["is_active"])
+
         return Response(
             {
                 "status": "paused",
-                "subscription_id": subscription.id,
+                "subscription_id": active_subscription.id,
                 "pause_date": pause.pause_date,
                 "reason": pause.reason,
             },
             status=200,
         )
 
-    # resume
+    active_subscription = get_latest_subscription(customer, active_only=False)
+    if not active_subscription:
+        return Response({"error": "No subscription found to resume"}, status=status.HTTP_404_NOT_FOUND)
+
     pause = (
-        SubscriptionPause.objects.filter(subscription=subscription, is_resumed=False)
-        .order_by("-pause_date")
+        SubscriptionPause.objects.filter(subscription=active_subscription, is_resumed=False)
+        .order_by("-pause_date", "-id")
         .first()
     )
     if not pause:
@@ -88,7 +88,7 @@ def subscription_pause_resume_api(request):
     return Response(
         {
             "status": "resumed",
-            "subscription_id": subscription.id,
+            "subscription_id": active_subscription.id,
             "pause_date": pause.pause_date,
             "resume_date": pause.resume_date,
         },
