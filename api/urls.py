@@ -8,7 +8,11 @@ from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
 from .customer_payment import record_customer_payment
-from .customer_contact import customer_contact_api, api_support_ticket_summary
+from .customer_contact import (
+    api_support_ticket_summary,
+    customer_contact_api,
+    customer_raised_queries_api,
+)
 from .admin_enquiry import (
     api_active_enquiries,
     api_resolved_enquiries,
@@ -153,6 +157,7 @@ urlpatterns = [
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
     path('contact/', customer_contact_api, name='customer_contact_api'),
     path('enquiries/summary/', api_support_ticket_summary, name='api_support_ticket_summary'),
+    path('enquiries/my/', customer_raised_queries_api, name='customer_raised_queries_api'),
     # Customer Offers
     path('customer/offers/', customer_offers, name='customer_offers_api'),
     

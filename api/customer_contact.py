@@ -8,6 +8,19 @@ from rest_framework.response import Response
 from milk_agency.models import Contact
 
 
+def _serialize_contact_ticket(contact: Contact):
+    return {
+        "id": contact.id,
+        "name": contact.name,
+        "phone": contact.phone,
+        "email": contact.email or "",
+        "subject": contact.subject,
+        "message": contact.message,
+        "status": contact.status,
+        "created_at": contact.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -22,6 +35,22 @@ def api_support_ticket_summary(request):
             "raised_tickets": raised_tickets,
             "resolved_tickets": resolved_tickets,
             "total_tickets": raised_tickets + resolved_tickets,
+        }
+    )
+
+
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def customer_raised_queries_api(request):
+    customer_contacts = Contact.objects.filter(customer=request.user).order_by("-created_at")
+    data = [_serialize_contact_ticket(contact) for contact in customer_contacts]
+
+    return Response(
+        {
+            "success": True,
+            "count": len(data),
+            "queries": data,
         }
     )
 
