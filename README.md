@@ -82,6 +82,32 @@ A comprehensive Django-based web application designed to manage operations for S
 7. **Access the application**
    - Open your browser and go to `http://127.0.0.1:8000/`
 
+### Running Locally on Windows
+
+This repository now defaults to the included `db.sqlite3` file for local development, so you do not need MySQL just to run the project on your Windows machine.
+
+1. Install Python 3.12 or 3.13 from the official Python installer and make sure `py` works in PowerShell.
+2. Open PowerShell in the project folder.
+3. Create a fresh Windows virtual environment:
+   ```powershell
+   py -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
+4. Install dependencies:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+5. Run migrations against SQLite:
+   ```powershell
+   py manage.py migrate
+   ```
+6. Start the development server:
+   ```powershell
+   py manage.py runserver
+   ```
+
+Optional: if you later want to use MySQL again, set `USE_MYSQL=true` and provide the `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_HOST`, and `MYSQL_PORT` environment variables before running Django.
+
 ## Usage
 
 ### For Administrators

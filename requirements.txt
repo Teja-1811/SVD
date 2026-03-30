@@ -1,6 +1,7 @@
 asgiref==3.9.1
 charset-normalizer==3.4.3
 Django==5.2.6
+djangorestframework==3.16.1
 django-mathfilters==1.0.0
 docopt==0.6.2
 num2words==0.5.14
