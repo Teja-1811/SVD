@@ -33,8 +33,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'svdagencies.shop',
     'www.svdagencies.shop',
-    '18.235.222.205',
-    'ec2-18-235-222-205.compute-1.amazonaws.com',
+    'svd-dqw3.onrender.com',
 ]
 
 
