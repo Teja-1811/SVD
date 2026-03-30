@@ -9,64 +9,104 @@ from django.utils import timezone
 from django.db import transaction
 import uuid
 
+VALID_CUSTOMER_TYPES = {"retailer", "user"}
+
+
+def _normalize_customer_type(value, fallback="retailer"):
+    value = (value or fallback or "retailer").strip().lower()
+    return value if value in VALID_CUSTOMER_TYPES else fallback
+
+
+def _build_customer_form_context(customer=None, requested_type="retailer"):
+    selected_type = customer.user_type if customer and customer.user_type in VALID_CUSTOMER_TYPES else _normalize_customer_type(requested_type)
+    object_label = "User" if selected_type == "user" else "Retailer"
+    identifier_label = "User ID" if selected_type == "user" else "Retailer ID"
+    cancel_url = "milk_agency:user_data" if selected_type == "user" else "milk_agency:customer_data"
+    return {
+        "customer": customer,
+        "is_edit": customer is not None,
+        "selected_type": selected_type,
+        "object_label": object_label,
+        "identifier_label": identifier_label,
+        "cancel_url": cancel_url,
+    }
+
+
+def _next_customer_code():
+    return str(Customer.objects.count() + 1).zfill(3)
+
+
+def _build_customer_identifier(city, customer_code):
+    cleaned_city = (city or "GGL").strip().upper() or "GGL"
+    return f"SVD-{cleaned_city}-{customer_code}"
+
+
+def save_customer_form(request, customer_id=None, default_user_type="retailer"):
+    customer = get_object_or_404(Customer, id=customer_id) if customer_id else None
+
+    if request.method == "POST":
+        selected_type = _normalize_customer_type(
+            request.POST.get("user_type"),
+            fallback=customer.user_type if customer else _normalize_customer_type(default_user_type),
+        )
+        object_label = "User" if selected_type == "user" else "Retailer"
+        name = request.POST.get("party_name", "").strip()
+        shop_name = request.POST.get("shop_name", "").strip()
+        retailer_id = request.POST.get("retailer_id", "").strip()
+        flat_number = request.POST.get("flat_number", "").strip()
+        area = request.POST.get("area", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        pin_code = request.POST.get("pin_code", "").strip()
+        city = request.POST.get("city", "").strip()
+        state = request.POST.get("state", "").strip()
+        is_commissioned = request.POST.get("is_commissioned") == "on"
+
+        if customer:
+            customer.name = name
+            customer.shop_name = shop_name
+            customer.retailer_id = retailer_id or customer.retailer_id or _build_customer_identifier(city, _next_customer_code())
+            customer.flat_number = flat_number
+            customer.area = area
+            customer.phone = phone
+            customer.pin_code = pin_code
+            customer.user_type = selected_type
+            customer.city = city
+            customer.state = state
+            customer.is_commissioned = is_commissioned
+            customer.save()
+            messages.success(request, f"{object_label} {customer.name} updated successfully!")
+        else:
+            customer = Customer.objects.create(
+                name=name,
+                shop_name=shop_name,
+                retailer_id=retailer_id or _build_customer_identifier(city, _next_customer_code()),
+                flat_number=flat_number,
+                area=area,
+                phone=phone,
+                pin_code=pin_code,
+                user_type=selected_type,
+                city=city,
+                state=state,
+                is_commissioned=is_commissioned,
+                password=phone,
+            )
+            messages.success(request, f"{object_label} {customer.name} added successfully!")
+
+        return redirect("milk_agency:user_data" if selected_type == "user" else "milk_agency:customer_data")
+
+    return render(
+        request,
+        "milk_agency/customer/add_customer.html",
+        _build_customer_form_context(customer=customer, requested_type=request.GET.get("type", default_user_type)),
+    )
+
 
 # -------------------------------------------------------
 # ADD / EDIT CUSTOMER
 # -------------------------------------------------------
 @login_required
 def add_customer(request, customer_id=None):
-    customer = get_object_or_404(Customer, id=customer_id) if customer_id else None
-
-    if request.method == 'POST':
-        name = request.POST.get('party_name')
-        shop_name = request.POST.get('shop_name')
-        retailer_id = request.POST.get('retailer_id')
-        flat_number = request.POST.get('flat_number')
-        area = request.POST.get('area')
-        phone = request.POST.get('phone')
-        pin_code = request.POST.get('pin_code')
-        city = request.POST.get('city')
-        state = request.POST.get('state')
-        is_commissioned = request.POST.get('is_commissioned') == 'on'
-
-        if customer:
-            customer.name = name
-            customer.shop_name = shop_name
-            customer.retailer_id = retailer_id
-            customer.flat_number = flat_number
-            customer.area = area
-            customer.phone = phone
-            customer.pin_code = pin_code
-            customer.user_type = 'retailer'
-            customer.city = city
-            customer.state = state
-            customer.is_commissioned = is_commissioned
-            customer.save()
-            messages.success(request, f'Customer {customer.name} updated successfully!')
-        else:
-            customer_code = str(Customer.objects.count()+1).zfill(3)
-            customer = Customer.objects.create(
-                name=name,
-                shop_name=shop_name,
-                retailer_id=f"SVD-{city}-{customer_code}",
-                flat_number=flat_number,
-                area=area,
-                phone=phone,
-                pin_code=pin_code,
-                user_type='retailer',
-                city=city,
-                state=state,
-                is_commissioned=is_commissioned,
-                password=phone
-            )
-            messages.success(request, f'Customer {customer.name} added successfully!')
-
-        return redirect('milk_agency:customer_data')
-
-    return render(request, 'milk_agency/customer/add_customer.html', {
-        'customer': customer,
-        'is_edit': customer is not None
-    })
+    return save_customer_form(request, customer_id=customer_id, default_user_type="retailer")
 
 
 # -------------------------------------------------------

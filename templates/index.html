@@ -1,10 +1,14 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}SVD Milk Agencies{% endblock %}
 
 {% block extra_css %}
 <style>
+
+    body {
+        overflow-x: hidden;
+    }
 
     .company-logo {
         height: 90px !important;
@@ -17,98 +21,111 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
     }
 
-    /* FULL WIDTH modal */
-.modal-fullscreen .modal-content {
-    border-radius: 10px;
-}
+    .modal-fullscreen .modal-content {
+        border-radius: 10px;
+    }
 
-/* Wrapper inside modal */
-.products-wrapper {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 15px;
-    margin: auto;
-    max-width: 1500px;
-}
+    .products-wrapper {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        margin: auto;
+        max-width: 1500px;
+    }
 
-/* FORCE small product grid */
-.products-grid {
-    display: grid !important;  /* force override bootstrap */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-    gap: 20px !important;
-    padding: 10px;
-    justify-items: center !important;
-}
+    .products-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+        gap: 20px !important;
+        padding: 10px;
+        justify-items: center !important;
+    }
 
-/* Small product card */
-.product-card {
-    width: 100%;
-    max-width: 150px !important;
-    min-height: 200px;
-    padding: 10px;
-    border-radius: 12px;
-    background: white;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-    text-align: center;
-}
+    .product-card {
+        width: 100%;
+        max-width: 150px !important;
+        min-height: 200px;
+        padding: 10px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        text-align: center;
+    }
 
-/* Small product image */
-.product-img {
-    max-height: 120px !important;
-    width: auto !important;
-    object-fit: contain !important;
-    padding: 5px;
-    display: block;
-    margin: auto;
-    background: white;
-}
+    .product-img {
+        max-height: 120px !important;
+        width: auto !important;
+        object-fit: contain !important;
+        padding: 5px;
+        display: block;
+        margin: auto;
+        background: white;
+    }
 
-/* ===== Company Filter Logos in Modal ===== */
-.company-filters {
-    width: 100%;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 25px;
-}
+    .company-filters {
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 25px;
+    }
 
-.company-filter-logo {
-    height: 70px;
-    width: 90px;
-    object-fit: contain;
-    padding: 6px 10px;
-    background: white;
-    border-radius: 12px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: 0.25s ease;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-}
+    .company-filter-logo {
+        height: 70px;
+        width: 90px;
+        object-fit: contain;
+        padding: 6px 10px;
+        background: white;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: 0.25s ease;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
 
-.company-filters img {
-    width : 100px !important;
-    height: 100 !important;
-}
+    .company-filters img {
+        width : 100px !important;
+        height: 100 !important;
+    }
 
+    .company-filter-logo:hover {
+        transform: scale(1.05);
+    }
 
-.company-filter-logo:hover {
-    transform: scale(1.05);
-}
+    .company-filter-logo.active {
+        border: 2px solid #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+    }
 
-.company-filter-logo.active {
-    border: 2px solid #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
-}
+    .pricing-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+        height: 100%;
+    }
+
+    .pricing-card img {
+        height: 150px;
+        object-fit: contain;
+        padding: 14px;
+        background: #fff;
+    }
+
+    .hero-section {
+        width: 100% !important;
+        min-height: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+    }
 
 </style>
 {% endblock extra_css %}
 
-
-
 {% block content %}
-
 <!-- HERO SECTION -->
 <section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
     <div class="container-fluid h-100 position-relative z-index-2 mt-5">
@@ -137,7 +154,6 @@
                                 <img src="{{ company.logo.url }}"
                                  alt="{{ company.name }} Logo"
                                  style="height:80px; background:white; border-radius:12px; padding:8px;">
-                         
                         {% endfor %}
                     </div>
 
@@ -159,10 +175,7 @@
 
                     <!-- BUTTONS -->
                     <div class="mt-4 d-flex justify-content-center gap-3">
-
-                        <!-- OPEN PRODUCTS MODAL -->
-                        <button class="btn btn-primary px-5 py-3 fw-semibold"
-                                data-bs-toggle="modal" data-bs-target="#productsModal">
+                        <button class="btn btn-primary px-5 py-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#productsModal">
                             Explore Products
                         </button>
 
@@ -176,6 +189,36 @@
         </div>
     </div>
 </section>
+
+<section class="py-5 bg-white" id="pricing">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Products & Pricing</div>
+            <h2 class="fw-bold">Sample Price Catalogue</h2>
+            <p class="text-muted mb-0">Visible sample products and pricing for customers and verification review.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for product in products|slice:":8" %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="card pricing-card">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top">
+                    {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="No Image" class="card-img-top">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="small text-muted mb-1">{{ product.company.name|default:"SVD Products" }}</div>
+                        <h6 class="fw-bold">{{ product.name }}</h6>
+                        <div class="fw-bold text-primary">₹{{ product.mrp }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
 <!-- ======================================================== -->
 <!--                        PRODUCTS MODAL                    -->
 <!-- ======================================================== -->
@@ -190,57 +233,40 @@
             </div>
 
             <div class="modal-body">
+                <div class="products-wrapper">
+                    {% for company in companies %}
+                    <div class="company-section mb-5" data-company="{{ company.id }}">
+                        <div class="text-center mb-4">
+                            <img src="{{ company.logo.url }}"
+                                 alt="{{ company.name }} Logo"
+                                 style="height:100px; background:white; border-radius:12px; padding:5px;">
 
-    <div class="products-wrapper">
-        <!-- ===== PRODUCTS BY COMPANY ===== -->
-        {% for company in companies %}
-        <div class="company-section mb-5" data-company="{{ company.id }}">
+                            <h3 class="mt-3">{{ company.name }} Products</h3>
+                            <p class="text-muted">Available items from {{ company.name }}</p>
+                        </div>
 
-            <div class="text-center mb-4">
-                <img src="{{ company.logo.url }}"
-                     alt="{{ company.name }} Logo"
-                     style="height:100px; background:white; border-radius:12px; padding:5px;">
-
-                <h3 class="mt-3">{{ company.name }} Products</h3>
-                <p class="text-muted">Available items from {{ company.name }}</p>
-            </div>
-
-            <div style="
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                    gap: 20px;
-                    padding: 10px;
-                    width: 100%;
-                ">
-
-                {% for product in products %}
-                    {% if product.company == company %}
-                    <div style="width: 250px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.12); text-align: center; margin: auto;">
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}"
-                                alt="{{ product.name }}"
-                                style="height: 120px; object-fit: contain; display: block; margin: auto;">
-                        {% else %}
-                            <img src="{% static 'images/no-product.png' %}"
-                                alt="No Image"
-                                style="height: 120px; object-fit: contain; display: block; margin: auto; opacity:0.6;">
-                        {% endif %}
-                        <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
-                        <p style="font-weight:bold;">₹{{ product.mrp }}</p>
-                        {% if product.description %}
-                            <p style="font-size:0.85rem; color:#555;">{{ product.description }}</p>
-                        {% endif %}
+                        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:20px; padding:10px; width:100%;">
+                            {% for product in products %}
+                                {% if product.company == company %}
+                                <div style="width: 250px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.12); text-align: center; margin: auto;">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="height: 120px; object-fit: contain; display: block; margin: auto;">
+                                    {% else %}
+                                        <img src="{% static 'images/no-product.png' %}" alt="No Image" style="height: 120px; object-fit: contain; display: block; margin: auto; opacity:0.6;">
+                                    {% endif %}
+                                    <h6 style="font-size:0.9rem; margin-top:10px;">{{ product.name }}</h6>
+                                    <p style="font-weight:bold;">₹{{ product.mrp }}</p>
+                                    {% if product.description %}
+                                        <p style="font-size:0.85rem; color:#555;">{{ product.description }}</p>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endif %}
-                {% endfor %}
-
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-        {% endfor %}
-
-    </div>
-
-</div>
 
         </div>
     </div>
@@ -298,7 +324,7 @@
                 <div class="contact-form-card h-100">
                     <h4><i class="bi bi-envelope-paper me-2"></i>Send us a Message</h4>
 
-                    <form id="contactForm">
+                    <form id="contactForm" method="post" action="{% url 'milk_agency:contact_form_submit' %}">
                         {% csrf_token %}
                         <div class="row g-3">
 
@@ -327,9 +353,13 @@
                                 <textarea rows="4" name="message" class="form-control" required></textarea>
                             </div>
 
+                            <div class="col-12">
+                                <div id="contactFormAlert" class="alert d-none mb-0" role="alert"></div>
+                            </div>
+
                             <div class="col-12 text-center mt-3">
-                                <button type="button" id="whatsappBtn" class="btn btn-whatsapp btn-lg">
-                                    <i class="bi bi-whatsapp me-2"></i> Contact via WhatsApp
+                                <button type="submit" id="contactSubmitBtn" class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-send me-2"></i> Send Message
                                 </button>
                             </div>
 
@@ -347,5 +377,5 @@
 
 {% block extra_js %}
 
-<script src="{% static 'js/contact-whatsapp.js' %}"></script>
+<script src="{% static 'js/contact-whatsapp.js' %}?v=2"></script>
 {% endblock extra_js %}

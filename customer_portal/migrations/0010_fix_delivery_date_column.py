@@ -1,7 +1,7 @@
 from django.db import migrations
 
 
-RENAME_SQL = """
+MYSQL_FORWARD_SQL = """
 SET @col := (
     SELECT COUNT(*)
     FROM information_schema.COLUMNS
@@ -18,7 +18,7 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 """
 
-REVERSE_SQL = """
+MYSQL_REVERSE_SQL = """
 SET @col := (
     SELECT COUNT(*)
     FROM information_schema.COLUMNS
@@ -36,6 +36,20 @@ DEALLOCATE PREPARE stmt;
 """
 
 
+def forward_fix_delivery_date(apps, schema_editor):
+    if schema_editor.connection.vendor != 'mysql':
+        return
+    for statement in [part.strip() for part in MYSQL_FORWARD_SQL.split(';') if part.strip()]:
+        schema_editor.execute(statement)
+
+
+def reverse_fix_delivery_date(apps, schema_editor):
+    if schema_editor.connection.vendor != 'mysql':
+        return
+    for statement in [part.strip() for part in MYSQL_REVERSE_SQL.split(';') if part.strip()]:
+        schema_editor.execute(statement)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -43,5 +57,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(sql=RENAME_SQL, reverse_sql=REVERSE_SQL),
+        migrations.RunPython(forward_fix_delivery_date, reverse_fix_delivery_date),
     ]

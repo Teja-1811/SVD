@@ -2,75 +2,71 @@
 {% load static %}
 {% block title %}Order / Checkout Flow | Sri Vijaya Durga Milk Agency{% endblock %}
 
+{% block extra_css %}
+<style>
+  .flow-shell { margin-top: 96px; }
+  .flow-hero, .flow-card {
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+  }
+  .flow-hero {
+    background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 50%, #fff7ec 100%);
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+  .flow-step {
+    border: 1px solid #e8eef8;
+    border-radius: 20px;
+    padding: 1.25rem;
+    height: 100%;
+    background: #fff;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="py-5">
-  <div class="container" style="margin-top: 90px;">
-
-    <div class="card shadow-sm border-1 p-2 p-md-5">
-
-      <h2 class="fw-bold text-center mb-2">
-        Order / Checkout Flow
-      </h2>
-
-      <p class="lead">
-        Sri Vijaya Durga Milk Agency supplies fresh milk and dairy products to 
-        households, retail stores and businesses on a daily and subscription basis. 
-        Customers can place milk delivery orders with us through direct contact.
+  <div class="container flow-shell">
+    <div class="flow-hero">
+      <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Order Flow</div>
+      <h1 class="fw-bold mb-3">How Orders And Payments Work</h1>
+      <p class="lead mb-0">
+        This page explains how Sri Vijaya Durga Milk Agency handles order requests, delivery confirmation, invoice generation and approved payment collection.
       </p>
+    </div>
 
-      <h5 class="fw-bold mt-3">💼 Types of Orders We Support</h5>
-      <ul>
-        <li>Daily household milk delivery</li>
-        <li>Monthly subscription delivery</li>
-        <li>Retail & wholesale supply to shops</li>
-        <li>Bulk orders for hotels & businesses</li>
-      </ul>
+    <div class="row g-4 mb-4">
+      <div class="col-md-6 col-xl-3"><div class="flow-step"><div class="fw-bold mb-2">1. Product Review</div><p class="mb-0 text-muted">Customers review products and pricing on the website or contact us directly.</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="flow-step"><div class="fw-bold mb-2">2. Order Request</div><p class="mb-0 text-muted">Existing customers may log in to the portal and place an order request.</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="flow-step"><div class="fw-bold mb-2">3. Confirmation & Delivery</div><p class="mb-0 text-muted">Our team confirms quantity, address, schedule and payable amount before fulfilment.</p></div></div>
+      <div class="col-md-6 col-xl-3"><div class="flow-step"><div class="fw-bold mb-2">4. Invoice & Payment</div><p class="mb-0 text-muted">Invoices and dues are shown to the customer for settlement through approved modes.</p></div></div>
+    </div>
 
-      <hr>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card flow-card p-4 p-md-5 h-100">
+          <h3 class="fw-bold mb-3">Orders We Support</h3>
+          <ul class="mb-0">
+            <li>Daily household milk delivery</li>
+            <li>Monthly subscription delivery</li>
+            <li>Retail and wholesale supply to shops</li>
+            <li>Bulk orders for hotels and businesses</li>
+          </ul>
+        </div>
+      </div>
 
-      <h5 class="fw-bold mt-3">🛒 Order / Checkout Process</h5>
-      <ol>
-        <li>Customer contacts us via phone or in person to request milk delivery</li>
-        <li>Delivery quantity, price and schedule are confirmed</li>
-        <li>Milk is delivered daily to the customer</li>
-        <li>A monthly invoice is generated based on total supply</li>
-        <li>Customer pays using online payment / UPI / bank transfer / cash</li>
-      </ol>
-
-      <p class="mt-3">
-        There is currently **no online shopping cart or Buy Now button** on the website. 
-        Orders are processed through direct customer communication and offline delivery.
-      </p>
-
-      <hr>
-
-      <h5 class="fw-bold mt-3">💳 Use of Online Payment Gateway</h5>
-      <p>
-        The online payment facility is used only for:
-      </p>
-
-      <ul>
-        <li>Bill payment by existing customers</li>
-        <li>Settlement of monthly invoices</li>
-        <li>Bulk order billing</li>
-      </ul>
-
-      <p>
-        Online payments are used **only for bill settlement**, not for retail ecommerce checkout.
-      </p>
-
-      <hr>
-
-      <h5 class="fw-bold mt-3">📍 Business Contact</h5>
-      <p>
-        Sri Vijaya Durga Milk Agency<br>
-        10-92, Main Road Gundugolanu,<br>
-        Near Santa Market, Bhimadolu,<br>
-        Eluru, Andhra Pradesh – 534427<br>
-        Phone: +91 9392890375<br>
-        Email: svdagencies12@gmail.com
-      </p>
-
+      <div class="col-lg-6">
+        <div class="card flow-card p-4 p-md-5 h-100">
+          <h3 class="fw-bold mb-3">Online Payment Usage</h3>
+          <p>Online payment is used only for approved dues and confirmed invoices.</p>
+          <ul class="mb-0">
+            <li>Bill payment by existing customers</li>
+            <li>Settlement of monthly invoices</li>
+            <li>Bulk order billing after confirmation</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>

@@ -106,50 +106,56 @@ class MonthlySalesPDFGenerator:
 
 
     def _draw_company_header(self, c, context, width, height):
-        """Draw company header section with left-center-right layout"""
-        c.setFont("Helvetica-Bold", 12)
-
-        # Left section - Company details
+        """Draw monthly statement header aligned with the invoice PDF branding."""
         left_x = 40
-        c.drawString(left_x, height - 50, "Sri Vijaya Durga Milk Agencies")
-        c.setFont("Helvetica", 12)
-        c.drawString(left_x, height - 65, "D.No: 10-92, Gundugolanu, Bhimadolu,Eluru, Andhra Pradesh - 534427")
-        c.drawString(left_x, height - 80, "Email: svdagencies12@gmail")
-        c.drawString(left_x, height - 95, "Phone: 9392890375")
+        top_y = height - 40
+        header_h = 74
+        header_w = width - 80
+        header_y = top_y - header_h
 
-        # Center section - Logo
-        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "SVD1.png")
-        if logo_path and os.path.exists(logo_path):
+        c.setLineWidth(1)
+        c.rect(left_x, header_y, header_w, header_h)
+
+        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.webp")
+        if os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
-                logo_width = 100
-                logo_height = 100
-                logo_x = (width - logo_width) / 2  # Center horizontally
-                c.drawImage(logo, logo_x, height - 135, width=logo_width, height=logo_height, mask='auto')
-            except Exception as e:
+                c.drawImage(logo, left_x + 8, header_y + 14, width=110, height=44, mask="auto")
+            except Exception:
                 pass
 
-        # Right section - Customer details next to logo
-        customer = context['selected_customer_obj']
-        right_x = logo_x + logo_width + 100  # Position next to logo
+        center_x = left_x + (header_w / 2)
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(right_x, height - 50, f"{customer.name} - {customer.shop_name}")
-        c.setFont("Helvetica", 12)
-        c.drawString(right_x, height - 65, f"Retailer ID: {customer.retailer_id or 'N/A'}")
+        c.drawCentredString(center_x, header_y + 56, "DODLA DAIRY LIMITED")
+
+        c.setFont("Helvetica", 7)
+        c.drawCentredString(center_x, header_y + 44, "FSSAI No: 10012044000145, PAN No: AABCD5077E, CIN No: L15209TG1995PLC020324")
+        c.drawCentredString(center_x, header_y + 34, "GSTIN: 37AACCD5077E1ZQ")
+        c.drawCentredString(center_x, header_y + 24, "Dhulipalli Village, Guntur, Guntur, 522403, Andhra Pradesh, India")
+
+        customer_box_h = 64
+        customer_box_y = header_y - customer_box_h
+        c.rect(left_x, customer_box_y, header_w, customer_box_h)
+
+        customer = context['selected_customer_obj']
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(left_x + 8, customer_box_y + 44, f"{customer.name} - {customer.shop_name}")
+        c.setFont("Helvetica", 10)
+        c.drawString(left_x + 8, customer_box_y + 30, f"Retailer ID: {customer.retailer_id or 'N/A'}")
         if customer.city == "DDL":
             city_display = "Denduluru"
         else:
             city_display = "Bhimadolu"
         address = f"{customer.flat_number or ''}, {customer.area or ''}, { city_display } (M), Eluru Dist, {customer.state or ''} - {customer.pin_code or ''}"
-        c.drawString(right_x, height - 80, f"Address: {address}")
-        c.drawString(right_x, height - 95, f"Phone: {customer.phone or 'N/A'}")
+        c.drawString(left_x + 8, customer_box_y + 16, f"Address: {address}")
+        c.drawRightString(left_x + header_w - 8, customer_box_y + 30, f"Phone: {customer.phone or 'N/A'}")
 
         # Title below header with lines above and below
         c.setFont("Helvetica-Bold", 10)
         title_text = f"Customer Statement for the Period: {context['start_date'].strftime('%d %b %Y')} - {context['end_date'].strftime('%d %b %Y')}"
         text_width = c.stringWidth(title_text, "Helvetica-Bold", 10)
         x_center = (width - text_width) / 2
-        y_title = height - 150
+        y_title = customer_box_y - 24
 
         # Draw line above title (red, full width)
         c.setStrokeColorRGB(1, 0, 0)  # Red color

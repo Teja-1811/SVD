@@ -2,56 +2,58 @@
 {% load static %}
 {% block title %}Privacy Policy | Sri Vijaya Durga Milk Agency{% endblock %}
 
+{% block extra_css %}
+<style>
+  .policy-shell { margin-top: 96px; }
+  .policy-hero, .policy-card {
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+  }
+  .policy-hero {
+    background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 52%, #fff7ec 100%);
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="py-5">
-  <div class="container" style="margin-top: 90px;">
-
-    <div class="card shadow-sm border-1 p-2 p-md-5">
-
-      <h2 class="fw-bold text-center mb-4">Privacy Policy</h2>
-
-      <p>
-        This Privacy Policy explains how Sri Vijaya Durga Milk Agency collects,
-        uses, stores and protects information received from customers and users of
-        our services.
+  <div class="container policy-shell">
+    <div class="policy-hero">
+      <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Privacy Policy</div>
+      <h1 class="fw-bold mb-3">How We Handle Customer Information</h1>
+      <p class="lead mb-0">
+        This policy explains how Sri Vijaya Durga Milk Agency collects, uses and protects customer information across the website, enquiries, billing and customer portal.
       </p>
+    </div>
 
-      <h5 class="fw-bold mt-3">Information We Collect</h5>
+    <div class="card policy-card p-4 p-md-5">
+      <h3 class="fw-bold mb-3">Information We Collect</h3>
       <ul>
         <li>Name</li>
-        <li>Contact details (phone & email)</li>
+        <li>Phone number and email address</li>
         <li>Delivery address</li>
-        <li>Billing information</li>
+        <li>Billing details and payment references</li>
       </ul>
 
-      <h5 class="fw-bold mt-3">How We Use This Data</h5>
+      <h3 class="fw-bold mt-4 mb-3">How We Use It</h3>
       <ul>
         <li>To process and deliver orders</li>
-        <li>To manage billing & accounts</li>
-        <li>To provide customer support</li>
-        <li>To notify order updates</li>
+        <li>To manage billing and customer accounts</li>
+        <li>To provide support and order updates</li>
+        <li>To reconcile approved payments and invoices</li>
       </ul>
 
-      <h5 class="fw-bold mt-3">Data Protection</h5>
+      <h3 class="fw-bold mt-4 mb-3">Data Protection</h3>
       <p>
-        We do not sell, rent or misuse customer information. Data is used strictly
-        for service purposes or where legally required.
-      </p>
-
-      <h5 class="fw-bold mt-3">Customer Rights</h5>
-      <p>
-        Customers may contact us to update or correct stored information.
-      </p>
-
-      <h5 class="fw-bold mt-3">Policy Agreement</h5>
-      <p>
-        By using our services, customers agree to this policy.
+        We do not sell or rent customer data. Information is used only for business operations, support and legal/accounting requirements where applicable.
       </p>
 
       <p class="mb-0">
-        For privacy-related queries, contact us at: svdagencies12@gmail.com
+        For privacy-related queries, contact us at <a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a> or <a href="tel:+919392890375">+91 9392890375</a>.
       </p>
-
     </div>
   </div>
 </section>

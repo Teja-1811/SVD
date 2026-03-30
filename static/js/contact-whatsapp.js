@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contactForm');
-    const whatsappBtn = document.getElementById('whatsappBtn');
+    const submitBtn = document.getElementById('contactSubmitBtn');
+    const alertBox = document.getElementById('contactFormAlert');
 
-    if (contactForm && whatsappBtn) {
-        whatsappBtn.addEventListener('click', function(e) {
+    if (contactForm && submitBtn) {
+        contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Get form data
             const formData = new FormData(contactForm);
             const name = formData.get('name').trim();
             const phone = formData.get('phone').trim();
@@ -14,50 +14,56 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = formData.get('subject').trim();
             const message = formData.get('message').trim();
 
-            // Validate required fields
             if (!name || !phone || !subject || !message) {
-                alert('Please fill in all required fields.');
+                showAlert('Please fill in all required fields.', 'danger');
                 return;
             }
 
-            // Disable button to prevent double submission
-            whatsappBtn.disabled = true;
-            whatsappBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+            hideAlert();
 
-            // Send data to server
-            fetch('/contact/submit/', {
+            fetch('/milk_agency/contact/submit/', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success message
-                    alert(data.message);
-
-                    // Open WhatsApp with the generated message
-                    if (data.whatsapp_url) {
-                        window.open(data.whatsapp_url, '_blank');
-                    }
-
-                    // Reset form
+                    showAlert(data.message, 'success');
                     contactForm.reset();
                 } else {
-                    alert(data.message);
+                    showAlert(data.message || 'Unable to send message.', 'danger');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showAlert('An error occurred. Please try again.', 'danger');
             })
             .finally(() => {
-                // Re-enable button
-                whatsappBtn.disabled = false;
-                whatsappBtn.innerHTML = '<i class="bi bi-whatsapp me-2"></i>Share via WhatsApp';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send me-2"></i> Send Message';
             });
         });
+    }
+
+    function showAlert(message, type) {
+        if (!alertBox) {
+            return;
+        }
+        alertBox.className = 'alert alert-' + type;
+        alertBox.textContent = message;
+    }
+
+    function hideAlert() {
+        if (!alertBox) {
+            return;
+        }
+        alertBox.className = 'alert d-none';
+        alertBox.textContent = '';
     }
 });

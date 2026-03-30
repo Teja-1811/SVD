@@ -2,50 +2,61 @@
 {% load static %}
 {% block title %}Refund & Cancellation Policy | Sri Vijaya Durga Milk Agency{% endblock %}
 
+{% block extra_css %}
+<style>
+  .refund-shell { margin-top: 96px; }
+  .refund-hero, .refund-card {
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+  }
+  .refund-hero {
+    background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 52%, #fff7ec 100%);
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="py-5">
-  <div class="container" style="margin-top: 90px;">
-
-    <div class="card shadow-sm border-1 p-2 p-md-5">
-
-      <h2 class="fw-bold text-center mb-4">
-        Refund & Cancellation Policy
-      </h2>
-
-      <p>
-        Sri Vijaya Durga Milk Agency follows a fair and transparent refund and
-        cancellation policy to ensure customer satisfaction.
+  <div class="container refund-shell">
+    <div class="refund-hero">
+      <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Refund Policy</div>
+      <h1 class="fw-bold mb-3">Refund & Cancellation Terms</h1>
+      <p class="lead mb-0">
+        This policy applies to confirmed delivery orders, recurring supply orders and invoice payments accepted by Sri Vijaya Durga Milk Agency.
       </p>
+    </div>
 
-      <h5 class="fw-bold mt-3">Refund Eligibility</h5>
+    <div class="card refund-card p-4 p-md-5">
+      <h3 class="fw-bold mb-3">Refund Eligibility</h3>
       <ul>
         <li>Missed or undelivered orders</li>
-        <li>Quality issues reported immediately</li>
+        <li>Quality issues reported immediately after delivery</li>
         <li>Incorrect product supplied</li>
       </ul>
 
-      <h5 class="fw-bold mt-3">Non-Refundable Cases</h5>
+      <h3 class="fw-bold mt-4 mb-3">Non-Refundable Cases</h3>
       <ul>
         <li>Products already consumed</li>
-        <li>Complaints raised after delivery</li>
-        <li>Wrong address or unavailability of customer</li>
+        <li>Complaints raised long after delivery</li>
+        <li>Wrong address or customer unavailability at delivery time</li>
       </ul>
 
-      <h5 class="fw-bold mt-3">Refund Method</h5>
+      <h3 class="fw-bold mt-4 mb-3">Refund Method & Timeline</h3>
       <p>
-        Refunds may be processed via monthly bill adjustment or original payment method.
+        Refunds may be processed through bill adjustment or the original payment method depending on the case. Eligible refund adjustments are normally handled within 5 to 7 working days after review and approval.
       </p>
 
-      <h5 class="fw-bold mt-3">Cancellations</h5>
+      <h3 class="fw-bold mt-4 mb-3">Cancellations</h3>
       <p>
-        Customers are requested to inform cancellations in advance where possible.
+        Customers should inform cancellations in advance where possible. Same-day delivery requests that have already been packed, dispatched or delivered may not be eligible for cancellation.
       </p>
 
       <p class="mb-0">
-        For refund queries, contact:<br>
-        Sri Vijaya Durga Milk Agency, Bhimadolu, Eluru, Andhra Pradesh
+        For refund queries, contact Sri Vijaya Durga Milk Agency at <a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a> or <a href="tel:+919392890375">+91 9392890375</a>.
       </p>
-
     </div>
   </div>
 </section>

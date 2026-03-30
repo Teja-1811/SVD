@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customerorder',
             name='delivery_date',
-            field=models.DateField(db_column='delivery_date', default=1, help_text='Expected delivery date'),
+            field=models.DateField(db_column='delivery_date', default='2026-03-18', help_text='Expected delivery date'),
             preserve_default=False,
         ),
     ]

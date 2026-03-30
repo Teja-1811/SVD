@@ -65,7 +65,10 @@ def cashbook(request):
     total_cash_out = cash_out_entries.aggregate(total=Sum('amount'))['total'] or 0
 
     # ---------------- BANK BALANCE (SINGLETON) ----------------
-    bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
+    bank_balance_obj, _ = BankBalance.objects.get_or_create(
+        id=1,
+        defaults={'amount': 0}
+    )
     bank_balance = bank_balance_obj.amount
 
     # ---------------- COMPANY DUES ----------------
@@ -168,7 +171,10 @@ def save_bank_balance(request):
 
         try:
             amount = float(amount_str)
-            bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
+            bank_balance_obj, _ = BankBalance.objects.get_or_create(
+                id=1,
+                defaults={'amount': 0}
+            )
             bank_balance_obj.amount = amount
             bank_balance_obj.save()
             messages.success(request, f"Bank balance updated: ₹{amount:.2f}")

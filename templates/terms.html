@@ -1,126 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Terms & Conditions{% endblock %}
 
+{% block extra_css %}
+<style>
+  .terms-shell { margin-top: 96px; }
+  .terms-hero, .terms-card {
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+  }
+  .terms-hero {
+    background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 52%, #fff7ec 100%);
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="py-5">
-<div class="container" style="margin-top: 90px;">
+<section class="py-5">
+  <div class="container terms-shell">
+    <div class="terms-hero">
+      <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Terms & Conditions</div>
+      <h1 class="fw-bold mb-3">Website, Order And Payment Terms</h1>
+      <p class="lead mb-0">
+        These terms apply to the public website, customer portal, enquiry forms, invoice access and approved online payment collection for existing customers.
+      </p>
+    </div>
 
-  <h2 class="fw-bold text-center mb-4">Terms & Conditions</h2>
+    <div class="card terms-card p-4 p-md-5">
+      <h3 class="fw-bold mb-3">General Use</h3>
+      <p>
+        By accessing this website, users agree to use it lawfully and provide accurate information when making enquiries, placing requests or accessing customer services.
+      </p>
 
-  <p>
-    These Terms and Conditions ("Terms") govern the use of the website and services
-    provided by <strong>Sri Vijaya Durga Milk Agencies</strong>.
-    By accessing or using our website, you agree to be bound by these Terms.
-  </p>
+      <h3 class="fw-bold mt-4 mb-3">Order Confirmation</h3>
+      <p>
+        Orders are subject to review and business confirmation. Quantity, address, schedule, invoice amount and payment instructions may be verified before final processing.
+      </p>
 
-  <!-- 1. Acceptance of Terms -->
-  <h5 class="fw-bold mt-4">1. Acceptance of Terms</h5>
-  <p>
-    By accessing, browsing, or using this website, the user agrees to comply with
-    and be legally bound by these Terms & Conditions, Privacy Policy, and other
-    applicable policies.
-  </p>
+      <h3 class="fw-bold mt-4 mb-3">Pricing & Payments</h3>
+      <p>
+        Payment may be collected after delivery or invoice confirmation according to customer account terms. Online payment options are enabled only for approved dues and confirmed invoices.
+      </p>
 
-  <!-- 2. Definitions -->
-  <h5 class="fw-bold mt-4">2. Definitions</h5>
-  <ul>
-    <li><strong>Company</strong> refers to Sri Vijaya Durga Milk Agencies.</li>
-    <li><strong>User</strong> refers to any person accessing or using the website.</li>
-    <li><strong>Customer</strong> refers to a registered user placing orders.</li>
-    <li><strong>Services</strong> refer to milk and dairy product distribution.</li>
-  </ul>
+      <h3 class="fw-bold mt-4 mb-3">Refunds & Cancellations</h3>
+      <p>
+        Refund and cancellation requests are handled according to the published Refund Policy on this website.
+      </p>
 
-  <!-- 3. User Eligibility -->
-  <h5 class="fw-bold mt-4">3. User Eligibility & Obligations</h5>
-  <p>
-    Users must be at least 18 years old. Users agree to provide accurate information
-    and not engage in prohibited activities.
-  </p>
-
-  <!-- 4. Pricing & Payments -->
-  <h5 class="fw-bold mt-4">4. Pricing & Payments</h5>
-  <p>
-    Orders are placed without upfront payment. Payment is collected only
-    <strong>after delivery</strong> within a maximum credit period of 7 days.
-  </p>
-  <p>
-    Payment methods include Cash and UPI. Online payment gateway transactions
-    may be enabled after order confirmation by the merchant.
-  </p>
-
-  <!-- 5. Order Confirmation -->
-  <h5 class="fw-bold mt-4">5. Order Confirmation</h5>
-  <p>
-    Orders placed by customers are subject to verification and approval by the merchant.
-    Payment options become available only after confirmation.
-  </p>
-
-  <!-- 6. Refund & Cancellation -->
-  <h5 class="fw-bold mt-4">6. Refund & Cancellation Policy</h5>
-  <p>
-    Refunds or cancellations are handled as per our Refund & Cancellation Policy
-    displayed on the website.
-  </p>
-
-  <!-- 7. Limitation of Liability -->
-  <h5 class="fw-bold mt-4">7. Limitation of Liability</h5>
-  <p>
-    Sri Vijaya Durga Milk Agencies shall not be responsible for indirect,
-    incidental, or consequential damages arising from use of the website.
-  </p>
-
-  <!-- 8. Intellectual Property -->
-  <h5 class="fw-bold mt-4">8. Intellectual Property Rights</h5>
-  <p>
-    Website layout, design, and original content belong to
-    <strong>Sri Vijaya Durga Milk Agencies</strong>.
-  </p>
-  <p>
-    Product images, trademarks, and brand logos displayed belong to their
-    respective companies and are used only for identification purposes.
-    These images are sourced from official company websites or public resources.
-  </p>
-  <p>
-    The business logo is not patented or trademarked and does not claim exclusive ownership.
-  </p>
-
-  <!-- 9. Third-Party Links -->
-  <h5 class="fw-bold mt-4">9. Third-Party Services</h5>
-  <p>
-    We are not responsible for content or services provided by third-party platforms.
-  </p>
-
-  <!-- 10. Account Termination -->
-  <h5 class="fw-bold mt-4">10. Termination of Access</h5>
-  <p>
-    The Company reserves the right to suspend or terminate accounts
-    for violations of these Terms.
-  </p>
-
-  <!-- 11. Modification -->
-  <h5 class="fw-bold mt-4">11. Modification of Terms</h5>
-  <p>
-    These Terms may be updated at any time. Continued use of the website
-    implies acceptance of revised terms.
-  </p>
-
-  <!-- 12. Governing Law -->
-  <h5 class="fw-bold mt-4">12. Governing Law & Jurisdiction</h5>
-  <p>
-    These Terms are governed by Indian laws. Jurisdiction lies with courts
-    in Andhra Pradesh.
-  </p>
-
-  <!-- 13. Contact -->
-  <h5 class="fw-bold mt-4">13. Contact Information</h5>
-  <p>
-    <strong>Sri Vijaya Durga Milk Agencies</strong><br>
-    Email: svdagencies12@gmail.com<br>
-    Phone: +91 9392890375
-  </p>
-
-</div>
- </div>
+      <h3 class="fw-bold mt-4 mb-3">Contact</h3>
+      <p class="mb-0">
+        Sri Vijaya Durga Milk Agencies<br>
+        10-92, Main Road Gundugolanu, Near Santa Market, Bhimadolu, Eluru, Andhra Pradesh - 534427<br>
+        Email: <a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a><br>
+        Phone: <a href="tel:+919392890375">+91 9392890375</a>
+      </p>
+    </div>
+  </div>
+</section>
 {% endblock %}

@@ -1,5 +1,5 @@
 ﻿{% extends "milk_agency/home/base.html" %}
-{% block title %}{% if customer %}Update Customer{% else %}Add Customer{% endif %}{% endblock %}
+{% block title %}{% if customer %}Update {{ object_label }}{% else %}Add {{ object_label }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -7,9 +7,9 @@
     <!-- Page Header -->
     <div class="mb-4">
         <h2 class="fw-bold mb-1">
-            {% if customer %}Update Customer{% else %}Add Customer{% endif %}
+            {% if customer %}Update {{ object_label }}{% else %}Add {{ object_label }}{% endif %}
         </h2>
-        <p class="text-muted small mb-0">Fill the form to save customer details</p>
+        <p class="text-muted small mb-0">Fill the form to save {{ selected_type }} details</p>
     </div>
 
     <form method="post">
@@ -23,25 +23,37 @@
 
                 <h5 class="section-title mb-4">
                     <i class="bi bi-person-lines-fill me-2 text-primary"></i>
-                    Customer Information
+                    {{ object_label }} Information
                 </h5>
 
                 <div class="row g-4">
 
                     <div class="col-md-6">
-                        <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+                        <label class="form-label">Entry Type <span class="text-danger">*</span></label>
+                        <select name="user_type" class="form-select form-select-lg soft-input" {% if customer %}disabled{% endif %}>
+                            <option value="retailer" {% if selected_type == 'retailer' %}selected{% endif %}>Retailer</option>
+                            <option value="user" {% if selected_type == 'user' %}selected{% endif %}>User</option>
+                        </select>
+                        {% if customer %}
+                        <input type="hidden" name="user_type" value="{{ selected_type }}">
+                        <div class="form-text">Type is locked while editing this record.</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ object_label }} Name <span class="text-danger">*</span></label>
                         <input type="text" name="party_name" value="{{ customer.name|default:'' }}"
                                class="form-control form-control-lg soft-input" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Shop Name</label>
+                        <label class="form-label">{% if selected_type == 'user' %}Reference / Shop Name{% else %}Shop Name{% endif %}</label>
                         <input type="text" name="shop_name" value="{{ customer.shop_name|default:'' }}"
                                class="form-control form-control-lg soft-input">
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Retailer ID</label>
+                        <label class="form-label">{{ identifier_label }}</label>
                         <input type="text" name="retailer_id" value="{{ customer.retailer_id|default:'' }}"
                                class="form-control form-control-lg soft-input bg-light" readonly>
                     </div>
@@ -119,14 +131,14 @@
         <!-- BUTTONS -->
         <div class="d-flex flex-column flex-sm-row justify-content-end gap-3 mb-4">
 
-            <a href="{% url 'milk_agency:customer_data' %}"
+            <a href="{% url cancel_url %}"
                class="btn btn-outline-secondary btn-lg px-4">
                <i class="bi bi-arrow-left me-2"></i>Cancel
             </a>
 
             <button class="btn btn-primary btn-lg px-4">
                 <i class="bi bi-check-circle me-2"></i>
-                {% if customer %}Update Customer{% else %}Add Customer{% endif %}
+                {% if customer %}Update {{ object_label }}{% else %}Add {{ object_label }}{% endif %}
             </button>
 
         </div>

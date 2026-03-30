@@ -6,6 +6,8 @@ from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
 from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, Contact
 from datetime import datetime
 import json
@@ -144,6 +146,8 @@ def home(request):
         .distinct()
     )
 
+    unresolved_queries_count = Contact.objects.filter(status="active").count()
+
     context = {
         "companies": companies,
         "categories": categories,
@@ -160,6 +164,7 @@ def home(request):
         "today_top_items": None,
         "today_active_customers": None,
         "today_bills_list": None,
+        "unresolved_queries_count": unresolved_queries_count,
     }
 
     return render(request, "milk_agency/home/home_dashboard.html", context)
@@ -169,6 +174,8 @@ def home(request):
 # CONTACT FORM SUBMIT
 # =========================================================
 def contact_form_submit(request):
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
     if request.method == 'POST':
         try:
             name = request.POST.get('name', '').strip()
@@ -178,7 +185,10 @@ def contact_form_submit(request):
             message = request.POST.get('message', '').strip()
 
             if not all([name, phone, subject, message]):
-                return JsonResponse({'success': False, 'message': 'Please fill all required fields.'})
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': 'Please fill all required fields.'})
+                messages.error(request, 'Please fill all required fields.')
+                return redirect('/#contact')
 
             Contact.objects.create(
                 name=name,
@@ -203,16 +213,25 @@ Message:
             encoded_message = quote(whatsapp_message)
             whatsapp_url = f"https://wa.me/919392890375?text={encoded_message}"
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Thank you! We will contact you soon.',
-                'whatsapp_url': whatsapp_url
-            })
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Thank you! We will contact you soon.',
+                    'whatsapp_url': whatsapp_url
+                })
 
-        except Exception:
-            return JsonResponse({'success': False, 'message': 'Server error. Try again.'})
+            messages.success(request, 'Thank you! We will contact you soon.')
+            return redirect('/#contact')
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+        except Exception as exc:
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': f'Server error. Try again. ({exc})'})
+            messages.error(request, f'Server error. Try again. ({exc})')
+            return redirect('/#contact')
+
+    if is_ajax:
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+    return redirect('/#contact')
 
 
 # STATIC PAGES
@@ -233,3 +252,35 @@ def refund(request):
 
 def checkout(request):
     return render(request, "checkout.html")
+
+
+@login_required
+@never_cache
+def admin_enquiries(request):
+    if request.method == "POST":
+        enquiry_id = request.POST.get("enquiry_id")
+        new_status = (request.POST.get("status") or "").strip().lower()
+        enquiry = get_object_or_404(Contact, id=enquiry_id)
+
+        allowed_statuses = {choice[0] for choice in Contact.STATUS_CHOICES}
+        if new_status not in allowed_statuses:
+            messages.error(request, "Invalid enquiry status.")
+            return redirect("milk_agency:admin_enquiries")
+
+        enquiry.status = new_status
+        enquiry.save(update_fields=["status"])
+        messages.success(request, "Enquiry status updated successfully.")
+        return redirect("milk_agency:admin_enquiries")
+
+    active_enquiries = Contact.objects.filter(status="active").order_by("-created_at")
+    resolved_enquiries = Contact.objects.filter(status="resolved").order_by("-created_at")
+
+    return render(
+        request,
+        "milk_agency/home/enquiries.html",
+        {
+            "active_enquiries": active_enquiries,
+            "resolved_enquiries": resolved_enquiries,
+            "unresolved_queries_count": active_enquiries.count(),
+        },
+    )

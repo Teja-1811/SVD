@@ -17,7 +17,7 @@ from .order_pricing import (
     get_delivery_charge_amount,
     is_takeaway_address,
 )
-from .pdf_utils import PDFGenerator
+from api.user_bill_pdf_utils import UserPDFGenerator
 
 
 # =========================================================
@@ -296,5 +296,5 @@ def generate_bill_from_order(order):
 # =========================================================
 def generate_invoice_pdf(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id, is_deleted=False)
-    pdf_generator = PDFGenerator()
+    pdf_generator = UserPDFGenerator()
     return pdf_generator.generate_and_return_pdf(bill, request)

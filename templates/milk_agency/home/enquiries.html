@@ -1,0 +1,130 @@
+{% extends "milk_agency/home/base.html" %}
+{% load static %}
+{% block title %}Admin Enquiries{% endblock %}
+
+{% block extra_css %}
+<style>
+  .enquiry-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(17, 24, 39, 0.08);
+    background: #fff;
+  }
+
+  .enquiry-header {
+    background: linear-gradient(135deg, #0d6efd, #4f46e5);
+    color: #fff;
+    border-radius: 18px;
+    padding: 22px 24px;
+  }
+
+  .enquiry-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .enquiry-pill-active {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .enquiry-pill-resolved {
+    background: #dcfce7;
+    color: #166534;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="min-height: 100vh; background:#f8f9fa;">
+  <div class="enquiry-header mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <h2 class="fw-bold mb-1">Customer Enquiries</h2>
+        <p class="mb-0">Review unresolved website queries and mark them resolved after action.</p>
+      </div>
+      <div class="enquiry-pill enquiry-pill-active">
+        <i class="bi bi-bell-fill"></i>
+        <span>{{ unresolved_queries_count }} unresolved</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="enquiry-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-bold mb-0">Active Queries</h4>
+          <span class="badge text-bg-warning">{{ active_enquiries|length }}</span>
+        </div>
+
+        {% if active_enquiries %}
+        <div class="d-grid gap-3">
+          {% for enquiry in active_enquiries %}
+          <div class="border rounded-4 p-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-2">
+              <div>
+                <div class="fw-bold">{{ enquiry.subject }}</div>
+                <div class="text-muted small">{{ enquiry.name }} | {{ enquiry.phone }}{% if enquiry.email %} | {{ enquiry.email }}{% endif %}</div>
+              </div>
+              <div class="text-muted small">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
+            </div>
+
+            <p class="mb-3">{{ enquiry.message }}</p>
+
+            <form method="post" class="d-flex flex-wrap gap-2">
+              {% csrf_token %}
+              <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
+              <input type="hidden" name="status" value="resolved">
+              <button type="submit" class="btn btn-success btn-sm">
+                <i class="bi bi-check-circle me-1"></i> Mark Resolved
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-success mb-0">No unresolved enquiries right now.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="enquiry-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-bold mb-0">Resolved Queries</h4>
+          <span class="badge text-bg-success">{{ resolved_enquiries|length }}</span>
+        </div>
+
+        {% if resolved_enquiries %}
+        <div class="d-grid gap-3">
+          {% for enquiry in resolved_enquiries %}
+          <div class="border rounded-4 p-3 bg-light">
+            <div class="fw-bold">{{ enquiry.subject }}</div>
+            <div class="text-muted small mb-2">{{ enquiry.name }} | {{ enquiry.phone }}</div>
+            <div class="text-muted small mb-2">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
+            <p class="mb-2 small">{{ enquiry.message|truncatechars:140 }}</p>
+
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
+              <input type="hidden" name="status" value="active">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                Reopen
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-secondary mb-0">No resolved enquiries yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

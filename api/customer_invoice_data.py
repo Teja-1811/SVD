@@ -3,7 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Sum, Avg
-from api.admin_bill_pdf_utils import PDFGenerator
+from api.user_bill_pdf_utils import UserPDFGenerator
 from milk_agency.models import Bill
 
 
@@ -108,7 +108,7 @@ def customer_invoice_download_api(request):
     except Bill.DoesNotExist:
         return Response({"error": "Invoice not found"}, status=404)
 
-    pdf_gen = PDFGenerator()
+    pdf_gen = UserPDFGenerator()
     return pdf_gen.generate_and_return_pdf(bill, request)
 
 
