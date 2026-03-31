@@ -5,7 +5,9 @@ Django==5.2.6
 django-mathfilters==1.0.0
 djangorestframework==3.16.1
 docopt==0.6.2
+gunicorn==25.3.0
 num2words==0.5.14
+packaging==26.0
 pillow==11.3.0
 psycopg2-binary==2.9.11
 reportlab==4.4.3
