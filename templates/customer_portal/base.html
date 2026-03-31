@@ -22,7 +22,7 @@
 <body>
     <div class="portal-shell">
         <nav class="navbar navbar-expand-xl portal-navbar fixed-top">
-            <div class="container portal-container">
+            <div class="container-fluid portal-container">
                 <a class="navbar-brand portal-brand" href="{% url 'customer_portal:home' %}">
                     <span class="portal-brand-mark">
                         <i class="bi bi-droplet-half"></i>
@@ -41,31 +41,31 @@
                     <ul class="navbar-nav me-auto portal-nav-list">
                         {% block nav_links %}
                         <li class="nav-item">
-                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:home' %}">
+                            <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'customer_portal:home' %}">
                                 <i class="bi bi-grid-1x2-fill"></i>
                                 <span>Overview</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:customer_orders_dashboard' %}">
+                            <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'customer_orders_dashboard' or request.resolver_match.url_name == 'last_order_details' %}active{% endif %}" href="{% url 'customer_portal:customer_orders_dashboard' %}">
                                 <i class="bi bi-bag-check-fill"></i>
                                 <span>{% if user.user_type == 'user' %}Order Milk{% else %}My Orders{% endif %}</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:reports_dashboard' %}">
+                            <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'reports_dashboard' or request.resolver_match.url_name == 'bill_details' %}active{% endif %}" href="{% url 'customer_portal:reports_dashboard' %}">
                                 <i class="bi bi-receipt-cutoff"></i>
                                 <span>Invoices</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:collect_payment' %}">
+                            <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'collect_payment' %}active{% endif %}" href="{% url 'customer_portal:collect_payment' %}">
                                 <i class="bi bi-wallet2"></i>
                                 <span>Payments</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:update_profile' %}">
+                            <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'update_profile' %}active{% endif %}" href="{% url 'customer_portal:update_profile' %}">
                                 <i class="bi bi-person-circle"></i>
                                 <span>Profile</span>
                             </a>
@@ -96,11 +96,13 @@
 
         <main class="portal-main">
             <div class="portal-bg"></div>
-            {% block content %}{% endblock %}
+            <div class="container-fluid portal-container">
+                {% block content %}{% endblock %}
+            </div>
         </main>
 
         <footer class="portal-footer">
-            <div class="container portal-container portal-footer-inner">
+            <div class="container-fluid portal-container portal-footer-inner">
                 <div>
                     <strong>Fresh delivery, clear billing, one simple portal.</strong>
                     <small>Built for daily orders, subscriptions, and account tracking.</small>

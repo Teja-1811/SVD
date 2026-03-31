@@ -21,11 +21,14 @@
 </head>
 <body class="public-body">
     <div class="public-shell">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
+    <nav class="navbar navbar-expand-lg fixed-top public-navbar">
         <div class="container-fluid public-container">
             <a class="navbar-brand" href="{% url 'index' %}">
-                <span class="brand-full">SVD Milk Agencies</span>
+                <span class="public-brand-mark"><i class="bi bi-droplet-half"></i></span>
+                <span class="public-brand-copy">
+                    <span class="brand-full">SVD Milk Agencies</span>
+                    <small>Fresh Daily Supply</small>
+                </span>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,15 +52,16 @@
                     </li>
                     {% endblock %}
                 </ul>
-                <ul class="navbar-nav d-flex align-items-center">
+                <ul class="navbar-nav d-flex align-items-center public-nav-meta">
                     <li class="nav-item me-3">
-                        <div class="d-flex flex-column align-items-end text-white">
+                        <div class="public-clock">
                             <small id="date" class="mb-0"></small>
                             <small id="time" class="mb-0"></small>
                         </div>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-outline-primary btn-place-order" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="bi bi-person-lock me-2"></i>
                             <span class="btn-text-full">Login</span>
                         </button>
                     </li>

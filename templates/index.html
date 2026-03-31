@@ -5,9 +5,51 @@
 
 {% block extra_css %}
 <style>
-
     body {
         overflow-x: hidden;
+    }
+
+    .home-section-shell {
+        width: 100%;
+        max-width: 1480px;
+        margin: 0 auto;
+    }
+
+    .hero-panel {
+        background:
+            radial-gradient(circle at top right, rgba(255, 214, 102, 0.22), transparent 30%),
+            linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 32px;
+        padding: clamp(1.5rem, 3vw, 3rem);
+        box-shadow: 0 24px 70px rgba(13, 18, 35, 0.22);
+    }
+
+    .hero-badges {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 1.4rem;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.78rem 1rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .section-panel {
+        background: rgba(255,255,255,0.86);
+        border-radius: 28px;
+        box-shadow: 0 18px 50px rgba(17, 24, 39, 0.08);
+        padding: clamp(1.2rem, 2vw, 2rem);
     }
 
     .company-logo {
@@ -122,6 +164,21 @@
         padding-bottom: 3rem !important;
     }
 
+    @media (max-width: 768px) {
+        .hero-panel {
+            border-radius: 24px;
+        }
+
+        .hero-badges {
+            gap: 0.65rem;
+        }
+
+        .hero-badge {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
 </style>
 {% endblock extra_css %}
 
@@ -129,9 +186,9 @@
 <!-- HERO SECTION -->
 <section class="hero-section d-flex align-items-center position-relative overflow-hidden" id="home">
     <div class="container-fluid h-100 position-relative z-index-2 mt-5 public-page-shell">
-        <div class="row h-100 align-items-center">
+        <div class="row h-100 align-items-center home-section-shell">
             <div class="col-12 text-center">
-                <div class="hero-content">
+                <div class="hero-content hero-panel">
 
                     <!-- MAIN LOGO -->
                     <div class="hero-logo-wrapper mb-4">
@@ -184,6 +241,12 @@
                         </a>
                     </div>
 
+                    <div class="hero-badges">
+                        <span class="hero-badge"><i class="bi bi-patch-check-fill"></i> Trusted local delivery</span>
+                        <span class="hero-badge"><i class="bi bi-bag-check-fill"></i> Customer portal ordering</span>
+                        <span class="hero-badge"><i class="bi bi-receipt-cutoff"></i> Clear billing and records</span>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -191,7 +254,8 @@
 </section>
 
 <section class="py-5 bg-white" id="pricing">
-    <div class="container">
+    <div class="container home-section-shell">
+        <div class="section-panel">
         <div class="text-center mb-5">
             <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Products & Pricing</div>
             <h2 class="fw-bold">Sample Price Catalogue</h2>
@@ -215,6 +279,7 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
         </div>
     </div>
 </section>
@@ -274,7 +339,8 @@
 
 <!-- CONTACT SECTION -->
 <section class="section py-5" id="contact">
-    <div class="container-fluid">
+    <div class="container-fluid home-section-shell">
+        <div class="section-panel">
 
         <div class="text-center mb-5">
             <h2 class="mb-3">Get In Touch</h2>
@@ -369,6 +435,7 @@
                 </div>
             </div>
 
+        </div>
         </div>
     </div>
 </section>

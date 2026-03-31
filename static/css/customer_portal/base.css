@@ -103,7 +103,8 @@ a {
 }
 
 .portal-nav-link:hover,
-.portal-nav-link:focus {
+.portal-nav-link:focus,
+.portal-nav-link.active {
     color: var(--portal-ink);
     background: rgba(29, 143, 106, 0.08);
 }

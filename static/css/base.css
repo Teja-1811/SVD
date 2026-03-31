@@ -105,6 +105,10 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.public-navbar {
+    background: rgba(255, 255, 255, 0.88);
+}
+
 .navbar.scrolled {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.99) 0%, rgba(255, 255, 255, 0.97) 100%);
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15), 0 4px 20px rgba(102, 126, 234, 0.15);
@@ -139,6 +143,52 @@ body {
     transition: all 0.3s ease;
     position: relative;
     text-decoration: underline;
+}
+
+.public-brand-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.8rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.14), rgba(118, 75, 162, 0.18));
+    color: var(--primary-color);
+    font-size: 1.15rem;
+    vertical-align: middle;
+}
+
+.public-brand-copy {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: middle;
+    line-height: 1.02;
+}
+
+.public-brand-copy small {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-light);
+}
+
+.public-nav-meta {
+    gap: 0.65rem;
+}
+
+.public-clock {
+    min-width: 122px;
+    padding: 0.72rem 0.9rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(102, 126, 234, 0.12);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.08);
+}
+
+.public-clock small {
+    display: block;
+    color: var(--text-dark);
 }
 
 .navbar-brand:hover {
@@ -884,6 +934,17 @@ body {
     .navbar-nav .nav-link {
         padding: var(--spacing-md) var(--spacing-lg);
         font-size: 1.1rem;
+    }
+
+    .public-nav-meta {
+        width: 100%;
+        margin-top: 0.75rem;
+        justify-content: stretch;
+    }
+
+    .public-clock {
+        width: 100%;
+        text-align: center;
     }
 
     .form-control, .form-select {
