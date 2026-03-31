@@ -16,9 +16,11 @@ def home(request):
     # Dashboard metrics
     total_products = Product.objects.count()
     total_categories = Category.objects.count()
+    total_customers = Customer.objects.count()
     total_sales = Sale.objects.count()
     total_revenue = Sale.objects.aggregate(total=Sum('total_amount'))['total'] or 0
     low_stock_products = Product.objects.filter(stock_quantity__lt=10)
+    anonymous_bills_count = Sale.objects.filter(customer__isnull=True).count()
 
     # Today's sales data
     today = timezone.now().date()
@@ -54,9 +56,14 @@ def home(request):
     context = {
         'total_products': total_products,
         'total_categories': total_categories,
+        'total_customers': total_customers,
         'total_sales': total_sales,
         'total_revenue': total_revenue,
         'low_stock_products': low_stock_products,
+        'anonymous_bills_count': anonymous_bills_count,
+        'today_sales_count': today_sales_count,
+        'today_revenue': today_revenue,
+        'today_profit': today_profit,
         'sales_labels': json.dumps(sales_labels),
         'sales_counts': json.dumps(sales_counts),
         'revenue_data': json.dumps(revenue_data),

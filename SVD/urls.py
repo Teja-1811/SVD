@@ -5,7 +5,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.shortcuts import render
+from django.http import FileResponse, Http404
 from milk_agency.models import Item, Company
+from pathlib import Path
 
 
 # ======================================================
@@ -41,6 +43,19 @@ def custom_404_view(request, exception):
     return render(request, "404.html", status=404)
 
 
+def media_file_view(request, path):
+    media_root = Path(settings.MEDIA_ROOT).resolve()
+    requested_path = (media_root / path).resolve()
+
+    if media_root not in requested_path.parents and requested_path != media_root:
+        raise Http404("Invalid media path")
+
+    if not requested_path.is_file():
+        raise Http404("Media file not found")
+
+    return FileResponse(open(requested_path, "rb"))
+
+
 # IMPORTANT: Use correct project path
 handler404 = "SVD.urls.custom_404_view"
 
@@ -59,6 +74,7 @@ urlpatterns = [
 
     # Public website
     path('', index_view, name='index'),
+    path('images/<path:path>', media_file_view, name='media_file'),
 
     # Apps
     path('customer/', include('customer_portal.urls', namespace='customer_portal')),

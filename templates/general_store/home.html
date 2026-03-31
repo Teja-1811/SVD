@@ -1,251 +1,561 @@
-﻿{% extends 'general_store/base.html' %}
+{% extends 'general_store/base.html' %}
 {% load static %}
 
 {% block title %}Dashboard - General Store - SVD Agencies{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/general_store/home.css' %}">
+<style>
+.gs-dashboard {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.gs-hero-card,
+.gs-quick-card,
+.gs-stat-card,
+.gs-chart-card,
+.gs-section-card {
+    border-radius: 24px;
+    border: 1px solid rgba(23, 53, 62, 0.1);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--gs-shadow);
+}
+
+.gs-hero-card {
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top left, rgba(255, 211, 109, 0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(17, 121, 92, 0.1), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,250,250,0.98) 100%);
+}
+
+.gs-hero-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 1.25rem;
+    align-items: center;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.gs-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(17, 121, 92, 0.1);
+    color: var(--gs-accent);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.gs-hero-title {
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(2.25rem, 4vw, 4rem);
+    line-height: 0.98;
+    font-weight: 800;
+}
+
+.gs-hero-copy {
+    margin: 0;
+    max-width: 58ch;
+    color: var(--gs-muted);
+    font-size: 1.02rem;
+}
+
+.gs-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+}
+
+.gs-primary-action,
+.gs-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.95rem 1.2rem;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.gs-primary-action {
+    background: linear-gradient(135deg, #0f7b68, #11795c);
+    color: #fff;
+    box-shadow: 0 16px 30px rgba(17, 121, 92, 0.24);
+}
+
+.gs-secondary-action {
+    border: 1px solid rgba(23, 53, 62, 0.12);
+    background: #fff;
+    color: var(--gs-ink);
+}
+
+.gs-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.gs-hero-metric {
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(23, 53, 62, 0.08);
+}
+
+.gs-hero-metric small {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--gs-muted);
+}
+
+.gs-hero-metric strong {
+    font-size: 1.55rem;
+}
+
+.gs-toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.gs-toolbar-note {
+    color: var(--gs-muted);
+    font-weight: 600;
+}
+
+.gs-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.gs-quick-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.15rem;
+    text-decoration: none;
+    color: var(--gs-ink);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gs-quick-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 30px rgba(23, 53, 62, 0.12);
+    color: var(--gs-ink);
+}
+
+.gs-quick-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(17,121,92,0.1), rgba(17,121,92,0.18));
+    color: var(--gs-accent);
+    font-size: 1.2rem;
+}
+
+.gs-quick-card strong {
+    font-size: 1rem;
+}
+
+.gs-quick-card span {
+    color: var(--gs-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.gs-stats-grid,
+.gs-chart-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.gs-stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.gs-stat-card {
+    padding: 1.35rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-stat-card::after {
+    content: "";
+    position: absolute;
+    top: -24px;
+    right: -24px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: rgba(23, 53, 62, 0.06);
+}
+
+.gs-stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+}
+
+.is-blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.is-green { background: rgba(17, 121, 92, 0.12); color: #11795c; }
+.is-amber { background: rgba(245, 158, 11, 0.14); color: #d97706; }
+.is-red { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+
+.gs-stat-card small {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--gs-muted);
+    font-weight: 600;
+}
+
+.gs-stat-card strong {
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.gs-stat-card p {
+    margin: 0.85rem 0 0;
+    color: var(--gs-muted);
+}
+
+.gs-chart-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+}
+
+.gs-chart-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.gs-chart-card,
+.gs-section-card {
+    overflow: hidden;
+}
+
+.gs-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid rgba(23, 53, 62, 0.08);
+}
+
+.gs-card-head h2,
+.gs-card-head h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.gs-card-head p {
+    margin: 0.25rem 0 0;
+    color: var(--gs-muted);
+    font-size: 0.92rem;
+}
+
+.gs-chart-body {
+    padding: 1.25rem;
+}
+
+.gs-chart-canvas {
+    position: relative;
+    min-height: 320px;
+}
+
+.gs-chart-canvas.is-short {
+    min-height: 280px;
+}
+
+.gs-table-wrap {
+    padding: 0 1.25rem 1.25rem;
+}
+
+.gs-low-stock-table th,
+.gs-low-stock-table td {
+    vertical-align: middle;
+}
+
+@media (max-width: 1399.98px) {
+    .gs-quick-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .gs-hero-wrap,
+    .gs-chart-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gs-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .gs-quick-grid,
+    .gs-stats-grid,
+    .gs-hero-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .gs-toolbar-row,
+    .gs-card-head,
+    .gs-hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gs-primary-action,
+    .gs-secondary-action {
+        width: 100%;
+    }
+
+    .gs-chart-body,
+    .gs-table-wrap {
+        padding: 1rem;
+    }
+
+    .gs-chart-canvas,
+    .gs-chart-canvas.is-short {
+        min-height: 240px;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="gs-dashboard gs-page-shell">
-    <section class="gs-dashboard-hero card border-0 shadow-lg">
-        <div class="card-body p-4 p-lg-5">
-            <div class="row g-4 align-items-center">
-                <div class="col-xl-8">
-                    <span class="text-uppercase fw-bold small text-success">General Store</span>
-                    <h1 class="display-5 fw-bold mt-2 mb-3">General store dashboard</h1>
-                    <p class="text-muted fs-5 mb-0">Review store activity, records, and inventory information from the main dashboard.</p>
+    <section class="gs-hero-card">
+        <div class="gs-hero-wrap">
+            <div>
+                <span class="gs-eyebrow"><i class="bi bi-shop"></i> General Store</span>
+                <h1 class="gs-hero-title">Store operations dashboard</h1>
+                <p class="gs-hero-copy">Manage products, customers, billing, cash movement, and sales reporting from a single store operations workspace.</p>
+                <div class="gs-hero-actions">
+                    <a href="{% url 'general_store:add_sale' %}" class="gs-primary-action"><i class="bi bi-cart-plus"></i><span>Create sale</span></a>
+                    <a href="{% url 'general_store:product_list' %}" class="gs-secondary-action"><i class="bi bi-box-seam"></i><span>Review products</span></a>
                 </div>
-                <div class="col-xl-4">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Products</small>
-                                <strong class="fs-4">{{ total_products }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Sales</small>
-                                <strong class="fs-4">{{ total_sales }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Revenue</small>
-                                <strong class="fs-5">&#8377;{{ total_revenue|floatformat:2 }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Low stock</small>
-                                <strong class="fs-4">{{ low_stock_products.count }}</strong>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+            <div class="gs-hero-metrics">
+                <div class="gs-hero-metric">
+                    <small>Today's sales</small>
+                    <strong>{{ today_sales_count }}</strong>
+                </div>
+                <div class="gs-hero-metric">
+                    <small>Today's revenue</small>
+                    <strong>&#8377;{{ today_revenue|floatformat:2 }}</strong>
+                </div>
+                <div class="gs-hero-metric">
+                    <small>Registered customers</small>
+                    <strong>{{ total_customers }}</strong>
+                </div>
+                <div class="gs-hero-metric">
+                    <small>Categories</small>
+                    <strong>{{ total_categories }}</strong>
                 </div>
             </div>
         </div>
     </section>
 
-    <div class="row g-3 g-md-4 mb-5">
-        <!-- Total Products Card -->
-        <div class="col-lg-3 col-md-6 col-12">
-            <div class="card h-100 shadow-lg border-0 hover-lift">
-                <div class="card-body text-center p-4 position-relative overflow-hidden">
-                    <div class="position-absolute top-0 end-0 bg-primary opacity-10" style="width: 100px; height: 100px; border-radius: 50%; transform: translate(30px, -30px);"></div>
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-box-seam-fill text-primary fs-2"></i>
-                        </div>
-                    </div>
-                    <h2 class="card-title text-primary mb-2 fw-bold">{{ total_products }}</h2>
-                    <p class="card-text text-muted mb-0 fs-5">Products</p>
-                    <div class="mt-3">
-                        <a href="{% url 'general_store:product_list' %}" class="btn btn-outline-primary btn-sm col-lg-auto">Open list</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Sales Card -->
-        <div class="col-lg-3 col-md-6 col-12">
-            <div class="card h-100 shadow-lg border-0 hover-lift">
-                <div class="card-body text-center p-4 position-relative overflow-hidden">
-                    <div class="position-absolute top-0 end-0 bg-success opacity-10" style="width: 100px; height: 100px; border-radius: 50%; transform: translate(30px, -30px);"></div>
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-receipt-cutoff text-success fs-2"></i>
-                        </div>
-                    </div>
-                    <h2 class="card-title text-success mb-2 fw-bold">{{ total_sales }}</h2>
-                    <p class="card-text text-muted mb-0 fs-5">Sales</p>
-                    <div class="mt-3">
-                        <a href="{% url 'general_store:sales_list' %}" class="btn btn-outline-success btn-sm col-lg-auto">Open list</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Revenue Card -->
-        <div class="col-lg-3 col-md-6 col-12">
-            <div class="card h-100 shadow-lg border-0 hover-lift">
-                <div class="card-body text-center p-4 position-relative overflow-hidden">
-                    <div class="position-absolute top-0 end-0 bg-warning opacity-10" style="width: 100px; height: 100px; border-radius: 50%; transform: translate(30px, -30px);"></div>
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-cash-stack text-warning fs-2"></i>
-                        </div>
-                    </div>
-                    <h2 class="card-title text-warning mb-2 fw-bold">₹{{ total_revenue|floatformat:2 }}</h2>
-                    <p class="card-text text-muted mb-0 fs-5">Revenue</p>
-                    <div class="mt-3">
-                        <small class="text-muted">This Month</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Low Stock Alert Card -->
-        <div class="col-lg-3 col-md-6 col-12">
-            <div class="card h-100 shadow-lg border-0 hover-lift">
-                <div class="card-body text-center p-4 position-relative overflow-hidden">
-                    <div class="position-absolute top-0 end-0 bg-danger opacity-10" style="width: 100px; height: 100px; border-radius: 50%; transform: translate(30px, -30px);"></div>
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-exclamation-triangle-fill text-danger fs-2"></i>
-                        </div>
-                    </div>
-                    <h2 class="card-title text-danger mb-2 fw-bold">{{ low_stock_products.count }}</h2>
-                    <p class="card-text text-muted mb-0 fs-5">Low stock items</p>
-                    {% if low_stock_products %}
-                    <div class="mt-3">
-                        <button class="btn btn-outline-danger btn-sm col-lg-auto" data-bs-toggle="modal" data-bs-target="#lowStockModal">View details</button>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="gs-toolbar-row">
+        <div>
+            <span class="gs-eyebrow"><i class="bi bi-grid-1x2"></i> Quick Access</span>
+            <div class="gs-toolbar-note mt-2">Store modules used most often are available directly from the dashboard.</div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="row mb-5">
-        <!-- Sales Trend Chart -->
-        <div class="col-lg-8 mb-4">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-info text-white d-flex align-items-center">
-                    <i class="bi bi-graph-up me-2"></i>
-                    <h5 class="mb-0">Today's sales trends</h5>
+    <section class="gs-quick-grid">
+        <a href="{% url 'general_store:product_list' %}" class="gs-quick-card">
+            <span class="gs-quick-icon"><i class="bi bi-box-seam"></i></span>
+            <strong>Products</strong>
+            <span>Product catalogue, stock updates, and product maintenance.</span>
+        </a>
+        <a href="{% url 'general_store:customer_list' %}" class="gs-quick-card">
+            <span class="gs-quick-icon"><i class="bi bi-people"></i></span>
+            <strong>Customers</strong>
+            <span>Customer records, contact information, and balances.</span>
+        </a>
+        <a href="{% url 'general_store:sales_list' %}" class="gs-quick-card">
+            <span class="gs-quick-icon"><i class="bi bi-receipt"></i></span>
+            <strong>Sales</strong>
+            <span>Invoice history, recorded sales, and transaction review.</span>
+        </a>
+        <a href="{% url 'general_store:anonymous_bills_list' %}" class="gs-quick-card">
+            <span class="gs-quick-icon"><i class="bi bi-cash"></i></span>
+            <strong>Anonymous bills</strong>
+            <span>Review sales created without a linked customer account.</span>
+        </a>
+        <a href="{% url 'general_store:add_sale' %}" class="gs-quick-card">
+            <span class="gs-quick-icon"><i class="bi bi-cart-plus"></i></span>
+            <strong>Add sale</strong>
+            <span>Create a new bill or point-of-sale entry from the dashboard.</span>
+        </a>
+    </section>
+
+    <section class="gs-stats-grid">
+        <article class="gs-stat-card">
+            <span class="gs-stat-icon is-blue"><i class="bi bi-box"></i></span>
+            <small>Total products</small>
+            <strong>{{ total_products }}</strong>
+            <p>Available product records in the store catalogue.</p>
+        </article>
+        <article class="gs-stat-card">
+            <span class="gs-stat-icon is-green"><i class="bi bi-receipt-cutoff"></i></span>
+            <small>Total sales</small>
+            <strong>{{ total_sales }}</strong>
+            <p>Recorded invoices across customer and anonymous billing.</p>
+        </article>
+        <article class="gs-stat-card">
+            <span class="gs-stat-icon is-amber"><i class="bi bi-cash-stack"></i></span>
+            <small>Total revenue</small>
+            <strong>&#8377;{{ total_revenue|floatformat:2 }}</strong>
+            <p>Accumulated billed value from all recorded sales.</p>
+        </article>
+        <article class="gs-stat-card">
+            <span class="gs-stat-icon is-red"><i class="bi bi-exclamation-triangle"></i></span>
+            <small>Low stock products</small>
+            <strong>{{ low_stock_products.count }}</strong>
+            <p>Items below the configured alert threshold.</p>
+        </article>
+    </section>
+
+    <section class="gs-chart-grid">
+        <div class="gs-chart-stack">
+            <article class="gs-chart-card">
+                <div class="gs-card-head">
+                    <div>
+                        <h2>Today's sales trends</h2>
+                        <p>Sales count, revenue, and profit for the current day.</p>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="chart-container">
+                <div class="gs-chart-body">
+                    <div class="gs-chart-canvas">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </div>
+            </article>
 
-        <!-- Category Revenue Chart -->
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-warning text-white d-flex align-items-center">
-                    <i class="bi bi-pie-chart me-2"></i>
-                    <h5 class="mb-0">Revenue by category</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="chart-container">
-                        <canvas id="categoryChart"></canvas>
+            <article class="gs-chart-card">
+                <div class="gs-card-head">
+                    <div>
+                        <h2>Top selling products</h2>
+                        <p>Highest-moving products based on billed quantities.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Additional Charts Row -->
-    <div class="row mb-5">
-        <!-- Top Products Chart -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-success text-white d-flex align-items-center">
-                    <i class="bi bi-bar-chart me-2"></i>
-                    <h5 class="mb-0">Top selling products</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="chart-container">
+                <div class="gs-chart-body">
+                    <div class="gs-chart-canvas is-short">
                         <canvas id="topProductsChart"></canvas>
                     </div>
                 </div>
-            </div>
+            </article>
         </div>
 
-        <!-- Profit Margin Chart -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white d-flex align-items-center">
-                    <i class="bi bi-percent me-2"></i>
-                    <h5 class="mb-0">Profit margin trends</h5>
+        <div class="gs-chart-stack">
+            <article class="gs-chart-card">
+                <div class="gs-card-head">
+                    <div>
+                        <h3>Revenue by category</h3>
+                        <p>Approximate revenue distribution across product categories.</p>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="chart-container">
+                <div class="gs-chart-body">
+                    <div class="gs-chart-canvas is-short">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </article>
+
+            <article class="gs-chart-card">
+                <div class="gs-card-head">
+                    <div>
+                        <h3>Profit margin trends</h3>
+                        <p>Revenue versus profit for the current reporting slice.</p>
+                    </div>
+                </div>
+                <div class="gs-chart-body">
+                    <div class="gs-chart-canvas is-short">
                         <canvas id="profitMarginChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </article>
 
-    <!-- Low Stock Products Section -->
+            <article class="gs-chart-card">
+                <div class="gs-card-head">
+                    <div>
+                        <h3>Anonymous billing</h3>
+                        <p>Sales recorded without a linked customer profile.</p>
+                    </div>
+                </div>
+                <div class="gs-chart-body">
+                    <div class="gs-hero-metric">
+                        <small>Anonymous bills</small>
+                        <strong>{{ anonymous_bills_count }}</strong>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
     {% if low_stock_products %}
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-gradient-danger text-white py-4">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
-                            <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-                        </div>
-                        <div>
-                            <h4 class="mb-0 fw-bold">Low stock alert</h4>
-                            <p class="mb-0 opacity-75">Products below the configured stock level</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-danger">
-                                <tr>
-                                    <th class="border-0 fw-semibold py-3 px-4">Product Name</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Category</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Current Stock</th>
-                                    <th class="border-0 fw-semibold py-3 px-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for product in low_stock_products %}
-                                <tr class="align-middle">
-                                    <td class="py-3 px-4 fw-medium">{{ product.name }}</td>
-                                    <td class="py-3 px-4">
-                                        <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="badge bg-danger fs-6 px-3 py-2">{{ product.stock_quantity }}</span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-warning btn-sm px-3 col-lg-auto">
-                                            <i class="bi bi-pencil me-1"></i>Update stock
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <section class="gs-section-card">
+        <div class="gs-card-head">
+            <div>
+                <h2>Low stock products</h2>
+                <p>These products should be reviewed for replenishment soon.</p>
+            </div>
+            <button class="btn btn-outline-danger btn-sm col-lg-auto" data-bs-toggle="modal" data-bs-target="#lowStockModal">
+                View all
+            </button>
+        </div>
+        <div class="gs-table-wrap">
+            <div class="table-responsive">
+                <table class="table gs-low-stock-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products|slice:":8" %}
+                        <tr>
+                            <td class="fw-semibold">{{ product.name }}</td>
+                            <td>{{ product.category.name }}</td>
+                            <td><span class="badge text-bg-danger">{{ product.stock_quantity }}</span></td>
+                            <td>
+                                <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-outline-warning btn-sm col-lg-auto">
+                                    Update stock
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </section>
     {% endif %}
 </div>
 {% endblock %}
@@ -253,42 +563,61 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/chart.js' %}"></script>
-<script src="{% static 'js/general_store/home.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    createSalesTrendChart(
+        '{{ sales_labels|safe }}',
+        '{{ sales_counts|safe }}',
+        '{{ revenue_data|safe }}',
+        '{{ profit_data|safe }}'
+    );
 
-<!-- Low Stock Modal -->
+    createTopProductsChart(
+        '{{ product_labels|safe }}',
+        '{{ product_quantities|safe }}',
+        '{{ product_revenues|safe }}'
+    );
+
+    createCategoryChart(
+        '{{ category_labels|safe }}',
+        '{{ category_data|safe }}'
+    );
+
+    createProfitMarginChart(
+        '{{ sales_labels|safe }}',
+        '{{ profit_data|safe }}',
+        '{{ revenue_data|safe }}'
+    );
+});
+</script>
+
 <div class="modal fade" id="lowStockModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Low stock products
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Low stock products</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-danger">
+                    <table class="table align-middle">
+                        <thead>
                             <tr>
-                                <th>Product Name</th>
+                                <th>Product</th>
                                 <th>Category</th>
-                                <th>Current Stock</th>
+                                <th>Current stock</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for product in low_stock_products %}
                             <tr>
-                                <td class="fw-medium">{{ product.name }}</td>
+                                <td class="fw-semibold">{{ product.name }}</td>
+                                <td>{{ product.category.name }}</td>
+                                <td><span class="badge text-bg-danger">{{ product.stock_quantity }}</span></td>
                                 <td>
-                                    <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-danger">{{ product.stock_quantity }}</span>
-                                </td>
-                                <td>
-                                    <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-warning btn-sm col-lg-auto">
-                                        <i class="bi bi-pencil"></i> Update
+                                    <a href="{% url 'general_store:edit_product' product.pk %}" class="btn btn-outline-warning btn-sm col-lg-auto">
+                                        Update
                                     </a>
                                 </td>
                             </tr>
@@ -301,6 +630,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
