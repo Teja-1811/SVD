@@ -370,11 +370,7 @@
         </div>
 
         <div class="item-image-box">
-          {% if item.image %}
-          <img src="{{ item.image.url }}" />
-          {% else %}
-          <i class="bi bi-image text-muted no-img-icon"></i>
-          {% endif %}
+          <img src="{{ item.resolved_image_url }}" />
         </div>
 
         <span class="stock-badge 

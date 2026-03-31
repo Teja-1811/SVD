@@ -278,7 +278,7 @@
 
                                                 <!-- IMAGE -->
                                                 <div class="product-media-left">
-                                                    <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}">
+                                                    <img src="{{ item.resolved_image_url }}">
                                                 </div>
 
                                                 <!-- DETAILS -->

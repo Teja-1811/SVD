@@ -2,10 +2,52 @@ from django.db import models
 from django.conf import settings
 from django.db.models import Sum
 from django.utils import timezone
+from django.templatetags.static import static
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager
 )
 from decimal import Decimal
+from pathlib import Path
+import re
+
+
+def _normalize_asset_key(value):
+    normalized = re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+    return normalized
+
+
+def _candidate_names(*values):
+    seen = set()
+    for value in values:
+        if not value:
+            continue
+        raw = str(value).strip()
+        normalized = _normalize_asset_key(raw)
+        for candidate in (raw, normalized):
+            if candidate and candidate not in seen:
+                seen.add(candidate)
+                yield candidate
+
+
+def _resolved_media_url(upload_field, media_subdir, *names):
+    if upload_field and getattr(upload_field, "name", ""):
+        try:
+            if upload_field.storage.exists(upload_field.name):
+                return upload_field.url
+        except Exception:
+            pass
+
+    base_dir = Path(settings.MEDIA_ROOT) / media_subdir
+    if base_dir.exists():
+        for candidate in _candidate_names(*names):
+            for file_path in base_dir.iterdir():
+                if not file_path.is_file():
+                    continue
+                stem = file_path.stem
+                if candidate == stem or _normalize_asset_key(candidate) == _normalize_asset_key(stem):
+                    return f"{settings.MEDIA_URL}{media_subdir}/{file_path.name}"
+
+    return static('images/placeholder.png')
 
 # -----------------------------
 # Custom User Manager
@@ -131,6 +173,10 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def resolved_logo_url(self):
+        return _resolved_media_url(self.logo, 'company', self.name)
+
 class Item(models.Model):
     code = models.CharField(max_length=50, unique=True, blank=True, null=True, help_text='Unique item code')
     name = models.CharField(max_length=255)
@@ -147,6 +193,10 @@ class Item(models.Model):
 
     def __str__(self):
         return f"{self.code} - {self.name}" if self.code else self.name
+
+    @property
+    def resolved_image_url(self):
+        return _resolved_media_url(self.image, 'items', self.code, self.name)
 
 class Bill(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='bills')

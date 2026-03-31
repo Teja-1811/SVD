@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, F
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.templatetags.static import static
 from django import forms
 from .models import Item, Company
 
@@ -11,16 +10,6 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ['name', 'logo', 'website_link']
-
-
-def _company_logo_url(company):
-    if company.logo and company.logo.name:
-        try:
-            if company.logo.storage.exists(company.logo.name):
-                return company.logo.url
-        except Exception:
-            pass
-    return static('images/placeholder.png')
 
 @login_required
 def add_company(request):
@@ -62,7 +51,7 @@ def companies_dashboard(request):
         c.total_items = item_stats['total_items'] or 0
         c.total_qty = item_stats['total_qty'] or 0
         c.total_value = item_stats['total_value'] or 0
-        c.safe_logo_url = _company_logo_url(c)
+        c.safe_logo_url = c.resolved_logo_url
 
     return render(request, 'milk_agency/dashboards_other/companies_dashboard.html', {
         'companies': companies

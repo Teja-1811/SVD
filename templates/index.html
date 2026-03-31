@@ -112,11 +112,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                     <div class="hero-company-list">
                         {% for company in companies|slice:":4" %}
                         <div class="hero-company-item">
-                            {% if company.logo %}
-                            <img src="{{ company.logo.url }}" alt="{{ company.name }}">
-                            {% else %}
-                            <img src="{% static 'images/placeholder.png' %}" alt="{{ company.name }}">
-                            {% endif %}
+                            <img src="{{ company.resolved_logo_url }}" alt="{{ company.name }}">
                             <div>
                                 <strong>{{ company.name }}</strong>
                                 <small>{{ company.description|default:"Trusted dairy partner brand" }}</small>
@@ -157,11 +153,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                     {% for product in products %}
                     <article class="product-slide {% if forloop.first %}active{% endif %}" data-slide-index="{{ forloop.counter0 }}">
                         <div class="product-slide-media">
-                            {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                            {% else %}
-                            <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}">
-                            {% endif %}
+                            <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
                         </div>
                         <div>
                             <div class="d-flex flex-wrap gap-2">
@@ -194,11 +186,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                 <div class="product-peek-list">
                     {% for product in products %}
                     <button type="button" class="product-peek {% if forloop.first %}active{% endif %}" data-peek-index="{{ forloop.counter0 }}">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        {% else %}
-                        <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}">
-                        {% endif %}
+                        <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
                         <span class="text-start">
                             <strong>{{ product.name }}</strong>
                             <small>{{ product.company.name|default:"SVD Product" }} • &#8377;{{ product.mrp }}</small>

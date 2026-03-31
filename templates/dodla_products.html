@@ -38,15 +38,9 @@
                     <div class="card h-100 border">
                         <div class="card-body text-center">
                             <div class="mb-3">
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}"
+                                    <img src="{{ product.resolved_image_url }}"
                                          alt="{{ product.name }}"
                                          class="img-fluid product-image">
-                                {% else %}
-                                    <img src="{% static 'images/Dodla/FCM.png' %}"
-                                         alt="{{ product.name }}"
-                                         class="img-fluid product-image">
-                                {% endif %}
                             </div>
                             <h6 class="card-title fw-bold">{{ product.name }}</h6>
                             <p class="card-text text-muted small">{{ product.description|default:"Premium quality dairy product" }}</p>
