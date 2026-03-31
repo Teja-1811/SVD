@@ -61,6 +61,53 @@
     border: 2px solid #fff;
 }
 
+.dashboard-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.dashboard-quick-card {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid rgba(23, 53, 62, 0.1);
+    box-shadow: 0 10px 24px rgba(23, 53, 62, 0.08);
+    text-decoration: none;
+    color: #17353e;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-quick-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(23, 53, 62, 0.12);
+    color: #17353e;
+}
+
+.dashboard-quick-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.12), rgba(37, 99, 235, 0.18));
+    color: #1d4ed8;
+    font-size: 1.2rem;
+}
+
+.dashboard-quick-card strong {
+    font-size: 1rem;
+}
+
+.dashboard-quick-card span {
+    color: #617780;
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
     /* Summary Cards */
     .summary-card {
         border: 1px solid #e7a1a1ff;
@@ -96,11 +143,19 @@
             padding: 8px;
             font-size: 0.85rem;
         }
+
+        .dashboard-quick-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 
     @media (max-width: 480px) {
         .filter-select {
             width: 100% !important;
+        }
+
+        .dashboard-quick-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -163,6 +218,41 @@
             <span>Delivery Status</span>
         </a>
     </div>
+
+    <section class="mb-4">
+        <div class="dashboard-quick-grid">
+            <a href="{% url 'milk_agency:customer_data' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-people"></i></span>
+                <strong>Customers</strong>
+                <span>Manage customer records and account data.</span>
+            </a>
+            <a href="{% url 'milk_agency:bills_dashboard' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-receipt"></i></span>
+                <strong>Bills</strong>
+                <span>Generate, review, and manage billing flow.</span>
+            </a>
+            <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-clipboard-check"></i></span>
+                <strong>Orders</strong>
+                <span>Open pending orders and process confirmations.</span>
+            </a>
+            <a href="{% url 'milk_agency:items_dashboard' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-tags"></i></span>
+                <strong>Items</strong>
+                <span>Control catalog, pricing, and item setup.</span>
+            </a>
+            <a href="{% url 'milk_agency:stock_dashboard' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-speedometer2"></i></span>
+                <strong>Stock</strong>
+                <span>Track stock movement, value, and shortages.</span>
+            </a>
+            <a href="{% url 'milk_agency:subscription_dashboard' %}" class="dashboard-quick-card">
+                <span class="dashboard-quick-icon"><i class="bi bi-journal-text"></i></span>
+                <strong>Subscriptions</strong>
+                <span>Review recurring deliveries and plans.</span>
+            </a>
+        </div>
+    </section>
 
 
     <!-- ----------------------------------- -->
