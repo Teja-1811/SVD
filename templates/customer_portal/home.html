@@ -23,10 +23,10 @@
 
         <div class="hero-panel">
             <div class="hero-copy">
-                <span class="hero-eyebrow">Daily delivery portal</span>
-                <h1>Fresh milk, faster reorders, and one clear account view for {{ user.name }}.</h1>
+                <span class="hero-eyebrow">Customer portal</span>
+                <h1>Account overview for {{ user.name }}.</h1>
                 <p>
-                    Track your latest order, manage payments, watch upcoming deliveries, and keep your address details up to date from one place.
+                    Review recent orders, payment status, delivery information, and account details from a single page.
                 </p>
                 <div class="hero-actions">
                     <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-hero-primary">
@@ -152,7 +152,7 @@
                     <i class="bi bi-basket2"></i>
                     <h3>No orders yet</h3>
                     <p>Start your first milk order and we will show tracking, totals, and billing updates here.</p>
-                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-soft-primary">Start ordering</a>
+                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-soft-primary">View orders</a>
                 </div>
                 {% endif %}
             </section>

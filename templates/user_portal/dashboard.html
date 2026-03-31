@@ -5,11 +5,11 @@
 {% block content %}
 <section class="up-page-header">
     <div class="up-hero">
-        <span class="up-eyebrow">User Control Center</span>
-        <h1 class="up-title">Fresh stock today. Smarter planning for every next delivery.</h1>
-        <p class="up-subtitle">Your full-screen user workspace brings ordering, billing, subscriptions, and offers into one responsive portal built for quick daily use on desktop and mobile.</p>
+        <span class="up-eyebrow">User Dashboard</span>
+        <h1 class="up-title">Account and order overview.</h1>
+        <p class="up-subtitle">Review orders, billing, subscriptions, and offers from a single workspace.</p>
         <div class="up-actions">
-            <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>Start ordering</span></a>
+            <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>View orders</span></a>
             <a href="{% url 'users:invoices' %}" class="up-btn-secondary"><i class="bi bi-receipt"></i><span>Review invoices</span></a>
             <a href="{% url 'users:offers' %}" class="up-btn-muted"><i class="bi bi-stars"></i><span>Explore offers</span></a>
         </div>
@@ -17,7 +17,7 @@
     <aside class="up-spotlight">
         <span class="up-eyebrow">Account Snapshot</span>
         <h3 class="mt-3 mb-2">Live status</h3>
-        <p class="up-subtitle">A quick read on billing, stock availability, and upcoming orders.</p>
+        <p class="up-subtitle">Summary of billing, product availability, and scheduled orders.</p>
         <div class="up-spotlight-grid">
             <div>
                 <small>Current due</small>
@@ -121,7 +121,7 @@
                 <div class="up-summary-item"><span>Items total</span><strong>&#8377;{{ latest_order.total_amount|floatformat:2 }}</strong></div>
             </div>
             {% else %}
-            <div class="up-empty">No user orders yet.</div>
+            <div class="up-empty">No orders are available.</div>
             {% endif %}
         </article>
 

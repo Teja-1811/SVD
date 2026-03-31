@@ -49,7 +49,7 @@
                         <li class="nav-item">
                             <a class="nav-link portal-nav-link {% if request.resolver_match.url_name == 'customer_orders_dashboard' or request.resolver_match.url_name == 'last_order_details' %}active{% endif %}" href="{% url 'customer_portal:customer_orders_dashboard' %}">
                                 <i class="bi bi-bag-check-fill"></i>
-                                <span>{% if user.user_type == 'user' %}Order Milk{% else %}My Orders{% endif %}</span>
+                                <span>{% if user.user_type == 'user' %}Orders{% else %}My Orders{% endif %}</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -104,8 +104,8 @@
         <footer class="portal-footer">
             <div class="container-fluid portal-container portal-footer-inner">
                 <div>
-                    <strong>Fresh delivery, clear billing, one simple portal.</strong>
-                    <small>Built for daily orders, subscriptions, and account tracking.</small>
+                    <strong>Customer account access and billing information.</strong>
+                    <small>Orders, subscriptions, invoices, and account details are available here.</small>
                 </div>
                 <div class="portal-footer-meta">
                     <span><i class="bi bi-shield-check"></i> Secure account</span>

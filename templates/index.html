@@ -91,13 +91,13 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
         <div class="hero-stage">
             <div class="hero-grid">
                 <div>
-                    <span class="landing-eyebrow"><i class="bi bi-stars"></i> Fresh daily supply</span>
+                    <span class="landing-eyebrow"><i class="bi bi-stars"></i> Sri Vijaya Durga Milk Agencies</span>
                     <div class="mt-3"><img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies" class="hero-logo"></div>
-                    <h1 class="hero-title">Daily milk, simple ordering, trusted local delivery.</h1>
-                    <p class="hero-copy">SVD Milk Agencies brings household and retail dairy supply together with easier ordering, clear product visibility, and reliable service across Gundugolanu and nearby areas.</p>
+                    <h1 class="hero-title">Reliable dairy supply for households and local businesses.</h1>
+                    <p class="hero-copy">SVD Milk Agencies provides product visibility, customer account access, and dairy distribution services for Gundugolanu and surrounding areas.</p>
                     <div class="hero-actions">
-                        <a href="#products" class="hero-primary-btn"><i class="bi bi-bag-check"></i> Explore products</a>
-                        <a href="#features" class="hero-secondary-btn"><i class="bi bi-grid-3x3-gap"></i> View features</a>
+                        <a href="#products" class="hero-primary-btn"><i class="bi bi-bag-check"></i> View products</a>
+                        <a href="#features" class="hero-secondary-btn"><i class="bi bi-grid-3x3-gap"></i> View details</a>
                         <a href="#contact" class="hero-secondary-btn"><i class="bi bi-telephone"></i> Contact us</a>
                     </div>
                     <div class="hero-metrics">
@@ -136,10 +136,10 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 
     <section class="landing-section pt-0">
         <div class="trust-band">
-            <div class="trust-card"><strong>Fresh dairy</strong><span>Milk, curd, and daily essentials from trusted suppliers.</span></div>
-            <div class="trust-card"><strong>Visible pricing</strong><span>Products and pricing are easy to review before ordering.</span></div>
-            <div class="trust-card"><strong>Portal access</strong><span>Customers can log in for orders, invoices, and account tracking.</span></div>
-            <div class="trust-card"><strong>Local support</strong><span>Direct contact and service support for nearby delivery zones.</span></div>
+            <div class="trust-card"><strong>Product catalogue</strong><span>Milk, curd, and related dairy items from listed suppliers.</span></div>
+            <div class="trust-card"><strong>Pricing visibility</strong><span>Products and prices can be reviewed before placing an order.</span></div>
+            <div class="trust-card"><strong>Portal access</strong><span>Customers can sign in to review orders, invoices, and account details.</span></div>
+            <div class="trust-card"><strong>Service coverage</strong><span>Local service availability and contact access for the surrounding delivery area.</span></div>
         </div>
     </section>
 
@@ -148,9 +148,9 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
             <div class="section-head">
                 <div>
                     <span class="landing-eyebrow"><i class="bi bi-box-seam"></i> Products</span>
-                    <h2>Browse every available product one by one.</h2>
+                    <h2>Available products</h2>
                 </div>
-                <p>The products spotlight rotates through all active items. Use the side list or arrows to jump to any product instantly.</p>
+                <p>Review the current product catalogue, pricing, and supplier details in a focused product showcase.</p>
             </div>
             <div class="products-showcase">
                 <div class="products-slider">
@@ -169,7 +169,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                                 <span class="product-chip status"><i class="bi bi-check-circle-fill"></i> Available now</span>
                             </div>
                             <h3>{{ product.name }}</h3>
-                            <p>{{ product.description|default:"Fresh product listing from SVD Milk Agencies with simple order visibility for customers." }}</p>
+                            <p>{{ product.description|default:"Product information is available here for customer review." }}</p>
                             <div class="product-price">&#8377;{{ product.mrp }}</div>
                             <div class="product-meta-grid">
                                 <div class="product-meta-card"><small>Company</small><strong>{{ product.company.name|default:"SVD" }}</strong></div>
@@ -220,16 +220,16 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
             <div class="section-head">
                 <div>
                     <span class="landing-eyebrow"><i class="bi bi-grid-1x2"></i> Features</span>
-                    <h2>A homepage built around clarity, trust, and ordering flow.</h2>
+                    <h2>Service highlights</h2>
                 </div>
-                <p>These cards highlight the core strengths of the SVD experience for customers, households, and recurring buyers.</p>
+                <p>Key capabilities related to customer access, product visibility, and service operations.</p>
             </div>
             <div class="feature-grid">
                 <article class="feature-card">
                     <div class="feature-icon-badge"><i class="bi bi-bag-heart"></i></div>
                     <h3>Clear product discovery</h3>
                     <p>Customers can review active products, supplier brands, and pricing from a single clean landing page.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Active listing spotlight</span><span><i class="bi bi-check-circle-fill"></i> Product images and pricing</span></div>
+                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Active product listings</span><span><i class="bi bi-check-circle-fill"></i> Product images and pricing</span></div>
                 </article>
                 <article class="feature-card">
                     <div class="feature-icon-badge"><i class="bi bi-person-lock"></i></div>
@@ -240,8 +240,8 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                 <article class="feature-card">
                     <div class="feature-icon-badge"><i class="bi bi-truck"></i></div>
                     <h3>Delivery-ready workflow</h3>
-                    <p>The site and portals are designed for routine supply, local service, and easy repeat ordering.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Daily supply focus</span><span><i class="bi bi-check-circle-fill"></i> Local operations support</span></div>
+                    <p>The site and portals support recurring orders, local service, and account-based access.</p>
+                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Recurring order options</span><span><i class="bi bi-check-circle-fill"></i> Local operations access</span></div>
                 </article>
                 <article class="feature-card">
                     <div class="feature-icon-badge"><i class="bi bi-receipt"></i></div>
@@ -258,14 +258,14 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
             <div class="section-head">
                 <div>
                     <span class="landing-eyebrow"><i class="bi bi-chat-dots"></i> Contact</span>
-                    <h2>Reach us directly for service, support, or local supply.</h2>
+                    <h2>Contact information</h2>
                 </div>
                 <p>Use the contact details for immediate help or send a message from the form and the team can follow up with you.</p>
             </div>
             <div class="contact-grid">
                 <div class="contact-card">
                     <h3 class="h4 mb-3">Visit or call SVD Milk Agencies</h3>
-                    <p class="text-muted mb-0">We serve customers from Gundugolanu with a simple, local-first distribution setup.</p>
+                    <p class="text-muted mb-0">SVD Milk Agencies serves customers in Gundugolanu and nearby areas.</p>
                     <div class="contact-stack">
                         <div class="contact-pill"><i class="bi bi-geo-alt-fill"></i><div><strong>Address</strong><span>Near Santa Market, Main Road Gundugolanu, Eluru, Andhra Pradesh - 534427</span></div></div>
                         <div class="contact-pill"><i class="bi bi-telephone-fill"></i><div><strong>Phone</strong><a href="tel:+919392890375">+91 9392890375</a></div></div>
