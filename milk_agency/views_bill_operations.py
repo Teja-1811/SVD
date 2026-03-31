@@ -22,6 +22,8 @@ def _find_linked_customer_order(bill):
         CustomerOrder.objects.filter(
             customer_id=bill.customer_id,
             order_date=bill.invoice_date,
+        )
+        .filter(
             total_amount=bill.total_amount,
         )
         .order_by("-id")

@@ -1,31 +1,17 @@
-﻿{% extends 'customer_portal/base.html' %}
+{% extends 'customer_portal/base.html' %}
 {% load static %}
 
-{% block title %}Customer Portal - Dashboard{% endblock %}
+{% block title %}User Portal - Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/common.css' %}">
 <link rel="stylesheet" href="{% static 'css/customer_portal/home.css' %}">
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid home-background py-4">
-
-        <div class="welcome-section">
-        
-        <div class="logo-container">
-            <img src="{% static 'images/SVD1.png' %}" alt="SVD Logo">
-        </div>
-
-        <h2>Welcome back, {{ user.name }}! 👋</h2>
-        <p>Manage your orders, track your account, and stay updated with SVD Agencies</p>
-
-    </div>
-    <br>
-    <!-- Messages -->
-    {% if messages %}
-    <div class="row justify-content-center mb-4">
-        <div class="col-lg-6 col-md-8 col-12">
+<section class="portal-home">
+    <div class="container portal-home-container">
+        {% if messages %}
+        <div class="portal-message-stack">
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
                 {{ message }}
@@ -33,180 +19,261 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- Stats Cards -->
-    <div class="row g-3 mb-4">
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-            <div class="card stats-card h-100 border-danger">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stats-icon bg-danger-subtle text-danger">
-                        <i class="bi bi-exclamation-circle"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="fw-semibold mb-1">Outstanding Due</h6>
-
-                        {% if user.due > 0 %}
-                            <h5 class="mb-0 text-danger">
-                                ₹{{ user.due|floatformat:2 }}
-                            </h5>
-                        {% else %}
-                            <h5 class="mb-0 text-muted">₹0.00</h5>
-                        {% endif %}
-
-                        <small class="text-muted">Amount payable</small>
-                    </div>
+        <div class="hero-panel">
+            <div class="hero-copy">
+                <span class="hero-eyebrow">Daily delivery portal</span>
+                <h1>Fresh milk, faster reorders, and one clear account view for {{ user.name }}.</h1>
+                <p>
+                    Track your latest order, manage payments, watch upcoming deliveries, and keep your address details up to date from one place.
+                </p>
+                <div class="hero-actions">
+                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-hero-primary">
+                        <i class="bi bi-bag-plus"></i>
+                        <span>Place today's order</span>
+                    </a>
+                    <a href="{% url 'customer_portal:reports_dashboard' %}" class="btn btn-hero-secondary">
+                        <i class="bi bi-receipt"></i>
+                        <span>View invoices</span>
+                    </a>
                 </div>
             </div>
-        </div>
 
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-            <div class="card stats-card h-100 border-success">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stats-icon bg-success-subtle text-success">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="fw-semibold mb-1">Wallet Balance</h6>
-
-                        {% if user.due < 0 %}
-                            <h5 class="mb-0 text-success">
-                                ₹{{ user.due|floatformat:2|slice:"1:" }}
-                            </h5>
-                        {% else %}
-                            <h5 class="mb-0 text-muted">₹0.00</h5>
-                        {% endif %}
-
-                        <small class="text-muted">Available credit</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-            <div class="card stats-card stats-card-2 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stats-icon bg-success-subtle text-success"><i class="bi bi-shop"></i></div>
-                    <div class="ms-3">
-                        <h6 class="fw-semibold mb-1">Shop Name</h6>
-                        <h5 class="mb-0">{{ user.shop_name|default:"NA" }}</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-            <div class="card stats-card stats-card-3 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stats-icon bg-warning-subtle text-warning"><i class="bi bi-telephone"></i></div>
-                    <div class="ms-3">
-                        <h6 class="fw-semibold mb-1">Phone Number</h6>
-                        <h5 class="mb-0">{{ user.phone }}</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-            <div class="card stats-card stats-card-4 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="stats-icon bg-info-subtle text-info"><i class="bi bi-shield-check"></i></div>
-                    <div class="ms-3">
-                        <h6 class="fw-semibold mb-1">Account Status</h6>
-                        <span class="badge {% if user.frozen %}bg-danger{% else %}bg-success{% endif %} px-3 py-2">
+            <div class="hero-spotlight">
+                <div class="spotlight-card">
+                    <div class="spotlight-top">
+                        <span class="spotlight-label">Account health</span>
+                        <span class="spotlight-badge {% if user.frozen %}is-danger{% else %}is-success{% endif %}">
                             {% if user.frozen %}Frozen{% else %}Active{% endif %}
                         </span>
                     </div>
+                    <div class="spotlight-grid">
+                        <div>
+                            <small>Outstanding</small>
+                            <strong>₹{{ outstanding_due|floatformat:2 }}</strong>
+                        </div>
+                        <div>
+                            <small>Wallet credit</small>
+                            <strong>₹{{ wallet_balance|floatformat:2 }}</strong>
+                        </div>
+                        <div>
+                            <small>Invoices this month</small>
+                            <strong>{{ monthly_invoice_count }}</strong>
+                        </div>
+                        <div>
+                            <small>Profile complete</small>
+                            <strong>{{ profile_completion }}%</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-    </div>
+        <div class="insight-grid">
+            <article class="insight-card tone-sunrise">
+                <div class="insight-icon"><i class="bi bi-wallet2"></i></div>
+                <div>
+                    <span class="insight-label">Current balance</span>
+                    <h3>₹{{ actual_due|floatformat:2 }}</h3>
+                    <p>{% if actual_due > 0 %}Pending amount to settle{% elif actual_due < 0 %}You have available credit{% else %}Your account is fully settled{% endif %}</p>
+                </div>
+            </article>
 
-    <!-- Account Details -->
-    <div class="row justify-content-center">
-        <div class="col-lg-4 col-md-6 col-sm-10">
-            <div class="card account-details-card shadow-sm">
+            <article class="insight-card tone-mint">
+                <div class="insight-icon"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <span class="insight-label">Monthly billing</span>
+                    <h3>₹{{ monthly_spend|floatformat:2 }}</h3>
+                    <p>{{ monthly_invoice_count }} invoice{{ monthly_invoice_count|pluralize }} generated this month</p>
+                </div>
+            </article>
 
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="fw-semibold mb-0"><i class="bi bi-person me-2"></i>Account Information</h5>
+            <article class="insight-card tone-ocean">
+                <div class="insight-icon"><i class="bi bi-truck"></i></div>
+                <div>
+                    <span class="insight-label">Latest delivery</span>
+                    <h3>{% if latest_delivery %}{{ latest_delivery.status|title }}{% else %}No updates{% endif %}</h3>
+                    <p>
+                        {% if latest_delivery %}
+                            {{ latest_delivery.order.order_number }} was updated recently.
+                        {% else %}
+                            Delivery tracking will appear here after your first order.
+                        {% endif %}
+                    </p>
+                </div>
+            </article>
+
+            <article class="insight-card tone-rose">
+                <div class="insight-icon"><i class="bi bi-stars"></i></div>
+                <div>
+                    <span class="insight-label">Live offers</span>
+                    <h3>{{ active_offers|length }}</h3>
+                    <p>Active savings available for user accounts today</p>
+                </div>
+            </article>
+        </div>
+
+        <div class="dashboard-grid">
+            <section class="dashboard-card featured-card">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-kicker">Orders</span>
+                        <h2>Latest order snapshot</h2>
+                    </div>
+                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}">Open orders</a>
                 </div>
 
-                <div class="card-body">
-
-                    <!-- Manual Info Items (no loop, no errors) -->
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-person"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Customer Name</div>
-                            <div class="info-value fw-semibold">{{ user.name }}</div>
-                        </div>
+                {% if latest_order %}
+                <div class="detail-stack">
+                    <div class="detail-row">
+                        <span>Order number</span>
+                        <strong>{{ latest_order.order_number }}</strong>
                     </div>
-
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-telephone"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Phone</div>
-                            <div class="info-value fw-semibold">{{ user.phone }}</div>
-                        </div>
+                    <div class="detail-row">
+                        <span>Status</span>
+                        <strong class="status-pill status-{{ latest_order.status }}">{{ latest_order.status|title }}</strong>
                     </div>
-
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-shop"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Shop Name</div>
-                            <div class="info-value fw-semibold">{{ user.shop_name|default:"Not specified" }}</div>
-                        </div>
+                    <div class="detail-row">
+                        <span>Order date</span>
+                        <strong>{{ latest_order.order_date|date:"M d, Y" }}</strong>
                     </div>
-
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-credit-card"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Retailer ID</div>
-                            <div class="info-value fw-semibold">{{ user.retailer_id|default:"Not assigned" }}</div>
-                        </div>
+                    <div class="detail-row">
+                        <span>Total amount</span>
+                        <strong>₹{{ latest_order.display_total_amount|floatformat:2 }}</strong>
                     </div>
+                </div>
+                <div class="card-action-row">
+                    <a href="{% url 'customer_portal:last_order_details' %}" class="btn btn-soft-primary">View full order</a>
+                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-soft-dark">Reorder</a>
+                </div>
+                {% else %}
+                <div class="empty-state-panel">
+                    <i class="bi bi-basket2"></i>
+                    <h3>No orders yet</h3>
+                    <p>Start your first milk order and we will show tracking, totals, and billing updates here.</p>
+                    <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-soft-primary">Start ordering</a>
+                </div>
+                {% endif %}
+            </section>
 
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Location</div>
-                            <div class="info-value fw-semibold">
-                                {% if user.area %}{{ user.area }}, {% endif %}
-                                {{ user.city|default:"City not specified" }}
-                            </div>
-                        </div>
+            <section class="dashboard-card">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-kicker">Subscription</span>
+                        <h2>Your active plan</h2>
                     </div>
-
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-envelope"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">Pin Code</div>
-                            <div class="info-value fw-semibold">{{ user.pin_code|default:"Not specified" }}</div>
-                        </div>
-                    </div>
-
-                    <div class="info-item d-flex mb-3">
-                        <div class="info-icon"><i class="bi bi-flag"></i></div>
-                        <div class="ms-3">
-                            <div class="info-title text-muted small">State</div>
-                            <div class="info-value fw-semibold">{{ user.state|default:"Not specified" }}</div>
-                        </div>
-                    </div>
-
-                    <div class="text-end mt-3">
-                        <a href="{% url 'customer_portal:update_profile' %}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-pencil-square me-1"></i>Update Profile
-                        </a>
-                    </div>
-
                 </div>
 
-            </div>
+                {% if active_subscription %}
+                <div class="subscription-highlight">
+                    <h3>{{ active_subscription.subscription_plan.name }}</h3>
+                    <p>{{ active_subscription.subscription_plan.description|default:"A scheduled delivery plan is active on your account." }}</p>
+                    <div class="mini-metrics">
+                        <div>
+                            <small>Plan price</small>
+                            <strong>₹{{ active_subscription.subscription_plan.price|floatformat:2 }}</strong>
+                        </div>
+                        <div>
+                            <small>Valid until</small>
+                            <strong>{{ active_subscription.end_date|date:"M d, Y" }}</strong>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-inline">
+                    <i class="bi bi-calendar2-plus"></i>
+                    <p>No active subscription is assigned yet.</p>
+                </div>
+                {% endif %}
+
+                <div class="subsection">
+                    <h3>Next delivery</h3>
+                    {% if next_subscription_delivery %}
+                    <div class="detail-stack compact">
+                        <div class="detail-row">
+                            <span>Item</span>
+                            <strong>{{ next_subscription_delivery.item.name }}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Date</span>
+                            <strong>{{ next_subscription_delivery.date|date:"M d, Y" }}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Quantity</span>
+                            <strong>{{ next_subscription_delivery.quantity }}</strong>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="muted-copy">No upcoming subscription delivery is scheduled right now.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="dashboard-card">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-kicker">Offers</span>
+                        <h2>Active savings</h2>
+                    </div>
+                </div>
+
+                {% if active_offers %}
+                <div class="offer-list">
+                    {% for offer in active_offers %}
+                    <article class="offer-item">
+                        <div>
+                            <h3>{{ offer.name }}</h3>
+                            <p>{{ offer.offer_type }}{% if offer.description %} · {{ offer.description }}{% endif %}</p>
+                        </div>
+                        <div class="offer-meta">
+                            <strong>₹{{ offer.price|floatformat:2 }}</strong>
+                            <small>Ends {{ offer.end_date|date:"M d" }}</small>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-inline">
+                    <i class="bi bi-gift"></i>
+                    <p>No active user offers today. Check back soon for combo deals and limited-time pricing.</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="dashboard-card">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-kicker">Account</span>
+                        <h2>Profile & address</h2>
+                    </div>
+                    <a href="{% url 'customer_portal:update_profile' %}">Edit</a>
+                </div>
+
+                <div class="detail-stack compact">
+                    <div class="detail-row">
+                        <span>Phone</span>
+                        <strong>{{ user.phone }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address</span>
+                        <strong>{{ primary_address|default:"Add your address details" }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Pin code</span>
+                        <strong>{{ user.pin_code|default:"Not set" }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Profile completion</span>
+                        <strong>{{ profile_completion }}%</strong>
+                    </div>
+                </div>
+
+                <div class="card-action-row single">
+                    <a href="{% url 'customer_portal:collect_payment' %}" class="btn btn-soft-dark">Go to payments</a>
+                </div>
+            </section>
         </div>
     </div>
-
-</div>
+</section>
 {% endblock %}

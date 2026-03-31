@@ -1,0 +1,258 @@
+{% extends 'user_portal/base.html' %}
+{% load static %}
+
+{% block title %}User Orders{% endblock %}
+
+{% block content %}
+<div class="up-hero mb-4">
+    <span class="up-eyebrow">Order now vs pre-book</span>
+    <h1 class="up-title">Available products today, full catalog for future dates.</h1>
+    <p class="up-subtitle">Regular ordering only shows `qty > 0` products. Pre-booking shows all products, and the delivery date must be at least 2 days from today.</p>
+</div>
+
+<div class="up-grid-2">
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Create order</span>
+                <h2>Choose your mode</h2>
+            </div>
+        </div>
+
+        <div class="up-mode-toggle">
+            <button type="button" class="up-mode-btn active" data-mode="regular">Order Now</button>
+            <button type="button" class="up-mode-btn" data-mode="prebook">Pre-book</button>
+        </div>
+
+        <div class="up-mode-panel active" data-panel="regular">
+            {% for category, items in available_items_by_category.items %}
+            <div class="mb-4">
+                <div class="up-section-head mb-2"><div><h3>{{ category }}</h3></div></div>
+                <div class="up-catalog">
+                    {% for item in items %}
+                    <div class="up-product">
+                        <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
+                        <div class="up-product-head">
+                            <strong>{{ item.name }}</strong>
+                            <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
+                        </div>
+                        <div class="up-muted">₹{{ item.display_price|floatformat:2 }}</div>
+                        <div class="up-qty">
+                            <button type="button" class="qty-minus">-</button>
+                            <input type="number" min="0" max="{{ item.stock_quantity }}" value="0" class="qty-input" data-mode="regular" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
+                            <button type="button" class="qty-plus">+</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="up-empty">No stock-ready products are available today.</div>
+            {% endfor %}
+        </div>
+
+        <div class="up-mode-panel" data-panel="prebook">
+            <div class="mb-3">
+                <label for="prebookDate" class="form-label">Delivery date</label>
+                <input type="date" id="prebookDate" class="form-control" min="{{ min_prebooking_date|date:'Y-m-d' }}" value="{{ min_prebooking_date|date:'Y-m-d' }}">
+                <div class="up-muted mt-2">Minimum allowed date: {{ min_prebooking_date|date:"M d, Y" }}</div>
+            </div>
+            {% for category, items in prebook_items_by_category.items %}
+            <div class="mb-4">
+                <div class="up-section-head mb-2"><div><h3>{{ category }}</h3></div></div>
+                <div class="up-catalog">
+                    {% for item in items %}
+                    <div class="up-product">
+                        <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
+                        <div class="up-product-head">
+                            <strong>{{ item.name }}</strong>
+                            {% if item.in_stock %}
+                            <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
+                            {% else %}
+                            <span class="up-chip chip-warning">Pre-book only</span>
+                            {% endif %}
+                        </div>
+                        <div class="up-muted">₹{{ item.display_price|floatformat:2 }}</div>
+                        <div class="up-qty">
+                            <button type="button" class="qty-minus">-</button>
+                            <input type="number" min="0" value="0" class="qty-input" data-mode="prebook" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
+                            <button type="button" class="qty-plus">+</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="up-panel mt-4">
+            <div class="up-section-head">
+                <div>
+                    <span class="up-eyebrow">Summary</span>
+                    <h3 id="summaryTitle">Regular order summary</h3>
+                </div>
+            </div>
+            <div id="selectedItems" class="up-summary">
+                <div class="up-empty">No items selected yet.</div>
+            </div>
+            <div class="up-summary mt-3">
+                <div class="up-summary-item"><span>Items total</span><strong id="itemsTotal">₹0.00</strong></div>
+                <div class="up-summary-item"><span>Delivery date</span><strong id="summaryDate">Today</strong></div>
+            </div>
+            <div class="up-actions mt-3">
+                <button type="button" id="submitOrderBtn" class="up-btn-primary w-100"><i class="bi bi-check2-circle"></i><span>Save order</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Active orders</span>
+                <h2>Pending and upcoming</h2>
+            </div>
+        </div>
+        {% if active_orders %}
+        <div class="up-list">
+            {% for order in active_orders %}
+            <div class="up-item">
+                <div class="up-section-head mb-2">
+                    <div>
+                        <strong>{{ order.order_number }}</strong>
+                        <div class="up-muted">Placed {{ order.order_date|date:"M d, Y" }}</div>
+                    </div>
+                    {% if order.status == 'confirmed' %}
+                    <span class="up-chip chip-success">{{ order.status|title }}</span>
+                    {% elif order.status == 'pending' %}
+                    <span class="up-chip chip-warning">{{ order.status|title }}</span>
+                    {% else %}
+                    <span class="up-chip chip-danger">{{ order.status|title }}</span>
+                    {% endif %}
+                </div>
+                <div class="up-summary">
+                    <div class="up-summary-item"><span>Delivery date</span><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div>
+                    <div class="up-summary-item"><span>Items total</span><strong>₹{{ order.total_amount|floatformat:2 }}</strong></div>
+                    <div class="up-summary-item"><span>Line count</span><strong>{{ order.items.all|length }}</strong></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="up-empty">No pending or upcoming user orders right now.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const minPrebookDate = "{{ min_prebooking_date|date:'Y-m-d' }}";
+    let currentMode = "regular";
+    const modeButtons = document.querySelectorAll(".up-mode-btn");
+    const panels = document.querySelectorAll(".up-mode-panel");
+    const summaryTitle = document.getElementById("summaryTitle");
+    const selectedItems = document.getElementById("selectedItems");
+    const itemsTotal = document.getElementById("itemsTotal");
+    const summaryDate = document.getElementById("summaryDate");
+    const prebookDate = document.getElementById("prebookDate");
+    const submitOrderBtn = document.getElementById("submitOrderBtn");
+
+    function getInputs(mode) {
+        return Array.from(document.querySelectorAll(`.qty-input[data-mode="${mode}"]`));
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === mode));
+        summaryTitle.textContent = mode === "prebook" ? "Pre-book summary" : "Regular order summary";
+        refreshSummary();
+    }
+
+    function refreshSummary() {
+        const rows = [];
+        let total = 0;
+        getInputs(currentMode).forEach((input) => {
+            const qty = parseInt(input.value || "0", 10);
+            if (!qty) return;
+            const price = parseFloat(input.dataset.itemPrice || "0");
+            const lineTotal = qty * price;
+            total += lineTotal;
+            rows.push(`<div class="up-summary-item"><span>${input.dataset.itemName} x ${qty}</span><strong>₹${lineTotal.toFixed(2)}</strong></div>`);
+        });
+
+        selectedItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
+        itemsTotal.textContent = `₹${total.toFixed(2)}`;
+        summaryDate.textContent = currentMode === "prebook" ? (prebookDate.value || minPrebookDate) : "Today";
+    }
+
+    document.body.addEventListener("click", (event) => {
+        if (!event.target.classList.contains("qty-plus") && !event.target.classList.contains("qty-minus")) return;
+        const input = event.target.parentElement.querySelector(".qty-input");
+        const current = parseInt(input.value || "0", 10);
+        const next = event.target.classList.contains("qty-plus") ? current + 1 : Math.max(0, current - 1);
+        const max = input.getAttribute("max");
+        input.value = max && next > parseInt(max, 10) ? max : next;
+        refreshSummary();
+    });
+
+    document.body.addEventListener("input", (event) => {
+        if (!event.target.classList.contains("qty-input")) return;
+        if (parseInt(event.target.value || "0", 10) < 0) event.target.value = 0;
+        refreshSummary();
+    });
+
+    modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
+    if (prebookDate) prebookDate.addEventListener("change", refreshSummary);
+
+    submitOrderBtn.addEventListener("click", async () => {
+        const items = getInputs(currentMode)
+            .map((input) => ({ item_id: parseInt(input.dataset.itemId, 10), quantity: parseInt(input.value || "0", 10) }))
+            .filter((item) => item.quantity > 0);
+
+        if (!items.length) {
+            alert("Please select at least one item.");
+            return;
+        }
+
+        const payload = { items };
+        if (currentMode === "prebook") {
+            if (!prebookDate.value || prebookDate.value < minPrebookDate) {
+                alert(`Pre-booking requires a date from ${minPrebookDate}.`);
+                return;
+            }
+            payload.delivery_date = prebookDate.value;
+        }
+
+        submitOrderBtn.disabled = true;
+        submitOrderBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span>Saving...</span>';
+        try {
+            const response = await fetch("{% url 'users:place_order' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!data.success) {
+                alert(data.message || "Could not save the order.");
+                return;
+            }
+            alert(`${data.message} Order # ${data.order_number}`);
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("Something went wrong while saving the order.");
+        } finally {
+            submitOrderBtn.disabled = false;
+            submitOrderBtn.innerHTML = '<i class="bi bi-check2-circle"></i><span>Save order</span>';
+        }
+    });
+
+    setMode("regular");
+});
+</script>
+{% endblock %}

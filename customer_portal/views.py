@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.db import OperationalError, ProgrammingError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
@@ -9,7 +11,15 @@ from datetime import time
 from decimal import Decimal
 import json
 
-from milk_agency.models import Customer, Item, Bill
+from milk_agency.models import (
+    Bill,
+    Customer,
+    CustomerSubscription,
+    Item,
+    Offers,
+    OrderDelivery,
+    SubscriptionOrder,
+)
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
 
 from .models import CustomerOrder, CustomerOrderItem
@@ -26,6 +36,29 @@ def _find_linked_customer_order_for_bill(bill):
         if Decimal(order.approved_total_amount or 0) == Decimal(bill.total_amount or 0):
             return order
     return orders.first()
+
+
+def _safe_first(queryset):
+    try:
+        return queryset.first()
+    except (OperationalError, ProgrammingError):
+        return None
+
+
+def _safe_list(queryset, limit=None):
+    try:
+        if limit is not None:
+            return list(queryset[:limit])
+        return list(queryset)
+    except (OperationalError, ProgrammingError):
+        return []
+
+
+def _safe_count(queryset):
+    try:
+        return queryset.count()
+    except (OperationalError, ProgrammingError):
+        return 0
 
 
 # ======================================================
@@ -47,6 +80,8 @@ def login_view(request):
                 login(request, user, backend='customer_portal.authentication.CustomerBackend')
                 if user.is_staff:
                     return redirect('milk_agency:home')
+                elif getattr(user, "user_type", "").lower() == "user":
+                    return redirect('users:dashboard')
                 else:
                     return redirect('customer_portal:home')
             else:
@@ -65,7 +100,86 @@ def login_view(request):
 @login_required
 @never_cache
 def home(request):
-    return render(request, 'customer_portal/home.html')
+    customer = request.user
+    today = timezone.localdate()
+    current_month_bills = Bill.objects.filter(
+        customer=customer,
+        is_deleted=False,
+        invoice_date__year=today.year,
+        invoice_date__month=today.month,
+    ).order_by("-invoice_date")
+    monthly_invoice_count = _safe_count(current_month_bills)
+    monthly_spend = sum(Decimal(bill.total_amount or 0) for bill in current_month_bills)
+    latest_order = (
+        CustomerOrder.objects.filter(customer=customer)
+        .order_by("-created_at", "-id")
+        .first()
+    )
+    if latest_order:
+        latest_order.display_total_amount = Decimal(
+            latest_order.approved_total_amount or latest_order.total_amount or 0
+        ) + Decimal(latest_order.delivery_charge or 0)
+
+    active_subscription = _safe_first(
+        CustomerSubscription.objects.filter(customer=customer, is_active=True, end_date__gte=today)
+        .select_related("subscription_plan")
+        .order_by("end_date")
+    )
+    next_subscription_delivery = _safe_first(
+        SubscriptionOrder.objects.filter(customer=customer, date__gte=today)
+        .select_related("item", "delivery_tracking")
+        .order_by("date", "id")
+    )
+    latest_delivery = _safe_first(
+        OrderDelivery.objects.filter(order__customer=customer)
+        .select_related("order")
+        .order_by("-updated_at")
+    )
+    active_offers = _safe_list(
+        Offers.objects.filter(
+            offer_for="user",
+            is_active=True,
+            start_date__lte=today,
+            end_date__gte=today,
+        ).order_by("end_date", "name"),
+        limit=3,
+    )
+
+    actual_due = Decimal(customer.get_actual_due() or 0)
+    outstanding_due = actual_due if actual_due > 0 else Decimal("0.00")
+    wallet_balance = abs(actual_due) if actual_due < 0 else Decimal("0.00")
+
+    profile_fields = [
+        customer.name,
+        customer.phone,
+        customer.flat_number,
+        customer.area,
+        customer.city,
+        customer.state,
+        customer.pin_code,
+    ]
+    profile_completion = round(
+        (sum(1 for value in profile_fields if value) / len(profile_fields)) * 100
+    )
+
+    context = {
+        "actual_due": actual_due,
+        "outstanding_due": outstanding_due,
+        "wallet_balance": wallet_balance,
+        "monthly_invoice_count": monthly_invoice_count,
+        "monthly_spend": monthly_spend,
+        "latest_bill": _safe_first(current_month_bills),
+        "latest_order": latest_order,
+        "active_subscription": active_subscription,
+        "next_subscription_delivery": next_subscription_delivery,
+        "latest_delivery": latest_delivery,
+        "active_offers": active_offers,
+        "profile_completion": profile_completion,
+        "primary_address": ", ".join(
+            filter(None, [customer.flat_number, customer.area, customer.city, customer.state, customer.pin_code])
+        ),
+    }
+    return render(request, 'customer_portal/home.html', context)
 
 
 # ======================================================

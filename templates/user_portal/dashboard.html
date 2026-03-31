@@ -1,0 +1,101 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="up-hero mb-4">
+    <span class="up-eyebrow">API-inspired dashboard</span>
+    <h1 class="up-title">Fresh stock today, flexible pre-booking for later.</h1>
+    <p class="up-subtitle">This portal is built in the `users` app and uses the same user-oriented data split as the API helpers, offers, dashboard, and subscriptions modules.</p>
+    <div class="up-actions">
+        <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>Start ordering</span></a>
+        <a href="{% url 'users:offers' %}" class="up-btn-secondary"><i class="bi bi-stars"></i><span>See offers</span></a>
+    </div>
+</div>
+
+<div class="up-grid-4 mb-4">
+    <div class="up-stat"><span>Available today</span><strong>{{ available_item_count }}</strong><span>stock-ready products</span></div>
+    <div class="up-stat"><span>Today's orders</span><strong>{{ today_order_count }}</strong><span>delivery date is today</span></div>
+    <div class="up-stat"><span>Pre-bookings</span><strong>{{ prebook_order_count }}</strong><span>future dated orders</span></div>
+    <div class="up-stat"><span>Current due</span><strong>₹{{ actual_due|floatformat:2 }}</strong><span>live billed balance</span></div>
+</div>
+
+<div class="up-grid-2">
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Profile</span>
+                <h2>Delivery address</h2>
+            </div>
+            <a href="{% url 'customer_portal:update_profile' %}">Edit</a>
+        </div>
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Name</span><strong>{{ user.name }}</strong></div>
+            <div class="up-summary-item"><span>Phone</span><strong>{{ user.phone }}</strong></div>
+            <div class="up-summary-item"><span>Address</span><strong>{{ primary_address|default:"Add your address details" }}</strong></div>
+            <div class="up-summary-item"><span>Profile completion</span><strong>{{ profile_completion }}%</strong></div>
+        </div>
+    </div>
+
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Latest order</span>
+                <h2>Order snapshot</h2>
+            </div>
+            <a href="{% url 'users:orders' %}">Manage</a>
+        </div>
+        {% if latest_order %}
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Order number</span><strong>{{ latest_order.order_number }}</strong></div>
+            <div class="up-summary-item"><span>Delivery date</span><strong>{{ latest_order.delivery_date|date:"M d, Y" }}</strong></div>
+            <div class="up-summary-item"><span>Status</span><strong>{{ latest_order.status|title }}</strong></div>
+            <div class="up-summary-item"><span>Items total</span><strong>₹{{ latest_order.total_amount|floatformat:2 }}</strong></div>
+        </div>
+        {% else %}
+        <div class="up-empty">No user orders yet.</div>
+        {% endif %}
+    </div>
+
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Offers</span>
+                <h2>Active deals</h2>
+            </div>
+            <a href="{% url 'users:offers' %}">Open offers</a>
+        </div>
+        {% if offers %}
+        <div class="up-offers">
+            {% for offer in offers %}
+            <div class="up-offer">
+                <strong>{{ offer.name }}</strong>
+                <div class="up-muted">{{ offer.offer_type }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="up-empty">No active user offers today.</div>
+        {% endif %}
+    </div>
+
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Subscription</span>
+                <h2>Current plan</h2>
+            </div>
+            <a href="{% url 'users:subscriptions' %}">Open subscription</a>
+        </div>
+        {% if subscription %}
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Plan</span><strong>{{ subscription.subscription_plan.name }}</strong></div>
+            <div class="up-summary-item"><span>Price</span><strong>₹{{ subscription.subscription_plan.price|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Valid until</span><strong>{{ subscription.end_date|date:"M d, Y" }}</strong></div>
+        </div>
+        {% else %}
+        <div class="up-empty">No active subscription assigned.</div>
+        {% endif %}
+    </div>
+ </div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}User Subscriptions{% endblock %}
+
+{% block content %}
+<div class="up-hero mb-4">
+    <span class="up-eyebrow">Reference: api/user_subscriptions.py</span>
+    <h1 class="up-title">Your subscription at a glance.</h1>
+    <p class="up-subtitle">This view is structured around the same active subscription data used by the API subscription endpoints.</p>
+</div>
+
+<div class="up-grid-2">
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Current plan</span>
+                <h2>Subscription status</h2>
+            </div>
+        </div>
+        {% if subscription %}
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Plan</span><strong>{{ subscription.subscription_plan.name }}</strong></div>
+            <div class="up-summary-item"><span>Start date</span><strong>{{ subscription.start_date|date:"M d, Y" }}</strong></div>
+            <div class="up-summary-item"><span>End date</span><strong>{{ subscription.end_date|date:"M d, Y" }}</strong></div>
+            <div class="up-summary-item"><span>Status</span><strong>{% if subscription.is_active %}Active{% else %}Inactive{% endif %}</strong></div>
+            <div class="up-summary-item"><span>Plan price</span><strong>₹{{ subscription.subscription_plan.price|floatformat:2 }}</strong></div>
+        </div>
+        {% else %}
+        <div class="up-empty">No active subscription is available for this user account.</div>
+        {% endif %}
+    </div>
+
+    <div class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Included items</span>
+                <h2>Plan contents</h2>
+            </div>
+        </div>
+        {% if subscription_items %}
+        <div class="up-list">
+            {% for item in subscription_items %}
+            <div class="up-item">
+                <strong>{{ item.item.name }}</strong><br>
+                <span class="up-muted">Qty {{ item.quantity }} · ₹{{ item.price|floatformat:2 }} · {{ item.per|title }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="up-empty">No subscription items to display.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

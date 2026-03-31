@@ -62,6 +62,7 @@ urlpatterns = [
 
     # Apps
     path('customer/', include('customer_portal.urls', namespace='customer_portal')),
+    path('users/', include('users.urls', namespace='users')),
     path('general_store/', include('general_store.urls')),
     path('milk_agency/', include('milk_agency.urls', namespace='milk_agency')),
     path('api/', include('api.urls')),

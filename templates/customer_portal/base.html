@@ -1,11 +1,9 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Favicons -->
     <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
     <link rel="icon" href="{% static 'favicon-32x32.png' %}" type="image/png" sizes="32x32">
     <link rel="icon" href="{% static 'favicon-16x16.png' %}" type="image/png" sizes="16x16">
@@ -14,129 +12,117 @@
 
     <title>{% block title %}Customer Portal - SVD Milk Agencies{% endblock %}</title>
 
-    <!-- Bootstrap + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Page-specific CSS -->
     {% block extra_css %}{% endblock %}
-
-    <!-- Main Base Styles -->
     <link rel="stylesheet" href="{% static 'css/customer_portal/base.css' %}">
 </head>
+<body>
+    <div class="portal-shell">
+        <nav class="navbar navbar-expand-xl portal-navbar fixed-top">
+            <div class="container portal-container">
+                <a class="navbar-brand portal-brand" href="{% url 'customer_portal:home' %}">
+                    <span class="portal-brand-mark">
+                        <i class="bi bi-droplet-half"></i>
+                    </span>
+                    <span>
+                        <strong>{% if user.user_type == 'user' %}User Portal{% else %}Customer Portal{% endif %}</strong>
+                        <small>SVD Agencies</small>
+                    </span>
+                </a>
 
-<body style="font-family: 'Inter', sans-serif;">
+                <button class="navbar-toggler portal-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbarNav" aria-controls="customerNavbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg fixed-top custom-navbar py-2">
-        <div class="container">
+                <div class="collapse navbar-collapse" id="customerNavbarNav">
+                    <ul class="navbar-nav me-auto portal-nav-list">
+                        {% block nav_links %}
+                        <li class="nav-item">
+                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:home' %}">
+                                <i class="bi bi-grid-1x2-fill"></i>
+                                <span>Overview</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:customer_orders_dashboard' %}">
+                                <i class="bi bi-bag-check-fill"></i>
+                                <span>{% if user.user_type == 'user' %}Order Milk{% else %}My Orders{% endif %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:reports_dashboard' %}">
+                                <i class="bi bi-receipt-cutoff"></i>
+                                <span>Invoices</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:collect_payment' %}">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Payments</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link portal-nav-link" href="{% url 'customer_portal:update_profile' %}">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profile</span>
+                            </a>
+                        </li>
+                        {% endblock %}
+                    </ul>
 
-            <!-- Brand -->
-            <a class="navbar-brand text-white fw-bold fs-5" href="{% url 'customer_portal:home' %}">
-                <i class="bi bi-shop me-1"></i> Customer Portal
-            </a>
-
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbarNav">
-                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
-            </button>
-
-            <!-- Nav Links -->
-            <div class="collapse navbar-collapse" id="customerNavbarNav">
-
-                <ul class="navbar-nav me-auto mt-2 mt-lg-0">
-
-                    {% block nav_links %}
-
-                    <li class="nav-item">
-                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:home' %}">
-                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    <div class="portal-toolbar">
+                        <div class="portal-clock">
+                            <small id="date"></small>
+                            <strong id="time"></strong>
+                        </div>
+                        <div class="portal-user-chip">
+                            <span class="portal-user-icon"><i class="bi bi-person"></i></span>
+                            <div>
+                                <strong>{{ user.name }}</strong>
+                                <small>{{ user.phone }}</small>
+                            </div>
+                        </div>
+                        <a class="btn portal-logout-btn" href="{% url 'customer_portal:logout' %}" onclick="return confirm('Are you sure you want to logout?');">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Logout</span>
                         </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:customer_orders_dashboard' %}">
-                            <i class="bi bi-cart-check me-1"></i> My Orders
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:reports_dashboard' %}">
-                            <i class="bi bi-file-earmark-bar-graph me-1"></i> Reports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link custom-nav-link text-white" href="{% url 'customer_portal:collect_payment' %}">
-                            <i class="bi bi-currency-rupee me-1"></i> Payment
-                        </a>
-                    </li>
-
-                    {% endblock %}
-                </ul>
-
-                <!-- Right Side -->
-                <ul class="navbar-nav ms-auto d-flex align-items-center">
-
-                    <!-- Date & Time -->
-                    <li class="nav-item me-3 text-end">
-                        <small id="date" class="text-white d-block"></small>
-                        <small id="time" class="text-white d-block"></small>
-                    </li>
-
-                    <!-- Logout -->
-                    <li class="nav-item">
-                        <button class="btn btn-danger btn-sm"
-                                onclick="if(confirm('Are you sure you want to logout?')) { window.location.href='{% url 'customer_portal:logout' %}'; }">
-                            <i class="bi bi-power"></i>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-    </nav>
-
-    <!-- PAGE CONTENT -->
-    <main style="padding-top: 10px; min-height: 80vh;">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="footer bg-white border-top text-center py-3 mt-auto">
-        <div class="container">
-
-            <div class="row g-2 align-items-center">
-
-                <div class="col-md-6 text-muted small">
-                    <i class="bi bi-shield-check me-1"></i>
-                    Secure Customer Portal – SVD Milk Agencies
+                    </div>
                 </div>
-
-                <div class="col-md-6 text-muted small">
-                    <i class="bi bi-clock-history me-1"></i>
-                    Last login:
-                    {% if user.last_login %}
-                        {{ user.last_login|date:"M d, Y H:i" }}
-                    {% else %}
-                        Never
-                    {% endif %}
-                </div>
-
             </div>
+        </nav>
 
-        </div>
-    </footer>
+        <main class="portal-main">
+            <div class="portal-bg"></div>
+            {% block content %}{% endblock %}
+        </main>
 
-    <!-- JS Scripts -->
+        <footer class="portal-footer">
+            <div class="container portal-container portal-footer-inner">
+                <div>
+                    <strong>Fresh delivery, clear billing, one simple portal.</strong>
+                    <small>Built for daily orders, subscriptions, and account tracking.</small>
+                </div>
+                <div class="portal-footer-meta">
+                    <span><i class="bi bi-shield-check"></i> Secure account</span>
+                    <span>
+                        <i class="bi bi-clock-history"></i>
+                        Last login:
+                        {% if user.last_login %}
+                            {{ user.last_login|date:"M d, Y H:i" }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Base JS (date & time logic) -->
     <script src="{% static 'js/customer_portal/base.js' %}"></script>
-
     {% block extra_js %}{% endblock %}
-
 </body>
 </html>
