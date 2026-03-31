@@ -323,7 +323,7 @@
         href="?company={{ c.id }}"
         class="company-filter-logo {% if request.GET.company == c.id|stringformat:'s' %}active{% endif %}"
       >
-        <img src="{{ c.logo.url }}" />
+        <img src="{{ c.safe_logo_url }}" />
       </a>
       {% endfor %}
 
@@ -366,7 +366,7 @@
     <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 item-col">
       <div class="item-card">
         <div class="item-company-logo">
-          <img src="{{ item.company.logo.url }}" />
+          <img src="{{ item.company.safe_logo_url }}" />
         </div>
 
         <div class="item-image-box">

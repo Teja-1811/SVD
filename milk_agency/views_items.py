@@ -2,7 +2,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.templatetags.static import static
 from .models import Item, Company
+
+
+def _company_logo_url(company):
+    if company and company.logo and company.logo.name:
+        try:
+            if company.logo.storage.exists(company.logo.name):
+                return company.logo.url
+        except Exception:
+            pass
+    return static('images/placeholder.png')
 
 @login_required
 def items_dashboard(request):
@@ -11,6 +22,8 @@ def items_dashboard(request):
 
     # Get all companies (for clickable logos)
     companies = Company.objects.all()
+    for company in companies:
+        company.safe_logo_url = _company_logo_url(company)
 
     # Filter by company_id if passed
     company_id = request.GET.get('company')
@@ -24,6 +37,8 @@ def items_dashboard(request):
     for item in items:
         item.stock_value = item.stock_quantity * item.buying_price
         item.margin = item.selling_price - item.buying_price
+        if item.company_id:
+            item.company.safe_logo_url = _company_logo_url(item.company)
 
     # Group items by category
     grouped_items = {}

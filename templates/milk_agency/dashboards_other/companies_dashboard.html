@@ -30,12 +30,7 @@
 
             <!-- LOGO -->
             <div class="logo-area">
-                {% if company.logo %}
-                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
-                {% else %}
-                <img src="/mnt/data/faeeaa76-4cf5-4695-9092-f252e463d81a.png"
-                     class="company-logo" alt="{{ company.name }}">
-                {% endif %}
+                <img src="{{ company.safe_logo_url }}" alt="{{ company.name }}" class="company-logo">
             </div>
 
             <!-- BODY -->
