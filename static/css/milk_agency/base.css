@@ -1,66 +1,267 @@
 .message-container-top-right {
     position: fixed;
-    top: 80px;
+    top: 92px;
     right: 20px;
     z-index: 1050;
-    max-width: 400px;
+    max-width: 420px;
 }
 
-/* Global button and input styling for milk_agency */
+:root {
+    --ma-bg: #edf1f3;
+    --ma-ink: #17353e;
+    --ma-muted: #617780;
+    --ma-accent: #0f7b68;
+    --ma-accent-soft: rgba(15, 123, 104, 0.1);
+    --ma-highlight: #ffd369;
+    --ma-surface: rgba(255, 255, 255, 0.9);
+    --ma-line: rgba(23, 53, 62, 0.1);
+    --ma-shadow: 0 22px 60px rgba(23, 53, 62, 0.1);
+    --ma-shadow-soft: 0 12px 28px rgba(23, 53, 62, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.ma-body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Outfit", sans-serif;
+    color: var(--ma-ink);
+    background:
+        radial-gradient(circle at top left, rgba(255, 211, 105, 0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(15, 123, 104, 0.12), transparent 20%),
+        linear-gradient(180deg, #fbfcfc 0%, var(--ma-bg) 100%);
+}
+
+a {
+    color: inherit;
+}
+
+.ma-shell {
+    min-height: 100vh;
+}
+
+.ma-container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+.ma-navbar {
+    background: rgba(247, 250, 251, 0.92);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--ma-line);
+    box-shadow: 0 6px 24px rgba(23, 53, 62, 0.04);
+}
+
+.ma-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    text-decoration: none;
+}
+
+.ma-brand-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fff0be, #fff8de);
+    box-shadow: 0 12px 24px rgba(255, 211, 105, 0.3);
+}
+
+.ma-brand-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.ma-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.02;
+}
+
+.ma-brand-text strong {
+    font-size: 1.12rem;
+}
+
+.ma-brand-text small {
+    color: var(--ma-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ma-nav-list {
+    gap: 0.35rem;
+    margin-left: 1.5rem;
+}
+
+.ma-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.8rem 1rem !important;
+    border-radius: 999px;
+    color: var(--ma-muted);
+    font-weight: 700;
+}
+
+.ma-nav-link:hover,
+.ma-nav-link.active {
+    color: var(--ma-ink);
+    background: var(--ma-accent-soft);
+}
+
+.ma-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ma-clock,
+.ma-toolbar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.72rem 0.95rem;
+    border-radius: 18px;
+    background: var(--ma-surface);
+    border: 1px solid var(--ma-line);
+    box-shadow: var(--ma-shadow-soft);
+    text-decoration: none;
+}
+
+.ma-clock {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
+}
+
+.ma-clock small {
+    color: var(--ma-muted);
+}
+
+.ma-clock strong {
+    font-size: 0.96rem;
+}
+
+.ma-toolbar-link {
+    font-weight: 700;
+}
+
+.ma-toolbar-link.danger {
+    background: #17353e;
+    color: #fff;
+}
+
+.ma-toggler {
+    border: 1px solid var(--ma-line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.ma-main {
+    padding: 7.2rem 0 2rem;
+}
+
+.ma-page {
+    display: grid;
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.ma-page-shell {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1rem 0 0;
+}
+
 .milk-agency .btn {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    border-radius: 0.375rem;
-    height: 32px;
+    border-radius: 14px;
+    font-weight: 700;
 }
 
 .milk-agency .form-control,
-.milk-agency .form-select {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    border-radius: 0.375rem;
-    height: 32px;
-}
-
+.milk-agency .form-select,
 .milk-agency .input-group-text {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    height: 32px;
+    min-height: 44px;
+    border-radius: 14px;
 }
 
-.milk-agency .card-header .btn {
-    height: 32px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
+.milk-agency .card,
+.milk-agency .modal-content,
+.milk-agency .table-responsive {
+    border-radius: 24px;
+}
+
+.milk-agency .card,
+.milk-agency .modal-content {
+    border: 1px solid var(--ma-line);
+    box-shadow: var(--ma-shadow);
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.milk-agency .card-header {
+    border-bottom: 1px solid rgba(23, 53, 62, 0.08);
 }
 
 .milk-agency .table th,
 .milk-agency .table td {
-    padding: 0.5rem;
-    font-size: 0.875rem;
+    padding: 0.7rem;
+    font-size: 0.9rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .milk-agency .btn {
-        height: 30px;
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
+.milk-agency .table th {
+    color: var(--ma-muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+@media (max-width: 1199.98px) {
+    .ma-nav-list {
+        margin: 1rem 0 0;
     }
 
-    .milk-agency .form-control,
-    .milk-agency .form-select {
-        height: 30px;
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
+    .ma-toolbar {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .message-container-top-right {
+        top: 82px;
+        right: 12px;
+        left: 12px;
+        max-width: none;
     }
 
-    .milk-agency .input-group-text {
-        height: 30px;
-        padding: 0.25rem 0.5rem;
-        font-size: 0.8rem;
+    .ma-container {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .ma-main {
+        padding-top: 6.5rem;
+    }
+
+    .ma-page-shell {
+        padding-top: 0.5rem;
+    }
+
+    .ma-clock,
+    .ma-toolbar-link {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .ma-clock {
+        align-items: center;
     }
 }

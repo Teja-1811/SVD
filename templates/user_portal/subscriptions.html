@@ -3,14 +3,41 @@
 {% block title %}User Subscriptions{% endblock %}
 
 {% block content %}
-<div class="up-hero mb-4">
-    <span class="up-eyebrow">Reference: api/user_subscriptions.py</span>
-    <h1 class="up-title">Your subscription at a glance.</h1>
-    <p class="up-subtitle">This view is structured around the same active subscription data used by the API subscription endpoints.</p>
-</div>
+<section class="up-page-header">
+    <div class="up-hero">
+        <span class="up-eyebrow">Subscriptions</span>
+        <h1 class="up-title">Your plan, delivery cycle, and included items in one place.</h1>
+        <p class="up-subtitle">This page combines subscription status and plan contents in a wider responsive layout that is easier to scan on both desktop and mobile.</p>
+    </div>
+    <aside class="up-spotlight">
+        <span class="up-eyebrow">Plan Snapshot</span>
+        {% if subscription %}
+        <div class="up-spotlight-grid">
+            <div>
+                <small>Status</small>
+                <strong>{% if subscription.is_active %}Active{% else %}Inactive{% endif %}</strong>
+            </div>
+            <div>
+                <small>Ends</small>
+                <strong>{{ subscription.end_date|date:"M d" }}</strong>
+            </div>
+            <div>
+                <small>Price</small>
+                <strong>&#8377;{{ subscription.subscription_plan.price|floatformat:2 }}</strong>
+            </div>
+            <div>
+                <small>Items</small>
+                <strong>{{ subscription_items|length }}</strong>
+            </div>
+        </div>
+        {% else %}
+        <div class="up-empty mt-3">No active subscription is available for this account.</div>
+        {% endif %}
+    </aside>
+</section>
 
-<div class="up-grid-2">
-    <div class="up-card">
+<section class="up-card-split">
+    <article class="up-card">
         <div class="up-section-head">
             <div>
                 <span class="up-eyebrow">Current plan</span>
@@ -23,14 +50,14 @@
             <div class="up-summary-item"><span>Start date</span><strong>{{ subscription.start_date|date:"M d, Y" }}</strong></div>
             <div class="up-summary-item"><span>End date</span><strong>{{ subscription.end_date|date:"M d, Y" }}</strong></div>
             <div class="up-summary-item"><span>Status</span><strong>{% if subscription.is_active %}Active{% else %}Inactive{% endif %}</strong></div>
-            <div class="up-summary-item"><span>Plan price</span><strong>₹{{ subscription.subscription_plan.price|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Plan price</span><strong>&#8377;{{ subscription.subscription_plan.price|floatformat:2 }}</strong></div>
         </div>
         {% else %}
         <div class="up-empty">No active subscription is available for this user account.</div>
         {% endif %}
-    </div>
+    </article>
 
-    <div class="up-card">
+    <article class="up-card">
         <div class="up-section-head">
             <div>
                 <span class="up-eyebrow">Included items</span>
@@ -41,14 +68,14 @@
         <div class="up-list">
             {% for item in subscription_items %}
             <div class="up-item">
-                <strong>{{ item.item.name }}</strong><br>
-                <span class="up-muted">Qty {{ item.quantity }} · ₹{{ item.price|floatformat:2 }} · {{ item.per|title }}</span>
+                <strong>{{ item.item.name }}</strong>
+                <div class="up-muted mt-2">Qty {{ item.quantity }} | &#8377;{{ item.price|floatformat:2 }} | {{ item.per|title }}</div>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="up-empty">No subscription items to display.</div>
         {% endif %}
-    </div>
-</div>
+    </article>
+</section>
 {% endblock %}

@@ -1,4 +1,4 @@
-﻿{% extends "milk_agency/home/base.html" %}
+{% extends "milk_agency/home/base.html" %}
 {% load static mathfilters %}
 {% block title %}Home{% endblock %}
 
@@ -109,7 +109,47 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="min-height: 100vh; background:#f8f9fa;">
+<div class="container-fluid py-2 px-0 ma-page-shell">
+
+    <section class="card border-0 shadow-lg mb-4">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row g-4 align-items-center">
+                <div class="col-xl-8">
+                    <span class="text-uppercase fw-bold small text-success">Milk Agency Operations</span>
+                    <h1 class="display-5 fw-bold mt-2 mb-3">Monitor sales, dues, stock movement, and deliveries in one responsive control room.</h1>
+                    <p class="text-muted fs-5 mb-0">The agency portal now runs in a wider full-screen shell so dashboards, tables, and quick actions stay usable across large screens, tablets, and phones.</p>
+                </div>
+                <div class="col-xl-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="rounded-4 bg-light p-3 h-100">
+                                <small class="text-muted d-block mb-1">Today's sales</small>
+                                <strong class="fs-5">&#8377;{{ today_sales|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="rounded-4 bg-light p-3 h-100">
+                                <small class="text-muted d-block mb-1">Total due</small>
+                                <strong class="fs-5">&#8377;{{ total_due|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="rounded-4 bg-light p-3 h-100">
+                                <small class="text-muted d-block mb-1">Stock items</small>
+                                <strong class="fs-4">{{ total_stock_items }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="rounded-4 bg-light p-3 h-100">
+                                <small class="text-muted d-block mb-1">Low stock</small>
+                                <strong class="fs-4">{{ low_stock_items }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
         <a href="{% url 'milk_agency:admin_enquiries' %}" class="dashboard-bell" title="Open unresolved enquiries">

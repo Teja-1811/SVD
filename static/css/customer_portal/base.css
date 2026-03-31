@@ -36,7 +36,10 @@ a {
 }
 
 .portal-container {
-    max-width: 1220px;
+    width: 100%;
+    max-width: 100%;
+    padding-left: 28px;
+    padding-right: 28px;
 }
 
 .portal-navbar {
@@ -192,6 +195,24 @@ a {
     padding: 7.5rem 0 2rem;
 }
 
+.portal-main > * {
+    position: relative;
+    z-index: 1;
+}
+
+.portal-main .container,
+.portal-main .container-fluid {
+    max-width: 100%;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+.portal-page-shell {
+    display: grid;
+    gap: 1.25rem;
+    width: 100%;
+}
+
 .portal-bg {
     position: absolute;
     inset: 0;
@@ -250,6 +271,13 @@ a {
 }
 
 @media (max-width: 767.98px) {
+    .portal-container,
+    .portal-main .container,
+    .portal-main .container-fluid {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
     .portal-main {
         padding-top: 6.5rem;
     }

@@ -3,35 +3,56 @@
 {% block title %}User Offers{% endblock %}
 
 {% block content %}
-<div class="up-hero mb-4">
-    <span class="up-eyebrow">Reference: api/user_offers.py</span>
-    <h1 class="up-title">Offers curated for user accounts.</h1>
-    <p class="up-subtitle">These cards are driven from the same offer source used by the API user offers endpoint.</p>
-</div>
+<section class="up-page-header">
+    <div class="up-hero">
+        <span class="up-eyebrow">Offers</span>
+        <h1 class="up-title">Deals designed for everyday user purchases.</h1>
+        <p class="up-subtitle">Browse active user offers in a wider, cleaner layout that stays readable across large screens, tablets, and phones.</p>
+    </div>
+    <aside class="up-spotlight">
+        <span class="up-eyebrow">Offer Status</span>
+        <div class="up-spotlight-grid">
+            <div>
+                <small>Live offers</small>
+                <strong>{{ offers|length }}</strong>
+            </div>
+            <div>
+                <small>Audience</small>
+                <strong>User</strong>
+            </div>
+        </div>
+    </aside>
+</section>
 
-<div class="up-grid-3">
+<section class="up-grid-3">
     {% for offer in offers %}
-    <div class="up-card">
-        <span class="up-chip chip-success">Active</span>
-        <h3 class="mt-3">{{ offer.name }}</h3>
-        <p class="up-muted mb-2">{{ offer.offer_type }}</p>
-        {% if offer.description %}<p class="up-muted">{{ offer.description }}</p>{% endif %}
-        <div class="up-summary mt-3">
-            <div class="up-summary-item"><span>Offer price</span><strong>₹{{ offer.price|floatformat:2 }}</strong></div>
+    <article class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-chip chip-success">Active</span>
+                <h2 class="mt-3">{{ offer.name }}</h2>
+            </div>
+        </div>
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Offer type</span><strong>{{ offer.offer_type }}</strong></div>
+            <div class="up-summary-item"><span>Offer price</span><strong>&#8377;{{ offer.price|floatformat:2 }}</strong></div>
             <div class="up-summary-item"><span>Ends</span><strong>{{ offer.end_date|date:"M d, Y" }}</strong></div>
         </div>
+        {% if offer.description %}
+        <p class="up-muted mt-3 mb-0">{{ offer.description }}</p>
+        {% endif %}
         {% if offer.items %}
         <div class="up-list mt-3">
             {% for item in offer.items %}
-            <div class="up-item">{{ item.item_name }} · Buy {{ item.buy_qty }}, get {{ item.offer_qty }}</div>
+            <div class="up-item">{{ item.item_name }} - Buy {{ item.buy_qty }}, get {{ item.offer_qty }}</div>
             {% endfor %}
         </div>
         {% endif %}
-    </div>
+    </article>
     {% empty %}
-    <div class="up-card">
+    <article class="up-card">
         <div class="up-empty">No active user offers today.</div>
-    </div>
+    </article>
     {% endfor %}
-</div>
+</section>
 {% endblock %}

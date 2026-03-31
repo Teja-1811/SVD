@@ -4,144 +4,193 @@
 {% block title %}User Orders{% endblock %}
 
 {% block content %}
-<div class="up-hero mb-4">
-    <span class="up-eyebrow">Order now vs pre-book</span>
-    <h1 class="up-title">Available products today, full catalog for future dates.</h1>
-    <p class="up-subtitle">Regular ordering only shows `qty > 0` products. Pre-booking shows all products, and the delivery date must be at least 2 days from today.</p>
-</div>
-
-<div class="up-grid-2">
-    <div class="up-card">
-        <div class="up-section-head">
+<section class="up-page-header">
+    <div class="up-hero">
+        <span class="up-eyebrow">Orders</span>
+        <h1 class="up-title">Order what is in stock today, or pre-book the full catalog for later.</h1>
+        <p class="up-subtitle">Regular ordering only shows products with available stock. Pre-booking includes all products and requires a delivery date at least 2 days from today.</p>
+    </div>
+    <aside class="up-spotlight">
+        <span class="up-eyebrow">Ordering Rules</span>
+        <div class="up-spotlight-grid">
             <div>
-                <span class="up-eyebrow">Create order</span>
-                <h2>Choose your mode</h2>
+                <small>Order now</small>
+                <strong>Qty &gt; 0 only</strong>
+            </div>
+            <div>
+                <small>Pre-book</small>
+                <strong>All products</strong>
+            </div>
+            <div>
+                <small>Min pre-book date</small>
+                <strong>{{ min_prebooking_date|date:"M d, Y" }}</strong>
+            </div>
+            <div>
+                <small>Upcoming orders</small>
+                <strong>{{ active_orders|length }}</strong>
             </div>
         </div>
+    </aside>
+</section>
 
-        <div class="up-mode-toggle">
-            <button type="button" class="up-mode-btn active" data-mode="regular">Order Now</button>
-            <button type="button" class="up-mode-btn" data-mode="prebook">Pre-book</button>
-        </div>
-
-        <div class="up-mode-panel active" data-panel="regular">
-            {% for category, items in available_items_by_category.items %}
-            <div class="mb-4">
-                <div class="up-section-head mb-2"><div><h3>{{ category }}</h3></div></div>
-                <div class="up-catalog">
-                    {% for item in items %}
-                    <div class="up-product">
-                        <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
-                        <div class="up-product-head">
-                            <strong>{{ item.name }}</strong>
-                            <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
-                        </div>
-                        <div class="up-muted">₹{{ item.display_price|floatformat:2 }}</div>
-                        <div class="up-qty">
-                            <button type="button" class="qty-minus">-</button>
-                            <input type="number" min="0" max="{{ item.stock_quantity }}" value="0" class="qty-input" data-mode="regular" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
-                            <button type="button" class="qty-plus">+</button>
-                        </div>
-                    </div>
-                    {% endfor %}
+<section class="up-content">
+    <div class="up-stack">
+        <article class="up-card">
+            <div class="up-section-head">
+                <div>
+                    <span class="up-eyebrow">Create order</span>
+                    <h2>Choose your ordering mode</h2>
                 </div>
             </div>
-            {% empty %}
-            <div class="up-empty">No stock-ready products are available today.</div>
-            {% endfor %}
-        </div>
 
-        <div class="up-mode-panel" data-panel="prebook">
-            <div class="mb-3">
-                <label for="prebookDate" class="form-label">Delivery date</label>
-                <input type="date" id="prebookDate" class="form-control" min="{{ min_prebooking_date|date:'Y-m-d' }}" value="{{ min_prebooking_date|date:'Y-m-d' }}">
-                <div class="up-muted mt-2">Minimum allowed date: {{ min_prebooking_date|date:"M d, Y" }}</div>
+            <div class="up-mode-toggle">
+                <button type="button" class="up-mode-btn active" data-mode="regular">Order Now</button>
+                <button type="button" class="up-mode-btn" data-mode="prebook">Pre-book</button>
             </div>
-            {% for category, items in prebook_items_by_category.items %}
-            <div class="mb-4">
-                <div class="up-section-head mb-2"><div><h3>{{ category }}</h3></div></div>
-                <div class="up-catalog">
-                    {% for item in items %}
-                    <div class="up-product">
-                        <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
-                        <div class="up-product-head">
-                            <strong>{{ item.name }}</strong>
-                            {% if item.in_stock %}
-                            <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
-                            {% else %}
-                            <span class="up-chip chip-warning">Pre-book only</span>
-                            {% endif %}
-                        </div>
-                        <div class="up-muted">₹{{ item.display_price|floatformat:2 }}</div>
-                        <div class="up-qty">
-                            <button type="button" class="qty-minus">-</button>
-                            <input type="number" min="0" value="0" class="qty-input" data-mode="prebook" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
-                            <button type="button" class="qty-plus">+</button>
+
+            <div class="up-mode-panel active" data-panel="regular">
+                {% for category, items in available_items_by_category.items %}
+                <section class="up-category-block">
+                    <div class="up-section-head mb-0">
+                        <div>
+                            <span class="up-eyebrow">Available now</span>
+                            <h3>{{ category }}</h3>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
+                    <div class="up-catalog">
+                        {% for item in items %}
+                        <article class="up-product">
+                            <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
+                            <div class="up-product-head">
+                                <div class="up-product-title">
+                                    <strong>{{ item.name }}</strong>
+                                    <span class="up-muted">Ready for same-day delivery</span>
+                                </div>
+                                <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
+                            </div>
+                            <div class="up-product-meta">
+                                <span class="up-price">&#8377;{{ item.display_price|floatformat:2 }}</span>
+                                <div class="up-qty">
+                                    <button type="button" class="qty-minus">-</button>
+                                    <input type="number" min="0" max="{{ item.stock_quantity }}" value="0" class="qty-input" data-mode="regular" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
+                                    <button type="button" class="qty-plus">+</button>
+                                </div>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% empty %}
+                <div class="up-empty">No stock-ready products are available today.</div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="up-panel mt-4">
+            <div class="up-mode-panel" data-panel="prebook">
+                <div class="up-card mb-3" style="padding: 1rem;">
+                    <div class="up-form">
+                        <label for="prebookDate" class="form-label">Delivery date</label>
+                        <input type="date" id="prebookDate" class="form-control" min="{{ min_prebooking_date|date:'Y-m-d' }}" value="{{ min_prebooking_date|date:'Y-m-d' }}">
+                        <div class="up-muted mt-2">Minimum allowed date: {{ min_prebooking_date|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% for category, items in prebook_items_by_category.items %}
+                <section class="up-category-block">
+                    <div class="up-section-head mb-0">
+                        <div>
+                            <span class="up-eyebrow">Pre-book catalog</span>
+                            <h3>{{ category }}</h3>
+                        </div>
+                    </div>
+                    <div class="up-catalog">
+                        {% for item in items %}
+                        <article class="up-product">
+                            <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" alt="{{ item.name }}">
+                            <div class="up-product-head">
+                                <div class="up-product-title">
+                                    <strong>{{ item.name }}</strong>
+                                    <span class="up-muted">Future-date ordering available</span>
+                                </div>
+                                {% if item.in_stock %}
+                                <span class="up-chip chip-success">{{ item.stock_quantity }} in stock</span>
+                                {% else %}
+                                <span class="up-chip chip-warning">Pre-book only</span>
+                                {% endif %}
+                            </div>
+                            <div class="up-product-meta">
+                                <span class="up-price">&#8377;{{ item.display_price|floatformat:2 }}</span>
+                                <div class="up-qty">
+                                    <button type="button" class="qty-minus">-</button>
+                                    <input type="number" min="0" value="0" class="qty-input" data-mode="prebook" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
+                                    <button type="button" class="qty-plus">+</button>
+                                </div>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+            </div>
+        </article>
+    </div>
+
+    <div class="up-stack">
+        <article class="up-sidebar-card up-summary-card">
             <div class="up-section-head">
                 <div>
                     <span class="up-eyebrow">Summary</span>
-                    <h3 id="summaryTitle">Regular order summary</h3>
+                    <h2 id="summaryTitle">Regular order summary</h2>
                 </div>
             </div>
             <div id="selectedItems" class="up-summary">
                 <div class="up-empty">No items selected yet.</div>
             </div>
             <div class="up-summary mt-3">
-                <div class="up-summary-item"><span>Items total</span><strong id="itemsTotal">₹0.00</strong></div>
+                <div class="up-summary-item"><span>Items total</span><strong id="itemsTotal">&#8377;0.00</strong></div>
                 <div class="up-summary-item"><span>Delivery date</span><strong id="summaryDate">Today</strong></div>
             </div>
-            <div class="up-actions mt-3">
+            <div class="up-actions">
                 <button type="button" id="submitOrderBtn" class="up-btn-primary w-100"><i class="bi bi-check2-circle"></i><span>Save order</span></button>
             </div>
-        </div>
-    </div>
+        </article>
 
-    <div class="up-card">
-        <div class="up-section-head">
-            <div>
-                <span class="up-eyebrow">Active orders</span>
-                <h2>Pending and upcoming</h2>
+        <article class="up-sidebar-card">
+            <div class="up-section-head">
+                <div>
+                    <span class="up-eyebrow">Active orders</span>
+                    <h2>Pending and upcoming</h2>
+                </div>
             </div>
-        </div>
-        {% if active_orders %}
-        <div class="up-list">
-            {% for order in active_orders %}
-            <div class="up-item">
-                <div class="up-section-head mb-2">
-                    <div>
-                        <strong>{{ order.order_number }}</strong>
-                        <div class="up-muted">Placed {{ order.order_date|date:"M d, Y" }}</div>
+            {% if active_orders %}
+            <div class="up-list">
+                {% for order in active_orders %}
+                <div class="up-item">
+                    <div class="up-section-head mb-2">
+                        <div>
+                            <strong>{{ order.order_number }}</strong>
+                            <div class="up-muted">Placed {{ order.order_date|date:"M d, Y" }}</div>
+                        </div>
+                        {% if order.status == 'confirmed' %}
+                        <span class="up-chip chip-success">{{ order.status|title }}</span>
+                        {% elif order.status == 'pending' %}
+                        <span class="up-chip chip-warning">{{ order.status|title }}</span>
+                        {% else %}
+                        <span class="up-chip chip-danger">{{ order.status|title }}</span>
+                        {% endif %}
                     </div>
-                    {% if order.status == 'confirmed' %}
-                    <span class="up-chip chip-success">{{ order.status|title }}</span>
-                    {% elif order.status == 'pending' %}
-                    <span class="up-chip chip-warning">{{ order.status|title }}</span>
-                    {% else %}
-                    <span class="up-chip chip-danger">{{ order.status|title }}</span>
-                    {% endif %}
+                    <div class="up-summary">
+                        <div class="up-summary-item"><span>Delivery date</span><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div>
+                        <div class="up-summary-item"><span>Items total</span><strong>&#8377;{{ order.total_amount|floatformat:2 }}</strong></div>
+                        <div class="up-summary-item"><span>Line count</span><strong>{{ order.items.all|length }}</strong></div>
+                    </div>
                 </div>
-                <div class="up-summary">
-                    <div class="up-summary-item"><span>Delivery date</span><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div>
-                    <div class="up-summary-item"><span>Items total</span><strong>₹{{ order.total_amount|floatformat:2 }}</strong></div>
-                    <div class="up-summary-item"><span>Line count</span><strong>{{ order.items.all|length }}</strong></div>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="up-empty">No pending or upcoming user orders right now.</div>
-        {% endif %}
+            {% else %}
+            <div class="up-empty">No pending or upcoming user orders right now.</div>
+            {% endif %}
+        </article>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
@@ -179,11 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const price = parseFloat(input.dataset.itemPrice || "0");
             const lineTotal = qty * price;
             total += lineTotal;
-            rows.push(`<div class="up-summary-item"><span>${input.dataset.itemName} x ${qty}</span><strong>₹${lineTotal.toFixed(2)}</strong></div>`);
+            rows.push(`<div class="up-summary-item"><span>${input.dataset.itemName} x ${qty}</span><strong>&#8377;${lineTotal.toFixed(2)}</strong></div>`);
         });
 
         selectedItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
-        itemsTotal.textContent = `₹${total.toFixed(2)}`;
+        itemsTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
         summaryDate.textContent = currentMode === "prebook" ? (prebookDate.value || minPrebookDate) : "Today";
     }
 

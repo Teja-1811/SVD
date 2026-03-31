@@ -15,7 +15,7 @@
 <body class="user-portal-body">
     <div class="up-shell">
         <nav class="navbar navbar-expand-xl up-navbar fixed-top">
-            <div class="container up-container">
+            <div class="container-fluid up-container">
                 <a class="up-brand" href="{% url 'users:dashboard' %}">
                     <span class="up-brand-mark"><i class="bi bi-droplet-half"></i></span>
                     <span class="up-brand-text">
@@ -32,19 +32,27 @@
                         <li class="nav-item"><a class="nav-link up-nav-link {% if request.resolver_match.url_name == 'orders' %}active{% endif %}" href="{% url 'users:orders' %}"><i class="bi bi-bag-check-fill"></i><span>Orders</span></a></li>
                         <li class="nav-item"><a class="nav-link up-nav-link {% if request.resolver_match.url_name == 'offers' %}active{% endif %}" href="{% url 'users:offers' %}"><i class="bi bi-stars"></i><span>Offers</span></a></li>
                         <li class="nav-item"><a class="nav-link up-nav-link {% if request.resolver_match.url_name == 'subscriptions' %}active{% endif %}" href="{% url 'users:subscriptions' %}"><i class="bi bi-calendar-week"></i><span>Subscriptions</span></a></li>
-                        <li class="nav-item"><a class="nav-link up-nav-link" href="{% url 'customer_portal:reports_dashboard' %}"><i class="bi bi-receipt-cutoff"></i><span>Invoices</span></a></li>
+                        <li class="nav-item"><a class="nav-link up-nav-link {% if request.resolver_match.url_name == 'invoices' or request.resolver_match.url_name == 'invoice_detail' %}active{% endif %}" href="{% url 'users:invoices' %}"><i class="bi bi-receipt-cutoff"></i><span>Invoices</span></a></li>
                     </ul>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="up-muted">{{ user.name }}</span>
-                        <a class="up-btn-secondary" href="{% url 'customer_portal:logout' %}" style="padding:.65rem 1rem;">Logout</a>
+                    <div class="up-top-actions">
+                        <div class="up-user-pill">
+                            <span class="up-user-icon"><i class="bi bi-person"></i></span>
+                            <div>
+                                <strong>{{ user.name }}</strong>
+                                <small>{{ user.phone }}</small>
+                            </div>
+                        </div>
+                        <a class="up-btn-secondary" href="{% url 'customer_portal:logout' %}" style="padding:.72rem 1rem;">Logout</a>
                     </div>
                 </div>
             </div>
         </nav>
 
         <main class="up-main">
-            <div class="container up-container">
-                {% block content %}{% endblock %}
+            <div class="container-fluid up-container">
+                <div class="up-page">
+                    {% block content %}{% endblock %}
+                </div>
             </div>
         </main>
     </div>

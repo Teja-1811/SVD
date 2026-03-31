@@ -1,4 +1,4 @@
-﻿{% extends "milk_agency/home/base.html" %}
+{% extends "milk_agency/home/base.html" %}
 
 {% block title %}Generate Bill{% endblock %}
 
@@ -96,7 +96,7 @@ input[type="number"] {
 
 </style>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 ma-page-shell">
 
     <form method="post" action="{% url 'milk_agency:generate_bill' %}">
         {% csrf_token %}

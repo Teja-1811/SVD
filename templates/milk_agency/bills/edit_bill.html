@@ -1,9 +1,9 @@
-﻿{% extends "milk_agency/home/base.html" %}
+{% extends "milk_agency/home/base.html" %}
 
 {% block title %}Edit Bill - {{ bill.invoice_number }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 ma-page-shell">
     <h2>Edit Bill - {{ bill.invoice_number }}</h2>
     <form method="post" action="{% url 'milk_agency:edit_bill' bill.id %}">
         {% csrf_token %}

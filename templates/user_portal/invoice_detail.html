@@ -1,0 +1,102 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}Invoice {{ bill.invoice_number }}{% endblock %}
+
+{% block content %}
+<section class="up-page-header">
+    <div class="up-hero">
+        <span class="up-eyebrow">Invoice detail</span>
+        <h1 class="up-title">{{ bill.invoice_number }}</h1>
+        <p class="up-subtitle">Detailed billing summary, item lines, and PDF access in the same responsive user portal flow.</p>
+        <div class="up-actions">
+            <a href="{% url 'users:invoices' %}" class="up-btn-secondary"><i class="bi bi-arrow-left"></i><span>Back to invoices</span></a>
+            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" target="_blank" class="up-btn-primary"><i class="bi bi-file-earmark-arrow-down"></i><span>Download PDF</span></a>
+        </div>
+    </div>
+    <aside class="up-spotlight">
+        <span class="up-eyebrow">Totals</span>
+        <div class="up-spotlight-grid">
+            <div>
+                <small>Invoice date</small>
+                <strong>{{ bill.invoice_date|date:"M d, Y" }}</strong>
+            </div>
+            <div>
+                <small>Items subtotal</small>
+                <strong>&#8377;{{ items_subtotal|floatformat:2 }}</strong>
+            </div>
+            <div>
+                <small>Delivery charge</small>
+                <strong>&#8377;{{ delivery_charge|floatformat:2 }}</strong>
+            </div>
+            <div>
+                <small>Grand total</small>
+                <strong>&#8377;{{ bill.total_amount|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<section class="up-card-split">
+    <article class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Customer</span>
+                <h2>Invoice summary</h2>
+            </div>
+        </div>
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Customer</span><strong>{{ bill.customer.name }}</strong></div>
+            <div class="up-summary-item"><span>Opening due</span><strong>&#8377;{{ bill.op_due_amount|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Last paid</span><strong>&#8377;{{ bill.last_paid|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Invoice date</span><strong>{{ bill.invoice_date|date:"M d, Y" }}</strong></div>
+        </div>
+    </article>
+
+    <article class="up-card">
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Charges</span>
+                <h2>Amount breakdown</h2>
+            </div>
+        </div>
+        <div class="up-summary">
+            <div class="up-summary-item"><span>Items subtotal</span><strong>&#8377;{{ items_subtotal|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Delivery charge</span><strong>&#8377;{{ delivery_charge|floatformat:2 }}</strong></div>
+            <div class="up-summary-item"><span>Grand total</span><strong>&#8377;{{ bill.total_amount|floatformat:2 }}</strong></div>
+        </div>
+    </article>
+</section>
+
+<section class="up-card">
+    <div class="up-section-head">
+        <div>
+            <span class="up-eyebrow">Line items</span>
+            <h2>Invoice items</h2>
+        </div>
+    </div>
+    <div class="up-table-wrap">
+        <table class="up-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Discount</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in bill_items %}
+                <tr>
+                    <td>{{ item.item.name }}</td>
+                    <td>&#8377;{{ item.price_per_unit|floatformat:2 }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>&#8377;{{ item.discount|floatformat:2 }}</td>
+                    <td>&#8377;{{ item.total_amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

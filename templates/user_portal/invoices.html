@@ -1,0 +1,84 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}User Invoices{% endblock %}
+
+{% block content %}
+<section class="up-page-header">
+    <div class="up-hero">
+        <span class="up-eyebrow">Invoices</span>
+        <h1 class="up-title">Billing history that stays inside the users portal.</h1>
+        <p class="up-subtitle">Review monthly billing, open invoice details, and download PDFs from a full-width responsive workspace.</p>
+    </div>
+    <aside class="up-spotlight">
+        <span class="up-eyebrow">Billing Snapshot</span>
+        <div class="up-spotlight-grid">
+            <div>
+                <small>Total invoices</small>
+                <strong>{{ bills|length }}</strong>
+            </div>
+            <div>
+                <small>Total billed</small>
+                <strong>&#8377;{{ total_amount|floatformat:2 }}</strong>
+            </div>
+            <div>
+                <small>Average invoice</small>
+                <strong>&#8377;{{ average_amount|floatformat:2 }}</strong>
+            </div>
+            <div>
+                <small>Month</small>
+                <strong>{{ current_month }}/{{ current_year }}</strong>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<section class="up-card">
+    <div class="up-section-head">
+        <div>
+            <span class="up-eyebrow">Filter</span>
+            <h2>Invoice list</h2>
+        </div>
+    </div>
+    <form method="get" class="up-grid-2 up-form mb-3">
+        <div>
+            <label for="date" class="form-label">Month</label>
+            <input type="month" id="date" name="date" value="{{ selected_date }}" class="form-control">
+        </div>
+        <div class="d-flex align-items-end">
+            <button type="submit" class="up-btn-primary w-100"><i class="bi bi-funnel"></i><span>Apply filter</span></button>
+        </div>
+    </form>
+
+    {% if bills %}
+    <div class="up-table-wrap">
+        <table class="up-table">
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td><strong>{{ bill.invoice_number }}</strong></td>
+                    <td>{{ bill.invoice_date|date:"M d, Y" }}</td>
+                    <td>&#8377;{{ bill.total_amount|floatformat:2 }}</td>
+                    <td>
+                        <div class="up-actions-row">
+                            <a href="{% url 'users:invoice_detail' bill.id %}" class="up-btn-secondary" style="padding: .65rem .9rem;">View</a>
+                            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" target="_blank" class="up-btn-muted" style="padding: .65rem .9rem;">PDF</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="up-empty">No invoices were found for the selected month.</div>
+    {% endif %}
+</section>
+{% endblock %}
