@@ -86,6 +86,12 @@ a {
     font-size: 1.25rem;
 }
 
+.portal-brand-mark img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
 .portal-nav-list {
     gap: 0.35rem;
     margin-left: 1.5rem;
@@ -294,6 +300,11 @@ a {
     .portal-brand-mark {
         width: 42px;
         height: 42px;
+    }
+
+    .portal-brand-mark img {
+        width: 28px;
+        height: 28px;
     }
 
     .portal-footer-inner {

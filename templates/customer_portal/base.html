@@ -25,7 +25,7 @@
             <div class="container-fluid portal-container">
                 <a class="navbar-brand portal-brand" href="{% url 'customer_portal:home' %}">
                     <span class="portal-brand-mark">
-                        <i class="bi bi-droplet-half"></i>
+                        <img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies logo">
                     </span>
                     <span>
                         <strong>{% if user.user_type == 'user' %}User Portal{% else %}Customer Portal{% endif %}</strong>
