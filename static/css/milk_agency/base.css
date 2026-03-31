@@ -7,6 +7,7 @@
 }
 
 :root {
+    color-scheme: light dark;
     --ma-bg: #edf1f3;
     --ma-ink: #17353e;
     --ma-muted: #617780;
@@ -17,6 +18,21 @@
     --ma-line: rgba(23, 53, 62, 0.1);
     --ma-shadow: 0 22px 60px rgba(23, 53, 62, 0.1);
     --ma-shadow-soft: 0 12px 28px rgba(23, 53, 62, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ma-bg: #0f171c;
+        --ma-ink: #eef4f6;
+        --ma-muted: #9fb2bc;
+        --ma-accent: #35b696;
+        --ma-accent-soft: rgba(53, 182, 150, 0.14);
+        --ma-highlight: #cba75a;
+        --ma-surface: rgba(24, 34, 40, 0.92);
+        --ma-line: rgba(159, 178, 188, 0.16);
+        --ma-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+        --ma-shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.24);
+    }
 }
 
 * {
@@ -32,6 +48,15 @@ body.ma-body {
         radial-gradient(circle at top left, rgba(255, 211, 105, 0.18), transparent 24%),
         radial-gradient(circle at top right, rgba(15, 123, 104, 0.12), transparent 20%),
         linear-gradient(180deg, #fbfcfc 0%, var(--ma-bg) 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.ma-body {
+        background:
+            radial-gradient(circle at top left, rgba(203, 167, 90, 0.16), transparent 24%),
+            radial-gradient(circle at top right, rgba(53, 182, 150, 0.12), transparent 20%),
+            linear-gradient(180deg, #0b1216 0%, var(--ma-bg) 100%);
+    }
 }
 
 a {
@@ -224,6 +249,32 @@ a {
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+@media (prefers-color-scheme: dark) {
+    .ma-navbar,
+    .ma-clock,
+    .ma-toolbar-link,
+    .ma-toggler,
+    .milk-agency .card,
+    .milk-agency .modal-content,
+    .milk-agency .table-responsive {
+        background: var(--ma-surface);
+        border-color: var(--ma-line);
+    }
+
+    .ma-nav-link:hover,
+    .ma-nav-link.active {
+        background: var(--ma-accent-soft);
+    }
+
+    .milk-agency .form-control,
+    .milk-agency .form-select,
+    .milk-agency .input-group-text {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--ma-line);
+        color: var(--ma-ink);
+    }
 }
 
 @media (min-width: 1200px) {

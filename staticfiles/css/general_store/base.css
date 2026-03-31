@@ -1,4 +1,5 @@
 :root {
+    color-scheme: light dark;
     --gs-bg: #eef2f2;
     --gs-bg-soft: #f8fbfb;
     --gs-ink: #17353e;
@@ -10,6 +11,22 @@
     --gs-line: rgba(23, 53, 62, 0.1);
     --gs-shadow: 0 22px 60px rgba(23, 53, 62, 0.1);
     --gs-shadow-soft: 0 12px 28px rgba(23, 53, 62, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gs-bg: #0f171c;
+        --gs-bg-soft: #141d23;
+        --gs-ink: #eef4f6;
+        --gs-muted: #a0b3bc;
+        --gs-accent: #35b688;
+        --gs-accent-soft: rgba(53, 182, 136, 0.14);
+        --gs-highlight: #cca95b;
+        --gs-surface: rgba(24, 34, 40, 0.92);
+        --gs-line: rgba(160, 179, 188, 0.16);
+        --gs-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+        --gs-shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.24);
+    }
 }
 
 * {
@@ -25,6 +42,15 @@ body.gs-body {
         radial-gradient(circle at top left, rgba(255, 211, 109, 0.2), transparent 22%),
         radial-gradient(circle at top right, rgba(17, 121, 92, 0.12), transparent 20%),
         linear-gradient(180deg, #fbfdfd 0%, var(--gs-bg) 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.gs-body {
+        background:
+            radial-gradient(circle at top left, rgba(204, 169, 91, 0.16), transparent 22%),
+            radial-gradient(circle at top right, rgba(53, 182, 136, 0.12), transparent 20%),
+            linear-gradient(180deg, #0b1216 0%, var(--gs-bg) 100%);
+    }
 }
 
 a {
@@ -226,6 +252,33 @@ a {
     font-size: 0.84rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+@media (prefers-color-scheme: dark) {
+    .gs-navbar,
+    .gs-clock,
+    .gs-toolbar-link,
+    .gs-toggler,
+    .gs-main .card,
+    .gs-main .modal-content,
+    .gs-main .table-responsive,
+    .gs-main .alert {
+        background: var(--gs-surface);
+        border-color: var(--gs-line);
+    }
+
+    .gs-nav-link:hover,
+    .gs-nav-link.active {
+        background: var(--gs-accent-soft);
+    }
+
+    .gs-main .form-control,
+    .gs-main .form-select,
+    .gs-main .input-group-text {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--gs-line);
+        color: var(--gs-ink);
+    }
 }
 
 @media (min-width: 1200px) {

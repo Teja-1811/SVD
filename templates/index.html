@@ -37,23 +37,25 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 .section-head h2{margin:.4rem 0 0;font-size:clamp(2rem,4vw,3rem);line-height:.98;font-weight:800;color:#20263a}
 .section-head p{margin:0;max-width:58ch;color:#5d667f}
 .products-stage,.contact-stage{padding:clamp(1.2rem,2vw,2rem)}
-.products-showcase{grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);align-items:stretch}
-.products-slider{position:relative;min-height:460px}
-.product-slide{position:absolute;inset:0;display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr);gap:1.25rem;align-items:center;padding:clamp(1.2rem,2vw,2rem);border-radius:28px;background:radial-gradient(circle at top right,rgba(255,215,120,.2),transparent 25%),linear-gradient(135deg,#fff 0%,#f6f8ff 100%);border:1px solid rgba(102,126,234,.12);box-shadow:0 20px 45px rgba(22,37,73,.08);opacity:0;transform:translateX(30px) scale(.98);pointer-events:none;transition:opacity .45s ease,transform .45s ease}
-.product-slide.active{opacity:1;transform:translateX(0) scale(1);pointer-events:auto}
+.products-shell{display:grid;gap:1.1rem}
+.products-showcase{grid-template-columns:minmax(0,1.18fr) minmax(300px,.82fr);align-items:start}
+.products-slider{display:grid}
+.product-slide{display:none;grid-template-columns:minmax(280px,.92fr) minmax(0,1.08fr);gap:1.25rem;align-items:center;padding:clamp(1.2rem,2vw,1.6rem);border-radius:28px;background:radial-gradient(circle at top right,rgba(255,215,120,.2),transparent 25%),linear-gradient(135deg,#fff 0%,#f6f8ff 100%);border:1px solid rgba(102,126,234,.12);box-shadow:0 20px 45px rgba(22,37,73,.08);animation:productFade .35s ease}
+.product-slide.active{display:grid}
 .product-slide-media{display:grid;place-items:center;min-height:320px;border-radius:24px;background:radial-gradient(circle at top,rgba(102,126,234,.14),transparent 30%),linear-gradient(180deg,#f9fbff 0%,#eef2ff 100%);border:1px solid rgba(102,126,234,.1);overflow:hidden}
 .product-slide-media img{width:100%;max-width:280px;max-height:280px;object-fit:contain;padding:1rem}
+.product-slide-copy{display:grid;gap:.95rem;align-content:start}
 .product-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .82rem;border-radius:999px;font-size:.82rem;font-weight:700}
 .product-chip.company{background:rgba(102,126,234,.1);color:#4b61d5}
 .product-chip.status{background:rgba(37,211,102,.12);color:#138c49}
-.product-slide h3{margin:1rem 0 .65rem;font-size:clamp(1.8rem,3vw,2.75rem);line-height:1;color:#1e2437}
-.product-slide p{color:#5f6882;margin-bottom:1rem}
-.product-price{font-size:2rem;font-weight:800;color:#3c52cf;margin-bottom:1rem}
-.product-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-bottom:1rem}
+.product-slide h3{margin:.1rem 0;font-size:clamp(1.8rem,3vw,2.75rem);line-height:1;color:#1e2437}
+.product-slide p{color:#5f6882;margin:0}
+.product-price{font-size:2rem;font-weight:800;color:#3c52cf;margin:0}
+.product-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
 .product-meta-card{padding:.95rem;border-radius:18px;background:rgba(76,98,218,.06)}
 .product-meta-card small,.product-meta-card strong,.trust-card strong,.trust-card span,.contact-pill strong,.contact-pill span,.contact-pill a{display:block}
-.product-controls,.product-nav{display:flex;align-items:center;gap:.65rem}
-.product-controls{justify-content:space-between;margin-top:1rem}
+.product-toolbar,.product-nav{display:flex;align-items:center;gap:.65rem}
+.product-toolbar{justify-content:space-between;padding:.2rem 0 .35rem}
 .product-nav button{width:46px;height:46px;border:0;border-radius:14px;background:#4c62da;color:#fff;box-shadow:0 16px 26px rgba(76,98,218,.2)}
 .product-counter{color:#66708b;font-weight:700}
 .product-peek-list{display:grid;gap:.85rem}
@@ -78,9 +80,10 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 .contact-form-card label{font-weight:700;color:#25304a;margin-bottom:.45rem}
 .contact-form-card .form-control{border-radius:16px;border:1px solid rgba(102,126,234,.14);padding:.9rem 1rem;box-shadow:none}
 .contact-submit{border:0;border-radius:16px;padding:1rem 1.3rem;font-weight:700;background:linear-gradient(135deg,#556be2,#7258db);color:#fff;box-shadow:0 18px 30px rgba(85,107,226,.22)}
-@media (max-width:1199.98px){.hero-grid,.products-showcase,.contact-grid,.feature-grid,.trust-band{grid-template-columns:repeat(2,minmax(0,1fr))}.products-slider,.product-slide{min-height:520px}}
-@media (max-width:991.98px){.hero-grid,.products-showcase,.contact-grid{grid-template-columns:1fr}.hero-title{max-width:none}.hero-card{margin-top:.25rem}.products-slider{min-height:auto}.product-slide{position:relative;display:none;min-height:auto}.product-slide.active{display:grid}.product-peek-list{grid-template-columns:1fr 1fr}}
-@media (max-width:767.98px){.landing-shell{padding:0}.landing-section{padding:1rem 0 1.35rem}.landing-panel{border-radius:24px}.hero-stage,.products-stage,.contact-stage{padding:1.05rem;border-radius:24px}.landing-eyebrow{font-size:.68rem;letter-spacing:.1em;padding:.5rem .72rem}.hero-logo{width:92px;height:92px;padding:12px;border-radius:22px}.hero-title{font-size:clamp(2rem,9vw,2.8rem);line-height:1;max-width:none}.hero-copy{font-size:.96rem}.hero-metrics,.feature-grid,.trust-band,.product-meta-grid,.product-slide{grid-template-columns:1fr}.hero-metric,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:22px}.hero-metric strong,.trust-card strong{font-size:1.25rem}.hero-company-item,.contact-pill{padding:.8rem}.hero-company-item{align-items:flex-start}.hero-company-item img{width:50px;height:50px;border-radius:14px}.hero-strip{display:grid;grid-template-columns:1fr;gap:.65rem}.hero-strip span,.product-chip{width:100%;justify-content:center}.product-slide{gap:1rem;padding:1rem;border-radius:22px}.product-slide h3{font-size:1.7rem}.product-slide p{font-size:.95rem}.product-slide-media{min-height:220px;border-radius:18px}.product-slide-media img{max-width:220px;max-height:220px}.product-controls{gap:.8rem}.product-nav{width:100%;justify-content:space-between}.product-nav button{flex:1;max-width:calc(50% - .35rem)}.product-counter{font-size:.92rem}.product-peek-list{grid-template-columns:1fr}.product-peek{grid-template-columns:56px minmax(0,1fr);gap:.7rem;width:100%;padding:.72rem;border-radius:16px;text-align:left}.product-peek img{width:56px;height:56px;border-radius:14px}.section-head,.product-controls{flex-direction:column;align-items:flex-start}.section-head h2{font-size:1.8rem}.section-head p{font-size:.95rem}.feature-card{padding:1.1rem}.feature-icon-badge{width:54px;height:54px;border-radius:18px;font-size:1.2rem}.feature-card h3{font-size:1.08rem}.feature-points span{align-items:flex-start;font-size:.92rem}.contact-grid iframe{height:240px}.contact-pill{flex-direction:column;gap:.45rem}.contact-form-card .form-control{padding:.82rem .9rem}}
+@keyframes productFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media (max-width:1199.98px){.hero-grid,.products-showcase,.contact-grid,.feature-grid,.trust-band{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:991.98px){.hero-grid,.products-showcase,.contact-grid{grid-template-columns:1fr}.hero-title{max-width:none}.hero-card{margin-top:.25rem}.product-peek-list{grid-template-columns:1fr 1fr}}
+@media (max-width:767.98px){.landing-shell{padding:0}.landing-section{padding:1rem 0 1.35rem}.landing-panel{border-radius:24px}.hero-stage,.products-stage,.contact-stage{padding:1.05rem;border-radius:24px}.landing-eyebrow{font-size:.68rem;letter-spacing:.1em;padding:.5rem .72rem}.hero-logo{width:92px;height:92px;padding:12px;border-radius:22px}.hero-title{font-size:clamp(2rem,9vw,2.8rem);line-height:1;max-width:none}.hero-copy{font-size:.96rem}.hero-metrics,.feature-grid,.trust-band,.product-meta-grid,.product-slide{grid-template-columns:1fr}.hero-metric,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:22px}.hero-metric strong,.trust-card strong{font-size:1.25rem}.hero-company-item,.contact-pill{padding:.8rem}.hero-company-item{align-items:flex-start}.hero-company-item img{width:50px;height:50px;border-radius:14px}.hero-strip{display:grid;grid-template-columns:1fr;gap:.65rem}.hero-strip span,.product-chip{width:100%;justify-content:center}.product-slide{gap:1rem;padding:1rem;border-radius:22px}.product-slide h3{font-size:1.7rem}.product-slide p{font-size:.95rem}.product-slide-media{min-height:220px;border-radius:18px}.product-slide-media img{max-width:220px;max-height:220px}.product-toolbar{gap:.8rem}.product-nav{width:100%;justify-content:space-between}.product-nav button{flex:1;max-width:calc(50% - .35rem)}.product-counter{font-size:.92rem}.product-peek-list{grid-template-columns:1fr}.product-peek{grid-template-columns:56px minmax(0,1fr);gap:.7rem;width:100%;padding:.72rem;border-radius:16px;text-align:left}.product-peek img{width:56px;height:56px;border-radius:14px}.section-head,.product-toolbar{flex-direction:column;align-items:flex-start}.section-head h2{font-size:1.8rem}.section-head p{font-size:.95rem}.feature-card{padding:1.1rem}.feature-icon-badge{width:54px;height:54px;border-radius:18px;font-size:1.2rem}.feature-card h3{font-size:1.08rem}.feature-points span{align-items:flex-start;font-size:.92rem}.contact-grid iframe{height:240px}.contact-pill{flex-direction:column;gap:.45rem}.contact-form-card .form-control{padding:.82rem .9rem}}
 @media (max-width:479.98px){.landing-shell{padding:0 2px}.hero-actions{gap:.7rem}.hero-primary-btn,.hero-secondary-btn{padding:.9rem 1rem;border-radius:14px;font-size:.95rem}.hero-metric{padding:.85rem}.product-meta-card{padding:.8rem}.contact-card,.contact-form-card{padding:1rem}.contact-grid iframe{height:220px}}
 </style>
 {% endblock extra_css %}
@@ -148,14 +151,22 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                 </div>
                 <p>Review the current product catalogue, pricing, and supplier details in a focused product showcase.</p>
             </div>
-            <div class="products-showcase">
+            <div class="products-shell">
+                <div class="product-toolbar">
+                    <div class="product-counter">Showing <strong id="productCounterCurrent">1</strong> of <strong id="productCounterTotal">{{ products|length }}</strong></div>
+                    <div class="product-nav">
+                        <button type="button" id="productPrev" aria-label="Previous product"><i class="bi bi-arrow-left"></i></button>
+                        <button type="button" id="productNext" aria-label="Next product"><i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+                <div class="products-showcase">
                 <div class="products-slider">
                     {% for product in products %}
                     <article class="product-slide {% if forloop.first %}active{% endif %}" data-slide-index="{{ forloop.counter0 }}">
                         <div class="product-slide-media">
                             <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
                         </div>
-                        <div>
+                        <div class="product-slide-copy">
                             <div class="d-flex flex-wrap gap-2">
                                 <span class="product-chip company"><i class="bi bi-building"></i> {{ product.company.name|default:"SVD Product" }}</span>
                                 <span class="product-chip status"><i class="bi bi-check-circle-fill"></i> Available now</span>
@@ -166,13 +177,6 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                             <div class="product-meta-grid">
                                 <div class="product-meta-card"><small>Company</small><strong>{{ product.company.name|default:"SVD" }}</strong></div>
                                 <div class="product-meta-card"><small>Status</small><strong>Active listing</strong></div>
-                            </div>
-                            <div class="product-controls">
-                                <div class="product-nav">
-                                    <button type="button" id="productPrev" aria-label="Previous product"><i class="bi bi-arrow-left"></i></button>
-                                    <button type="button" id="productNext" aria-label="Next product"><i class="bi bi-arrow-right"></i></button>
-                                </div>
-                                <div class="product-counter">Showing <strong id="productCounterCurrent">1</strong> of <strong id="productCounterTotal">{{ products|length }}</strong></div>
                             </div>
                         </div>
                     </article>
@@ -199,6 +203,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                     </div>
                     {% endfor %}
                 </div>
+            </div>
             </div>
         </div>
     </section>

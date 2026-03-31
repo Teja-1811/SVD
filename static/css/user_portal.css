@@ -1,4 +1,5 @@
 :root {
+    color-scheme: light dark;
     --up-bg: #f4efe4;
     --up-bg-soft: #fbf8f1;
     --up-ink: #16343d;
@@ -15,6 +16,22 @@
     --up-radius-md: 16px;
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        --up-bg: #10171c;
+        --up-bg-soft: #151f25;
+        --up-ink: #eef4f6;
+        --up-muted: #9db0b3;
+        --up-accent: #36b389;
+        --up-accent-soft: rgba(54, 179, 137, 0.14);
+        --up-gold: #cda95c;
+        --up-card: rgba(24, 34, 40, 0.92);
+        --up-line: rgba(157, 176, 179, 0.16);
+        --up-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+        --up-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.24);
+    }
+}
+
 * {
     box-sizing: border-box;
 }
@@ -28,6 +45,15 @@ body.user-portal-body {
         radial-gradient(circle at top left, rgba(240, 201, 106, 0.2), transparent 22%),
         radial-gradient(circle at top right, rgba(24, 127, 98, 0.12), transparent 18%),
         linear-gradient(180deg, #fcfaf5 0%, var(--up-bg) 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.user-portal-body {
+        background:
+            radial-gradient(circle at top left, rgba(205, 169, 92, 0.16), transparent 22%),
+            radial-gradient(circle at top right, rgba(54, 179, 137, 0.12), transparent 18%),
+            linear-gradient(180deg, #0c1216 0%, var(--up-bg) 100%);
+    }
 }
 
 a {
@@ -294,6 +320,46 @@ a {
 .up-btn-primary:hover {
     background: #126850;
     color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .up-navbar,
+    .up-user-pill,
+    .up-hero,
+    .up-card,
+    .up-panel,
+    .up-sidebar-card,
+    .up-stat,
+    .up-product,
+    .up-qty input,
+    .up-form input,
+    .up-form textarea,
+    .up-form select {
+        background: var(--up-card);
+        border-color: var(--up-line);
+        color: var(--up-ink);
+    }
+
+    .up-mode-toggle,
+    .up-item,
+    .up-summary-item,
+    .up-offer,
+    .up-mini-item,
+    .up-empty {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .up-product img {
+        background: #111920;
+    }
+
+    .up-mode-btn.active {
+        background: #1b2730;
+    }
+
+    .chip-success { background: rgba(54, 179, 137, 0.16); color: #8ce6c2; }
+    .chip-warning { background: rgba(205, 169, 92, 0.18); color: #efd28e; }
+    .chip-danger { background: rgba(220, 53, 69, 0.16); color: #ff9dab; }
 }
 
 .up-btn-secondary {

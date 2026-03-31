@@ -11,6 +11,7 @@
 }
 
 :root {
+    color-scheme: light dark;
     /* Colors */
     --primary-color: #667eea;
     --secondary-color: #764ba2;
@@ -46,6 +47,25 @@
     --large: 1200px;
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #8ea2ff;
+        --secondary-color: #9c7adf;
+        --success-color: #47da83;
+        --text-dark: #edf3f6;
+        --text-light: #a8b8c5;
+        --text-white: #ffffff;
+        --bg-light: #111922;
+        --bg-white: #16212b;
+        --cream: #22303a;
+        --jersey: #24596a;
+        --border-color: rgba(168, 184, 197, 0.2);
+        --shadow-light: rgba(0, 0, 0, 0.28);
+        --shadow-medium: rgba(0, 0, 0, 0.38);
+        --shadow-heavy: rgba(0, 0, 0, 0.56);
+    }
+}
+
 /* Base Styles */
 body {
     font-family: var(--font-primary);
@@ -55,6 +75,12 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #0f1720;
+    }
 }
 
 .public-shell {
@@ -107,6 +133,74 @@ body {
 
 .public-navbar {
     background: rgba(255, 255, 255, 0.88);
+}
+
+@media (prefers-color-scheme: dark) {
+    .navbar,
+    .public-navbar {
+        background: rgba(17, 25, 34, 0.88);
+        border-bottom-color: rgba(168, 184, 197, 0.12);
+        box-shadow: 0 10px 34px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar.scrolled {
+        background: rgba(15, 23, 32, 0.96);
+    }
+
+    .navbar-collapse {
+        background: rgba(17, 25, 34, 0.96);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .navbar-brand,
+    .navbar-brand:hover,
+    .public-brand-copy .brand-full,
+    .public-clock small,
+    .navbar-nav .nav-link,
+    .section-title h2,
+    .product-title,
+    .feature-title,
+    .form-label {
+        color: var(--text-dark) !important;
+    }
+
+    .public-brand-copy small,
+    .section-title p,
+    .product-description,
+    .feature-description,
+    .product-features li,
+    .public-clock,
+    .footer-bottom p {
+        color: var(--text-light);
+    }
+
+    .public-brand-mark {
+        background: linear-gradient(135deg, rgba(142, 162, 255, 0.18), rgba(156, 122, 223, 0.2));
+    }
+
+    .public-clock,
+    .card,
+    .product-card,
+    .feature-card,
+    .form-control,
+    .form-select {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+        color: var(--text-dark);
+    }
+
+    .product-image {
+        background-color: #0f1720;
+    }
+
+    .stats-section,
+    .hero-section {
+        box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.08);
+    }
+
+    .footer {
+        background: linear-gradient(135deg, #0d141b, #121b24);
+    }
 }
 
 .navbar.scrolled {
@@ -254,15 +348,15 @@ body {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border: none;
     border-radius: 25px;
-    padding: 0.75rem 1.5rem;
+    padding: 0.68rem 1.15rem;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: var(--text-white) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    min-width: 140px;
+    min-width: 118px;
     text-align: center;
 }
 
@@ -969,10 +1063,16 @@ body {
         background: rgba(255, 255, 255, 0.98);
     }
 
+    @media (prefers-color-scheme: dark) {
+        .navbar-collapse {
+            background: rgba(17, 25, 34, 0.98);
+        }
+    }
+
     .btn, .btn-hero-cta, .btn-place-order {
         min-height: 44px; /* iOS recommended touch target */
-        padding: var(--spacing-md) var(--spacing-lg);
-        font-size: 1rem;
+        padding: 0.78rem 1rem;
+        font-size: 0.95rem;
     }
 
     .card {
