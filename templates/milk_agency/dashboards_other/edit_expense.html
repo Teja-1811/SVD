@@ -93,14 +93,13 @@
                             <label class="form-label">Category</label>
                             <select class="form-select" name="category" required>
                                 <option value="">Select Category</option>
-                                <option value="petrol" {% if expense.category == 'petrol' %}selected{% endif %}>Petrol</option>
-                                <option value="food" {% if expense.category == 'food' %}selected{% endif %}>Food</option>
-                                <option value="profits" {% if expense.category == 'profits' %}selected{% endif %}>Profits</option>
-                                <option value="transport" {% if expense.category == 'transport' %}selected{% endif %}>Transport</option>
-                                <option value="utilities" {% if expense.category == 'utilities' %}selected{% endif %}>Utilities</option>
-                                <option value="maintenance" {% if expense.category == 'maintenance' %}selected{% endif %}>Maintenance</option>
-                                <option value="supplies" {% if expense.category == 'supplies' %}selected{% endif %}>Supplies</option>
-                                <option value="other" {% if expense.category == 'other' %}selected{% endif %}>Other</option>
+                                <option value="Fuel" {% if expense.category == 'Fuel' %}selected{% endif %}>Fuel</option>
+                                <option value="Food" {% if expense.category == 'Food' %}selected{% endif %}>Food</option>
+                                <option value="Rent" {% if expense.category == 'Rent' %}selected{% endif %}>Rent</option>
+                                <option value="Salary" {% if expense.category == 'Salary' %}selected{% endif %}>Salary</option>
+                                <option value="Electricity" {% if expense.category == 'Electricity' %}selected{% endif %}>Electricity</option>
+                                <option value="Repair" {% if expense.category == 'Repair' %}selected{% endif %}>Repair</option>
+                                <option value="Others" {% if expense.category == 'Others' %}selected{% endif %}>Others</option>
                             </select>
                         </div>
 

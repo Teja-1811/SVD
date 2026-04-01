@@ -1,130 +1,356 @@
 {% extends "milk_agency/home/base.html" %}
-
 {% block title %}Bills Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 ma-page-shell">
+<style>
+.bills-page {
+    display: grid;
+    gap: 1.25rem;
+}
 
-    <!-- ===================== -->
-    <!-- HEADER SECTION -->
-    <!-- ===================== -->
-    <div class="row mb-4">
-        <div class="col-12">
+.bills-topbar,
+.bills-filter-card,
+.bills-table-card,
+.bills-mobile-card {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
+}
 
-            <div class="d-flex justify-content-between align-items-center">
+.bills-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    flex-wrap: wrap;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,251,251,0.96));
+}
 
-                <!-- Title -->
-                <div>
-                    <h2 class="fw-bold mb-1">Bills Dashboard</h2>
-                    <p class="text-muted mb-0">Billing records and summary information</p>
+.bills-heading {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.bills-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15, 123, 104, 0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.bills-heading h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+    line-height: 1.04;
+    color: #17353e;
+}
+
+.bills-heading p {
+    margin: 0;
+    color: #617780;
+}
+
+.bills-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 48px;
+    padding: 0.82rem 1.1rem;
+    border-radius: 16px;
+    background: #2563eb;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.bills-primary-btn:hover {
+    color: #fff;
+    background: #1d4ed8;
+}
+
+.bills-filter-card {
+    padding: 1rem;
+}
+
+.bills-filter-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.25fr) repeat(2, minmax(180px, 0.85fr)) auto auto minmax(180px, auto);
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.bills-filter-field {
+    display: grid;
+    gap: 0.38rem;
+}
+
+.bills-filter-field label {
+    color: #617780;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.bills-filter-field input,
+.bills-filter-field select {
+    min-height: 48px;
+    padding: 0.82rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid rgba(23, 53, 62, 0.12);
+    background: #fff;
+    font-weight: 600;
+}
+
+.bills-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.78rem 1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(23, 53, 62, 0.1);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.bills-filter-btn.search {
+    background: #2563eb;
+    color: #fff;
+}
+
+.bills-filter-btn.clear {
+    background: rgba(220, 53, 69, 0.08);
+    color: #c62828;
+}
+
+.bills-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: end;
+}
+
+.bills-table-card {
+    overflow: hidden;
+}
+
+.bills-table {
+    margin-bottom: 0;
+}
+
+.bills-table thead th {
+    background: #1f252a;
+    color: #8ea8ba;
+    border-bottom: 0;
+    padding: 1rem 0.9rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.bills-table tbody td {
+    padding: 1rem 0.9rem;
+    vertical-align: middle;
+}
+
+.bills-table tbody tr {
+    border-bottom: 1px solid rgba(23, 53, 62, 0.06);
+}
+
+.bills-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(23, 53, 62, 0.06);
+    font-weight: 700;
+}
+
+.bills-money {
+    font-weight: 800;
+}
+
+.bills-money.primary { color: #2563eb; }
+.bills-money.success { color: #0f7b68; }
+
+.bills-actions {
+    display: flex;
+    gap: 0.45rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.bills-action {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.bills-action.view { color: #009dff; background: rgba(0,157,255,0.08); border-color: rgba(0,157,255,0.18); }
+.bills-action.edit { color: #e3a200; background: rgba(243,180,0,0.08); border-color: rgba(243,180,0,0.18); }
+.bills-action.pdf { color: #1aa156; background: rgba(26,161,86,0.08); border-color: rgba(26,161,86,0.18); }
+.bills-action.delete { color: #dc3545; background: rgba(220,53,69,0.08); border-color: rgba(220,53,69,0.18); }
+
+.bills-empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    padding: 2.4rem 1.25rem;
+    color: #617780;
+    text-align: center;
+}
+
+.bills-empty i {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(23, 53, 62, 0.06);
+    color: #5d7387;
+    font-size: 1.4rem;
+}
+
+.bills-mobile-card {
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+.bills-mobile-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.bills-mobile-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.bills-mobile-meta div {
+    padding: 0.8rem;
+    border-radius: 16px;
+    background: rgba(23, 53, 62, 0.04);
+}
+
+.bills-mobile-meta small {
+    display: block;
+    color: #617780;
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 1199px) {
+    .bills-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .bills-pagination {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .bills-filter-form,
+    .bills-mobile-meta {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="container-fluid py-2 px-0 ma-page-shell">
+    <div class="bills-page">
+        <section class="bills-topbar">
+            <div class="bills-heading">
+                <span class="bills-eyebrow">Billing</span>
+                <h1>Bills Dashboard</h1>
+                <p>Review generated invoices, filter customer billing records, and open bill actions from one place.</p>
+            </div>
+
+            <a href="{% url 'milk_agency:generate_bill' %}" class="bills-primary-btn">
+                <i class="bi bi-file-earmark-plus"></i>
+                <span>Generate Bill</span>
+            </a>
+        </section>
+
+        <section class="bills-filter-card">
+            <form method="get" id="filterForm" class="bills-filter-form">
+                <div class="bills-filter-field">
+                    <label for="billCustomer">Customer</label>
+                    <select id="billCustomer" name="customer">
+                        <option value="">All Customers</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" {% if selected_customer == customer.id %}selected{% endif %}>{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
-                <!-- DESKTOP Button (icon + text) -->
-                <a href="{% url 'milk_agency:generate_bill' %}"
-                class="btn btn-primary px-4 py-2 shadow-sm d-none d-md-inline-flex align-items-center rounded-3">
-                    <i class="bi bi-file-earmark-plus me-2"></i> Generate New Bill
-                </a>
+                <div class="bills-filter-field">
+                    <label for="billStartDate">From Date</label>
+                    <input id="billStartDate" type="date" name="start_date" value="{{ start_date }}">
+                </div>
 
-                <!-- MOBILE Button (icon only) -->
-                <a href="{% url 'milk_agency:generate_bill' %}"
-                class="btn btn-outline-success shadow-sm d-inline-flex d-md-none align-items-center justify-content-center rounded-3"
-                style="width: 45px; height: 45px;">
-                    <i class="bi bi-file-earmark-plus fs-5"></i>
-                </a>
+                <div class="bills-filter-field">
+                    <label for="billEndDate">To Date</label>
+                    <input id="billEndDate" type="date" name="end_date" value="{{ end_date }}">
+                </div>
 
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ===================== -->
-    <!-- FILTERS SECTION -->
-    <!-- ===================== -->
-    <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body p-3">
-
-        <form method="get" id="filterForm" class="row g-3">
-
-            <!-- Customer -->
-            <div class="col-md-3 col-12">
-                <label class="form-label fw-semibold">Customer</label>
-                <select name="customer" class="form-select">
-                    <option value="">All Customers</option>
-                    {% for customer in customers %}
-                    <option value="{{ customer.id }}"
-                        {% if selected_customer == customer.id %}selected{% endif %}>
-                        {{ customer.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Start Date -->
-            <div class="col-md-2 col-6">
-                <label class="form-label fw-semibold">From Date</label>
-                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
-            </div>
-
-            <!-- End Date -->
-            <div class="col-md-2 col-6">
-                <label class="form-label fw-semibold">To Date</label>
-                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
-            </div>
-
-            <!-- Search Button -->
-            <div class="col-md-1 col-3 d-flex align-items-end mx-auto">
-                <button class="btn btn-outline-primary w-100">
+                <button class="bills-filter-btn search" type="submit">
                     <i class="bi bi-search"></i>
                 </button>
-            </div>
 
-            <!-- Clear Button -->
-            <div class="col-md-1 col-3 d-flex align-items-end mx-auto">
-                <button type="button" class="btn btn-outline-danger w-100"
-                onclick="window.location.href='{% url 'milk_agency:bills_dashboard' %}'">
+                <a href="{% url 'milk_agency:bills_dashboard' %}" class="bills-filter-btn clear">
                     <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
+                </a>
 
-            <!-- Pagination -->
-            <div class="col-md-3 col-12 d-flex align-items-end justify-content-md-end justify-content-center">
-
-                {% if bills.has_other_pages %}
-                <ul class="pagination pagination-sm mb-0">
-                    {% if bills.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1">&laquo;&laquo;</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ bills.previous_page_number }}">&laquo;</a></li>
-                    {% endif %}
-
-                    {% for num in bills.paginator.page_range %}
-                        {% if bills.number == num %}
-                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                        {% elif num >= bills.number|add:'-2' and num <= bills.number|add:'2' %}
-                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                <div class="bills-pagination">
+                    {% if bills.has_other_pages %}
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if bills.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo;&laquo;</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ bills.previous_page_number }}">&laquo;</a></li>
                         {% endif %}
-                    {% endfor %}
-
-                    {% if bills.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ bills.next_page_number }}">&raquo;</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ bills.paginator.num_pages }}">&raquo;&raquo;</a></li>
+                        {% for num in bills.paginator.page_range %}
+                            {% if bills.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num >= bills.number|add:'-2' and num <= bills.number|add:'2' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if bills.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ bills.next_page_number }}">&raquo;</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ bills.paginator.num_pages }}">&raquo;&raquo;</a></li>
+                        {% endif %}
+                    </ul>
                     {% endif %}
-                </ul>
-                {% endif %}
+                </div>
+            </form>
+        </section>
 
-            </div>
-
-        </form>
-
-    </div>
-</div>
-<!-- ===================== -->
-    <!-- DESKTOP TABLE (VISIBLE ≥ MD) -->
-    <!-- ===================== -->
-    <div class="card shadow border-0 d-none d-md-block">
-        <div class="card-body p-0">
+        <section class="bills-table-card d-none d-md-block">
             <div class="table-responsive">
-                <table class="table table-hover mb-0 text-center" id="billsTable">
-                    <thead class="table-dark">
+                <table class="table bills-table text-center">
+                    <thead>
                         <tr>
                             <th>#</th>
                             <th>Bill Number</th>
@@ -135,179 +361,77 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         {% for bill in bills %}
                         <tr>
                             <td>{{ bills.start_index|add:forloop.counter0 }}</td>
                             <td class="fw-semibold">{{ bill.invoice_number }}</td>
-                            <td><span class="badge bg-light text-dark border">{{ bill.customer.name }}</span></td>
+                            <td><span class="bills-chip">{{ bill.customer.name }}</span></td>
                             <td>{{ bill.invoice_date|date:"M d, Y" }}</td>
-                            <td class="fw-bold text-primary">₹{{ bill.total_amount }}</td>
-                            <td class="fw-bold text-success">₹{{ bill.profit }}</td>
-
+                            <td><span class="bills-money primary">&#8377;{{ bill.total_amount }}</span></td>
+                            <td><span class="bills-money success">&#8377;{{ bill.profit }}</span></td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="{% url 'milk_agency:view_bill' bill.id %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                                    <a href="{% url 'milk_agency:edit_bill' bill.id %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
-                                    <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-pdf"></i></a>
-                                    <a href="{% url 'milk_agency:delete_bill' bill.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                <div class="bills-actions">
+                                    <a href="{% url 'milk_agency:view_bill' bill.id %}" class="bills-action view"><i class="bi bi-eye"></i></a>
+                                    <a href="{% url 'milk_agency:edit_bill' bill.id %}" class="bills-action edit"><i class="bi bi-pencil"></i></a>
+                                    <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="bills-action pdf"><i class="bi bi-file-earmark-pdf"></i></a>
+                                    <a href="{% url 'milk_agency:delete_bill' bill.id %}" class="bills-action delete"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-receipt fs-1"></i><br>
-                                No bills found
+                            <td colspan="7">
+                                <div class="bills-empty">
+                                    <i class="bi bi-receipt"></i>
+                                    <span>No bills found.</span>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
-
                 </table>
             </div>
-        </div>
-    </div>
+        </section>
 
-
-    <!-- ===================== -->
-    <!-- MOBILE CARDS (VISIBLE < MD) -->
-    <!-- ===================== -->
-    <div class="d-md-none">
-
-        {% for bill in bills %}
-        <div class="card shadow-sm border-0 mb-3">
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between">
-                    <h6 class="fw-bold mb-1">Bill #{{ bill.invoice_number }}</h6>
-                    <span class="badge bg-secondary">{{ bill.invoice_date|date:"M d, Y" }}</span>
+        <div class="d-md-none">
+            {% for bill in bills %}
+            <article class="bills-mobile-card mb-3">
+                <div class="bills-mobile-head">
+                    <div>
+                        <strong>Bill #{{ bill.invoice_number }}</strong>
+                        <div class="text-muted small">{{ bill.customer.name }}</div>
+                    </div>
+                    <span class="bills-chip">{{ bill.invoice_date|date:"M d, Y" }}</span>
                 </div>
 
-                <p class="mb-1"><strong>Customer:</strong> {{ bill.customer.name }}</p>
+                <div class="bills-mobile-meta">
+                    <div>
+                        <small>Total</small>
+                        <strong class="bills-money primary">&#8377;{{ bill.total_amount }}</strong>
+                    </div>
+                    <div>
+                        <small>Profit</small>
+                        <strong class="bills-money success">&#8377;{{ bill.profit }}</strong>
+                    </div>
+                </div>
 
-                <p class="mb-1 text-primary fw-semibold">Total: ₹{{ bill.total_amount }}</p>
-                <p class="mb-3 text-success fw-semibold">Profit: ₹{{ bill.profit }}</p>
-
-                <div class="d-flex gap-2">
-
-    <a href="{% url 'milk_agency:view_bill' bill.id %}"
-       class="action-btn btn-view">
-        <i class="bi bi-eye"></i>
-    </a>
-
-    <a href="{% url 'milk_agency:edit_bill' bill.id %}"
-       class="action-btn btn-edit">
-        <i class="bi bi-pencil"></i>
-    </a>
-
-    <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}"
-       class="action-btn btn-pdf">
-        <i class="bi bi-file-earmark-pdf"></i>
-    </a>
-
-    <a href="{% url 'milk_agency:delete_bill' bill.id %}"
-       class="action-btn btn-delete">
-        <i class="bi bi-trash"></i>
-    </a>
-
-</div>
-
-
+                <div class="bills-actions justify-content-start">
+                    <a href="{% url 'milk_agency:view_bill' bill.id %}" class="bills-action view"><i class="bi bi-eye"></i></a>
+                    <a href="{% url 'milk_agency:edit_bill' bill.id %}" class="bills-action edit"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="bills-action pdf"><i class="bi bi-file-earmark-pdf"></i></a>
+                    <a href="{% url 'milk_agency:delete_bill' bill.id %}" class="bills-action delete"><i class="bi bi-trash"></i></a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="bills-mobile-card">
+                <div class="bills-empty">
+                    <i class="bi bi-receipt"></i>
+                    <span>No bills found.</span>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p class="text-center text-muted">No bills found</p>
-        {% endfor %}
-
     </div>
-
 </div>
-
-
-<!-- ===================== -->
-<!-- EXTRA CSS -->
-<!-- ===================== -->
-<style>
-
-/* Action Buttons Styling */
-.action-btn {
-    width: 45px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: 0.2s;
-}
-
-/* VIEW (Blue) */
-.btn-view {
-    border: 2px solid #009dff;
-    color: #009dff;
-    background: rgba(0, 157, 255, 0.06);
-}
-.btn-view:hover {
-    background: rgba(0, 157, 255, 0.12);
-}
-
-/* EDIT (Yellow) */
-.btn-edit {
-    border: 2px solid #f3b400;
-    color: #f3b400;
-    background: rgba(243, 180, 0, 0.06);
-}
-.btn-edit:hover {
-    background: rgba(243, 180, 0, 0.12);
-}
-
-/* PDF (Green) */
-.btn-pdf {
-    border: 2px solid #1aa156;
-    color: #1aa156;
-    background: rgba(26, 161, 86, 0.06);
-}
-.btn-pdf:hover {
-    background: rgba(26, 161, 86, 0.12);
-}
-
-/* DELETE (Red) */
-.btn-delete {
-    border: 2px solid #dc3545;
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.06);
-}
-.btn-delete:hover {
-    background: rgba(220, 53, 69, 0.12);
-}
-
-/* Table hidden only on mobile */
-@media (max-width: 768px) {
-    #billsTable {
-        display: none !important;
-    }
-    .card {
-        border: 1px solid #202020ff !important;
-    }
-}
-
-/* Mobile cards hidden on desktop */
-@media (min-width: 768px) {
-    .d-md-none {
-        display: none !important;
-    }
-}
-</style>
-
-{% endblock %}
-
-
-{% block scripts %}
-<script>
-document.getElementById("customer").addEventListener("change", function () {
-    document.getElementById("filterForm").submit();
-});
-</script>
 {% endblock %}

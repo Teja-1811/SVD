@@ -92,21 +92,21 @@
                                 <div class="row g-3 g-md-4">
                                     <div class="col-12 col-md-4">
                                         <label for="buying_price" class="form-label fw-semibold">Buying Price <span class="text-danger">*</span></label>
-                                        <input type="number" step="0.01" class="form-control form-control-lg" id="buying_price" name="buying_price" placeholder="Enter buying price" min="0" value="{% if item %}{{ item.buying_price }}{% endif %}" required>
+                                        <input type="number" step="0.001" class="form-control form-control-lg" id="buying_price" name="buying_price" placeholder="Enter buying price" min="0" value="{% if item %}{{ item.buying_price|floatformat:3 }}{% endif %}" required>
                                         <div class="invalid-feedback">
                                             Please enter a valid buying price.
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-4">
                                         <label for="selling_price" class="form-label fw-semibold">Selling Price <span class="text-danger">*</span></label>
-                                        <input type="number" step="0.01" class="form-control form-control-lg" id="selling_price" name="selling_price" placeholder="Enter selling price" min="0" value="{% if item %}{{ item.selling_price }}{% endif %}" required>
+                                        <input type="number" step="0.001" class="form-control form-control-lg" id="selling_price" name="selling_price" placeholder="Enter selling price" min="0" value="{% if item %}{{ item.selling_price|floatformat:3 }}{% endif %}" required>
                                         <div class="invalid-feedback">
                                             Please enter a valid selling price.
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-4">
                                         <label for="mrp" class="form-label fw-semibold">MRP <span class="text-muted">(optional)</span></label>
-                                        <input type="number" step="0.01" class="form-control form-control-lg" id="mrp" name="mrp" placeholder="Enter Maximum Retail Price" min="0" value="{% if item %}{{ item.mrp }}{% else %}0{% endif %}">
+                                        <input type="number" step="0.001" class="form-control form-control-lg" id="mrp" name="mrp" placeholder="Enter Maximum Retail Price" min="0" value="{% if item %}{{ item.mrp|floatformat:3 }}{% else %}0.000{% endif %}">
                                     </div>
                                 </div>
                             </div>

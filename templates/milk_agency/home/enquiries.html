@@ -4,126 +4,434 @@
 
 {% block extra_css %}
 <style>
-  .enquiry-card {
-    border: 0;
-    border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(17, 24, 39, 0.08);
-    background: #fff;
+  .enquiry-page {
+    display: grid;
+    gap: 1.25rem;
   }
 
-  .enquiry-header {
-    background: linear-gradient(135deg, #0d6efd, #4f46e5);
-    color: #fff;
-    border-radius: 18px;
-    padding: 22px 24px;
+  .enquiry-topbar {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 251, 0.96));
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
   }
 
-  .enquiry-pill {
+  .enquiry-topbar-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .enquiry-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
+    padding: 0.38rem 0.8rem;
     border-radius: 999px;
+    background: rgba(15, 123, 104, 0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .enquiry-heading {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .enquiry-heading h1 {
+    margin: 0;
+    font-size: clamp(1.65rem, 3vw, 2.4rem);
+    line-height: 1.04;
+  }
+
+  .enquiry-heading p {
+    margin: 0;
+    color: #617780;
+    max-width: 48rem;
+  }
+
+  .enquiry-alert-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 48px;
+    padding: 0.72rem 1rem;
+    border-radius: 16px;
+    background: #fff6e8;
+    color: #a16207;
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.12);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .enquiry-alert-pill i {
+    font-size: 1rem;
+  }
+
+  .enquiry-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .enquiry-stat {
+    padding: 1rem 1.05rem;
+    border-radius: 18px;
+    background: rgba(247, 250, 251, 0.92);
+    border: 1px solid rgba(23, 53, 62, 0.08);
+  }
+
+  .enquiry-stat small {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #617780;
+  }
+
+  .enquiry-stat strong {
+    font-size: 1.35rem;
+    color: #17353e;
+  }
+
+  .enquiry-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+    gap: 1.25rem;
+  }
+
+  .enquiry-panel {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 16px 34px rgba(23, 53, 62, 0.08);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .enquiry-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.15rem 1.25rem 0.95rem;
+  }
+
+  .enquiry-panel-head h2 {
+    margin: 0;
+    font-size: 1.55rem;
+    line-height: 1.05;
+  }
+
+  .enquiry-panel-head p {
+    margin: 0.25rem 0 0;
+    color: #617780;
+    font-size: 0.92rem;
+  }
+
+  .enquiry-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .enquiry-count--active {
+    background: #fff6e8;
+    color: #a16207;
+  }
+
+  .enquiry-count--resolved {
+    background: rgba(15, 123, 104, 0.12);
+    color: #0f7b68;
+  }
+
+  .enquiry-panel-body {
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .enquiry-list {
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .enquiry-item {
+    padding: 1rem;
+    border-radius: 20px;
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    background: #ffffff;
+  }
+
+  .enquiry-item--resolved {
+    background: #f8fbfc;
+  }
+
+  .enquiry-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .enquiry-subject {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: #17353e;
+  }
+
+  .enquiry-meta {
+    color: #617780;
+    font-size: 0.86rem;
+  }
+
+  .enquiry-time {
+    color: #617780;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+
+  .enquiry-message {
+    margin: 0 0 0.95rem;
+    color: #17353e;
+    line-height: 1.6;
+  }
+
+  .enquiry-actions {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+  .enquiry-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0.72rem 1rem;
+    border: 0;
+    border-radius: 14px;
+    text-decoration: none;
     font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
-  .enquiry-pill-active {
-    background: #fef3c7;
-    color: #92400e;
+  .enquiry-btn:hover {
+    transform: translateY(-1px);
   }
 
-  .enquiry-pill-resolved {
-    background: #dcfce7;
-    color: #166534;
+  .enquiry-btn--resolve {
+    background: #0f7b68;
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(15, 123, 104, 0.18);
+  }
+
+  .enquiry-btn--resolve:hover {
+    color: #fff;
+    background: #126d5d;
+  }
+
+  .enquiry-btn--reopen {
+    background: rgba(23, 53, 62, 0.08);
+    color: #17353e;
+  }
+
+  .enquiry-btn--reopen:hover {
+    color: #17353e;
+    background: rgba(23, 53, 62, 0.12);
+  }
+
+  .enquiry-empty {
+    display: grid;
+    gap: 0.55rem;
+    justify-items: start;
+    padding: 1.1rem;
+    border-radius: 20px;
+    border: 1px dashed rgba(23, 53, 62, 0.16);
+    background: rgba(248, 251, 252, 0.92);
+  }
+
+  .enquiry-empty i {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 123, 104, 0.1);
+    color: #0f7b68;
+    font-size: 1.1rem;
+  }
+
+  .enquiry-empty strong {
+    font-size: 1rem;
+    color: #17353e;
+  }
+
+  .enquiry-empty span {
+    color: #617780;
+  }
+
+  @media (max-width: 991.98px) {
+    .enquiry-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .enquiry-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .enquiry-item-top {
+      flex-direction: column;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 ma-page-shell" style="min-height: 100vh; background:#f8f9fa;">
-  <div class="enquiry-header mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <div>
-        <h2 class="fw-bold mb-1">Customer Enquiries</h2>
-        <p class="mb-0">Review unresolved website queries and mark them resolved after action.</p>
+<div class="container-fluid py-2 px-0 ma-page-shell">
+  <div class="enquiry-page">
+    <section class="enquiry-topbar">
+      <div class="enquiry-topbar-head">
+        <div class="enquiry-heading">
+          <span class="enquiry-eyebrow">Support Desk</span>
+          <h1>Customer Enquiries</h1>
+          <p>Track active website enquiries, review contact details, and update resolution status after follow-up.</p>
+        </div>
+        <div class="enquiry-alert-pill">
+          <i class="bi bi-bell-fill"></i>
+          <span>{{ unresolved_queries_count }} unresolved</span>
+        </div>
       </div>
-      <div class="enquiry-pill enquiry-pill-active">
-        <i class="bi bi-bell-fill"></i>
-        <span>{{ unresolved_queries_count }} unresolved</span>
-      </div>
-    </div>
-  </div>
 
-  <div class="row g-4">
-    <div class="col-lg-7">
-      <div class="enquiry-card p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4 class="fw-bold mb-0">Active Queries</h4>
-          <span class="badge text-bg-warning">{{ active_enquiries|length }}</span>
+      <div class="enquiry-stats">
+        <div class="enquiry-stat">
+          <small>Active enquiries</small>
+          <strong>{{ active_enquiries|length }}</strong>
+        </div>
+        <div class="enquiry-stat">
+          <small>Resolved enquiries</small>
+          <strong>{{ resolved_enquiries|length }}</strong>
+        </div>
+        <div class="enquiry-stat">
+          <small>Total records</small>
+          {% with active_count=active_enquiries|length resolved_count=resolved_enquiries|length %}
+          <strong>{{ active_count|add:resolved_count }}</strong>
+          {% endwith %}
+        </div>
+      </div>
+    </section>
+
+    <div class="enquiry-grid">
+      <section class="enquiry-panel">
+        <div class="enquiry-panel-head">
+          <div>
+            <h2>Active Queries</h2>
+            <p>Items waiting for response or follow-up.</p>
+          </div>
+          <span class="enquiry-count enquiry-count--active">{{ active_enquiries|length }}</span>
         </div>
 
-        {% if active_enquiries %}
-        <div class="d-grid gap-3">
-          {% for enquiry in active_enquiries %}
-          <div class="border rounded-4 p-3">
-            <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-2">
-              <div>
-                <div class="fw-bold">{{ enquiry.subject }}</div>
-                <div class="text-muted small">{{ enquiry.name }} | {{ enquiry.phone }}{% if enquiry.email %} | {{ enquiry.email }}{% endif %}</div>
+        <div class="enquiry-panel-body">
+          {% if active_enquiries %}
+          <div class="enquiry-list">
+            {% for enquiry in active_enquiries %}
+            <article class="enquiry-item">
+              <div class="enquiry-item-top">
+                <div>
+                  <h3 class="enquiry-subject">{{ enquiry.subject }}</h3>
+                  <div class="enquiry-meta">
+                    {{ enquiry.name }} | {{ enquiry.phone }}{% if enquiry.email %} | {{ enquiry.email }}{% endif %}
+                  </div>
+                </div>
+                <div class="enquiry-time">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
               </div>
-              <div class="text-muted small">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
-            </div>
 
-            <p class="mb-3">{{ enquiry.message }}</p>
+              <p class="enquiry-message">{{ enquiry.message }}</p>
 
-            <form method="post" class="d-flex flex-wrap gap-2">
-              {% csrf_token %}
-              <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
-              <input type="hidden" name="status" value="resolved">
-              <button type="submit" class="btn btn-success btn-sm">
-                <i class="bi bi-check-circle me-1"></i> Mark Resolved
-              </button>
-            </form>
+              <form method="post" class="enquiry-actions">
+                {% csrf_token %}
+                <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
+                <input type="hidden" name="status" value="resolved">
+                <button type="submit" class="enquiry-btn enquiry-btn--resolve">
+                  <i class="bi bi-check-circle"></i>
+                  <span>Mark Resolved</span>
+                </button>
+              </form>
+            </article>
+            {% endfor %}
           </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="alert alert-success mb-0">No unresolved enquiries right now.</div>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="col-lg-5">
-      <div class="enquiry-card p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4 class="fw-bold mb-0">Resolved Queries</h4>
-          <span class="badge text-bg-success">{{ resolved_enquiries|length }}</span>
-        </div>
-
-        {% if resolved_enquiries %}
-        <div class="d-grid gap-3">
-          {% for enquiry in resolved_enquiries %}
-          <div class="border rounded-4 p-3 bg-light">
-            <div class="fw-bold">{{ enquiry.subject }}</div>
-            <div class="text-muted small mb-2">{{ enquiry.name }} | {{ enquiry.phone }}</div>
-            <div class="text-muted small mb-2">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
-            <p class="mb-2 small">{{ enquiry.message|truncatechars:140 }}</p>
-
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
-              <input type="hidden" name="status" value="active">
-              <button type="submit" class="btn btn-outline-secondary btn-sm">
-                Reopen
-              </button>
-            </form>
+          {% else %}
+          <div class="enquiry-empty">
+            <i class="bi bi-check2-all"></i>
+            <strong>No active enquiries</strong>
+            <span>There are no unresolved website queries right now.</span>
           </div>
-          {% endfor %}
+          {% endif %}
         </div>
-        {% else %}
-        <div class="alert alert-secondary mb-0">No resolved enquiries yet.</div>
-        {% endif %}
-      </div>
+      </section>
+
+      <section class="enquiry-panel">
+        <div class="enquiry-panel-head">
+          <div>
+            <h2>Resolved Queries</h2>
+            <p>Completed items available for reference.</p>
+          </div>
+          <span class="enquiry-count enquiry-count--resolved">{{ resolved_enquiries|length }}</span>
+        </div>
+
+        <div class="enquiry-panel-body">
+          {% if resolved_enquiries %}
+          <div class="enquiry-list">
+            {% for enquiry in resolved_enquiries %}
+            <article class="enquiry-item enquiry-item--resolved">
+              <div class="enquiry-item-top">
+                <div>
+                  <h3 class="enquiry-subject">{{ enquiry.subject }}</h3>
+                  <div class="enquiry-meta">{{ enquiry.name }} | {{ enquiry.phone }}</div>
+                </div>
+                <div class="enquiry-time">{{ enquiry.created_at|date:"d-m-Y h:i A" }}</div>
+              </div>
+
+              <p class="enquiry-message">{{ enquiry.message|truncatechars:160 }}</p>
+
+              <form method="post" class="enquiry-actions">
+                {% csrf_token %}
+                <input type="hidden" name="enquiry_id" value="{{ enquiry.id }}">
+                <input type="hidden" name="status" value="active">
+                <button type="submit" class="enquiry-btn enquiry-btn--reopen">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  <span>Reopen</span>
+                </button>
+              </form>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="enquiry-empty">
+            <i class="bi bi-inbox"></i>
+            <strong>No resolved enquiries</strong>
+            <span>Resolved items will appear here after they are closed.</span>
+          </div>
+          {% endif %}
+        </div>
+      </section>
     </div>
   </div>
 </div>

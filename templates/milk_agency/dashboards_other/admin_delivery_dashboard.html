@@ -5,246 +5,310 @@
 {% block content %}
 <style>
 :root {
-    --delivery-navy: #163a70;
-    --delivery-blue: #2563eb;
-    --delivery-sky: #dbeafe;
-    --delivery-bg: #eef4fb;
-    --delivery-card: #ffffff;
-    --delivery-border: #d7e3f2;
-    --delivery-text: #153257;
-    --delivery-muted: #5f7393;
-    --delivery-pending: #ffedd5;
-    --delivery-pending-text: #c2410c;
-    --delivery-done: #dcfce7;
-    --delivery-done-text: #15803d;
+    --delivery-navy: #17353e;
+    --delivery-ink: #20454f;
+    --delivery-muted: #667d86;
+    --delivery-line: rgba(23, 53, 62, 0.1);
+    --delivery-surface: rgba(255, 255, 255, 0.96);
+    --delivery-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
+    --delivery-accent: #2563eb;
+    --delivery-accent-soft: rgba(37, 99, 235, 0.1);
+    --delivery-pending-bg: linear-gradient(135deg, #f59e0b, #f97316);
+    --delivery-done-bg: linear-gradient(135deg, #0f7b68, #16a34a);
 }
 
 .delivery-page {
-    min-height: calc(100vh - 90px);
-    background:
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 28%),
-        linear-gradient(180deg, var(--delivery-bg) 0%, #ffffff 100%);
-}
-
-.delivery-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
-    gap: 18px;
-    margin-bottom: 22px;
+    gap: 1.25rem;
 }
 
-.delivery-hero-main,
-.delivery-hero-side,
-.section-card {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid var(--delivery-border);
+.delivery-topbar,
+.delivery-filters,
+.delivery-section {
+    background: var(--delivery-surface);
+    border: 1px solid var(--delivery-line);
     border-radius: 24px;
-    box-shadow: 0 18px 44px rgba(20, 50, 87, 0.08);
+    box-shadow: var(--delivery-shadow);
 }
 
-.delivery-hero-main {
-    padding: 28px;
+.delivery-topbar {
+    padding: 1.25rem;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.18), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 251, 0.96));
 }
 
-.delivery-title {
-    margin: 0;
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.05;
-    color: var(--delivery-navy);
-    font-weight: 800;
-}
-
-.delivery-subtitle {
-    margin: 12px 0 0;
-    max-width: 680px;
-    color: var(--delivery-muted);
-    font-size: 1rem;
-}
-
-.delivery-quick-meta {
+.delivery-topbar-head {
     display: flex;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 18px;
 }
 
-.quick-pill {
+.delivery-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
+    padding: 0.38rem 0.8rem;
     border-radius: 999px;
-    background: #f8fbff;
-    border: 1px solid var(--delivery-border);
-    color: var(--delivery-text);
-    font-weight: 600;
-}
-
-.delivery-hero-side {
-    padding: 18px;
-    display: grid;
-    gap: 14px;
-}
-
-.delivery-stat {
-    border-radius: 20px;
-    padding: 18px;
-    color: #fff;
-    min-height: 116px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.delivery-stat.pending {
-    background: linear-gradient(135deg, #f59e0b, #f97316);
-}
-
-.delivery-stat.delivered {
-    background: linear-gradient(135deg, #16a34a, #059669);
-}
-
-.delivery-stat .count {
-    font-size: 2.1rem;
-    line-height: 1;
+    background: rgba(15, 123, 104, 0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
     font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
-.delivery-section-grid {
+.delivery-heading {
     display: grid;
-    gap: 18px;
+    gap: 0.45rem;
+}
+
+.delivery-heading h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.75rem);
+    line-height: 1.04;
+    color: var(--delivery-navy);
+}
+
+.delivery-heading p {
+    margin: 0;
+    color: var(--delivery-muted);
+    max-width: 52rem;
+}
+
+.delivery-meta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.delivery-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0.68rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--delivery-line);
+    color: var(--delivery-ink);
+    font-weight: 700;
+}
+
+.delivery-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1rem;
+}
+
+.delivery-stat-card {
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    background: rgba(247, 250, 251, 0.92);
+    border: 1px solid var(--delivery-line);
+}
+
+.delivery-stat-card strong {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 1.45rem;
+    color: var(--delivery-navy);
+}
+
+.delivery-stat-card small {
+    color: var(--delivery-muted);
+}
+
+.delivery-stat-card--pending {
+    background: var(--delivery-pending-bg);
+    color: #fff;
+    border: 0;
+}
+
+.delivery-stat-card--pending small,
+.delivery-stat-card--pending strong,
+.delivery-stat-card--delivered small,
+.delivery-stat-card--delivered strong {
+    color: #fff;
+}
+
+.delivery-stat-card--delivered {
+    background: var(--delivery-done-bg);
+    color: #fff;
+    border: 0;
 }
 
 .delivery-filters {
-    margin-bottom: 18px;
-    padding: 20px 22px;
+    padding: 1rem;
 }
 
 .delivery-filter-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.6fr) repeat(4, minmax(140px, 1fr)) auto auto;
-    gap: 12px;
+    grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(130px, 1fr)) auto auto;
+    gap: 0.85rem;
     align-items: end;
 }
 
 .delivery-filter-field {
     display: grid;
-    gap: 6px;
+    gap: 0.38rem;
 }
 
 .delivery-filter-field label {
-    font-size: 0.82rem;
-    font-weight: 700;
     color: var(--delivery-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .delivery-filter-field input,
 .delivery-filter-field select {
-    min-height: 44px;
-    border-radius: 12px;
-    border: 1px solid var(--delivery-border);
-    padding: 10px 12px;
-    color: var(--delivery-text);
+    min-height: 48px;
+    padding: 0.82rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid var(--delivery-line);
     background: #fff;
+    color: var(--delivery-ink);
+    font-weight: 600;
 }
 
 .delivery-filter-actions {
     display: flex;
-    gap: 10px;
+    gap: 0.7rem;
     align-items: center;
+}
+
+.delivery-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 46px;
+    padding: 0.78rem 1rem;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    border: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.delivery-action:hover {
+    transform: translateY(-1px);
+    color: inherit;
+}
+
+.delivery-action.primary {
+    background: var(--delivery-accent);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.delivery-action.secondary {
+    background: rgba(23, 53, 62, 0.06);
+    color: var(--delivery-navy);
+    border: 1px solid var(--delivery-line);
 }
 
 .delivery-filter-note {
-    margin-top: 12px;
+    margin-top: 0.85rem;
     color: var(--delivery-muted);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
 }
 
-.section-head {
+.delivery-sections {
+    display: grid;
+    gap: 1.2rem;
+}
+
+.delivery-section-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    padding: 20px 22px;
-    border-bottom: 1px solid var(--delivery-border);
+    gap: 1rem;
+    padding: 1.15rem 1.25rem 0.95rem;
+    border-bottom: 1px solid var(--delivery-line);
 }
 
-.section-head h2 {
+.delivery-section-head h2 {
     margin: 0;
-    font-size: 1.15rem;
-    font-weight: 800;
+    font-size: 1.25rem;
     color: var(--delivery-navy);
 }
 
-.section-pill {
-    padding: 7px 14px;
-    border-radius: 999px;
+.delivery-section-head p {
+    margin: 0.2rem 0 0;
+    color: var(--delivery-muted);
     font-size: 0.9rem;
-    font-weight: 700;
+}
+
+.section-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 38px;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 800;
 }
 
 .section-pill.pending {
-    background: var(--delivery-pending);
-    color: var(--delivery-pending-text);
+    background: #fff6e8;
+    color: #a16207;
 }
 
 .section-pill.delivered {
-    background: var(--delivery-done);
-    color: var(--delivery-done-text);
+    background: rgba(15, 123, 104, 0.12);
+    color: #0f7b68;
 }
 
 .delivery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-    gap: 18px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    padding: 1.15rem;
 }
 
 .delivery-item {
     display: grid;
-    gap: 14px;
-    padding: 18px;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid var(--delivery-border);
+    gap: 0.9rem;
+    padding: 1rem;
     border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid rgba(23, 53, 62, 0.08);
 }
 
 .delivery-item-top {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 0.85rem;
     align-items: flex-start;
-}
-
-.delivery-item-top h3 {
-    margin: 8px 0 0;
-    color: var(--delivery-text);
-    font-size: 1.02rem;
-    font-weight: 800;
 }
 
 .delivery-kind,
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.45rem;
+    padding: 0.45rem 0.72rem;
     border-radius: 999px;
-    padding: 7px 11px;
     font-size: 0.8rem;
-    font-weight: 700;
-    white-space: nowrap;
+    font-weight: 800;
 }
 
 .delivery-kind {
-    background: var(--delivery-sky);
-    color: var(--delivery-blue);
+    background: var(--delivery-accent-soft);
+    color: var(--delivery-accent);
 }
 
 .status-badge.pending {
-    background: var(--delivery-pending);
-    color: var(--delivery-pending-text);
+    background: #fff6e8;
+    color: #a16207;
 }
 
 .status-badge.out_for_delivery {
@@ -253,384 +317,368 @@
 }
 
 .status-badge.delivered {
-    background: var(--delivery-done);
-    color: var(--delivery-done-text);
+    background: rgba(15, 123, 104, 0.12);
+    color: #0f7b68;
+}
+
+.delivery-item-top h3 {
+    margin: 0.65rem 0 0;
+    font-size: 1rem;
+    color: var(--delivery-navy);
 }
 
 .delivery-meta {
     display: grid;
-    gap: 10px;
+    gap: 0.7rem;
 }
 
 .delivery-meta-row {
     display: grid;
-    grid-template-columns: 108px 1fr;
-    gap: 12px;
-    align-items: start;
+    grid-template-columns: 110px 1fr;
+    gap: 0.8rem;
 }
 
 .delivery-meta-row strong {
     color: var(--delivery-muted);
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.06em;
 }
 
 .delivery-meta-row span {
-    color: var(--delivery-text);
-    word-break: break-word;
+    color: var(--delivery-ink);
     font-weight: 600;
+    word-break: break-word;
 }
 
-.delivery-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.delivery-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 42px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 700;
-    border: 1px solid transparent;
-}
-
-.delivery-action.primary {
-    background: var(--delivery-blue);
-    color: #fff;
-}
-
-.delivery-action.secondary {
-    background: #fff;
-    color: var(--delivery-navy);
-    border-color: var(--delivery-border);
-}
-
-.delivery-action:hover {
-    color: inherit;
-}
-
-.empty-state {
-    padding: 34px 24px 40px;
+.delivery-empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    padding: 2.2rem 1.25rem 2.4rem;
     text-align: center;
     color: var(--delivery-muted);
 }
 
-.empty-state i {
+.delivery-empty i {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
-    margin-bottom: 12px;
-    border-radius: 50%;
-    background: #edf4ff;
-    color: var(--delivery-blue);
-    font-size: 1.4rem;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--delivery-accent);
+    font-size: 1.35rem;
 }
 
-@media (max-width: 992px) {
-    .delivery-hero {
-        grid-template-columns: 1fr;
+@media (max-width: 1200px) {
+    .delivery-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 768px) {
-    .delivery-page {
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .delivery-hero-main,
-    .delivery-hero-side {
-        padding: 18px;
-    }
-
-    .section-head,
-    .delivery-grid {
-        padding: 16px;
-    }
-
-    .delivery-filters {
-        padding: 16px;
+@media (max-width: 991.98px) {
+    .delivery-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .delivery-filter-form {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .delivery-meta-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
-    }
-
-    .delivery-item-top {
-        flex-direction: column;
-    }
-
-    .delivery-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767.98px) {
+    .delivery-stat-grid,
     .delivery-filter-form,
     .delivery-actions {
         grid-template-columns: 1fr;
     }
 
-    .delivery-filter-actions {
+    .delivery-item-top,
+    .delivery-section-head {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
+    }
+
+    .delivery-meta-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .delivery-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr;
     }
 }
 </style>
 
-<div class="container-fluid py-4 ma-page-shell delivery-page">
-    <div class="delivery-hero">
-        <div class="delivery-hero-main">
-            <h1 class="delivery-title">Delivery Status Dashboard</h1>
-            <p class="delivery-subtitle">Review subscription and customer deliveries, and open the related bill for each delivery record.</p>
-            <div class="delivery-quick-meta">
-                <span class="quick-pill"><i class="bi bi-calendar-event"></i> {{ today|date:"M d, Y" }}</span>
-                <span class="quick-pill"><i class="bi bi-clock-history"></i> Subscription bills scheduled for 6:00 AM daily</span>
+<div class="container-fluid py-2 px-0 ma-page-shell">
+    <div class="delivery-page">
+        <section class="delivery-topbar">
+            <div class="delivery-topbar-head">
+                <div class="delivery-heading">
+                    <span class="delivery-eyebrow">Delivery Desk</span>
+                    <h1>Delivery Status Dashboard</h1>
+                    <p>Review customer orders, subscription deliveries, and related billing records from one operations view.</p>
+                </div>
             </div>
-        </div>
-        <div class="delivery-hero-side">
-            <div class="delivery-stat pending">
-                <span class="count">{{ pending_total }}</span>
-                <span>Pending Deliveries</span>
-            </div>
-            <div class="delivery-stat delivered">
-                <span class="count">{{ delivered_total }}</span>
-                <span>Delivered Deliveries</span>
-            </div>
-        </div>
-    </div>
 
-    <div class="delivery-section-grid">
-    <div class="section-card delivery-filters">
-        <form method="get" class="delivery-filter-form">
-            <div class="delivery-filter-field">
-                <label for="delivery-q">Search</label>
-                <input id="delivery-q" type="text" name="q" value="{{ filters.q }}" placeholder="Customer, phone, order, item, address">
+            <div class="delivery-meta-row">
+                <span class="delivery-meta-pill"><i class="bi bi-calendar-event"></i> {{ today|date:"M d, Y" }}</span>
+                <span class="delivery-meta-pill"><i class="bi bi-clock-history"></i> Subscription billing run at 6:00 AM daily</span>
             </div>
-            <div class="delivery-filter-field">
-                <label for="delivery-date">Date</label>
-                <input id="delivery-date" type="date" name="date" value="{{ filters.date_raw }}">
-            </div>
-            <div class="delivery-filter-field">
-                <label for="delivery-kind">Kind</label>
-                <select id="delivery-kind" name="kind">
-                    <option value="all" {% if filters.kind == "all" %}selected{% endif %}>All</option>
-                    <option value="order" {% if filters.kind == "order" %}selected{% endif %}>Orders</option>
-                    <option value="subscription" {% if filters.kind == "subscription" %}selected{% endif %}>Subscriptions</option>
-                </select>
-            </div>
-            <div class="delivery-filter-field">
-                <label for="delivery-stage">Stage</label>
-                <select id="delivery-stage" name="stage">
-                    <option value="all" {% if filters.stage == "all" %}selected{% endif %}>All</option>
-                    <option value="pending" {% if filters.stage == "pending" %}selected{% endif %}>Pending</option>
-                    <option value="delivered" {% if filters.stage == "delivered" %}selected{% endif %}>Delivered</option>
-                </select>
-            </div>
-            <div class="delivery-filter-field">
-                <label for="delivery-status">Status</label>
-                <select id="delivery-status" name="status">
-                    <option value="all" {% if filters.status == "all" %}selected{% endif %}>All</option>
-                    <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>Pending</option>
-                    <option value="out_for_delivery" {% if filters.status == "out_for_delivery" %}selected{% endif %}>Out for delivery</option>
-                    <option value="confirmed" {% if filters.status == "confirmed" %}selected{% endif %}>Confirmed</option>
-                    <option value="processing" {% if filters.status == "processing" %}selected{% endif %}>Processing</option>
-                    <option value="ready" {% if filters.status == "ready" %}selected{% endif %}>Ready</option>
-                    <option value="delivered" {% if filters.status == "delivered" %}selected{% endif %}>Delivered</option>
-                    <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>Failed</option>
-                </select>
-            </div>
-            <div class="delivery-filter-actions">
-                <button type="submit" class="delivery-action primary">Apply Filters</button>
-                <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="delivery-action secondary">Reset</a>
-            </div>
-        </form>
-        <div class="delivery-filter-note">These same query params are supported by the app APIs: <code>q</code>, <code>date</code>, <code>kind</code>, <code>stage</code>, and <code>status</code>.</div>
-    </div>
-    <div class="section-card">
-        <div class="section-head">
-            <h2>Pending Customer Orders</h2>
-            <span class="section-pill pending">{{ pending_orders_count }} orders</span>
-        </div>
-        {% if pending_orders %}
-        <div class="delivery-grid">
-            {% for order in pending_orders %}
-            <article class="delivery-item">
-                <div class="delivery-item-top">
-                    <div>
-                        <span class="delivery-kind"><i class="bi bi-bag-check"></i> Order</span>
-                        <h3 class="mt-2">{{ order.order_number }}</h3>
-                    </div>
-                    <span class="status-badge {{ order.display_delivery_status|default:'pending' }}">
-                        {{ order.display_delivery_status_label|default:"Pending" }}
-                    </span>
-                </div>
-                <div class="delivery-meta">
-                    <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
-                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
-                    <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
-                    <div class="delivery-meta-row"><strong>Address</strong><span>{{ order.delivery_address|default:"-" }}</span></div>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state"><i class="bi bi-box-seam"></i><div>No pending customer order deliveries.</div></div>
-        {% endif %}
-    </div>
 
-    <div class="section-card">
-        <div class="section-head">
-            <h2>Pending Subscriptions</h2>
-            <span class="section-pill pending">{{ pending_subscriptions_count }} subscriptions</span>
-        </div>
-        {% if pending_subscriptions %}
-        <div class="delivery-grid">
-            {% for delivery in pending_subscriptions %}
-            <article class="delivery-item">
-                <div class="delivery-item-top">
-                    <div>
-                        <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
-                        <h3 class="mt-2">{{ delivery.subscription_order.customer.name }}</h3>
-                    </div>
-                    <span class="status-badge {{ delivery.status }}">{{ delivery.get_status_display }}</span>
+            <div class="delivery-stat-grid">
+                <div class="delivery-stat-card delivery-stat-card--pending">
+                    <small>Pending deliveries</small>
+                    <strong>{{ pending_total }}</strong>
                 </div>
-                <div class="delivery-meta">
-                    <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
-                    <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
-                    <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ delivery.subscription_order.customer.phone }}</span></div>
+                <div class="delivery-stat-card delivery-stat-card--delivered">
+                    <small>Delivered deliveries</small>
+                    <strong>{{ delivered_total }}</strong>
                 </div>
-                <div class="delivery-actions">
-                    {% if delivery.bill %}
-                    <a class="delivery-action primary" href="{% url 'milk_agency:view_bill' delivery.bill.id %}">
-                        <i class="bi bi-receipt"></i> View Bill
-                    </a>
-                    <a class="delivery-action secondary" href="{% url 'milk_agency:generate_invoice_pdf' delivery.bill.id %}" target="_blank">
-                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                    </a>
-                    {% else %}
-                    <span class="delivery-action secondary">
-                        <i class="bi bi-hourglass-split"></i> Bill pending auto generation
-                    </span>
-                    {% endif %}
+                <div class="delivery-stat-card">
+                    <small>Pending orders</small>
+                    <strong>{{ pending_orders_count }}</strong>
                 </div>
-            </article>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state"><i class="bi bi-arrow-repeat"></i><div>No pending subscription deliveries.</div></div>
-        {% endif %}
-    </div>
+                <div class="delivery-stat-card">
+                    <small>Pending subscriptions</small>
+                    <strong>{{ pending_subscriptions_count }}</strong>
+                </div>
+            </div>
+        </section>
 
-    <div class="section-card">
-        <div class="section-head">
-            <h2>Delivered Customer Orders</h2>
-            <span class="section-pill delivered">{{ delivered_orders_count }} orders</span>
-        </div>
-        {% if delivered_orders %}
-        <div class="delivery-grid">
-            {% for order in delivered_orders %}
-            <article class="delivery-item">
-                <div class="delivery-item-top">
-                    <div>
-                        <span class="delivery-kind"><i class="bi bi-bag-check-fill"></i> Order</span>
-                        <h3 class="mt-2">{{ order.order_number }}</h3>
-                    </div>
-                    <span class="status-badge delivered">Delivered</span>
+        <section class="delivery-filters">
+            <form method="get" class="delivery-filter-form">
+                <div class="delivery-filter-field">
+                    <label for="delivery-q">Search</label>
+                    <input id="delivery-q" type="text" name="q" value="{{ filters.q }}" placeholder="Customer, phone, order, item, address">
                 </div>
-                <div class="delivery-meta">
-                    <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
-                    <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
-                    <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row"><strong>Amount</strong><span>₹{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
-                    <div class="delivery-meta-row">
-                        <strong>Delivered At</strong>
-                        <span>
-                            {% if has_order_delivery_table and order.delivery_tracking and order.delivery_tracking.delivered_at %}
-                                {{ order.delivery_tracking.delivered_at|localtime|date:"M d, Y h:i A" }}
+                <div class="delivery-filter-field">
+                    <label for="delivery-date">Date</label>
+                    <input id="delivery-date" type="date" name="date" value="{{ filters.date_raw }}">
+                </div>
+                <div class="delivery-filter-field">
+                    <label for="delivery-kind">Kind</label>
+                    <select id="delivery-kind" name="kind">
+                        <option value="all" {% if filters.kind == "all" %}selected{% endif %}>All</option>
+                        <option value="order" {% if filters.kind == "order" %}selected{% endif %}>Orders</option>
+                        <option value="subscription" {% if filters.kind == "subscription" %}selected{% endif %}>Subscriptions</option>
+                    </select>
+                </div>
+                <div class="delivery-filter-field">
+                    <label for="delivery-stage">Stage</label>
+                    <select id="delivery-stage" name="stage">
+                        <option value="all" {% if filters.stage == "all" %}selected{% endif %}>All</option>
+                        <option value="pending" {% if filters.stage == "pending" %}selected{% endif %}>Pending</option>
+                        <option value="delivered" {% if filters.stage == "delivered" %}selected{% endif %}>Delivered</option>
+                    </select>
+                </div>
+                <div class="delivery-filter-field">
+                    <label for="delivery-status">Status</label>
+                    <select id="delivery-status" name="status">
+                        <option value="all" {% if filters.status == "all" %}selected{% endif %}>All</option>
+                        <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>Pending</option>
+                        <option value="out_for_delivery" {% if filters.status == "out_for_delivery" %}selected{% endif %}>Out for delivery</option>
+                        <option value="confirmed" {% if filters.status == "confirmed" %}selected{% endif %}>Confirmed</option>
+                        <option value="processing" {% if filters.status == "processing" %}selected{% endif %}>Processing</option>
+                        <option value="ready" {% if filters.status == "ready" %}selected{% endif %}>Ready</option>
+                        <option value="delivered" {% if filters.status == "delivered" %}selected{% endif %}>Delivered</option>
+                        <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>Failed</option>
+                    </select>
+                </div>
+                <div class="delivery-filter-actions">
+                    <button type="submit" class="delivery-action primary">Apply</button>
+                    <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="delivery-action secondary">Reset</a>
+                </div>
+            </form>
+            <div class="delivery-filter-note">Supported query parameters: <code>q</code>, <code>date</code>, <code>kind</code>, <code>stage</code>, and <code>status</code>.</div>
+        </section>
+
+        <div class="delivery-sections">
+            <section class="delivery-section">
+                <div class="delivery-section-head">
+                    <div>
+                        <h2>Pending Customer Orders</h2>
+                        <p>Customer orders waiting for delivery completion.</p>
+                    </div>
+                    <span class="section-pill pending">{{ pending_orders_count }} orders</span>
+                </div>
+                {% if pending_orders %}
+                <div class="delivery-grid">
+                    {% for order in pending_orders %}
+                    <article class="delivery-item">
+                        <div class="delivery-item-top">
+                            <div>
+                                <span class="delivery-kind"><i class="bi bi-bag-check"></i> Order</span>
+                                <h3>{{ order.order_number }}</h3>
+                            </div>
+                            <span class="status-badge {{ order.display_delivery_status|default:'pending' }}">
+                                {{ order.display_delivery_status_label|default:"Pending" }}
+                            </span>
+                        </div>
+                        <div class="delivery-meta">
+                            <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
+                            <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
+                            <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
+                            <div class="delivery-meta-row"><strong>Amount</strong><span>&#8377;{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
+                            <div class="delivery-meta-row"><strong>Address</strong><span>{{ order.delivery_address|default:"-" }}</span></div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="delivery-empty"><i class="bi bi-box-seam"></i><div>No pending customer order deliveries.</div></div>
+                {% endif %}
+            </section>
+
+            <section class="delivery-section">
+                <div class="delivery-section-head">
+                    <div>
+                        <h2>Pending Subscriptions</h2>
+                        <p>Subscription deliveries scheduled and not yet completed.</p>
+                    </div>
+                    <span class="section-pill pending">{{ pending_subscriptions_count }} subscriptions</span>
+                </div>
+                {% if pending_subscriptions %}
+                <div class="delivery-grid">
+                    {% for delivery in pending_subscriptions %}
+                    <article class="delivery-item">
+                        <div class="delivery-item-top">
+                            <div>
+                                <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
+                                <h3>{{ delivery.subscription_order.customer.name }}</h3>
+                            </div>
+                            <span class="status-badge {{ delivery.status }}">{{ delivery.get_status_display }}</span>
+                        </div>
+                        <div class="delivery-meta">
+                            <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
+                            <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
+                            <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
+                            <div class="delivery-meta-row"><strong>Phone</strong><span>{{ delivery.subscription_order.customer.phone }}</span></div>
+                        </div>
+                        <div class="delivery-actions">
+                            {% if delivery.bill %}
+                            <a class="delivery-action primary" href="{% url 'milk_agency:view_bill' delivery.bill.id %}">
+                                <i class="bi bi-receipt"></i> View Bill
+                            </a>
+                            <a class="delivery-action secondary" href="{% url 'milk_agency:generate_invoice_pdf' delivery.bill.id %}" target="_blank">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </a>
                             {% else %}
-                                -
+                            <span class="delivery-action secondary">
+                                <i class="bi bi-hourglass-split"></i> Bill pending
+                            </span>
                             {% endif %}
-                        </span>
-                    </div>
+                        </div>
+                    </article>
+                    {% endfor %}
                 </div>
-            </article>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state"><i class="bi bi-check2-circle"></i><div>No delivered customer orders yet.</div></div>
-        {% endif %}
-    </div>
+                {% else %}
+                <div class="delivery-empty"><i class="bi bi-arrow-repeat"></i><div>No pending subscription deliveries.</div></div>
+                {% endif %}
+            </section>
 
-    <div class="section-card">
-        <div class="section-head">
-            <h2>Delivered Subscriptions</h2>
-            <span class="section-pill delivered">{{ delivered_subscriptions_count }} subscriptions</span>
-        </div>
-        {% if delivered_subscriptions %}
-        <div class="delivery-grid">
-            {% for delivery in delivered_subscriptions %}
-            <article class="delivery-item">
-                <div class="delivery-item-top">
+            <section class="delivery-section">
+                <div class="delivery-section-head">
                     <div>
-                        <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
-                        <h3 class="mt-2">{{ delivery.subscription_order.customer.name }}</h3>
+                        <h2>Delivered Customer Orders</h2>
+                        <p>Completed order deliveries available for reference.</p>
                     </div>
-                    <span class="status-badge delivered">Delivered</span>
+                    <span class="section-pill delivered">{{ delivered_orders_count }} orders</span>
                 </div>
-                <div class="delivery-meta">
-                    <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
-                    <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
-                    <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
-                    <div class="delivery-meta-row">
-                        <strong>Delivered At</strong>
-                        <span>
-                            {% if delivery.delivered_at %}
-                                {{ delivery.delivered_at|localtime|date:"M d, Y h:i A" }}
+                {% if delivered_orders %}
+                <div class="delivery-grid">
+                    {% for order in delivered_orders %}
+                    <article class="delivery-item">
+                        <div class="delivery-item-top">
+                            <div>
+                                <span class="delivery-kind"><i class="bi bi-bag-check-fill"></i> Order</span>
+                                <h3>{{ order.order_number }}</h3>
+                            </div>
+                            <span class="status-badge delivered">Delivered</span>
+                        </div>
+                        <div class="delivery-meta">
+                            <div class="delivery-meta-row"><strong>Customer</strong><span>{{ order.customer.name }}</span></div>
+                            <div class="delivery-meta-row"><strong>Phone</strong><span>{{ order.customer.phone }}</span></div>
+                            <div class="delivery-meta-row"><strong>Delivery Date</strong><span>{{ order.delivery_date|date:"M d, Y" }}</span></div>
+                            <div class="delivery-meta-row"><strong>Amount</strong><span>&#8377;{{ order.total_amount|add:order.delivery_charge|floatformat:2 }}</span></div>
+                            <div class="delivery-meta-row">
+                                <strong>Delivered At</strong>
+                                <span>
+                                    {% if has_order_delivery_table and order.delivery_tracking and order.delivery_tracking.delivered_at %}
+                                        {{ order.delivery_tracking.delivered_at|localtime|date:"M d, Y h:i A" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="delivery-empty"><i class="bi bi-check2-circle"></i><div>No delivered customer orders yet.</div></div>
+                {% endif %}
+            </section>
+
+            <section class="delivery-section">
+                <div class="delivery-section-head">
+                    <div>
+                        <h2>Delivered Subscriptions</h2>
+                        <p>Completed subscription deliveries and billing links.</p>
+                    </div>
+                    <span class="section-pill delivered">{{ delivered_subscriptions_count }} subscriptions</span>
+                </div>
+                {% if delivered_subscriptions %}
+                <div class="delivery-grid">
+                    {% for delivery in delivered_subscriptions %}
+                    <article class="delivery-item">
+                        <div class="delivery-item-top">
+                            <div>
+                                <span class="delivery-kind"><i class="bi bi-arrow-repeat"></i> Subscription</span>
+                                <h3>{{ delivery.subscription_order.customer.name }}</h3>
+                            </div>
+                            <span class="status-badge delivered">Delivered</span>
+                        </div>
+                        <div class="delivery-meta">
+                            <div class="delivery-meta-row"><strong>Item</strong><span>{{ delivery.subscription_order.item.name }}</span></div>
+                            <div class="delivery-meta-row"><strong>Quantity</strong><span>{{ delivery.subscription_order.quantity }}</span></div>
+                            <div class="delivery-meta-row"><strong>Date</strong><span>{{ delivery.subscription_order.date|date:"M d, Y" }}</span></div>
+                            <div class="delivery-meta-row">
+                                <strong>Delivered At</strong>
+                                <span>
+                                    {% if delivery.delivered_at %}
+                                        {{ delivery.delivered_at|localtime|date:"M d, Y h:i A" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="delivery-actions">
+                            {% if delivery.bill %}
+                            <a class="delivery-action primary" href="{% url 'milk_agency:view_bill' delivery.bill.id %}">
+                                <i class="bi bi-receipt"></i> View Bill
+                            </a>
+                            <a class="delivery-action secondary" href="{% url 'milk_agency:generate_invoice_pdf' delivery.bill.id %}" target="_blank">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </a>
                             {% else %}
-                                -
+                            <span class="delivery-action secondary">
+                                <i class="bi bi-receipt-cutoff"></i> No bill linked
+                            </span>
                             {% endif %}
-                        </span>
-                    </div>
+                        </div>
+                    </article>
+                    {% endfor %}
                 </div>
-                <div class="delivery-actions">
-                    {% if delivery.bill %}
-                    <a class="delivery-action primary" href="{% url 'milk_agency:view_bill' delivery.bill.id %}">
-                        <i class="bi bi-receipt"></i> View Bill
-                    </a>
-                    <a class="delivery-action secondary" href="{% url 'milk_agency:generate_invoice_pdf' delivery.bill.id %}" target="_blank">
-                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                    </a>
-                    {% else %}
-                    <span class="delivery-action secondary">
-                        <i class="bi bi-receipt-cutoff"></i> No bill linked
-                    </span>
-                    {% endif %}
-                </div>
-            </article>
-            {% endfor %}
+                {% else %}
+                <div class="delivery-empty"><i class="bi bi-truck"></i><div>No delivered subscriptions yet.</div></div>
+                {% endif %}
+            </section>
         </div>
-        {% else %}
-        <div class="empty-state"><i class="bi bi-truck"></i><div>No delivered subscriptions yet.</div></div>
-        {% endif %}
-    </div>
     </div>
 </div>
 {% endblock %}

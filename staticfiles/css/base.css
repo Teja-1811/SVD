@@ -67,7 +67,7 @@ body {
 
 .public-main {
     flex: 1;
-    padding-top: 6.2rem;
+    padding-top: 5.35rem;
 }
 
 .public-page {
@@ -927,7 +927,7 @@ body {
 /* Touch-friendly enhancements */
 @media (max-width: 768px) {
     .public-main {
-        padding-top: 7.4rem;
+        padding-top: 6.15rem;
     }
 
     .navbar-brand {

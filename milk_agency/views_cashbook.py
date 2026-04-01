@@ -4,12 +4,26 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation
 
 from .models import (
     CashbookEntry, Expense, BankBalance,
     MonthlyPaymentSummary, DailyPayment,
     Customer, Bill, Item, Company
 )
+
+SUPERUSER_DUE_EXPENSE_CATEGORIES = {"Fuel", "Food", "Repair"}
+
+
+def _adjust_superuser_due(amount, category, increase=True):
+    if category not in SUPERUSER_DUE_EXPENSE_CATEGORIES:
+        return
+
+    delta = Decimal(amount)
+    if not increase:
+        delta = -delta
+
+    Customer.objects.filter(is_superuser=True, name="Admin").update(due=F("due") + delta)
 
 
 # -------------------------------------------------------
@@ -215,13 +229,17 @@ def save_cash_in(request):
 def save_expense(request):
     if request.method == 'POST':
         try:
+            amount = Decimal(request.POST.get('amount'))
+            category = (request.POST.get('category') or '').strip()
+
             Expense.objects.create(
-                amount=float(request.POST.get('amount')),
-                category=request.POST.get('category'),
+                amount=amount,
+                category=category,
                 description=request.POST.get('description')
             )
+            _adjust_superuser_due(amount, category, increase=True)
             messages.success(request, "Expense added successfully")
-        except:
+        except (InvalidOperation, TypeError, ValueError):
             messages.error(request, "Invalid amount")
 
     return redirect('milk_agency:cashbook')
@@ -236,14 +254,24 @@ def edit_expense(request, pk):
 
     if request.method == 'POST':
         try:
-            expense.amount = float(request.POST.get('amount'))
-            expense.category = request.POST.get('category')
+            old_amount = Decimal(expense.amount)
+            old_category = expense.category
+
+            new_amount = Decimal(request.POST.get('amount'))
+            new_category = (request.POST.get('category') or '').strip()
+
+            _adjust_superuser_due(old_amount, old_category, increase=False)
+
+            expense.amount = new_amount
+            expense.category = new_category
             expense.description = request.POST.get('description')
             expense.date = request.POST.get('date')
             expense.save()
+
+            _adjust_superuser_due(new_amount, new_category, increase=True)
             messages.success(request, "Expense updated successfully")
             return redirect('milk_agency:expenses_list')
-        except:
+        except (InvalidOperation, TypeError, ValueError):
             messages.error(request, "Invalid amount")
 
     return render(request, 'milk_agency/dashboards_other/edit_expense.html', {'expense': expense})
@@ -259,6 +287,7 @@ def delete_expense(request, pk):
     if request.method == 'POST':
         amount = expense.amount
         category = expense.category
+        _adjust_superuser_due(amount, category, increase=False)
         expense.delete()
         messages.success(request, f"Expense deleted: ₹{amount} ({category})")
         return redirect('milk_agency:expenses_list')

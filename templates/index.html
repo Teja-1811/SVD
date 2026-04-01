@@ -1,341 +1,1388 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}SVD Milk Agencies{% endblock %}
-
+{% extends 'base.html' %} 
+{% load static %} 
+{% block title %}SVD Milk Agencies{% endblock %} 
 {% block extra_css %}
 <style>
-body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,126,234,.12),transparent 26%),radial-gradient(circle at top right,rgba(255,215,120,.18),transparent 22%),linear-gradient(180deg,#f8f9ff 0%,#eef3fb 100%)}
-.landing-shell{width:100%;max-width:100%;margin:0 auto;padding:0}
-.landing-section{padding:clamp(2rem,4vw,4rem) 0}
-.landing-panel{background:rgba(255,255,255,.88);border:1px solid rgba(102,126,234,.12);border-radius:32px;box-shadow:0 24px 60px rgba(24,39,75,.1)}
-.landing-eyebrow{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .9rem;border-radius:999px;background:rgba(102,126,234,.12);color:#4c62da;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
-.hero-stage .landing-eyebrow{background:rgba(255,255,255,.18);color:#f7f9ff;border:1px solid rgba(255,255,255,.22);box-shadow:0 10px 24px rgba(16,29,89,.2)}
-.hero-stage .landing-eyebrow i{color:#ffe28a}
-.hero-wrap{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:1.2rem 0 2rem}
-.hero-stage{position:relative;overflow:hidden;min-height:min(88vh,920px);padding:clamp(2rem,4vw,4rem) clamp(1.2rem,4vw,4rem);border-radius:0;background:radial-gradient(circle at 80% 20%,rgba(255,215,120,.34),transparent 18%),radial-gradient(circle at 0% 10%,rgba(255,255,255,.18),transparent 22%),linear-gradient(135deg,#4f63df 0%,#6952d8 48%,#3486d8 100%);color:#fff}
-.hero-stage::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(180deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:30px 30px;opacity:.22;pointer-events:none}
-.hero-stage>*{position:relative;z-index:1}
-.hero-inner{width:min(100%,1500px);margin:0 auto}
-.hero-grid,.products-showcase,.contact-grid{display:grid;gap:1.25rem}
-.hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(360px,.72fr);align-items:center;min-height:100%}
-.hero-logo{width:104px;height:104px;object-fit:contain;border-radius:28px;background:rgba(255,255,255,.96);padding:14px;box-shadow:0 22px 50px rgba(12,26,78,.24)}
-.hero-title{margin:1rem 0;font-size:clamp(3rem,6vw,6.4rem);line-height:.9;font-weight:800;max-width:10.5ch;letter-spacing:-.04em}
-.hero-copy{font-size:1.08rem;color:rgba(255,255,255,.9);max-width:58ch}
-.hero-actions{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:1.5rem}
-.hero-primary-btn,.hero-secondary-btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.92rem 1.2rem;border-radius:16px;text-decoration:none;font-weight:700;transition:.2s ease}
-.hero-primary-btn{background:#fff;color:#3748ba;box-shadow:0 16px 30px rgba(20,33,92,.24)}
-.hero-secondary-btn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.24)}
-.hero-metrics,.feature-grid,.trust-band{display:grid;gap:1rem}
-.hero-metrics{grid-template-columns:repeat(3,minmax(0,220px));margin-top:1.75rem}
-.hero-metric,.hero-card,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:28px}
-.hero-metric{padding:1rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px)}
-.hero-metric strong{display:block;font-size:1.7rem;line-height:1;margin-bottom:.25rem}
-.hero-card{padding:1.4rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(18px);box-shadow:0 22px 45px rgba(20,33,92,.16);max-width:580px;justify-self:end}
-.hero-company-list,.feature-points,.contact-stack{display:grid;gap:.75rem}
-.hero-company-item{display:flex;align-items:center;gap:.85rem;padding:.85rem .9rem;border-radius:20px;background:rgba(255,255,255,.1)}
-.hero-company-item img{width:58px;height:58px;object-fit:contain;border-radius:16px;background:#fff;padding:8px;flex-shrink:0}
-.hero-strip{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:1.2rem}
-.hero-strip span{display:inline-flex;align-items:center;gap:.45rem;padding:.75rem .95rem;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);font-weight:600}
-.section-head{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:1.4rem}
-.section-head h2{margin:.4rem 0 0;font-size:clamp(2rem,4vw,3rem);line-height:.98;font-weight:800;color:#20263a}
-.section-head p{margin:0;max-width:58ch;color:#5d667f}
-.products-stage,.contact-stage{padding:clamp(1.2rem,2vw,2rem)}
-.products-shell{display:grid;gap:1.1rem}
-.products-showcase{grid-template-columns:minmax(0,1fr);align-items:start}
-.products-slider{display:grid}
-.product-slide{display:none;grid-template-columns:minmax(280px,.92fr) minmax(0,1.08fr);gap:1.25rem;align-items:center;padding:clamp(1.2rem,2vw,1.6rem);border-radius:28px;background:radial-gradient(circle at top right,rgba(255,215,120,.2),transparent 25%),linear-gradient(135deg,#fff 0%,#f6f8ff 100%);border:1px solid rgba(102,126,234,.12);box-shadow:0 20px 45px rgba(22,37,73,.08);animation:productFade .35s ease}
-.product-slide.active{display:grid}
-.product-slide-media{display:grid;place-items:center;min-height:320px;border-radius:24px;background:radial-gradient(circle at top,rgba(102,126,234,.14),transparent 30%),linear-gradient(180deg,#f9fbff 0%,#eef2ff 100%);border:1px solid rgba(102,126,234,.1);overflow:hidden}
-.product-slide-media img{width:100%;max-width:280px;max-height:280px;object-fit:contain;padding:1rem}
-.product-slide-copy{display:grid;gap:.95rem;align-content:start}
-.product-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .82rem;border-radius:999px;font-size:.82rem;font-weight:700}
-.product-chip.company{background:rgba(102,126,234,.1);color:#4b61d5}
-.product-chip.status{background:rgba(37,211,102,.12);color:#138c49}
-.product-slide h3{margin:.1rem 0;font-size:clamp(1.8rem,3vw,2.75rem);line-height:1;color:#1e2437}
-.product-slide p{color:#5f6882;margin:0}
-.product-price{font-size:2rem;font-weight:800;color:#3c52cf;margin:0}
-.product-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
-.product-meta-card{padding:.95rem;border-radius:18px;background:rgba(76,98,218,.06)}
-.product-meta-card small,.product-meta-card strong,.trust-card strong,.trust-card span,.contact-pill strong,.contact-pill span,.contact-pill a{display:block}
-.product-toolbar,.product-nav{display:flex;align-items:center;gap:.65rem}
-.product-toolbar{justify-content:space-between;padding:.2rem 0 .35rem}
-.product-nav button{width:46px;height:46px;border:0;border-radius:14px;background:#4c62da;color:#fff;box-shadow:0 16px 26px rgba(76,98,218,.2)}
-.product-counter{color:#66708b;font-weight:700}
-.product-section-footer{display:flex;justify-content:center;padding-top:.2rem}
-.product-view-all{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.88rem 1.2rem;border-radius:16px;border:1px solid rgba(76,98,218,.18);background:#fff;color:#3149c6;font-weight:700;box-shadow:0 14px 28px rgba(22,37,73,.08)}
-.product-view-all:hover{background:#f5f7ff;color:#2237ad}
-.product-modal .modal-dialog{max-width:min(1100px,92vw)}
-.product-modal .modal-content{border:0;border-radius:28px;overflow:hidden;box-shadow:0 30px 70px rgba(22,37,73,.24)}
-.product-modal .modal-header{padding:1.2rem 1.4rem;border-bottom:1px solid rgba(102,126,234,.1);background:linear-gradient(135deg,#f7f9ff 0%,#eef3ff 100%)}
-.product-modal .modal-title{font-size:1.2rem;font-weight:800;color:#23304b}
-.product-modal .modal-body{padding:1.25rem}
-.product-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
-.product-modal-card{display:grid;gap:.8rem;padding:1rem;border-radius:22px;border:1px solid rgba(102,126,234,.12);background:linear-gradient(180deg,#fff 0%,#f8faff 100%)}
-.product-modal-card img{width:100%;height:150px;object-fit:contain;border-radius:18px;background:#fff;padding:.8rem;border:1px solid rgba(102,126,234,.08)}
-.product-modal-card h3{margin:0;font-size:1.02rem;line-height:1.25;color:#1f2740}
-.product-modal-meta{display:grid;gap:.4rem;color:#5f6882;font-size:.93rem}
-.product-modal-price{font-size:1.2rem;font-weight:800;color:#3149c6}
-.feature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.feature-card{padding:1.4rem;background:linear-gradient(180deg,#fff 0%,#f7f9ff 100%);border:1px solid rgba(102,126,234,.1);box-shadow:0 18px 36px rgba(22,37,73,.08)}
-.feature-icon-badge{width:62px;height:62px;display:inline-flex;align-items:center;justify-content:center;border-radius:20px;background:linear-gradient(135deg,#5d73e7,#7a60de);color:#fff;font-size:1.4rem;box-shadow:0 16px 28px rgba(93,115,231,.24);margin-bottom:1rem}
-.feature-card h3{font-size:1.2rem;margin-bottom:.7rem;color:#1f2740}
-.feature-card p{margin:0 0 1rem;color:#616a84}
-.feature-points span{display:inline-flex;align-items:center;gap:.5rem;color:#404961;font-weight:600}
-.feature-points i{color:#25b86f}
-.trust-band{grid-template-columns:repeat(4,minmax(0,1fr))}
-.trust-card{padding:1.1rem 1.2rem;background:rgba(255,255,255,.88);border:1px solid rgba(102,126,234,.1);box-shadow:0 18px 36px rgba(22,37,73,.07)}
-.trust-card strong{color:#212742;font-size:1.4rem}
-.contact-grid{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
-.contact-card,.contact-form-card{padding:1.35rem;background:linear-gradient(180deg,#fff 0%,#f8faff 100%);border:1px solid rgba(102,126,234,.1);box-shadow:0 18px 38px rgba(22,37,73,.08);height:100%}
-.contact-pill{display:flex;gap:.8rem;align-items:flex-start;padding:.95rem 1rem;border-radius:18px;background:rgba(76,98,218,.06)}
-.contact-pill i{color:#4c62da;font-size:1.1rem;margin-top:.2rem}
-.contact-pill a{color:#364fc7;text-decoration:none}
-.contact-form-card label{font-weight:700;color:#25304a;margin-bottom:.45rem}
-.contact-form-card .form-control{border-radius:16px;border:1px solid rgba(102,126,234,.14);padding:.9rem 1rem;box-shadow:none}
-.contact-submit{border:0;border-radius:16px;padding:1rem 1.3rem;font-weight:700;background:linear-gradient(135deg,#556be2,#7258db);color:#fff;box-shadow:0 18px 30px rgba(85,107,226,.22)}
-@keyframes productFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:1199.98px){.hero-grid,.products-showcase,.contact-grid,.feature-grid,.trust-band{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-title{font-size:clamp(2.8rem,5.8vw,5rem)}}
-@media (max-width:991.98px){.hero-grid,.products-showcase,.contact-grid{grid-template-columns:1fr}.hero-title{max-width:none}.hero-card{margin-top:.25rem;justify-self:stretch;max-width:none}.hero-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:767.98px){.landing-shell{padding:0}.landing-section{padding:1rem 0 1.35rem}.landing-panel{border-radius:24px}.hero-wrap{padding:.5rem 0 1rem}.hero-stage{min-height:auto;padding:1.2rem 1rem 1.35rem;border-radius:0}.products-stage,.contact-stage{padding:1.05rem;border-radius:24px}.landing-eyebrow{font-size:.68rem;letter-spacing:.1em;padding:.5rem .72rem}.hero-logo{width:84px;height:84px;padding:10px;border-radius:20px}.hero-title{font-size:clamp(2.5rem,12vw,3.5rem);line-height:.96;max-width:none}.hero-copy{font-size:.96rem}.hero-metrics,.feature-grid,.trust-band,.product-meta-grid,.product-slide{grid-template-columns:1fr}.hero-metric,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:22px}.hero-metric strong,.trust-card strong{font-size:1.25rem}.hero-company-item,.contact-pill{padding:.8rem}.hero-company-item{align-items:flex-start}.hero-company-item img{width:50px;height:50px;border-radius:14px}.hero-strip{display:grid;grid-template-columns:1fr;gap:.65rem}.hero-strip span,.product-chip{width:100%;justify-content:center}.product-slide{gap:1rem;padding:1rem;border-radius:22px}.product-slide h3{font-size:1.7rem}.product-slide p{font-size:.95rem}.product-slide-media{min-height:220px;border-radius:18px}.product-slide-media img{max-width:220px;max-height:220px}.product-toolbar{gap:.8rem}.product-nav{width:100%;justify-content:space-between}.product-nav button{flex:1;max-width:calc(50% - .35rem)}.product-counter{font-size:.92rem}.section-head,.product-toolbar{flex-direction:column;align-items:flex-start}.section-head h2{font-size:1.8rem}.section-head p{font-size:.95rem}.feature-card{padding:1.1rem}.feature-icon-badge{width:54px;height:54px;border-radius:18px;font-size:1.2rem}.feature-card h3{font-size:1.08rem}.feature-points span{align-items:flex-start;font-size:.92rem}.contact-grid iframe{height:240px}.contact-pill{flex-direction:column;gap:.45rem}.contact-form-card .form-control{padding:.82rem .9rem}.product-modal-grid{grid-template-columns:1fr}}
-@media (max-width:479.98px){.landing-shell{padding:0 2px}.hero-actions{gap:.7rem}.hero-primary-btn,.hero-secondary-btn{padding:.9rem 1rem;border-radius:14px;font-size:.95rem}.hero-metric{padding:.85rem}.product-meta-card{padding:.8rem}.contact-card,.contact-form-card{padding:1rem}.contact-grid iframe{height:220px}}
+  body {
+    overflow-x: hidden;
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(102, 126, 234, 0.12),
+        transparent 26%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgba(255, 215, 120, 0.18),
+        transparent 22%
+      ),
+      linear-gradient(180deg, #f8f9ff 0%, #eef3fb 100%);
+  }
+  .landing-shell {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+  }
+  .landing-section {
+    padding: clamp(2rem, 4vw, 4rem) 0;
+  }
+  .landing-panel {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(102, 126, 234, 0.12);
+    border-radius: 32px;
+    box-shadow: 0 24px 60px rgba(24, 39, 75, 0.1);
+  }
+  .landing-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(102, 126, 234, 0.12);
+    color: #4c62da;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .hero-stage .landing-eyebrow {
+    background: rgba(255, 255, 255, 0.18);
+    color: #f7f9ff;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 10px 24px rgba(16, 29, 89, 0.2);
+  }
+  .hero-stage .landing-eyebrow i {
+    color: #ffe28a;
+  }
+  .hero-wrap {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 1.2rem 0 2rem;
+  }
+  .hero-stage {
+    position: relative;
+    overflow: hidden;
+    min-height: min(88vh, 920px);
+    padding: clamp(2rem, 4vw, 4rem) clamp(1.2rem, 4vw, 4rem);
+    border-radius: 0;
+    background:
+      radial-gradient(
+        circle at 80% 20%,
+        rgba(255, 215, 120, 0.34),
+        transparent 18%
+      ),
+      radial-gradient(
+        circle at 0% 10%,
+        rgba(255, 255, 255, 0.18),
+        transparent 22%
+      ),
+      linear-gradient(135deg, #4f63df 0%, #6952d8 48%, #3486d8 100%);
+    color: #fff;
+  }
+  .hero-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity: 0.22;
+    pointer-events: none;
+  }
+  .hero-stage > * {
+    position: relative;
+    z-index: 1;
+  }
+  .hero-inner {
+    width: min(100%, 1500px);
+    margin: 0 auto;
+  }
+  .hero-grid,
+  .products-showcase,
+  .contact-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.72fr);
+    align-items: center;
+    min-height: 100%;
+  }
+  .hero-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    padding: 14px;
+    box-shadow: 0 22px 50px rgba(12, 26, 78, 0.24);
+  }
+  .hero-title {
+    margin: 1rem 0;
+    font-size: clamp(3rem, 6vw, 6.4rem);
+    line-height: 0.9;
+    font-weight: 800;
+    max-width: 10.5ch;
+    letter-spacing: -0.04em;
+  }
+  .hero-copy {
+    font-size: 1.08rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 58ch;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .hero-primary-btn,
+  .hero-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.92rem 1.2rem;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.2s ease;
+  }
+  .hero-primary-btn {
+    background: #fff;
+    color: #3748ba;
+    box-shadow: 0 16px 30px rgba(20, 33, 92, 0.24);
+  }
+  .hero-secondary-btn {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+  }
+  .hero-metrics,
+  .feature-grid,
+  .trust-band {
+    display: grid;
+    gap: 1rem;
+  }
+  .hero-metrics {
+    grid-template-columns: repeat(3, minmax(0, 220px));
+    margin-top: 1.75rem;
+  }
+  .hero-metric,
+  .hero-card,
+  .trust-card,
+  .feature-card,
+  .contact-card,
+  .contact-form-card {
+    border-radius: 28px;
+  }
+  .hero-metric {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(10px);
+  }
+  .hero-metric strong {
+    display: block;
+    font-size: 1.7rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  .hero-card {
+    padding: 1.4rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 22px 45px rgba(20, 33, 92, 0.16);
+    max-width: 580px;
+    justify-self: end;
+  }
+  .hero-company-list,
+  .feature-points,
+  .contact-stack {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .hero-company-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 0.9rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .hero-company-item img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    border-radius: 16px;
+    background: #fff;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .hero-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.2rem;
+  }
+  .hero-strip span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    font-weight: 600;
+  }
+  .section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  .section-head h2 {
+    margin: 0.4rem 0 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 0.98;
+    font-weight: 800;
+    color: #20263a;
+  }
+  .section-head p {
+    margin: 0;
+    max-width: 58ch;
+    color: #5d667f;
+  }
+  .products-stage,
+  .contact-stage {
+    padding: clamp(1.2rem, 2vw, 2rem);
+  }
+  .products-shell {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .products-showcase {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  .products-slider {
+    display: grid;
+  }
+  .product-slide {
+    display: none;
+    grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+    gap: 1.25rem;
+    align-items: center;
+    padding: clamp(1.2rem, 2vw, 1.6rem);
+    border-radius: 28px;
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(255, 215, 120, 0.2),
+        transparent 25%
+      ),
+      linear-gradient(135deg, #fff 0%, #f6f8ff 100%);
+    border: 1px solid rgba(102, 126, 234, 0.12);
+    box-shadow: 0 20px 45px rgba(22, 37, 73, 0.08);
+    animation: productFade 0.35s ease;
+  }
+  .product-slide.active {
+    display: grid;
+  }
+  .product-slide-media {
+    display: grid;
+    place-items: center;
+    min-height: 320px;
+    border-radius: 24px;
+    background:
+      radial-gradient(
+        circle at top,
+        rgba(102, 126, 234, 0.14),
+        transparent 30%
+      ),
+      linear-gradient(180deg, #f9fbff 0%, #eef2ff 100%);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    overflow: hidden;
+  }
+  .product-slide-media img {
+    width: 100%;
+    max-width: 280px;
+    max-height: 280px;
+    object-fit: contain;
+    padding: 1rem;
+  }
+  .product-slide-copy {
+    display: grid;
+    gap: 0.95rem;
+    align-content: start;
+  }
+  .product-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.82rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .product-chip.company {
+    background: rgba(102, 126, 234, 0.1);
+    color: #4b61d5;
+  }
+  .product-chip.status {
+    background: rgba(37, 211, 102, 0.12);
+    color: #138c49;
+  }
+  .product-slide h3 {
+    margin: 0.1rem 0;
+    font-size: clamp(1.8rem, 3vw, 2.75rem);
+    line-height: 1;
+    color: #1e2437;
+  }
+  .product-slide p {
+    color: #5f6882;
+    margin: 0;
+  }
+  .product-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #3c52cf;
+    margin: 0;
+  }
+  .product-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+  .product-meta-card {
+    padding: 0.95rem;
+    border-radius: 18px;
+    background: rgba(76, 98, 218, 0.06);
+  }
+  .product-meta-card small,
+  .product-meta-card strong,
+  .trust-card strong,
+  .trust-card span,
+  .contact-pill strong,
+  .contact-pill span,
+  .contact-pill a {
+    display: block;
+  }
+  .product-toolbar,
+  .product-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .product-toolbar {
+    justify-content: space-between;
+    padding: 0.2rem 0 0.35rem;
+  }
+  .product-nav button {
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 14px;
+    background: #4c62da;
+    color: #fff;
+    box-shadow: 0 16px 26px rgba(76, 98, 218, 0.2);
+  }
+  .product-counter {
+    color: #66708b;
+    font-weight: 700;
+  }
+  .product-section-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.2rem;
+  }
+  .product-view-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.88rem 1.2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(76, 98, 218, 0.18);
+    background: #fff;
+    color: #3149c6;
+    font-weight: 700;
+    box-shadow: 0 14px 28px rgba(22, 37, 73, 0.08);
+  }
+  .product-view-all:hover {
+    background: #f5f7ff;
+    color: #2237ad;
+  }
+  .product-modal .modal-dialog {
+    max-width: min(1100px, 92vw);
+  }
+  .product-modal .modal-content {
+    border: 0;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px rgba(22, 37, 73, 0.24);
+  }
+  .product-modal .modal-header {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+    background: linear-gradient(135deg, #f7f9ff 0%, #eef3ff 100%);
+  }
+  .product-modal .modal-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #23304b;
+  }
+  .product-modal .modal-body {
+    padding: 1.25rem;
+  }
+  .product-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .product-modal-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 22px;
+    border: 1px solid rgba(102, 126, 234, 0.12);
+    background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
+  }
+  .product-modal-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    border-radius: 18px;
+    background: #fff;
+    padding: 0.8rem;
+    border: 1px solid rgba(102, 126, 234, 0.08);
+  }
+  .product-modal-card h3 {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    color: #1f2740;
+  }
+  .product-modal-meta {
+    display: grid;
+    gap: 0.4rem;
+    color: #5f6882;
+    font-size: 0.93rem;
+  }
+  .product-modal-price {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #3149c6;
+  }
+  .feature-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .feature-card {
+    padding: 1.4rem;
+    background: linear-gradient(180deg, #fff 0%, #f7f9ff 100%);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 18px 36px rgba(22, 37, 73, 0.08);
+  }
+  .feature-icon-badge {
+    width: 62px;
+    height: 62px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #5d73e7, #7a60de);
+    color: #fff;
+    font-size: 1.4rem;
+    box-shadow: 0 16px 28px rgba(93, 115, 231, 0.24);
+    margin-bottom: 1rem;
+  }
+  .feature-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.7rem;
+    color: #1f2740;
+  }
+  .feature-card p {
+    margin: 0 0 1rem;
+    color: #616a84;
+  }
+  .feature-points span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #404961;
+    font-weight: 600;
+  }
+  .feature-points i {
+    color: #25b86f;
+  }
+  .trust-band {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .trust-card {
+    padding: 1.1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 18px 36px rgba(22, 37, 73, 0.07);
+  }
+  .trust-card strong {
+    color: #212742;
+    font-size: 1.4rem;
+  }
+  .contact-grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+  .contact-card,
+  .contact-form-card {
+    padding: 1.35rem;
+    background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 18px 38px rgba(22, 37, 73, 0.08);
+    height: 100%;
+  }
+  .contact-pill {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: rgba(76, 98, 218, 0.06);
+  }
+  .contact-pill i {
+    color: #4c62da;
+    font-size: 1.1rem;
+    margin-top: 0.2rem;
+  }
+  .contact-pill a {
+    color: #364fc7;
+    text-decoration: none;
+  }
+  .contact-form-card label {
+    font-weight: 700;
+    color: #25304a;
+    margin-bottom: 0.45rem;
+  }
+  .contact-form-card .form-control {
+    border-radius: 16px;
+    border: 1px solid rgba(102, 126, 234, 0.14);
+    padding: 0.9rem 1rem;
+    box-shadow: none;
+  }
+  .contact-submit {
+    border: 0;
+    border-radius: 16px;
+    padding: 1rem 1.3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #556be2, #7258db);
+    color: #fff;
+    box-shadow: 0 18px 30px rgba(85, 107, 226, 0.22);
+  }
+  @keyframes productFade {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (max-width: 1199.98px) {
+    .hero-grid,
+    .products-showcase,
+    .contact-grid,
+    .feature-grid,
+    .trust-band {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .hero-title {
+      font-size: clamp(2.8rem, 5.8vw, 5rem);
+    }
+  }
+  @media (max-width: 991.98px) {
+    .hero-grid,
+    .products-showcase,
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-title {
+      max-width: none;
+    }
+    .hero-card {
+      margin-top: 0.25rem;
+      justify-self: stretch;
+      max-width: none;
+    }
+    .hero-metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 767.98px) {
+    .landing-shell {
+      padding: 0;
+    }
+    .landing-section {
+      padding: 1rem 0 1.35rem;
+    }
+    .landing-panel {
+      border-radius: 24px;
+    }
+    .hero-wrap {
+      padding: 0.5rem 0 1rem;
+    }
+    .hero-stage {
+      min-height: auto;
+      padding: 1.2rem 1rem 1.35rem;
+      border-radius: 0;
+    }
+    .products-stage,
+    .contact-stage {
+      padding: 1.05rem;
+      border-radius: 24px;
+    }
+    .landing-eyebrow {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      padding: 0.5rem 0.72rem;
+    }
+    .hero-logo {
+      width: 84px;
+      height: 84px;
+      padding: 10px;
+      border-radius: 20px;
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 12vw, 3.5rem);
+      line-height: 0.96;
+      max-width: none;
+    }
+    .hero-copy {
+      font-size: 0.96rem;
+    }
+    .hero-metrics,
+    .feature-grid,
+    .trust-band,
+    .product-meta-grid,
+    .product-slide {
+      grid-template-columns: 1fr;
+    }
+    .hero-metric,
+    .trust-card,
+    .feature-card,
+    .contact-card,
+    .contact-form-card {
+      border-radius: 22px;
+    }
+    .hero-metric strong,
+    .trust-card strong {
+      font-size: 1.25rem;
+    }
+    .hero-company-item,
+    .contact-pill {
+      padding: 0.8rem;
+    }
+    .hero-company-item {
+      align-items: flex-start;
+    }
+    .hero-company-item img {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+    }
+    .hero-strip {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+    }
+    .hero-strip span,
+    .product-chip {
+      width: 100%;
+      justify-content: center;
+    }
+    .product-slide {
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 22px;
+    }
+    .product-slide h3 {
+      font-size: 1.7rem;
+    }
+    .product-slide p {
+      font-size: 0.95rem;
+    }
+    .product-slide-media {
+      min-height: 220px;
+      border-radius: 18px;
+    }
+    .product-slide-media img {
+      max-width: 220px;
+      max-height: 220px;
+    }
+    .product-toolbar {
+      gap: 0.8rem;
+    }
+    .product-nav {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .product-nav button {
+      flex: 1;
+      max-width: calc(50% - 0.35rem);
+    }
+    .product-counter {
+      font-size: 0.92rem;
+    }
+    .section-head,
+    .product-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .section-head h2 {
+      font-size: 1.8rem;
+    }
+    .section-head p {
+      font-size: 0.95rem;
+    }
+    .feature-card {
+      padding: 1.1rem;
+    }
+    .feature-icon-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      font-size: 1.2rem;
+    }
+    .feature-card h3 {
+      font-size: 1.08rem;
+    }
+    .feature-points span {
+      align-items: flex-start;
+      font-size: 0.92rem;
+    }
+    .contact-grid iframe {
+      height: 240px;
+    }
+    .contact-pill {
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .contact-form-card .form-control {
+      padding: 0.82rem 0.9rem;
+    }
+    .product-modal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 479.98px) {
+    .landing-shell {
+      padding: 0 2px;
+    }
+    .hero-actions {
+      gap: 0.7rem;
+    }
+    .hero-primary-btn,
+    .hero-secondary-btn {
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      font-size: 0.95rem;
+    }
+    .hero-metric {
+      padding: 0.85rem;
+    }
+    .product-meta-card {
+      padding: 0.8rem;
+    }
+    .contact-card,
+    .contact-form-card {
+      padding: 1rem;
+    }
+    .contact-grid iframe {
+      height: 220px;
+    }
+  }
 </style>
-{% endblock extra_css %}
-
-{% block content %}
+{% endblock extra_css %} {% block content %}
 <div class="landing-shell">
-    <section class="landing-section pt-4" id="home">
-        <div class="hero-wrap">
-        <div class="hero-stage">
-            <div class="hero-inner">
-            <div class="hero-grid">
-                <div>
-                    <span class="landing-eyebrow"><i class="bi bi-stars"></i> Sri Vijaya Durga Milk Agencies</span>
-                    <div class="mt-3"><img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies" class="hero-logo"></div>
-                    <h1 class="hero-title">Reliable dairy supply for households and local businesses.</h1>
-                    <p class="hero-copy">SVD Milk Agencies provides product visibility, customer account access, and dairy distribution services for Gundugolanu and surrounding areas.</p>
-                    <div class="hero-actions">
-                        <a href="#products" class="hero-primary-btn"><i class="bi bi-bag-check"></i> View products</a>
-                        <a href="#features" class="hero-secondary-btn"><i class="bi bi-grid-3x3-gap"></i> View details</a>
-                        <a href="#contact" class="hero-secondary-btn"><i class="bi bi-telephone"></i> Contact us</a>
-                    </div>
-                    <div class="hero-metrics">
-                        <div class="hero-metric"><strong>{{ products|length }}</strong><span>active products</span></div>
-                        <div class="hero-metric"><strong>{{ companies|length }}</strong><span>partner brands</span></div>
-                        <div class="hero-metric"><strong>7 days</strong><span>weekly service flow</span></div>
-                    </div>
+  <section class="landing-section pt-4" id="home">
+    <div class="hero-wrap">
+      <div class="hero-stage">
+        <div class="hero-inner">
+          <div class="hero-grid">
+            <div>
+              <span class="landing-eyebrow"
+                ><i class="bi bi-stars"></i> Sri Vijaya Durga Milk
+                Agencies</span
+              >
+              <div class="mt-3">
+                <img
+                  src="{% static 'images/SVD1.png' %}"
+                  alt="SVD Agencies"
+                  class="hero-logo"
+                />
+              </div>
+              <h3 class="hero-title">
+                Reliable dairy supply for households and local businesses.
+              </h3>
+              <p class="hero-copy">
+                SVD Milk Agencies provides product visibility, customer account
+                access, and dairy distribution services for Gundugolanu and
+                surrounding areas.
+              </p>
+              <div class="hero-actions">
+                <a href="#products" class="hero-primary-btn"
+                  ><i class="bi bi-bag-check"></i> View products</a
+                >
+                <a href="#features" class="hero-secondary-btn"
+                  ><i class="bi bi-grid-3x3-gap"></i> View details</a
+                >
+                <a href="#contact" class="hero-secondary-btn"
+                  ><i class="bi bi-telephone"></i> Contact us</a
+                >
+              </div>
+              <div class="hero-metrics">
+                <div class="hero-metric">
+                  <strong>{{ products|length }}</strong
+                  ><span>active products</span>
                 </div>
-                <div class="hero-card">
-                    <small class="text-white-50 d-block">Service snapshot</small>
-                    <h3 class="h4 mb-3 text-white">Brands we deliver</h3>
-                    <div class="hero-company-list">
-                        {% for company in companies|slice:":4" %}
-                        <div class="hero-company-item">
-                            <img src="{{ company.resolved_logo_url }}" alt="{{ company.name }}">
-                            <div>
-                                <strong>{{ company.name }}</strong>
-                                <small>{{ company.description|default:"Trusted dairy partner brand" }}</small>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="hero-strip">
-                        <span><i class="bi bi-geo-alt-fill"></i> Gundugolanu and nearby areas</span>
-                        <span><i class="bi bi-telephone-fill"></i> +91 9392890375</span>
-                        <span><i class="bi bi-shield-check"></i> Customer login portal</span>
-                    </div>
+                <div class="hero-metric">
+                  <strong>{{ companies|length }}</strong
+                  ><span>partner brands</span>
                 </div>
+                <div class="hero-metric">
+                  <strong>7 days</strong><span>weekly service flow</span>
+                </div>
+              </div>
             </div>
+            <div class="hero-card">
+              <small class="text-white-50 d-block">Service snapshot</small>
+              <h3 class="h4 mb-3 text-white">Brands we deliver</h3>
+              <div class="hero-company-list">
+                {% for company in companies|slice:":4" %}
+                <div class="hero-company-item">
+                  <img
+                    src="{{ company.resolved_logo_url }}"
+                    alt="{{ company.name }}"
+                  />
+                  <div>
+                    <strong>{{ company.name }}</strong>
+                    <small
+                      >{{ company.description|default:"Trusted dairy partner
+                      brand" }}</small
+                    >
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="hero-strip">
+                <span
+                  ><i class="bi bi-geo-alt-fill"></i> Gundugolanu and nearby
+                  areas</span
+                >
+                <span><i class="bi bi-telephone-fill"></i> +91 9392890375</span>
+                <span
+                  ><i class="bi bi-shield-check"></i> Customer login
+                  portal</span
+                >
+              </div>
             </div>
+          </div>
         </div>
-        </div>
-    </section>
-
-    <section class="landing-section pt-0">
-        <div class="trust-band">
-            <div class="trust-card"><strong>Product catalogue</strong><span>Milk, curd, and related dairy items from listed suppliers.</span></div>
-            <div class="trust-card"><strong>Pricing visibility</strong><span>Products and prices can be reviewed before placing an order.</span></div>
-            <div class="trust-card"><strong>Portal access</strong><span>Customers can sign in to review orders, invoices, and account details.</span></div>
-            <div class="trust-card"><strong>Service coverage</strong><span>Local service availability and contact access for the surrounding delivery area.</span></div>
-        </div>
-    </section>
-
-    <section class="landing-section pt-0" id="products">
-        <div class="landing-panel products-stage">
-            <div class="section-head">
-                <div>
-                    <span class="landing-eyebrow"><i class="bi bi-box-seam"></i> Products</span>
-                    <h2>Available products</h2>
-                </div>
-                <p>Review the current product catalogue, pricing, and supplier details in a focused product showcase.</p>
-            </div>
-            <div class="products-shell">
-                <div class="product-toolbar">
-                    <div class="product-counter">Showing <strong id="productCounterCurrent">1</strong> of <strong id="productCounterTotal">{{ products|length }}</strong></div>
-                    <div class="product-nav">
-                        <button type="button" id="productPrev" aria-label="Previous product"><i class="bi bi-arrow-left"></i></button>
-                        <button type="button" id="productNext" aria-label="Next product"><i class="bi bi-arrow-right"></i></button>
-                    </div>
-                </div>
-                <div class="products-showcase">
-                    <div class="products-slider">
-                        {% for product in products %}
-                        <article class="product-slide {% if forloop.first %}active{% endif %}" data-slide-index="{{ forloop.counter0 }}">
-                            <div class="product-slide-media">
-                                <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
-                            </div>
-                            <div class="product-slide-copy">
-                                <div class="d-flex flex-wrap gap-2">
-                                    <span class="product-chip company"><i class="bi bi-building"></i> {{ product.company.name|default:"SVD Product" }}</span>
-                                    <span class="product-chip status"><i class="bi bi-check-circle-fill"></i> Available now</span>
-                                </div>
-                                <h3>{{ product.name }}</h3>
-                                <p>{{ product.description|default:"Product information is available here for customer review." }}</p>
-                                <div class="product-price">&#8377;{{ product.mrp }}</div>
-                                <div class="product-meta-grid">
-                                    <div class="product-meta-card"><small>Company</small><strong>{{ product.company.name|default:"SVD" }}</strong></div>
-                                    <div class="product-meta-card"><small>Status</small><strong>Active listing</strong></div>
-                                </div>
-                            </div>
-                        </article>
-                        {% empty %}
-                        <article class="product-slide active" data-slide-index="0">
-                            <div class="product-slide-media"><img src="{% static 'images/placeholder.png' %}" alt="No products"></div>
-                            <div class="product-slide-copy"><h3>No products available right now.</h3><p>Product listings will appear here as soon as active items are published for the website.</p></div>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="product-section-footer">
-                    <button type="button" class="product-view-all" data-bs-toggle="modal" data-bs-target="#allProductsModal">
-                        <i class="bi bi-grid-3x3-gap"></i><span>View all products</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="landing-section pt-0" id="features">
-        <div class="landing-panel products-stage">
-            <div class="section-head">
-                <div>
-                    <span class="landing-eyebrow"><i class="bi bi-grid-1x2"></i> Features</span>
-                    <h2>Service highlights</h2>
-                </div>
-                <p>Key capabilities related to customer access, product visibility, and service operations.</p>
-            </div>
-            <div class="feature-grid">
-                <article class="feature-card">
-                    <div class="feature-icon-badge"><i class="bi bi-bag-heart"></i></div>
-                    <h3>Clear product discovery</h3>
-                    <p>Customers can review active products, supplier brands, and pricing from a single clean landing page.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Active product listings</span><span><i class="bi bi-check-circle-fill"></i> Product images and pricing</span></div>
-                </article>
-                <article class="feature-card">
-                    <div class="feature-icon-badge"><i class="bi bi-person-lock"></i></div>
-                    <h3>Portal-based ordering</h3>
-                    <p>Users can log in to place orders, review invoices, and stay connected to their account activity.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Login from homepage</span><span><i class="bi bi-check-circle-fill"></i> Order and billing access</span></div>
-                </article>
-                <article class="feature-card">
-                    <div class="feature-icon-badge"><i class="bi bi-truck"></i></div>
-                    <h3>Delivery-ready workflow</h3>
-                    <p>The site and portals support recurring orders, local service, and account-based access.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Recurring order options</span><span><i class="bi bi-check-circle-fill"></i> Local operations access</span></div>
-                </article>
-                <article class="feature-card">
-                    <div class="feature-icon-badge"><i class="bi bi-receipt"></i></div>
-                    <h3>Transparent records</h3>
-                    <p>Billing, reports, and portal records help customers stay aligned with their regular purchases.</p>
-                    <div class="feature-points"><span><i class="bi bi-check-circle-fill"></i> Invoice visibility</span><span><i class="bi bi-check-circle-fill"></i> Clear account history</span></div>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="landing-section pt-0" id="contact">
-        <div class="landing-panel contact-stage">
-            <div class="section-head">
-                <div>
-                    <span class="landing-eyebrow"><i class="bi bi-chat-dots"></i> Contact</span>
-                    <h2>Contact information</h2>
-                </div>
-                <p>Use the contact details for immediate help or send a message from the form and the team can follow up with you.</p>
-            </div>
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <h3 class="h4 mb-3">Visit or call SVD Milk Agencies</h3>
-                    <p class="text-muted mb-0">SVD Milk Agencies serves customers in Gundugolanu and nearby areas.</p>
-                    <div class="contact-stack">
-                        <div class="contact-pill"><i class="bi bi-geo-alt-fill"></i><div><strong>Address</strong><span>Near Santa Market, Main Road Gundugolanu, Eluru, Andhra Pradesh - 534427</span></div></div>
-                        <div class="contact-pill"><i class="bi bi-telephone-fill"></i><div><strong>Phone</strong><a href="tel:+919392890375">+91 9392890375</a></div></div>
-                        <div class="contact-pill"><i class="bi bi-envelope-fill"></i><div><strong>Email</strong><a href="mailto:svdagencies12@gmail.com">svdagencies12@gmail.com</a></div></div>
-                        <div class="contact-pill"><i class="bi bi-clock-fill"></i><div><strong>Service hours</strong><span>Monday to Sunday, 6:00 AM to 9:00 PM</span></div></div>
-                    </div>
-                    <iframe src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed" width="100%" height="320" style="border:0;border-radius:22px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
-                <div class="contact-form-card">
-                    <h3 class="h4 mb-3">Send a message</h3>
-                    <form id="contactForm" method="post" action="{% url 'milk_agency:contact_form_submit' %}">
-                        {% csrf_token %}
-                        <div class="row g-3">
-                            <div class="col-md-6"><label for="name">Name *</label><input id="name" type="text" name="name" class="form-control" required></div>
-                            <div class="col-md-6"><label for="phone">Phone *</label><input id="phone" type="tel" name="phone" class="form-control" required></div>
-                            <div class="col-12"><label for="email">Email</label><input id="email" type="email" name="email" class="form-control"></div>
-                            <div class="col-12"><label for="subject">Subject *</label><input id="subject" type="text" name="subject" class="form-control" required></div>
-                            <div class="col-12"><label for="message">Message *</label><textarea id="message" rows="5" name="message" class="form-control" required></textarea></div>
-                            <div class="col-12"><div id="contactFormAlert" class="alert d-none mb-0" role="alert"></div></div>
-                            <div class="col-12"><button type="submit" id="contactSubmitBtn" class="contact-submit w-100"><i class="bi bi-send me-2"></i>Send message</button></div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
-<div class="modal fade product-modal" id="allProductsModal" tabindex="-1" aria-labelledby="allProductsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title" id="allProductsModalLabel">All products</h2>
-                    <p class="mb-0 text-muted">Review the complete catalogue in one place.</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="product-modal-grid">
-                    {% for product in products %}
-                    <article class="product-modal-card">
-                        <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
-                        <h3>{{ product.name }}</h3>
-                        <div class="product-modal-meta">
-                            <span><strong>Company:</strong> {{ product.company.name|default:"SVD" }}</span>
-                            <span><strong>Status:</strong> Active listing</span>
-                            <span>{{ product.description|default:"Product information is available for customer review." }}</span>
-                        </div>
-                        <div class="product-modal-price">&#8377;{{ product.mrp }}</div>
-                    </article>
-                    {% empty %}
-                    <article class="product-modal-card">
-                        <img src="{% static 'images/placeholder.png' %}" alt="No products">
-                        <h3>No products available</h3>
-                        <div class="product-modal-meta">
-                            <span>The catalogue will appear here once products are published.</span>
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-</div>
-{% endblock %}
+  </section>
 
-{% block extra_js %}
+  <section class="landing-section pt-0">
+    <div class="trust-band">
+      <div class="trust-card">
+        <strong>Product catalogue</strong
+        ><span>Milk, curd, and related dairy items from listed suppliers.</span>
+      </div>
+      <div class="trust-card">
+        <strong>Pricing visibility</strong
+        ><span
+          >Products and prices can be reviewed before placing an order.</span
+        >
+      </div>
+      <div class="trust-card">
+        <strong>Portal access</strong
+        ><span
+          >Customers can sign in to review orders, invoices, and account
+          details.</span
+        >
+      </div>
+      <div class="trust-card">
+        <strong>Service coverage</strong
+        ><span
+          >Local service availability and contact access for the surrounding
+          delivery area.</span
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section pt-0" id="products">
+    <div class="landing-panel products-stage">
+      <div class="section-head">
+        <div>
+          <span class="landing-eyebrow"
+            ><i class="bi bi-box-seam"></i> Products</span
+          >
+          <h2>Available products</h2>
+        </div>
+        <p>
+          Review the current product catalogue, pricing, and supplier details in
+          a focused product showcase.
+        </p>
+      </div>
+      <div class="products-shell">
+        <div class="product-toolbar">
+          <div class="product-counter">
+            Showing <strong id="productCounterCurrent">1</strong> of
+            <strong id="productCounterTotal">{{ products|length }}</strong>
+          </div>
+          <div class="product-nav">
+            <button
+              type="button"
+              id="productPrev"
+              aria-label="Previous product"
+            >
+              <i class="bi bi-arrow-left"></i>
+            </button>
+            <button type="button" id="productNext" aria-label="Next product">
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="products-showcase">
+          <div class="products-slider">
+            {% for product in products %}
+            <article
+              class="product-slide {% if forloop.first %}active{% endif %}"
+              data-slide-index="{{ forloop.counter0 }}"
+            >
+              <div class="product-slide-media">
+                <img
+                  src="{{ product.resolved_image_url }}"
+                  alt="{{ product.name }}"
+                />
+              </div>
+              <div class="product-slide-copy">
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="product-chip company"
+                    ><i class="bi bi-building"></i> {{
+                    product.company.name|default:"SVD Product" }}</span
+                  >
+                  <span class="product-chip status"
+                    ><i class="bi bi-check-circle-fill"></i> Available now</span
+                  >
+                </div>
+                <h3>{{ product.name }}</h3>
+                <p>
+                  {{ product.description|default:"Product information is
+                  available here for customer review." }}
+                </p>
+                <div class="product-price">&#8377;{{ product.mrp }}</div>
+                <div class="product-meta-grid">
+                  <div class="product-meta-card">
+                    <small>Company</small
+                    ><strong>{{ product.company.name|default:"SVD" }}</strong>
+                  </div>
+                  <div class="product-meta-card">
+                    <small>Status</small><strong>Active listing</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+            {% empty %}
+            <article class="product-slide active" data-slide-index="0">
+              <div class="product-slide-media">
+                <img
+                  src="{% static 'images/placeholder.png' %}"
+                  alt="No products"
+                />
+              </div>
+              <div class="product-slide-copy">
+                <h3>No products available right now.</h3>
+                <p>
+                  Product listings will appear here as soon as active items are
+                  published for the website.
+                </p>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="product-section-footer">
+          <button
+            type="button"
+            class="product-view-all"
+            data-bs-toggle="modal"
+            data-bs-target="#allProductsModal"
+          >
+            <i class="bi bi-grid-3x3-gap"></i><span>View all products</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section pt-0" id="features">
+    <div class="landing-panel products-stage">
+      <div class="section-head">
+        <div>
+          <span class="landing-eyebrow"
+            ><i class="bi bi-grid-1x2"></i> Features</span
+          >
+          <h2>Service highlights</h2>
+        </div>
+        <p>
+          Key capabilities related to customer access, product visibility, and
+          service operations.
+        </p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon-badge"><i class="bi bi-bag-heart"></i></div>
+          <h3>Clear product discovery</h3>
+          <p>
+            Customers can review active products, supplier brands, and pricing
+            from a single clean landing page.
+          </p>
+          <div class="feature-points">
+            <span
+              ><i class="bi bi-check-circle-fill"></i> Active product
+              listings</span
+            ><span
+              ><i class="bi bi-check-circle-fill"></i> Product images and
+              pricing</span
+            >
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon-badge">
+            <i class="bi bi-person-lock"></i>
+          </div>
+          <h3>Portal-based ordering</h3>
+          <p>
+            Users can log in to place orders, review invoices, and stay
+            connected to their account activity.
+          </p>
+          <div class="feature-points">
+            <span
+              ><i class="bi bi-check-circle-fill"></i> Login from homepage</span
+            ><span
+              ><i class="bi bi-check-circle-fill"></i> Order and billing
+              access</span
+            >
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon-badge"><i class="bi bi-truck"></i></div>
+          <h3>Delivery-ready workflow</h3>
+          <p>
+            The site and portals support recurring orders, local service, and
+            account-based access.
+          </p>
+          <div class="feature-points">
+            <span
+              ><i class="bi bi-check-circle-fill"></i> Recurring order
+              options</span
+            ><span
+              ><i class="bi bi-check-circle-fill"></i> Local operations
+              access</span
+            >
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon-badge"><i class="bi bi-receipt"></i></div>
+          <h3>Transparent records</h3>
+          <p>
+            Billing, reports, and portal records help customers stay aligned
+            with their regular purchases.
+          </p>
+          <div class="feature-points">
+            <span
+              ><i class="bi bi-check-circle-fill"></i> Invoice visibility</span
+            ><span
+              ><i class="bi bi-check-circle-fill"></i> Clear account
+              history</span
+            >
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section pt-0" id="contact">
+    <div class="landing-panel contact-stage">
+      <div class="section-head">
+        <div>
+          <span class="landing-eyebrow"
+            ><i class="bi bi-chat-dots"></i> Contact</span
+          >
+          <h2>Contact information</h2>
+        </div>
+        <p>
+          Use the contact details for immediate help or send a message from the
+          form and the team can follow up with you.
+        </p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h3 class="h4 mb-3">Visit or call SVD Milk Agencies</h3>
+          <p class="text-muted mb-0">
+            SVD Milk Agencies serves customers in Gundugolanu and nearby areas.
+          </p>
+          <div class="contact-stack">
+            <div class="contact-pill">
+              <i class="bi bi-geo-alt-fill"></i>
+              <div>
+                <strong>Address</strong
+                ><span
+                  >Near Santa Market, Main Road Gundugolanu, Eluru, Andhra
+                  Pradesh - 534427</span
+                >
+              </div>
+            </div>
+            <div class="contact-pill">
+              <i class="bi bi-telephone-fill"></i>
+              <div>
+                <strong>Phone</strong
+                ><a href="tel:+919392890375">+91 9392890375</a>
+              </div>
+            </div>
+            <div class="contact-pill">
+              <i class="bi bi-envelope-fill"></i>
+              <div>
+                <strong>Email</strong
+                ><a href="mailto:svdagencies12@gmail.com"
+                  >svdagencies12@gmail.com</a
+                >
+              </div>
+            </div>
+            <div class="contact-pill">
+              <i class="bi bi-clock-fill"></i>
+              <div>
+                <strong>Service hours</strong
+                ><span>Monday to Sunday, 6:00 AM to 9:00 PM</span>
+              </div>
+            </div>
+          </div>
+          <iframe
+            src="https://maps.google.com/maps?q=16.7784167,81.2303611&z=14&output=embed"
+            width="100%"
+            height="320"
+            style="border: 0; border-radius: 22px"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+        <div class="contact-form-card">
+          <h3 class="h4 mb-3">Send a message</h3>
+          <form
+            id="contactForm"
+            method="post"
+            action="{% url 'milk_agency:contact_form_submit' %}"
+          >
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="name">Name *</label
+                ><input
+                  id="name"
+                  type="text"
+                  name="name"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="phone">Phone *</label
+                ><input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-12">
+                <label for="email">Email</label
+                ><input
+                  id="email"
+                  type="email"
+                  name="email"
+                  class="form-control"
+                />
+              </div>
+              <div class="col-12">
+                <label for="subject">Subject *</label
+                ><input
+                  id="subject"
+                  type="text"
+                  name="subject"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-12">
+                <label for="message">Message *</label
+                ><textarea
+                  id="message"
+                  rows="5"
+                  name="message"
+                  class="form-control"
+                  required
+                ></textarea>
+              </div>
+              <div class="col-12">
+                <div
+                  id="contactFormAlert"
+                  class="alert d-none mb-0"
+                  role="alert"
+                ></div>
+              </div>
+              <div class="col-12">
+                <button
+                  type="submit"
+                  id="contactSubmitBtn"
+                  class="contact-submit w-100"
+                >
+                  <i class="bi bi-send me-2"></i>Send message
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div
+  class="modal fade product-modal"
+  id="allProductsModal"
+  tabindex="-1"
+  aria-labelledby="allProductsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="allProductsModalLabel">All products</h2>
+          <p class="mb-0 text-muted">
+            Review the complete catalogue in one place.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="product-modal-grid">
+          {% for product in products %}
+          <article class="product-modal-card">
+            <img
+              src="{{ product.resolved_image_url }}"
+              alt="{{ product.name }}"
+            />
+            <h3>{{ product.name }}</h3>
+            <div class="product-modal-meta">
+              <span
+                ><strong>Company:</strong> {{ product.company.name|default:"SVD"
+                }}</span
+              >
+              <span><strong>Status:</strong> Active listing</span>
+              <span
+                >{{ product.description|default:"Product information is
+                available for customer review." }}</span
+              >
+            </div>
+            <div class="product-modal-price">&#8377;{{ product.mrp }}</div>
+          </article>
+          {% empty %}
+          <article class="product-modal-card">
+            <img
+              src="{% static 'images/placeholder.png' %}"
+              alt="No products"
+            />
+            <h3>No products available</h3>
+            <div class="product-modal-meta">
+              <span
+                >The catalogue will appear here once products are
+                published.</span
+              >
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
 <script src="{% static 'js/contact-whatsapp.js' %}?v=2"></script>
 <script>
-(function(){const slides=[...document.querySelectorAll('.product-slide[data-slide-index]')],prevBtn=document.getElementById('productPrev'),nextBtn=document.getElementById('productNext'),currentEl=document.getElementById('productCounterCurrent'),totalEl=document.getElementById('productCounterTotal');if(!slides.length){return}let currentIndex=0,autoRotate;const hasMultiple=slides.length>1;if(totalEl){totalEl.textContent=slides.length}function renderSlide(index){currentIndex=(index+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentIndex));if(currentEl){currentEl.textContent=currentIndex+1}}function restartAutoRotate(){window.clearInterval(autoRotate);if(!hasMultiple){return}autoRotate=window.setInterval(()=>renderSlide(currentIndex+1),3200)}if(prevBtn){prevBtn.disabled=!hasMultiple;prevBtn.addEventListener('click',()=>{renderSlide(currentIndex-1);restartAutoRotate()})}if(nextBtn){nextBtn.disabled=!hasMultiple;nextBtn.addEventListener('click',()=>{renderSlide(currentIndex+1);restartAutoRotate()})}renderSlide(0);restartAutoRotate()})();
+  (function () {
+    const slides = [
+        ...document.querySelectorAll(".product-slide[data-slide-index]"),
+      ],
+      prevBtn = document.getElementById("productPrev"),
+      nextBtn = document.getElementById("productNext"),
+      currentEl = document.getElementById("productCounterCurrent"),
+      totalEl = document.getElementById("productCounterTotal");
+    if (!slides.length) {
+      return;
+    }
+    let currentIndex = 0,
+      autoRotate;
+    const hasMultiple = slides.length > 1;
+    if (totalEl) {
+      totalEl.textContent = slides.length;
+    }
+    function renderSlide(index) {
+      currentIndex = (index + slides.length) % slides.length;
+      slides.forEach((slide, i) =>
+        slide.classList.toggle("active", i === currentIndex),
+      );
+      if (currentEl) {
+        currentEl.textContent = currentIndex + 1;
+      }
+    }
+    function restartAutoRotate() {
+      window.clearInterval(autoRotate);
+      if (!hasMultiple) {
+        return;
+      }
+      autoRotate = window.setInterval(
+        () => renderSlide(currentIndex + 1),
+        3200,
+      );
+    }
+    if (prevBtn) {
+      prevBtn.disabled = !hasMultiple;
+      prevBtn.addEventListener("click", () => {
+        renderSlide(currentIndex - 1);
+        restartAutoRotate();
+      });
+    }
+    if (nextBtn) {
+      nextBtn.disabled = !hasMultiple;
+      nextBtn.addEventListener("click", () => {
+        renderSlide(currentIndex + 1);
+        restartAutoRotate();
+      });
+    }
+    renderSlide(0);
+    restartAutoRotate();
+  })();
 </script>
 {% endblock extra_js %}

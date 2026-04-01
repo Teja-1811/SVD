@@ -6,47 +6,213 @@
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
 
 <style>
-.dashboard-shortcut {
+.dashboard-topbar {
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem 1.25rem;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 251, 0.96));
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
+}
+
+.dashboard-topbar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-label {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0d6efd, #1d4ed8);
-    color: #fff;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15, 123, 104, 0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dashboard-heading {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.dashboard-heading strong {
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    line-height: 1.05;
+}
+
+.dashboard-heading span {
+    color: #617780;
+    font-size: 0.95rem;
+}
+
+.dashboard-stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.dashboard-mini-stat {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: rgba(247, 250, 251, 0.92);
+    border: 1px solid rgba(23, 53, 62, 0.08);
+}
+
+.dashboard-mini-stat small {
+    display: block;
+    color: #617780;
+    margin-bottom: 0.3rem;
+}
+
+.dashboard-mini-stat strong {
+    font-size: 1.35rem;
+    color: #17353e;
+}
+
+.dashboard-action-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.75rem;
+}
+
+.dashboard-shortcut,
+.dashboard-bell,
+.dashboard-quick-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 46px;
+    padding: 0.74rem 1.05rem;
+    border-radius: 16px;
     text-decoration: none;
     font-weight: 700;
-    box-shadow: 0 10px 24px rgba(13, 110, 253, 0.24);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-shortcut {
+    background: #17353e;
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(23, 53, 62, 0.16);
 }
 
 .dashboard-shortcut:hover {
+    color: #fff;
+    background: #0f7b68;
+    transform: translateY(-1px);
+}
+
+.dashboard-quick-card {
+    color: #fff;
+    border: 1px solid transparent;
+    box-shadow: 0 12px 24px rgba(23, 53, 62, 0.12);
+}
+
+.dashboard-quick-card:hover {
     color: #fff;
     transform: translateY(-1px);
 }
 
 .dashboard-bell {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
-    color: #fff;
-    text-decoration: none;
-    box-shadow: 0 10px 24px rgba(234, 88, 12, 0.28);
+    background: #fff6e8;
+    color: #a16207;
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.12);
 }
 
 .dashboard-bell:hover {
-    color: #fff;
+    color: #a16207;
     transform: translateY(-1px);
+    background: #ffefcf;
+}
+
+.dashboard-button-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+.dashboard-bell .dashboard-button-icon {
+    color: #a16207;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.dashboard-shortcut .dashboard-button-icon {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.dashboard-quick-card .dashboard-button-icon {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.dashboard-quick-card--customers {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.dashboard-quick-card--customers:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+.dashboard-quick-card--bills {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.dashboard-quick-card--bills:hover {
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
+}
+
+.dashboard-quick-card--orders {
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+}
+
+.dashboard-quick-card--orders:hover {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+}
+
+.dashboard-quick-card--items {
+    background: linear-gradient(135deg, #db2777, #be185d);
+}
+
+.dashboard-quick-card--items:hover {
+    background: linear-gradient(135deg, #be185d, #9d174d);
+}
+
+.dashboard-quick-card--stock {
+    background: linear-gradient(135deg, #ea580c, #dc2626);
+}
+
+.dashboard-quick-card--stock:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.dashboard-quick-card--subscriptions {
+    background: linear-gradient(135deg, #475569, #334155);
+}
+
+.dashboard-quick-card--subscriptions:hover {
+    background: linear-gradient(135deg, #334155, #1e293b);
 }
 
 .dashboard-bell-badge {
-    position: absolute;
-    top: -4px;
-    right: -2px;
     min-width: 22px;
     height: 22px;
     border-radius: 999px;
@@ -58,383 +224,372 @@
     align-items: center;
     justify-content: center;
     padding: 0 6px;
-    border: 2px solid #fff;
+    border: 2px solid rgba(255, 255, 255, 0.95);
 }
 
-.dashboard-quick-grid {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.dashboard-quick-card {
-    display: grid;
-    gap: 10px;
-    padding: 15px;
-    border-radius: 18px;
-    background: #ffffff;
-    border: 1px solid rgba(23, 53, 62, 0.1);
-    box-shadow: 0 10px 24px rgba(23, 53, 62, 0.08);
-    text-decoration: none;
-    color: #17353e;
+.summary-card {
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    border-radius: 22px;
+    background: white;
+    box-shadow: 0 12px 28px rgba(23, 53, 62, 0.08);
+    padding: 1.3rem;
+    height: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.dashboard-quick-card:hover {
+.summary-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 16px 30px rgba(23, 53, 62, 0.12);
+    box-shadow: 0 18px 34px rgba(23, 53, 62, 0.11);
+}
+
+.summary-card-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    font-size: 0.96rem;
+    font-weight: 800;
+}
+
+.summary-card-value {
+    margin-top: 0.8rem;
+    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+    font-weight: 800;
     color: #17353e;
 }
 
-.dashboard-quick-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
+.summary-card-note {
+    margin-top: 0.35rem;
+    color: #617780;
+    font-size: 0.88rem;
+}
+
+.dashboard-filter-card {
+    padding: 1rem;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 250, 0.96));
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 16px 32px rgba(23, 53, 62, 0.08);
+}
+
+.dashboard-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.dashboard-filter-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.dashboard-filter-field label {
+    color: #617780;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dashboard-filter-select {
+    min-height: 52px;
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(23, 53, 62, 0.12);
+    background: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.company-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: linear-gradient(135deg, #17353e, #214856);
+    color: white;
+    padding: 1rem 1.15rem;
+    border-radius: 18px 18px 0 0;
+}
+
+.company-header h6 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.company-header-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(13, 110, 253, 0.12), rgba(37, 99, 235, 0.18));
-    color: #1d4ed8;
-    font-size: 1.2rem;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 0.8rem;
+    font-weight: 800;
 }
 
-.dashboard-quick-card strong {
-    font-size: 1rem;
+.stock-card {
+    background: white;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 16px 34px rgba(23, 53, 62, 0.08);
+    border: 1px solid rgba(23, 53, 62, 0.08);
 }
 
-.dashboard-quick-card span {
+.stock-table {
+    margin-bottom: 0;
+}
+
+.stock-table thead th {
+    background: #f3f6f8;
     color: #617780;
-    font-size: 0.88rem;
-    line-height: 1.4;
+    border-bottom: 1px solid rgba(23, 53, 62, 0.08);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
 }
 
-    /* Summary Cards */
-    .summary-card {
-        border: 1px solid #e7a1a1ff;
-        border-radius: 14px;
-        background: white;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        padding: 22px;
-        height: 100%;
-        transition: 0.2s ease;
+.stock-table tbody tr {
+    border-bottom: 1px solid rgba(23, 53, 62, 0.06);
+}
+
+.stock-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.stock-table tbody td {
+    background: #ffffff;
+    vertical-align: middle;
+}
+
+.stock-table tbody tr.table-warning td {
+    background: #fff7e6;
+}
+
+.stock-table tbody tr.table-danger td {
+    background: #fff1f2;
+}
+
+.stock-item-name {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.stock-item-name strong {
+    font-size: 0.96rem;
+}
+
+.stock-item-code {
+    color: #617780;
+    font-size: 0.8rem;
+}
+
+.stock-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.1rem;
+    height: 2rem;
+    padding: 0 0.65rem;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.stock-pill--crates {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+}
+
+.stock-pill--packets {
+    background: rgba(15, 123, 104, 0.12);
+    color: #0f7b68;
+}
+
+.stock-value {
+    font-weight: 800;
+    color: #0f7b68;
+}
+
+@media (max-width: 768px) {
+    .table th,
+    .table td {
+        padding: 8px;
+        font-size: 0.85rem;
     }
-    .summary-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+
+    .dashboard-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    /* Company Box */
-    .company-header {
-        background: linear-gradient(135deg, #5165f3, #7b3fe0);
-        color: white;
-        padding: 12px 18px;
-        border-radius: 12px 12px 0 0;
-    }
-    .stock-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    .dashboard-filter-grid {
+        grid-template-columns: 1fr;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 768px){
-        .table th, .table td {
-            padding: 8px;
-            font-size: 0.85rem;
-        }
+    .dashboard-action-row {
+        justify-content: flex-start;
+    }
+}
 
-        .dashboard-quick-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .dashboard-shortcut {
-            padding: 9px 13px;
-            font-size: 0.92rem;
-        }
-
-        .dashboard-bell {
-            width: 42px;
-            height: 42px;
-        }
+@media (max-width: 480px) {
+    .dashboard-topbar {
+        padding: 1rem;
     }
 
-    @media (max-width: 480px) {
-        .filter-select {
-            width: 100% !important;
-        }
-
-        .dashboard-quick-grid {
-            grid-template-columns: 1fr;
-        }
+    .dashboard-stat-strip {
+        grid-template-columns: 1fr;
     }
 
+    .filter-select {
+        width: 100% !important;
+    }
+}
 </style>
-
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-2 px-0 ma-page-shell">
 
-    <section class="card border-0 shadow-lg mb-4">
-        <div class="card-body p-4 p-lg-5">
-            <div class="row g-4 align-items-center">
-                <div class="col-xl-8">
-                    <span class="text-uppercase fw-bold small text-success">Milk Agency</span>
-                    <h1 class="display-5 fw-bold mt-2 mb-3">Milk agency dashboard</h1>
-                    <p class="text-muted fs-5 mb-0">Review sales, dues, stock, and delivery information from the main agency dashboard.</p>
-                </div>
-                <div class="col-xl-4">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Today's sales</small>
-                                <strong class="fs-5">&#8377;{{ today_sales|floatformat:2 }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Total due</small>
-                                <strong class="fs-5">&#8377;{{ total_due|floatformat:2 }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Stock items</small>
-                                <strong class="fs-4">{{ total_stock_items }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="rounded-4 bg-light p-3 h-100">
-                                <small class="text-muted d-block mb-1">Low stock</small>
-                                <strong class="fs-4">{{ low_stock_items }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <section class="dashboard-topbar mb-4">
+        <div class="dashboard-topbar-head">
+            <div class="dashboard-heading">
+                <span class="dashboard-label">Operations</span>
+                <strong>Milk Agency Control Panel</strong>
+                <span>Core records, stock tracking, billing, and delivery access.</span>
             </div>
         </div>
-    </section>
 
-    <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
-        <a href="{% url 'milk_agency:admin_enquiries' %}" class="dashboard-bell" title="Open unresolved enquiries">
-            <i class="bi bi-bell-fill fs-5"></i>
-            {% if unresolved_queries_count %}
-            <span class="dashboard-bell-badge">{{ unresolved_queries_count }}</span>
-            {% endif %}
-        </a>
-        <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="dashboard-shortcut">
-            <i class="bi bi-truck"></i>
-            <span>Delivery Status</span>
-        </a>
-    </div>
+        <div class="dashboard-stat-strip">
+            <div class="dashboard-mini-stat">
+                <small>Today's sales</small>
+                <strong>&#8377;{{ today_sales|floatformat:2 }}</strong>
+            </div>
+            <div class="dashboard-mini-stat">
+                <small>Total due</small>
+                <strong>&#8377;{{ total_due|floatformat:2 }}</strong>
+            </div>
+            <div class="dashboard-mini-stat">
+                <small>Stock items</small>
+                <strong>{{ total_stock_items }}</strong>
+            </div>
+            <div class="dashboard-mini-stat">
+                <small>Low stock</small>
+                <strong>{{ low_stock_items }}</strong>
+            </div>
+        </div>
 
-    <section class="mb-4">
-        <div class="dashboard-quick-grid">
-            <a href="{% url 'milk_agency:customer_data' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-people"></i></span>
-                <strong>Customers</strong>
-                <span>Customer records and account information.</span>
+        <div class="dashboard-action-row">
+            <a href="{% url 'milk_agency:admin_enquiries' %}" class="dashboard-bell" title="Open unresolved enquiries">
+                <span class="dashboard-button-icon"><i class="bi bi-bell-fill"></i></span>
+                <span>Enquiries</span>
+                {% if unresolved_queries_count %}
+                <span class="dashboard-bell-badge">{{ unresolved_queries_count }}</span>
+                {% endif %}
             </a>
-            <a href="{% url 'milk_agency:bills_dashboard' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-receipt"></i></span>
-                <strong>Bills</strong>
-                <span>Billing records and bill generation.</span>
+            <a href="{% url 'milk_agency:admin_delivery_dashboard' %}" class="dashboard-shortcut">
+                <span class="dashboard-button-icon"><i class="bi bi-truck"></i></span>
+                <span>Delivery</span>
             </a>
-            <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-clipboard-check"></i></span>
-                <strong>Orders</strong>
-                <span>Pending orders and order processing.</span>
+            <a href="{% url 'milk_agency:customer_data' %}" class="dashboard-quick-card dashboard-quick-card--customers">
+                <span class="dashboard-button-icon"><i class="bi bi-people"></i></span>
+                <span>Customers</span>
             </a>
-            <a href="{% url 'milk_agency:items_dashboard' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-tags"></i></span>
-                <strong>Items</strong>
-                <span>Item records, pricing, and catalogue setup.</span>
+            <a href="{% url 'milk_agency:bills_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--bills">
+                <span class="dashboard-button-icon"><i class="bi bi-receipt"></i></span>
+                <span>Bills</span>
             </a>
-            <a href="{% url 'milk_agency:stock_dashboard' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-speedometer2"></i></span>
-                <strong>Stock</strong>
-                <span>Review stock movement, stock value, and shortage records.</span>
+            <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--orders">
+                <span class="dashboard-button-icon"><i class="bi bi-clipboard-check"></i></span>
+                <span>Orders</span>
             </a>
-            <a href="{% url 'milk_agency:subscription_dashboard' %}" class="dashboard-quick-card">
-                <span class="dashboard-quick-icon"><i class="bi bi-journal-text"></i></span>
-                <strong>Subscriptions</strong>
-                <span>Subscription records and delivery plans.</span>
+            <a href="{% url 'milk_agency:items_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--items">
+                <span class="dashboard-button-icon"><i class="bi bi-tags"></i></span>
+                <span>Items</span>
+            </a>
+            <a href="{% url 'milk_agency:stock_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--stock">
+                <span class="dashboard-button-icon"><i class="bi bi-speedometer2"></i></span>
+                <span>Stock</span>
+            </a>
+            <a href="{% url 'milk_agency:subscription_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--subscriptions">
+                <span class="dashboard-button-icon"><i class="bi bi-journal-text"></i></span>
+                <span>Subscriptions</span>
             </a>
         </div>
     </section>
 
-
-    <!-- ----------------------------------- -->
-    <!--         SECTION 1: SUMMARY CARDS     -->
-    <!-- ----------------------------------- -->
-    <div class="row g-3">
-
-        <div class="col-lg-6 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-primary fw-bold fs-5">
-                    <i class="bi bi-cart fs-3 me-2"></i> {{ current_date }} Sales
-                </div>
-                <h3 class="fw-bold mt-2">₹{{ today_sales|floatformat:2 }}</h3>
-            </div>
-        </div>
-
-        <div class="col-lg-6 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-warning fw-bold fs-5">
-                    <i class="bi bi-cash-stack fs-3 me-2"></i> Total Due
-                </div>
-                <h3 class="fw-bold mt-2">₹{{ total_due|floatformat:2 }}</h3>
-            </div>
-        </div>
-
-    </div>
-
-
-
-    <!-- ----------------------------------- -->
-    <!--         SECTION 2: STOCK SUMMARY     -->
-    <!-- ----------------------------------- -->
-    <div class="row g-3 mt-3">
-
-        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-info fw-bold">
-                    <i class="bi bi-box fs-3 me-2"></i>Total Stock Items
-                </div>
-                <h4 class="fw-bold mt-2">{{ total_stock_items }}</h4>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-success fw-bold">
-                    <i class="bi bi-currency-rupee fs-3 me-2"></i>Total Stock Value
-                </div>
-                <h4 class="fw-bold mt-2">₹{{ total_stock_value|floatformat:2 }}</h4>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-danger fw-bold">
-                    <i class="bi bi-exclamation-triangle fs-3 me-2"></i>Low Stock
-                </div>
-                <h4 class="fw-bold mt-2">{{ low_stock_items }}</h4>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-6 col-12">
-            <div class="summary-card text-center">
-                <div class="text-secondary fw-bold">
-                    <i class="bi bi-x-circle fs-3 me-2"></i>Out of Stock
-                </div>
-                <h4 class="fw-bold mt-2">{{ out_of_stock_items }}</h4>
-            </div>
-        </div>
-
-    </div>
-
-
-
-    <!-- ----------------------------------- -->
-    <!--         SECTION 3: FILTER BAR        -->
-    <!-- ----------------------------------- -->
-    <div class="mt-4 p-3 bg-white rounded shadow-sm">
-
+    <div class="dashboard-filter-card mt-4">
         <form method="get" id="filterForm" class="d-flex flex-column flex-md-row gap-2">
+            <div class="dashboard-filter-grid w-100">
+                <div class="dashboard-filter-field">
+                    <label for="companyFilter">Company</label>
+                    <select id="companyFilter" name="company" class="form-select dashboard-filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Companies</option>
+                        {% for c in companies %}
+                        <option value="{{ c }}" {% if request.GET.company == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Company -->
-            <select name="company" class="form-select w-100"
-                    onchange="document.getElementById('filterForm').submit();">
-                <option value="">All Companies</option>
-                {% for c in companies %}
-                <option value="{{ c }}" {% if request.GET.company == c %}selected{% endif %}>{{ c }}</option>
-                {% endfor %}
-            </select>
-
-            <!-- Category -->
-            <select name="category" class="form-select w-100"
-                    onchange="document.getElementById('filterForm').submit();">
-                <option value="">All Categories</option>
-                {% for cat in categories %}
-                <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
-                {% endfor %}
-            </select>
-
+                <div class="dashboard-filter-field">
+                    <label for="categoryFilter">Category</label>
+                    <select id="categoryFilter" name="category" class="form-select dashboard-filter-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
         </form>
-
     </div>
 
-    <!-- ----------------------------------- -->
-    <!--         SECTION 4: STOCK TABLES      -->
-    <!-- ----------------------------------- -->
     <div class="row g-4 mt-2">
-
         {% for company, items in stock_by_company.items %}
         <div class="col-xl-6 col-lg-6 col-md-12 col-12">
-
             <div class="stock-card">
                 <div class="company-header">
                     <h6 class="fw-bold m-0">
                         <i class="bi bi-building me-2"></i>{{ company }} Stock
                     </h6>
+                    <span class="company-header-badge">{{ items|length }}</span>
                 </div>
 
                 <div class="p-3">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped align-middle">
-
-                            <thead class="table-dark">
+                        <table class="table table-hover align-middle stock-table">
+                            <thead>
                                 <tr class="text-center">
                                     <th>Item</th>
                                     <th>Crates</th>
                                     <th>Packets</th>
-
-                                    <!-- HIDE VALUE COLUMN ON MOBILE -->
                                     <th class="d-none d-md-table-cell">Value</th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {% for item in items %}
-                                <tr class="text-center
-                                    {% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
-
-                                    <!-- Item Name Desktop / Code Mobile -->
-                                    <td class="fw-bold">
-                                        <span class="d-none d-md-inline">{{ item.name }}</span>
-                                        <span class="d-inline d-md-none">{{ item.code }}</span>
+                                <tr class="text-center {% if item.stock_quantity == 0 %}table-danger{% elif item.stock_quantity < 10 %}table-warning{% endif %}">
+                                    <td class="fw-bold text-start">
+                                        <div class="stock-item-name">
+                                            <strong>{{ item.name }}</strong>
+                                            <span class="stock-item-code">{{ item.code }}</span>
+                                        </div>
                                     </td>
-
-                                    <td>
-                                        <span class="badge bg-primary">{{ item.crates|floatformat:0 }}</span>
-                                    </td>
-
-                                    <td>
-                                        <span class="badge bg-info">{{ item.packets|floatformat:0 }}</span>
-                                    </td>
-
-                                    <!-- VALUE → Hidden on mobile -->
-                                    <td class="fw-bold text-success d-none d-md-table-cell">
-                                        ₹{{ item.stock_value|floatformat:2 }}
-                                    </td>
-
+                                    <td><span class="stock-pill stock-pill--crates">{{ item.crates|floatformat:0 }}</span></td>
+                                    <td><span class="stock-pill stock-pill--packets">{{ item.packets|floatformat:0 }}</span></td>
+                                    <td class="d-none d-md-table-cell"><span class="stock-value">&#8377;{{ item.stock_value|floatformat:2 }}</span></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
-
                         </table>
                     </div>
                 </div>
-
             </div>
-
         </div>
         {% endfor %}
-
     </div>
-
 
 </div>
 {% endblock %}

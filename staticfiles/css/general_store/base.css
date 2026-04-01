@@ -164,7 +164,7 @@ a {
 }
 
 .gs-main {
-    padding: 8.6rem 0 2rem;
+    padding: 6.25rem 0 2rem;
 }
 
 .gs-page {
@@ -175,7 +175,7 @@ a {
 .gs-page-shell {
     display: grid;
     gap: 1.25rem;
-    padding: 1rem 0 0;
+    padding: 0.4rem 0 0;
 }
 
 .gs-messages {
@@ -274,11 +274,11 @@ a {
     }
 
     .gs-main {
-        padding-top: 6.5rem;
+        padding-top: 5.5rem;
     }
 
     .gs-page-shell {
-        padding-top: 0.5rem;
+        padding-top: 0.2rem;
     }
 
     .gs-clock,

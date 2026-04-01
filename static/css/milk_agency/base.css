@@ -171,7 +171,7 @@ a {
 }
 
 .ma-main {
-    padding: 8.6rem 0 2rem;
+    padding: 6.25rem 0 2rem;
 }
 
 .ma-page {
@@ -183,7 +183,7 @@ a {
 .ma-page-shell {
     display: grid;
     gap: 1.25rem;
-    padding: 1rem 0 0;
+    padding: 0.4rem 0 0;
 }
 
 .milk-agency .btn {
@@ -279,11 +279,11 @@ a {
     }
 
     .ma-main {
-        padding-top: 6.5rem;
+        padding-top: 5.5rem;
     }
 
     .ma-page-shell {
-        padding-top: 0.5rem;
+        padding-top: 0.2rem;
     }
 
     .ma-clock,

@@ -3,173 +3,283 @@
 {% block title %}Payments Dashboard{% endblock %}
 
 {% block content %}
-
 <style>
-.card {
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid #242222ff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+.pd-page {
+    display: grid;
+    gap: 1.25rem;
 }
 
-.card-header {
-    padding: 10px 14px;
-    font-size: 1rem;
+.pd-topbar,
+.pd-filter-card,
+.pd-company-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(23,53,62,0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 42px rgba(23,53,62,0.08);
+}
+
+.pd-topbar {
+    padding: 1.25rem;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,251,251,0.96));
+}
+
+.pd-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15,123,104,0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pd-topbar h1 {
+    margin: 0.7rem 0 0.35rem;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    color: #17353e;
+}
+
+.pd-topbar p {
+    margin: 0;
+    color: #617780;
+}
+
+.pd-filter-card {
+    padding: 1rem;
+}
+
+.pd-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.pd-field {
+    display: grid;
+    gap: 0.38rem;
+    min-width: 160px;
+}
+
+.pd-field label {
+    color: #617780;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pd-field select {
+    min-height: 48px;
+    padding: 0.82rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid rgba(23,53,62,0.12);
+    background: #fff;
     font-weight: 600;
 }
 
-.table td, .table th {
-    vertical-align: middle;
-    padding: 6px 8px;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #f0faff !important;
-}
-
-input.form-control-sm {
-    height: 30px;
-    font-size: 0.85rem;
-}
-
-.total-box {
-    padding: 10px 14px;
-    border-radius: 12px;
+.pd-filter-btn,
+.pd-save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.82rem 1rem;
+    border-radius: 14px;
     font-weight: 700;
-    font-size: 1rem;
-    display: inline-block;
-    min-width: 150px;
-    text-align: center;
+    border: 0;
+    text-decoration: none;
+}
+
+.pd-filter-btn {
+    background: #2563eb;
     color: #fff;
 }
 
-.total-red { background: #d9534f !important; }
-.total-green { background: #28a745 !important; }
-.total-yellow { background: #ffc107 !important; color: #000 !important; }
+.pd-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    justify-content: flex-end;
+    margin-top: 0.9rem;
+}
 
-.total-wrapper {
+.pd-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0.78rem 1rem;
+    border-radius: 16px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.pd-summary-pill.invoice { background: #d9534f; }
+.pd-summary-pill.paid { background: #16a34a; }
+.pd-summary-pill.due { background: #f2b40b; color: #161616; }
+
+.pd-save-wrap {
     display: flex;
     justify-content: center;
-    gap: 12px;
 }
 
-.save-btn {
-    font-size: 0.9rem;
-    padding: 6px 20px;
+.pd-save-btn {
+    background: #17353e;
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(23,53,62,0.14);
 }
 
-@media (max-width: 768px) {
-    .total-wrapper { flex-direction: column; gap: 8px; }
+.pd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.pd-company-card {
+    overflow: hidden;
+}
+
+.pd-company-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    background: #17353e;
+    color: #fff;
+}
+
+.pd-company-head strong {
+    font-size: 1rem;
+}
+
+.pd-company-summary {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    color: rgba(255,255,255,0.88);
+    font-size: 0.82rem;
+}
+
+.pd-table {
+    margin-bottom: 0;
+}
+
+.pd-table thead th {
+    background: #f3f6f8;
+    color: #617780;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.pd-table tbody td {
+    vertical-align: middle;
+    padding: 0.72rem 0.75rem;
+}
+
+.pd-table input {
+    min-height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(23,53,62,0.1);
+    text-align: center;
+    font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+    .pd-summary-row {
+        justify-content: flex-start;
+    }
 }
 </style>
 
-<div class="container-fluid py-3 ma-page-shell">
+<div class="container-fluid py-2 px-0 ma-page-shell">
+    <div class="pd-page">
+        <section class="pd-topbar">
+            <span class="pd-eyebrow">Company Dues</span>
+            <h1>Payments Dashboard</h1>
+            <p>Track invoice totals, paid amounts, and remaining due company-wise for the selected month.</p>
+        </section>
 
-    <!-- FILTER -->
-    <form method="get" class="row g-2 mb-2">
-
-        <div class="col-md-1 col-6">
-            <select name="year" class="form-select form-select-sm">
-                {% for y in years %}
-                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="col-md-1 col-6">
-            <select name="month" class="form-select form-select-sm">
-                {% for m_num, m_name in months %}
-                <option value="{{ m_num }}" {% if m_num == selected_month %}selected{% endif %}>{{ m_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="col-md-1 col-12">
-            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Filter</button>
-        </div>
-
-        <!-- TOTALS -->
-        <div class="col-12 d-flex justify-content-center mt-2">
-            <div class="total-wrapper">
-                <div class="total-box total-red">
-                    Total Invoice: ₹{{ grand_total_invoice|floatformat:2 }}
+        <section class="pd-filter-card">
+            <form method="get" class="pd-filter-row">
+                <div class="pd-field">
+                    <label for="pdYear">Year</label>
+                    <select id="pdYear" name="year">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="total-box total-green">
-                    Total Paid: ₹{{ grand_total_paid|floatformat:2 }}
+                <div class="pd-field">
+                    <label for="pdMonth">Month</label>
+                    <select id="pdMonth" name="month">
+                        {% for m_num, m_name in months %}
+                        <option value="{{ m_num }}" {% if m_num == selected_month %}selected{% endif %}>{{ m_name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="total-box total-yellow">
-                    Due: ₹{{ grand_total_due|floatformat:2 }}
-                </div>
+                <button type="submit" class="pd-filter-btn">Apply Filter</button>
+            </form>
+
+            <div class="pd-summary-row">
+                <div class="pd-summary-pill invoice">Total Invoice: &#8377;{{ grand_total_invoice|floatformat:2 }}</div>
+                <div class="pd-summary-pill paid">Total Paid: &#8377;{{ grand_total_paid|floatformat:2 }}</div>
+                <div class="pd-summary-pill due">Due: &#8377;{{ grand_total_due|floatformat:2 }}</div>
             </div>
-        </div>
-    </form>
+        </section>
 
-    <!-- SAVE -->
-    <form method="post">
-        {% csrf_token %}
+        <form method="post" class="pd-page">
+            {% csrf_token %}
+            <div class="pd-save-wrap">
+                <button class="pd-save-btn">Save All</button>
+            </div>
 
-        <div class="text-center mb-3">
-            <button class="btn btn-outline-success save-btn">💰 Save All</button>
-        </div>
-
-        <div class="row g-3">
-            {% for payment in payments %}
-            <div class="col-lg-4 col-md-6">
-                <div class="card">
-
-                    <div class="card-header bg-primary text-white">
-                        {{ payment.company.name }}
-                    </div>
-
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-sm mb-0 table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="text-center">Date</th>
-                                        <th class="text-center">Invoice</th>
-                                        <th class="text-center">Paid</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for p in payment.records %}
-                                    <tr>
-                                        <td class="text-center fw-bold">
-                                            {{ p.date|date:"d" }}
-                                        </td>
-
-                                        <td>
-                                            <input type="number" step="0.01"
-                                                name="invoice_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}"
-                                                class="form-control form-control-sm border-0 text-center"
-                                                value="{{ p.invoice_amount|default_if_none:'' }}">
-                                        </td>
-
-                                        <td>
-                                            <input type="number" step="0.01"
-                                                name="paid_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}"
-                                                class="form-control form-control-sm border-0 text-center"
-                                                value="{{ p.paid_amount|default_if_none:'' }}">
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+            <div class="pd-grid">
+                {% for payment in payments %}
+                <section class="pd-company-card">
+                    <div class="pd-company-head">
+                        <strong>{{ payment.company.name }}</strong>
+                        <div class="pd-company-summary">
+                            <span>Invoice &#8377;{{ payment.total_invoice|floatformat:2 }}</span>
+                            <span>Paid &#8377;{{ payment.total_paid|floatformat:2 }}</span>
+                            <span>Due &#8377;{{ payment.remaining_due|floatformat:2 }}</span>
                         </div>
                     </div>
 
-                    <div class="card-footer text-center small fw-bold py-2">
-                        Invoice: ₹{{ payment.total_invoice|floatformat:2 }} |
-                        Paid: ₹{{ payment.total_paid|floatformat:2 }} |
-                        Due: ₹{{ payment.remaining_due|floatformat:2 }}
+                    <div class="table-responsive">
+                        <table class="table pd-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Date</th>
+                                    <th class="text-center">Invoice</th>
+                                    <th class="text-center">Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in payment.records %}
+                                <tr>
+                                    <td class="text-center fw-bold">{{ p.date|date:"d" }}</td>
+                                    <td>
+                                        <input type="number" step="0.01" name="invoice_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}" value="{{ p.invoice_amount|default_if_none:'' }}" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" name="paid_{{ payment.company.id }}_{{ p.date|date:'Y-m-d' }}" value="{{ p.paid_amount|default_if_none:'' }}" class="form-control">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-
-                </div>
+                </section>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </form>
-
+        </form>
+    </div>
 </div>
-
 {% endblock %}

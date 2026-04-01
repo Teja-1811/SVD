@@ -1,694 +1,490 @@
 {% extends "milk_agency/home/base.html" %}
-{% block title %}Subscription Management{% endblock %} 
+{% block title %}Subscription Management{% endblock %}
 
 {% block content %}
 <style>
+  .sub-page {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .sub-topbar,
+  .sub-plan-card,
+  .sub-table-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(23,53,62,0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 42px rgba(23,53,62,0.08);
+  }
+
+  .sub-topbar {
+    padding: 1.25rem;
+    background:
+      radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+      linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,251,251,0.96));
+  }
+
+  .sub-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15,123,104,0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sub-topbar h1 {
+    margin: 0.7rem 0 0.35rem;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: #17353e;
+  }
+
+  .sub-topbar p {
+    margin: 0;
+    color: #617780;
+  }
+
+  .sub-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .sub-kpi {
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    background: rgba(247,250,251,0.92);
+    border: 1px solid rgba(23,53,62,0.08);
+    text-align: center;
+  }
+
+  .sub-kpi small {
+    display: block;
+    color: #617780;
+    margin-bottom: 0.25rem;
+  }
+
+  .sub-kpi strong {
+    font-size: 1.45rem;
+  }
+
+  .sub-kpi.active strong { color: #0f7b68; }
+  .sub-kpi.expired strong { color: #dc2626; }
+  .sub-kpi.expiring strong { color: #d97706; }
+  .sub-kpi.plans strong { color: #2563eb; }
+
+  .sub-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .sub-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 46px;
+    padding: 0.78rem 1rem;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 700;
+    border: 0;
+  }
+
+  .sub-action.primary { background: #2563eb; color: #fff; }
+  .sub-action.success { background: #0f7b68; color: #fff; }
+  .sub-action.dark { background: #17353e; color: #fff; }
+  .sub-action.gold { background: #f2b40b; color: #161616; }
+  .sub-action.soft { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.14); }
+
+  .sub-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  .sub-plan-card {
+    overflow: hidden;
+  }
+
+  .sub-plan-head {
+    padding: 1rem 1.15rem;
+    background: #17353e;
+    color: #fff;
+  }
+
+  .sub-plan-body {
+    padding: 1rem;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .sub-plan-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .sub-meta-box {
+    padding: 0.8rem 0.9rem;
+    border-radius: 18px;
+    background: rgba(23,53,62,0.04);
+  }
+
+  .sub-meta-box small {
+    display: block;
+    color: #617780;
+    margin-bottom: 0.18rem;
+  }
+
+  .sub-plan-note {
+    color: #617780;
+    font-size: 0.88rem;
+  }
+
+  .sub-table-card {
+    overflow: hidden;
+  }
+
+  .sub-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid rgba(23,53,62,0.08);
+  }
+
+  .sub-card-head h2 {
+    margin: 0;
+    font-size: 1.18rem;
+    color: #17353e;
+  }
+
+  .sub-table {
+    margin-bottom: 0;
+  }
+
+  .sub-table thead th {
+    background: #f3f6f8;
+    color: #617780;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sub-table tbody td {
+    padding: 0.95rem 0.8rem;
+    vertical-align: middle;
+  }
+
+  .sub-mobile-table thead { display: table-header-group; }
+
+  @media (max-width: 991.98px) {
+    .sub-kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 767.98px) {
-    .subscription-mobile-table thead { display: none; }
-    .subscription-mobile-table tbody tr { display: block; border: 1px solid #dee2e6; border-radius: 0.5rem; margin-bottom: 0.75rem; background: #fff; }
-    .subscription-mobile-table tbody td { display: flex; justify-content: space-between; gap: 0.75rem; border: 0; border-bottom: 1px solid #f1f3f5; padding: 0.65rem 0.85rem; text-align: right; }
-    .subscription-mobile-table tbody td:last-child { border-bottom: 0; }
-    .subscription-mobile-table tbody td::before { content: attr(data-label); font-weight: 600; color: #495057; text-align: left; }
-    .card-footer .btn, .subscription-mobile-actions .btn { width: 100%; }
+    .sub-kpis,
+    .sub-plan-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .sub-mobile-table thead { display: none; }
+    .sub-mobile-table tbody tr { display: block; border: 1px solid #dee2e6; border-radius: 1rem; margin: 0.85rem; background: #fff; }
+    .sub-mobile-table tbody td { display: flex; justify-content: space-between; gap: 0.75rem; border: 0; border-bottom: 1px solid #f1f3f5; padding: 0.75rem 0.9rem; text-align: right; }
+    .sub-mobile-table tbody td:last-child { border-bottom: 0; }
+    .sub-mobile-table tbody td::before { content: attr(data-label); font-weight: 700; color: #495057; text-align: left; }
   }
 </style>
-<br>
-<div class="container-fluid py-4 px-2 px-md-3 ma-page-shell">
-  <h3 class="fw-bold mb-4">
-    <i class="bi bi-journal-text"></i> Subscription Management
-  </h3>
 
-  <!-- KPI CARDS -->
+<div class="container-fluid py-2 px-0 ma-page-shell">
+  <div class="sub-page">
+    <section class="sub-topbar">
+      <span class="sub-eyebrow">Subscriptions</span>
+      <h1>Subscription Management</h1>
+      <p>Manage plans, customer subscriptions, payment records, and delivery-related subscription actions.</p>
 
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-      <div class="card shadow-sm text-center">
-        <div class="card-body">
-          <h6 class="text-muted">Active</h6>
-          <h4 class="text-success">{{ total_active }}</h4>
-        </div>
+      <div class="sub-kpis">
+        <div class="sub-kpi active"><small>Active</small><strong>{{ total_active }}</strong></div>
+        <div class="sub-kpi expired"><small>Expired</small><strong>{{ total_expired }}</strong></div>
+        <div class="sub-kpi expiring"><small>Expiring Soon</small><strong>{{ expiring_count }}</strong></div>
+        <div class="sub-kpi plans"><small>Plans</small><strong>{{ total_plans }}</strong></div>
       </div>
+    </section>
+
+    <div class="sub-actions">
+      <button class="sub-action primary" data-bs-toggle="modal" data-bs-target="#createPlanModal">Add Plan</button>
+      <button class="sub-action success" data-bs-toggle="modal" data-bs-target="#assignSubscriptionModal">Assign Subscription</button>
+      <a href="{% url 'milk_agency:customer_subscription_history' %}" class="sub-action soft">Subscription History</a>
+      <a href="{% url 'milk_agency:today_deliveries' %}" class="sub-action dark">Today's Deliveries</a>
+      <a href="{% url 'milk_agency:offers_dashboard' %}" class="sub-action gold">Offers</a>
     </div>
 
-    <div class="col-6 col-md-3">
-      <div class="card shadow-sm text-center">
-        <div class="card-body">
-          <h6 class="text-muted">Expired</h6>
-          <h4 class="text-danger">{{ total_expired }}</h4>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-      <div class="card shadow-sm text-center">
-        <div class="card-body">
-          <h6 class="text-muted">Expiring Soon</h6>
-          <h4 class="text-warning">{{ expiring_count }}</h4>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-      <div class="card shadow-sm text-center">
-        <div class="card-body">
-          <h6 class="text-muted">Plans</h6>
-          <h4 class="text-primary">{{ total_plans }}</h4>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ACTION BUTTONS -->
-
-  <div class="mb-4 d-grid d-sm-flex flex-wrap gap-2 subscription-mobile-actions">
-    <button
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#createPlanModal"
-    >
-      Add Plan
-    </button>
-
-    <button
-      class="btn btn-success"
-      data-bs-toggle="modal"
-      data-bs-target="#assignSubscriptionModal"
-    >
-      Assign Subscription
-    </button>
-
-    <a
-      href="{% url 'milk_agency:customer_subscription_history' %}"
-      class="btn btn-info"
-    >
-      Subscription History
-    </a>
-
-    <a href="{% url 'milk_agency:today_deliveries' %}" class="btn btn-dark">
-      Today's Deliveries
-    </a>
-
-    <a href="{% url 'milk_agency:offers_dashboard' %}" class="btn btn-warning">
-      Offers
-    </a>
-  </div>
-
-  <!-- PLAN CARDS -->
-
-  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">
-    {% for plan in plans %}
-
-    <div class="col">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-primary text-white">{{ plan.name }}</div>
-
-        <div class="card-body">
-          <p><strong>Price:</strong> &#8377;{{ plan.price }}</p>
-          <p><strong>Duration:</strong> {{ plan.duration_in_days }} days</p>
-
-          <p class="text-muted mb-1">{{ plan.description }}</p>
-          <div class="small text-secondary">
-            Pricing rule: day = price×qty×plan days, week = price×qty×4, month = price×qty×1.
+    <section class="sub-plan-grid">
+      {% for plan in plans %}
+      <article class="sub-plan-card">
+        <div class="sub-plan-head">{{ plan.name }}</div>
+        <div class="sub-plan-body">
+          <div class="sub-plan-meta">
+            <div class="sub-meta-box"><small>Price</small><strong>&#8377;{{ plan.price }}</strong></div>
+            <div class="sub-meta-box"><small>Duration</small><strong>{{ plan.duration_in_days }} days</strong></div>
           </div>
 
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered subscription-mobile-table">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Qty</th>
-                  <th>Price</th>
-                  <th>Per</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+          <div>{{ plan.description }}</div>
+          <div class="sub-plan-note">Plan price is calculated from items and duration.</div>
 
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered sub-mobile-table">
+              <thead>
+                <tr><th>Item</th><th>Qty</th><th>Per</th><th>Price</th><th>Action</th></tr>
+              </thead>
               <tbody>
                 {% for item in plan.items.all %}
-
                 <tr>
                   <td data-label="Item">{{ item.item.name }}</td>
                   <td data-label="Qty">{{ item.quantity }}</td>
                   <td data-label="Per">{{ item.get_per_display }}</td>
                   <td data-label="Price">&#8377;{{ item.price }}</td>
-
                   <td data-label="Actions">
-                    <button
-                      class="btn btn-sm btn-outline-primary"
-                      data-bs-toggle="modal"
-                      data-bs-target="#editItemModal-{{ item.id }}"
-                    >
-                      Edit
-                    </button>
-
-                    <a
-                      href="{% url 'milk_agency:delete_plan_item' item.id %}"
-                      class="btn btn-sm btn-outline-danger"
-                    >
-                      Delete
-                    </a>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItemModal-{{ item.id }}">Edit</button>
+                    <a href="{% url 'milk_agency:delete_plan_item' item.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
                   </td>
                 </tr>
 
-                <!-- EDIT ITEM MODAL -->
-
-                <div
-                  class="modal fade"
-                  id="editItemModal-{{ item.id }}"
-                  tabindex="-1"
-                >
+                <div class="modal fade" id="editItemModal-{{ item.id }}" tabindex="-1">
                   <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
                     <div class="modal-content">
-                      <form
-                        method="post"
-                        action="{% url 'milk_agency:update_plan_item' item.id %}"
-                      >
+                      <form method="post" action="{% url 'milk_agency:update_plan_item' item.id %}">
                         {% csrf_token %}
-
-                        <div class="modal-header">
-                          <h5>Edit Item</h5>
-                          <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                          ></button>
-                        </div>
-
+                        <div class="modal-header"><h5>Edit Item</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                         <div class="modal-body">
                           <label class="form-label">Quantity</label>
-                          <input
-                            type="number"
-                            name="quantity"
-                            value="{{ item.quantity }}"
-                            class="form-control mb-3"
-                            min="1"
-                            required
-                          />
-
+                          <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control mb-3" min="1" required />
                           <label class="form-label">Price</label>
-                          <input
-                            type="number"
-                            name="price"
-                            value="{{ item.price }}"
-                            class="form-control"
-                            step="0.01"
-                            min="0"
-                            required
-                          />
-
+                          <input type="number" name="price" value="{{ item.price }}" class="form-control" step="0.01" min="0" required />
                           <label class="form-label mt-3">Per</label>
                           <select name="per" class="form-select">
                             <option value="day" {% if item.per == "day" %}selected{% endif %}>Per Day</option>
                             <option value="week" {% if item.per == "week" %}selected{% endif %}>Per Week</option>
                             <option value="month" {% if item.per == "month" %}selected{% endif %}>Per Month</option>
                           </select>
-                          <div class="form-text">
-                            Day multiplies by plan days; week by 4; month by 1.
-                          </div>
                         </div>
-
-                        <div class="modal-footer">
-                          <button class="btn btn-primary">Update</button>
-                        </div>
+                        <div class="modal-footer"><button class="btn btn-primary">Update</button></div>
                       </form>
                     </div>
                   </div>
                 </div>
-
                 {% endfor %}
               </tbody>
             </table>
           </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPlanModal-{{ plan.id }}">Edit Plan</button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addItemModal-{{ plan.id }}">Add Item</button>
+          </div>
         </div>
+      </article>
 
-        <div class="card-footer d-flex flex-column flex-sm-row gap-2 justify-content-between">
-          <button
-            class="btn btn-sm btn-outline-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#editPlanModal-{{ plan.id }}"
-          >
-            Edit Plan
-          </button>
-
-          <button
-            class="btn btn-sm btn-success"
-            data-bs-toggle="modal"
-            data-bs-target="#addItemModal-{{ plan.id }}"
-          >
-            Add Item
-          </button>
+      <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+          <div class="modal-content">
+            <form method="post" action="{% url 'milk_agency:edit_subscription_plan' plan.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5>Edit Plan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label class="form-label">Plan Name</label>
+                <input type="text" name="name" value="{{ plan.name }}" class="form-control mb-3" required />
+                <label class="form-label">Duration (Days)</label>
+                <input type="number" name="duration_in_days" value="{{ plan.duration_in_days }}" class="form-control mb-3" min="1" required />
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control">{{ plan.description }}</textarea>
+              </div>
+              <div class="modal-footer"><button class="btn btn-primary">Update Plan</button></div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- EDIT PLAN MODAL -->
-    <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
-      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
-        <div class="modal-content">
-          <form method="post" action="{% url 'milk_agency:edit_subscription_plan' plan.id %}">
-            {% csrf_token %}
+      <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+          <div class="modal-content">
+            <form method="post" action="{% url 'milk_agency:add_plan_item' plan.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5>Add Item to {{ plan.name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label class="form-label">Item</label>
+                <select name="item" class="form-select mb-3" required>
+                  <option disabled selected>Select Item</option>
+                  {% for item in items %}
+                  <option value="{{ item.id }}">{{ item.name }}</option>
+                  {% endfor %}
+                </select>
+                <label class="form-label">Quantity</label>
+                <input type="number" name="quantity" class="form-control mb-3" min="1" required />
+                <label class="form-label">Price</label>
+                <input type="number" name="price" class="form-control" step="0.01" min="0" required />
+                <label class="form-label mt-3">Per</label>
+                <select name="per" class="form-select">
+                  <option value="day" selected>Per Day</option>
+                  <option value="week">Per Week</option>
+                  <option value="month">Per Month</option>
+                </select>
+              </div>
+              <div class="modal-footer"><button class="btn btn-success">Add Item</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
 
-            <div class="modal-header">
-              <h5>Edit Plan</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+    <section class="sub-table-card">
+      <div class="sub-card-head"><h2>Active Subscriptions</h2></div>
+      <div class="table-responsive">
+        <table class="table sub-table sub-mobile-table">
+          <thead><tr><th>Customer</th><th>Plan</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for sub in active_subscriptions %}
+            <tr>
+              <td data-label="Customer">{{ sub.customer.name }}</td>
+              <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+              <td data-label="Start">{{ sub.start_date }}</td>
+              <td data-label="End">{{ sub.end_date }}</td>
+              <td data-label="Actions">
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#recordPaymentModal-{{ sub.id }}">Pay</button>
+                <a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-warning">Deactivate</a>
+              </td>
+            </tr>
 
-            <div class="modal-body">
-              <label class="form-label">Plan Name</label>
-              <input
-                type="text"
-                name="name"
-                value="{{ plan.name }}"
-                class="form-control mb-3"
-                required
-              />
-
-              <label class="form-label">Duration (Days)</label>
-              <input
-                type="number"
-                name="duration_in_days"
-                value="{{ plan.duration_in_days }}"
-                class="form-control mb-3"
-                min="1"
-                required
-              />
-
-              <label class="form-label">Description</label>
-              <textarea
-                name="description"
-                class="form-control"
-              >{{ plan.description }}</textarea>
-
-              <div class="form-text mt-2">
-                Plan price is auto-calculated from its items and duration.
+            <div class="modal fade" id="recordPaymentModal-{{ sub.id }}" tabindex="-1">
+              <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'milk_agency:record_subscription_payment' sub.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header"><h5 class="modal-title">Record Payment</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                      <p><strong>Customer:</strong> {{ sub.customer.name }}</p>
+                      <p><strong>Plan:</strong> {{ sub.subscription_plan.name }}</p>
+                      <div class="mb-3"><label class="form-label">Amount</label><input type="number" name="amount" class="form-control" required /></div>
+                      <div class="mb-3"><label class="form-label">Payment Method</label><select name="method" class="form-select"><option value="UPI">UPI</option><option value="CASH">Cash</option><option value="BANK">Bank Transfer</option></select></div>
+                      <div class="mb-3"><label class="form-label">Transaction ID</label><input type="text" name="transaction_id" class="form-control" /></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-success">Save Payment</button></div>
+                  </form>
+                </div>
               </div>
             </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-            <div class="modal-footer">
-              <button class="btn btn-primary">Update Plan</button>
+    <section class="sub-table-card">
+      <div class="sub-card-head"><h2>De-Activated Subscriptions</h2></div>
+      <div class="table-responsive">
+        <table class="table sub-table sub-mobile-table">
+          <thead><tr><th>Customer</th><th>Plan</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for sub in de_activated_subscriptions %}
+            <tr>
+              <td data-label="Customer">{{ sub.customer.name }}</td>
+              <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+              <td data-label="Start">{{ sub.start_date }}</td>
+              <td data-label="End">{{ sub.end_date }}</td>
+              <td data-label="Actions"><a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-success">Activate</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sub-table-card">
+      <div class="sub-card-head"><h2>Expired Subscriptions</h2></div>
+      <div class="table-responsive">
+        <table class="table sub-table sub-mobile-table">
+          <thead><tr><th>Customer</th><th>Plan</th><th>End Date</th></tr></thead>
+          <tbody>
+            {% for sub in expired_subscriptions %}
+            <tr>
+              <td data-label="Customer">{{ sub.customer.name }}</td>
+              <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+              <td data-label="End Date">{{ sub.end_date }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sub-table-card">
+      <div class="sub-card-head"><h2>Expiring Soon</h2></div>
+      <div class="table-responsive">
+        <table class="table sub-table sub-mobile-table">
+          <thead><tr><th>Customer</th><th>Plan</th><th>End Date</th></tr></thead>
+          <tbody>
+            {% for sub in expiring_soon %}
+            <tr>
+              <td data-label="Customer">{{ sub.customer.name }}</td>
+              <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
+              <td data-label="End Date">{{ sub.end_date }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="modal fade" id="createPlanModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+          <form method="post" action="{% url 'milk_agency:create_subscription_plan' %}">
+            {% csrf_token %}
+            <div class="modal-header"><h5>Create Subscription Plan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+              <input type="text" name="name" class="form-control mb-3" placeholder="Plan Name" required />
+              <input type="number" name="duration_in_days" class="form-control mb-3" placeholder="Duration (Days)" required />
+              <textarea name="description" class="form-control" placeholder="Description"></textarea>
             </div>
+            <div class="modal-footer"><button class="btn btn-primary">Create Plan</button></div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- ADD ITEM MODAL -->
-    <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
+    <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
-          <form method="post" action="{% url 'milk_agency:add_plan_item' plan.id %}">
+          <form method="post" action="{% url 'milk_agency:assign_subscription' %}">
             {% csrf_token %}
-
-            <div class="modal-header">
-              <h5>Add Item to {{ plan.name }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
+            <div class="modal-header"><h5>Assign Subscription</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-              <label class="form-label">Item</label>
-              <select name="item" class="form-select mb-3" required>
-                <option disabled selected>Select Item</option>
-                {% for item in items %}
-                <option value="{{ item.id }}">{{ item.name }}</option>
-                {% endfor %}
+              <select name="customer" class="form-select mb-3">
+                <option disabled selected>Select Customer</option>
+                {% for customer in customers %}<option value="{{ customer.id }}">{{ customer.name }}</option>{% endfor %}
               </select>
-
-              <label class="form-label">Quantity</label>
-              <input
-                type="number"
-                name="quantity"
-                class="form-control mb-3"
-                min="1"
-                required
-              />
-
-              <label class="form-label">Price</label>
-              <input
-                type="number"
-                name="price"
-                class="form-control"
-                step="0.01"
-                min="0"
-                required
-              />
-
-              <label class="form-label mt-3">Per</label>
-              <select name="per" class="form-select">
-                <option value="day" selected>Per Day</option>
-                <option value="week">Per Week</option>
-                <option value="month">Per Month</option>
+              <select name="plan" class="form-select mb-3">
+                <option disabled selected>Select Plan</option>
+                {% for plan in plans %}<option value="{{ plan.id }}">{{ plan.name }}</option>{% endfor %}
               </select>
-              <div class="form-text">
-                Day multiplies by plan days; week by 4; month by 1.
-              </div>
+              <input type="date" name="start_date" class="form-control" />
             </div>
-
-            <div class="modal-footer">
-              <button class="btn btn-success">Add Item</button>
-            </div>
+            <div class="modal-footer"><button class="btn btn-success">Assign Subscription</button></div>
           </form>
         </div>
-      </div>
-    </div>
-
-    {% endfor %}
-  </div>
-
-  <!-- ACTIVE SUBSCRIPTIONS -->
-
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-success text-white">Active Subscriptions</div>
-
-    <div class="table-responsive">
-      <table class="table table-striped subscription-mobile-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Plan</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for sub in active_subscriptions %}
-
-          <tr>
-            <td data-label="Customer">{{ sub.customer.name }}</td>
-            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
-            <td data-label="Start">{{ sub.start_date }}</td>
-            <td data-label="End Date">{{ sub.end_date }}</td>
-
-            <td data-label="Actions">
-              <button
-                class="btn btn-sm btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#recordPaymentModal-{{ sub.id }}"
-              >
-                Pay
-              </button>
-
-              <a
-                href="{% url 'milk_agency:toggle_subscription' sub.id %}"
-                class="btn btn-sm btn-warning"
-              >
-                Deactivate
-              </a>
-            </td>
-          </tr>
-
-          <!-- PAYMENT MODAL -->
-
-          <div
-            class="modal fade"
-            id="recordPaymentModal-{{ sub.id }}"
-            tabindex="-1"
-          >
-            <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
-              <div class="modal-content">
-                <form
-                  method="post"
-                  action="{% url 'milk_agency:record_subscription_payment' sub.id %}"
-                >
-                  {% csrf_token %}
-
-                  <div class="modal-header">
-                    <h5 class="modal-title">Record Payment</h5>
-
-                    <button
-                      type="button"
-                      class="btn-close"
-                      data-bs-dismiss="modal"
-                    ></button>
-                  </div>
-
-                  <div class="modal-body">
-                    <p><strong>Customer:</strong> {{ sub.customer.name }}</p>
-                    <p>
-                      <strong>Plan:</strong> {{ sub.subscription_plan.name }}
-                    </p>
-
-                    <div class="mb-3">
-                      <label class="form-label">Amount</label>
-
-                      <input
-                        type="number"
-                        name="amount"
-                        class="form-control"
-                        required
-                      />
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label">Payment Method</label>
-
-                      <select name="method" class="form-select">
-                        <option value="UPI">UPI</option>
-                        <option value="CASH">Cash</option>
-                        <option value="BANK">Bank Transfer</option>
-                      </select>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label">Transaction ID</label>
-
-                      <input
-                        type="text"
-                        name="transaction_id"
-                        class="form-control"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="modal-footer">
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
-
-                    <button class="btn btn-success">Save Payment</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- DE-ACTIVATED SUBSCRIPTIONS -->
-   <div class="card shadow-sm mb-4">
-    <div class="card-header bg-secondary text-white">De-Activated Subscriptions</div>
-
-    <div class="table-responsive">
-      <table class="table table-striped subscription-mobile-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Plan</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for sub in de_activated_subscriptions %}
-
-          <tr>
-            <td data-label="Customer">{{ sub.customer.name }}</td>
-            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
-            <td data-label="Start">{{ sub.start_date }}</td>
-            <td data-label="End Date">{{ sub.end_date }}</td>
-
-            <td data-label="Actions">
-              <a
-                href="{% url 'milk_agency:toggle_subscription' sub.id %}"
-                class="btn btn-sm btn-success"
-              >
-                Activate
-              </a>
-            </td>
-          </tr>
-
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- EXPIRED SUBSCRIPTIONS -->
-
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-danger text-white">Expired Subscriptions</div>
-
-    <div class="table-responsive">
-      <table class="table subscription-mobile-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Plan</th>
-            <th>End Date</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for sub in expired_subscriptions %}
-
-          <tr>
-            <td data-label="Customer">{{ sub.customer.name }}</td>
-            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
-            <td data-label="End Date">{{ sub.end_date }}</td>
-          </tr>
-
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- EXPIRING SOON -->
-
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-warning">Expiring Soon</div>
-
-    <div class="table-responsive">
-      <table class="table subscription-mobile-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Plan</th>
-            <th>End Date</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for sub in expiring_soon %}
-
-          <tr>
-            <td data-label="Customer">{{ sub.customer.name }}</td>
-            <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
-            <td data-label="End Date">{{ sub.end_date }}</td>
-          </tr>
-
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- CREATE PLAN MODAL -->
-
-  <div class="modal fade" id="createPlanModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
-      <div class="modal-content">
-        <form
-          method="post"
-          action="{% url 'milk_agency:create_subscription_plan' %}"
-        >
-          {% csrf_token %}
-
-          <div class="modal-header">
-            <h5>Create Subscription Plan</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-
-          <div class="modal-body">
-            <input
-              type="text"
-              name="name"
-              class="form-control mb-3"
-              placeholder="Plan Name"
-              required
-            />
-
-            <input
-              type="number"
-              name="duration_in_days"
-              class="form-control mb-3"
-              placeholder="Duration (Days)"
-              required
-            />
-
-            <textarea
-              name="description"
-              class="form-control"
-              placeholder="Description"
-            ></textarea>
-
-            <div class="form-text mt-2">
-              Plan price is auto-calculated from added items and duration.
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-primary">Create Plan</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ASSIGN SUBSCRIPTION MODAL -->
-
-  <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
-      <div class="modal-content">
-        <form
-          method="post"
-          action="{% url 'milk_agency:assign_subscription' %}"
-        >
-          {% csrf_token %}
-
-          <div class="modal-header">
-            <h5>Assign Subscription</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-
-          <div class="modal-body">
-            <select name="customer" class="form-select mb-3">
-              <option disabled selected>Select Customer</option>
-
-              {% for customer in customers %}
-              <option value="{{ customer.id }}">{{ customer.name }}</option>
-              {% endfor %}
-            </select>
-
-            <select name="plan" class="form-select mb-3">
-              <option disabled selected>Select Plan</option>
-
-              {% for plan in plans %}
-              <option value="{{ plan.id }}">{{ plan.name }}</option>
-              {% endfor %}
-            </select>
-
-            <input type="date" name="start_date" class="form-control" />
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-success">Assign Subscription</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
 </div>
-
 {% endblock %}
-
-

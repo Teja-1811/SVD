@@ -4,85 +4,230 @@
 {% block title %}Customer Payments{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-5 ma-page-shell">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Customer Payments</h3>
-                </div>
-                <div class="card-body">
-                    <!-- Filters -->
-                    <form method="get" class="mb-4">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="customer">Filter by Customer (Name or Phone):</label>
-                                <input type="text" class="form-control" id="customer" name="customer" value="{{ customer_filter }}" placeholder="Enter customer name or phone">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="transaction_id">Filter by Transaction ID:</label>
-                                <input type="text" class="form-control" id="transaction_id" name="transaction_id" value="{{ transaction_id_filter }}" placeholder="Enter transaction ID">
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary mr-2">Filter</button>
-                                <a href="{% url 'milk_agency:customer_payments' %}" class="btn btn-secondary">Clear Filters</a>
-                            </div>
-                        </div>
-                    </form>
+<style>
+.cp-page {
+    display: grid;
+    gap: 1.25rem;
+}
 
-                    <!-- Payments Table -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Customer</th>
-                                    <th>Phone</th>
-                                    <th>Amount</th>
-                                    <th>Transaction ID</th>
-                                    <th>Method</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in payments %}
-                                <tr>
-                                    <td>{{ payment.customer.name }}</td>
-                                    <td>{{ payment.customer.phone }}</td>
-                                    <td>₹{{ payment.amount }}</td>
-                                    <td>{{ payment.transaction_id }}</td>
-                                    <td>{{ payment.method }}</td>
-                                    <td>
-                                        <span class="badge {% if payment.status == 'SUCCESS' %}badge-success{% else %}badge-danger{% endif %}">
-                                            {{ payment.status }}
-                                        </span>
-                                    </td>
-                                    <td>{{ payment.created_at|date:"d M Y, H:i" }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No payments found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+.cp-topbar,
+.cp-filter-card,
+.cp-table-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(23,53,62,0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 42px rgba(23,53,62,0.08);
+}
 
-                    <!-- Pagination (if needed in future) -->
-                    {% if payments.paginator %}
-                    <div class="d-flex justify-content-center mt-3">
-                        {% include 'pagination.html' %}
-                    </div>
-                    {% endif %}
+.cp-topbar {
+    padding: 1.25rem;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,251,251,0.96));
+}
+
+.cp-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15,123,104,0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.cp-topbar h1 {
+    margin: 0.7rem 0 0.35rem;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    color: #17353e;
+}
+
+.cp-topbar p {
+    margin: 0;
+    color: #617780;
+}
+
+.cp-filter-card,
+.cp-table-card {
+    padding: 1rem;
+}
+
+.cp-filter-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.cp-field {
+    display: grid;
+    gap: 0.38rem;
+}
+
+.cp-field label {
+    color: #617780;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.cp-field input {
+    min-height: 48px;
+    padding: 0.82rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid rgba(23,53,62,0.12);
+    background: #fff;
+    font-weight: 600;
+}
+
+.cp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.8rem 1rem;
+    border-radius: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 0;
+}
+
+.cp-btn.primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.cp-btn.secondary {
+    background: rgba(23,53,62,0.08);
+    color: #17353e;
+}
+
+.cp-table {
+    margin-bottom: 0;
+}
+
+.cp-table thead th {
+    background: #f3f6f8;
+    color: #617780;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.cp-table tbody td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.cp-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.cp-status.success {
+    background: rgba(15,123,104,0.12);
+    color: #0f7b68;
+}
+
+.cp-status.failed {
+    background: rgba(220,53,69,0.12);
+    color: #c62828;
+}
+
+.cp-empty {
+    text-align: center;
+    padding: 2.2rem 1rem;
+    color: #617780;
+}
+
+@media (max-width: 991.98px) {
+    .cp-filter-form {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .cp-filter-form {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="container-fluid py-2 px-0 ma-page-shell">
+    <div class="cp-page">
+        <section class="cp-topbar">
+            <span class="cp-eyebrow">Payments</span>
+            <h1>Customer Payments</h1>
+            <p>Search customer transactions by customer details or transaction reference and review payment records.</p>
+        </section>
+
+        <section class="cp-filter-card">
+            <form method="get" class="cp-filter-form">
+                <div class="cp-field">
+                    <label for="customer">Customer</label>
+                    <input type="text" id="customer" name="customer" value="{{ customer_filter }}" placeholder="Enter customer name or phone">
                 </div>
+                <div class="cp-field">
+                    <label for="transaction_id">Transaction ID</label>
+                    <input type="text" id="transaction_id" name="transaction_id" value="{{ transaction_id_filter }}" placeholder="Enter transaction ID">
+                </div>
+                <button type="submit" class="cp-btn primary">Filter</button>
+                <a href="{% url 'milk_agency:customer_payments' %}" class="cp-btn secondary">Clear</a>
+            </form>
+        </section>
+
+        <section class="cp-table-card">
+            <div class="table-responsive">
+                <table class="table cp-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Amount</th>
+                            <th>Transaction ID</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.customer.name }}</td>
+                            <td>{{ payment.customer.phone }}</td>
+                            <td><strong>&#8377;{{ payment.amount }}</strong></td>
+                            <td>{{ payment.transaction_id }}</td>
+                            <td>{{ payment.method }}</td>
+                            <td>
+                                <span class="cp-status {% if payment.status == 'SUCCESS' %}success{% else %}failed{% endif %}">
+                                    {{ payment.status }}
+                                </span>
+                            </td>
+                            <td>{{ payment.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="cp-empty">No payments found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
+
+            {% if payments.paginator %}
+            <div class="d-flex justify-content-center mt-3">
+                {% include 'pagination.html' %}
+            </div>
+            {% endif %}
+        </section>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-// Optional: Add any JavaScript for enhanced filtering or table interactions
-</script>
 {% endblock %}

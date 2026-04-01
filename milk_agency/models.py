@@ -182,9 +182,9 @@ class Item(models.Model):
     name = models.CharField(max_length=255)
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
     category = models.CharField(max_length=100, blank=True, null=True)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2)
-    buying_price  = models.DecimalField(max_digits=10, decimal_places=2)
-    mrp = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Maximum Retail Price')
+    selling_price = models.DecimalField(max_digits=10, decimal_places=3)
+    buying_price  = models.DecimalField(max_digits=10, decimal_places=3)
+    mrp = models.DecimalField(max_digits=10, decimal_places=3, default=0, help_text='Maximum Retail Price')
     stock_quantity = models.IntegerField(default=0)
     pcs_count = models.IntegerField(default=0, help_text='Number of pieces per unit')
     image = models.ImageField(upload_to='items_saved/', blank=True, null=True)
@@ -395,9 +395,11 @@ class CustomerMonthlyCommission(models.Model):
 class Expense(models.Model):
     CATEGORY_CHOICES = [
         ('Fuel', 'Fuel'),
+        ('Food', 'Food'),
         ('Rent', 'Rent'),
+        ('Salary', 'Salary'),
         ('Electricity', 'Electricity'),
-        ('Repairs', 'Repairs'),
+        ('Repair', 'Repair'),
         ('Others', 'Others'),
     ]
 

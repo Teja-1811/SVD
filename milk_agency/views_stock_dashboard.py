@@ -94,7 +94,16 @@ def _stock_update_redirect(selected_date):
 @never_cache
 @login_required
 def stock_dashboard(request):
-    return render(request, "milk_agency/stock/stock_dashboard.html")
+    selected_date = _parse_entry_date(request.GET.get("date"))
+    date_entries = (
+        StockInEntry.objects.filter(date=selected_date)
+        .select_related("item", "company")
+        .order_by("-created_at", "-id")
+    )
+    return render(request, "milk_agency/stock/stock_dashboard.html", {
+        "selected_date": selected_date,
+        "date_entries": date_entries,
+    })
 
 
 # -------------------------------------------------------
@@ -126,6 +135,7 @@ def update_stock(request):
             stock_updates.append({
                 "item": item,
                 "crates": crates,
+                "discount": parse_decimal(request.POST.get(f"discount_{item_id}", 0)),
             })
 
         updated_items = apply_stock_updates(stock_updates, entry_date=selected_date)
@@ -148,12 +158,13 @@ def edit_stock_entry_view(request, entry_id):
     if request.method == "POST":
         selected_date = _parse_entry_date(request.POST.get("entry_date"))
         crates = parse_decimal(request.POST.get("crates"))
+        discount = parse_decimal(request.POST.get("discount"))
 
         if crates <= 0:
             messages.error(request, "Crates must be greater than zero.")
             return _stock_update_redirect(selected_date)
 
-        update_stock_entry(entry, crates=crates, date_value=selected_date)
+        update_stock_entry(entry, crates=crates, discount=discount, date_value=selected_date)
         messages.success(request, "Stock entry updated successfully.")
         return _stock_update_redirect(selected_date)
 

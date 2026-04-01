@@ -2,457 +2,452 @@
 {% block title %}Offers Dashboard{% endblock %}
 
 {% block content %}
-
 <style>
-
-.modal-dialog{
-max-width:600px;
+.offers-page {
+    display: grid;
+    gap: 1.25rem;
 }
 
-@media (max-width:768px){
-.modal-dialog{
-max-width:95%;
-margin:auto;
-}
-}
-
-.modal-body{
-max-height:70vh;
-overflow-y:auto;
+.offers-topbar,
+.offers-switch-card,
+.offer-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(23,53,62,0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 42px rgba(23,53,62,0.08);
 }
 
-.offer-card{
-transition:0.2s;
+.offers-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    background:
+        radial-gradient(circle at top right, rgba(255, 211, 105, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,251,251,0.96));
 }
 
-.offer-card:hover{
-transform:translateY(-4px);
+.offers-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15,123,104,0.1);
+    color: #0f7b68;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
-.switch-group .btn{
-min-width:140px;
+.offers-topbar h1 {
+    margin: 0.7rem 0 0.35rem;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    color: #17353e;
 }
 
+.offers-topbar p {
+    margin: 0;
+    color: #617780;
+    max-width: 48rem;
+}
+
+.offers-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 48px;
+    padding: 0.82rem 1.1rem;
+    border-radius: 16px;
+    background: #2563eb;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 12px 24px rgba(37,99,235,0.18);
+}
+
+.offers-switch-card {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.offers-switch-copy {
+    color: #617780;
+}
+
+.switch-group {
+    display: inline-flex;
+    padding: 0.35rem;
+    border-radius: 999px;
+    background: rgba(23,53,62,0.06);
+}
+
+.switch-group .btn {
+    min-width: 150px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.offers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.offer-card {
+    padding: 1rem;
+    display: grid;
+    gap: 0.9rem;
+}
+
+.offer-card:hover {
+    transform: translateY(-3px);
+}
+
+.offer-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.85rem;
+    align-items: flex-start;
+}
+
+.offer-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.offer-type.user {
+    background: rgba(37,99,235,0.1);
+    color: #2563eb;
+}
+
+.offer-type.retailer {
+    background: rgba(15,123,104,0.12);
+    color: #0f7b68;
+}
+
+.offer-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #2563eb;
+}
+
+.offer-desc {
+    color: #617780;
+    font-size: 0.94rem;
+    line-height: 1.6;
+}
+
+.offer-dates {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.offer-date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(23,53,62,0.06);
+    color: #17353e;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.offer-items {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.9rem;
+    border-radius: 18px;
+    background: rgba(23,53,62,0.04);
+}
+
+.offer-items strong {
+    color: #17353e;
+}
+
+.offer-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(23,53,62,0.06);
+}
+
+.offer-item:last-child {
+    border-bottom: 0;
+}
+
+.offer-qty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(15,123,104,0.12);
+    color: #0f7b68;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.offer-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.offer-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    padding: 0.72rem 0.95rem;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.offer-action.add {
+    background: rgba(15,123,104,0.08);
+    color: #0f7b68;
+    border: 1px solid rgba(15,123,104,0.14);
+}
+
+.offer-action.edit {
+    background: rgba(243,180,0,0.08);
+    color: #b77900;
+    border: 1px solid rgba(243,180,0,0.14);
+}
+
+.offer-action.delete {
+    background: rgba(220,53,69,0.08);
+    color: #c62828;
+    border: 1px solid rgba(220,53,69,0.14);
+}
+
+.offers-empty {
+    padding: 2.8rem 1.25rem;
+    text-align: center;
+    color: #617780;
+    background: rgba(255,255,255,0.92);
+    border: 1px dashed rgba(23,53,62,0.16);
+    border-radius: 24px;
+}
+
+.offers-empty i {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37,99,235,0.08);
+    color: #2563eb;
+    font-size: 1.45rem;
+    margin-bottom: 0.9rem;
+}
+
+.modal-dialog { max-width: 600px; }
+
+@media (max-width: 768px) {
+    .modal-dialog { max-width: 95%; margin: auto; }
+    .switch-group .btn { min-width: 128px; }
+}
+
+.modal-body { max-height: 70vh; overflow-y: auto; }
 </style>
 
+<div class="container-fluid py-2 px-0 ma-page-shell">
+    <div class="offers-page">
+        <section class="offers-topbar">
+            <div>
+                <span class="offers-eyebrow">Promotions</span>
+                <h1>Offers Dashboard</h1>
+                <p>Create and manage offer records for users and retailers, review bundled items, and update pricing windows.</p>
+            </div>
 
-<div class="container-fluid mt-5 ma-page-shell">
+            <button class="offers-primary-btn" data-bs-toggle="modal" data-bs-target="#createOfferModal">
+                <i class="bi bi-plus-circle"></i>
+                <span>Create Offer</span>
+            </button>
+        </section>
 
-<div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+        <section class="offers-switch-card">
+            <div class="offers-switch-copy">Switch between user and retailer offers to manage the relevant offer catalogue.</div>
+            <div class="btn-group switch-group">
+                <button class="btn btn-primary" id="userBtn" onclick="switchOffers('user')">User Offers</button>
+                <button class="btn btn-outline-primary" id="retailerBtn" onclick="switchOffers('retailer')">Retailer Offers</button>
+            </div>
+        </section>
 
-<h3 class="mb-2">Offers Dashboard</h3>
+        <div class="offers-grid" id="offersGrid">
+            {% for offer in offers %}
+            <article class="offer-card" data-offer="{{ offer.offer_for }}">
+                <div class="offer-top">
+                    <div>
+                        <span class="offer-type {{ offer.offer_for }}">{{ offer.offer_for }} offer</span>
+                        <h3 class="mt-2 mb-1">{{ offer.name }}</h3>
+                    </div>
+                    <div class="offer-price">&#8377;{{ offer.price }}</div>
+                </div>
 
-<button class="btn btn-primary"
-data-bs-toggle="modal"
-data-bs-target="#createOfferModal">
-<i class="bi bi-plus-circle"></i> Create Offer
-</button>
+                <div class="offer-desc">{{ offer.description|default:"No description provided." }}</div>
 
+                <div class="offer-dates">
+                    <span class="offer-date-pill"><i class="bi bi-calendar-event"></i> {{ offer.start_date }}</span>
+                    <span class="offer-date-pill"><i class="bi bi-calendar-check"></i> {{ offer.end_date }}</span>
+                </div>
+
+                <div class="offer-items">
+                    <strong>Offer Items</strong>
+                    {% for item in offer.offeritems_set.all %}
+                    <div class="offer-item">
+                        <span>{{ item.item.name }}</span>
+                        <span class="offer-qty">{{ item.buy_qty }} + {{ item.offer_qty }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted small">No items added.</div>
+                    {% endfor %}
+                </div>
+
+                <div class="offer-actions">
+                    <button class="offer-action add" data-bs-toggle="modal" data-bs-target="#addItemModal{{ offer.id }}">
+                        <i class="bi bi-plus-circle"></i> Add Item
+                    </button>
+                    <button class="offer-action edit" data-bs-toggle="modal" data-bs-target="#editOfferModal{{ offer.id }}">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                    <a href="{% url 'milk_agency:delete_offer' offer.id %}" class="offer-action delete">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="offers-empty" id="offersEmpty" style="display:none;">
+            <i class="bi bi-tags"></i>
+            <div>No offers are available for this category yet.</div>
+        </div>
+    </div>
 </div>
-
-
-
-<!-- SWITCH BUTTON GROUP -->
-
-<div class="d-flex justify-content-center mb-4">
-
-<div class="btn-group switch-group">
-
-<button
-class="btn btn-primary"
-id="userBtn"
-onclick="switchOffers('user')">
-
-User Offers
-
-</button>
-
-<button
-class="btn btn-outline-primary"
-id="retailerBtn"
-onclick="switchOffers('retailer')">
-
-Retailer Offers
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<!-- OFFER CARDS -->
-
-<div class="row g-3">
-
-{% for offer in offers %}
-
-<div
-class="col-xl-3 col-lg-4 col-md-6 col-sm-12 offer-card"
-data-offer="{{ offer.offer_for }}">
-
-<div class="card shadow-sm h-100">
-
-<div class="card-body d-flex flex-column">
-
-<h5 class="card-title">
-{{ offer.name }}
-</h5>
-
-<p class="text-muted small">
-{{ offer.description|default:"No description" }}
-</p>
-
-<h6 class="text-primary mb-2">
-₹{{ offer.price }}
-</h6>
-
-<p class="small text-muted">
-{{ offer.start_date }} → {{ offer.end_date }}
-</p>
-
-<hr>
-
-<strong class="small">Items</strong>
-
-<ul class="list-group list-group-flush mb-3">
-
-{% for item in offer.offeritems_set.all %}
-
-<li class="list-group-item px-0 py-1 d-flex justify-content-between">
-
-<span class="small">
-{{ item.item.name }}
-</span>
-
-<span class="badge bg-success">
-{{ item.buy_qty }} + {{ item.offer_qty }}
-</span>
-
-</li>
-
-{% empty %}
-
-<li class="list-group-item text-muted small px-0">
-No Items
-</li>
-
-{% endfor %}
-
-</ul>
-
-
-<div class="mt-auto d-flex flex-wrap gap-2">
-
-<button
-class="btn btn-sm btn-success"
-data-bs-toggle="modal"
-data-bs-target="#addItemModal{{ offer.id }}">
-
-Add Item
-
-</button>
-
-<button
-class="btn btn-sm btn-warning"
-data-bs-toggle="modal"
-data-bs-target="#editOfferModal{{ offer.id }}">
-
-Edit
-
-</button>
-
-<a
-href="{% url 'milk_agency:delete_offer' offer.id %}"
-class="btn btn-sm btn-danger">
-
-Delete
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-
-
-<!-- CREATE OFFER MODAL -->
 
 <div class="modal fade" id="createOfferModal">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post" action="{% url 'milk_agency:create_offer' %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Create Offer</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form method="post" action="{% url 'milk_agency:create_offer' %}">
+                {% csrf_token %}
+                <div class="modal-header"><h5>Create Offer</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="text" name="name" class="form-control mb-2" placeholder="Offer Name" required>
+                    <textarea name="description" class="form-control mb-2" placeholder="Description"></textarea>
+                    <input type="number" name="price" class="form-control mb-2" placeholder="Price" required>
+                    <label class="small text-muted">Start Date</label>
+                    <input type="date" name="start_date" class="form-control mb-2" required>
+                    <label class="small text-muted">End Date</label>
+                    <input type="date" name="end_date" class="form-control mb-2" required>
+                    <input type="hidden" name="offer_for" id="offerForInput">
+                </div>
+                <div class="modal-footer"><button class="btn btn-success">Create Offer</button></div>
+            </form>
+        </div>
+    </div>
 </div>
-
-<div class="modal-body">
-
-<input
-type="text"
-name="name"
-class="form-control mb-2"
-placeholder="Offer Name"
-required>
-
-<textarea
-name="description"
-class="form-control mb-2"
-placeholder="Description"></textarea>
-
-<input
-type="number"
-name="price"
-class="form-control mb-2"
-placeholder="Price"
-required>
-
-<label class="small text-muted">Start Date</label>
-<input
-type="date"
-name="start_date"
-class="form-control mb-2"
-required>
-
-<label class="small text-muted">End Date</label>
-<input
-type="date"
-name="end_date"
-class="form-control mb-2"
-required>
-
-<input type="hidden" name="offer_for" id="offerForInput">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-success">
-Create Offer
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- EDIT OFFER MODALS -->
 
 {% for offer in offers %}
-
 <div class="modal fade" id="editOfferModal{{ offer.id }}">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'milk_agency:update_offer' offer.id %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Edit Offer</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form method="post" action="{% url 'milk_agency:update_offer' offer.id %}">
+                {% csrf_token %}
+                <div class="modal-header"><h5>Edit Offer</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="text" name="name" class="form-control mb-2" value="{{ offer.name }}">
+                    <textarea name="description" class="form-control mb-2">{{ offer.description }}</textarea>
+                    <input type="number" name="price" class="form-control mb-2" value="{{ offer.price }}">
+                    <label class="small">Start Date</label>
+                    <input type="date" name="start_date" class="form-control mb-2" value="{{ offer.start_date|date:'Y-m-d' }}">
+                    <label class="small">End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ offer.end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary">Update Offer</button></div>
+            </form>
+        </div>
+    </div>
 </div>
-
-<div class="modal-body">
-
-<input
-type="text"
-name="name"
-class="form-control mb-2"
-value="{{ offer.name }}">
-
-<textarea
-name="description"
-class="form-control mb-2">{{ offer.description }}</textarea>
-
-<input
-type="number"
-name="price"
-class="form-control mb-2"
-value="{{ offer.price }}">
-
-<label class="small">Start Date</label>
-<input
-type="date"
-name="start_date"
-class="form-control mb-2"
-value="{{ offer.start_date|date:'Y-m-d' }}">
-
-<label class="small">End Date</label>
-<input
-type="date"
-name="end_date"
-class="form-control"
-value="{{ offer.end_date|date:'Y-m-d' }}">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-primary">
-Update Offer
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-
-
-<!-- ADD ITEM MODALS -->
-
-{% for offer in offers %}
 
 <div class="modal fade" id="addItemModal{{ offer.id }}">
-
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'milk_agency:add_offer_item' offer.id %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-<h5>Add Offer Item</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <form method="post" action="{% url 'milk_agency:add_offer_item' offer.id %}">
+                {% csrf_token %}
+                <div class="modal-header"><h5>Add Offer Item</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <select name="item" class="form-control mb-2">
+                        {% for i in items %}
+                        <option value="{{ i.id }}">{{ i.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="buy_qty" class="form-control mb-2" placeholder="Buy Quantity">
+                    <input type="number" name="offer_qty" class="form-control mb-2" placeholder="Offer Quantity">
+                    <input type="number" name="offer_price" class="form-control" placeholder="Offer Price">
+                </div>
+                <div class="modal-footer"><button class="btn btn-success">Add Item</button></div>
+            </form>
+        </div>
+    </div>
 </div>
-
-<div class="modal-body">
-
-<select name="item" class="form-control mb-2">
-{% for i in items %}
-<option value="{{ i.id }}">{{ i.name }}</option>
 {% endfor %}
-</select>
-
-<input
-type="number"
-name="buy_qty"
-class="form-control mb-2"
-placeholder="Buy Quantity">
-
-<input
-type="number"
-name="offer_qty"
-class="form-control mb-2"
-placeholder="Offer Quantity">
-
-<input
-type="number"
-name="offer_price"
-class="form-control"
-placeholder="Offer Price">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-success">
-Add Item
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-
 
 <script>
-
 let currentOfferType = "user";
 
-function switchOffers(type){
+function switchOffers(type) {
+    currentOfferType = type;
+    const cards = document.querySelectorAll(".offer-card");
+    let visibleCount = 0;
 
-currentOfferType = type;
+    cards.forEach((card) => {
+        const show = card.dataset.offer === type;
+        card.style.display = show ? "grid" : "none";
+        if (show) visibleCount += 1;
+    });
 
-let cards = document.querySelectorAll(".offer-card");
+    document.getElementById("offerForInput").value = type;
+    document.getElementById("offersEmpty").style.display = visibleCount ? "none" : "block";
 
-cards.forEach(card => {
-
-if(card.dataset.offer === type){
-card.style.display = "block";
-}else{
-card.style.display = "none";
+    if (type === "user") {
+        document.getElementById("userBtn").classList.add("btn-primary");
+        document.getElementById("userBtn").classList.remove("btn-outline-primary");
+        document.getElementById("retailerBtn").classList.add("btn-outline-primary");
+        document.getElementById("retailerBtn").classList.remove("btn-primary");
+    } else {
+        document.getElementById("retailerBtn").classList.add("btn-primary");
+        document.getElementById("retailerBtn").classList.remove("btn-outline-primary");
+        document.getElementById("userBtn").classList.add("btn-outline-primary");
+        document.getElementById("userBtn").classList.remove("btn-primary");
+    }
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    switchOffers("user");
 });
-
-document.getElementById("offerForInput").value = type;
-
-
-// active button styling
-
-if(type === "user"){
-
-document.getElementById("userBtn").classList.add("btn-primary");
-document.getElementById("userBtn").classList.remove("btn-outline-primary");
-
-document.getElementById("retailerBtn").classList.add("btn-outline-primary");
-document.getElementById("retailerBtn").classList.remove("btn-primary");
-
-}
-else{
-
-document.getElementById("retailerBtn").classList.add("btn-primary");
-document.getElementById("retailerBtn").classList.remove("btn-outline-primary");
-
-document.getElementById("userBtn").classList.add("btn-outline-primary");
-document.getElementById("userBtn").classList.remove("btn-primary");
-
-}
-
-}
-
-document.addEventListener("DOMContentLoaded", function(){
-switchOffers("user");
-});
-
 </script>
-
 {% endblock %}

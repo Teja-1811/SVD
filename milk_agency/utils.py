@@ -6,7 +6,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.contrib import messages
 from .models import Item, BillItem, Customer, DailyPayment, MonthlyPaymentSummary, StockInEntry
 
@@ -152,12 +152,20 @@ def parse_decimal(value, default="0"):
         return Decimal(default)
 
 
-def calculate_stock_entry_values(item, crates):
+def calculate_stock_entry_values(item, crates, discount=0):
     crates_decimal = parse_decimal(crates)
+    discount_decimal = parse_decimal(discount)
     pcs_count = parse_decimal(item.pcs_count)
     added_quantity = crates_decimal * pcs_count
-    stock_value = added_quantity * parse_decimal(item.buying_price)
+    gross_value = added_quantity * parse_decimal(item.buying_price)
+    stock_value = gross_value - discount_decimal
+    if stock_value < 0:
+        stock_value = Decimal("0")
     return crates_decimal, added_quantity, stock_value
+
+
+def quantity_to_stock_units(quantity):
+    return int(parse_decimal(quantity).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 def recalculate_daily_payment(company_id, target_date):
@@ -210,13 +218,13 @@ def apply_stock_updates(stock_updates, *, entry_date=None):
         for stock_update in stock_updates:
             item = stock_update["item"]
             crates_decimal, added_qty, stock_value = calculate_stock_entry_values(
-                item, stock_update.get("crates", 0)
+                item, stock_update.get("crates", 0), stock_update.get("discount", 0)
             )
             if crates_decimal <= 0:
                 continue
 
             old_quantity = item.stock_quantity
-            item.stock_quantity += int(added_qty)
+            item.stock_quantity += quantity_to_stock_units(added_qty)
             item.save(update_fields=["stock_quantity"])
 
             StockInEntry.objects.create(
@@ -246,15 +254,15 @@ def apply_stock_updates(stock_updates, *, entry_date=None):
     return updated_items
 
 
-def update_stock_entry(entry, *, crates, date_value):
+def update_stock_entry(entry, *, crates, discount, date_value):
     previous_company_id = entry.company_id
     previous_date = entry.date
 
-    crates_decimal, added_quantity, stock_value = calculate_stock_entry_values(entry.item, crates)
-    quantity_delta = added_quantity - parse_decimal(entry.quantity)
+    crates_decimal, added_quantity, stock_value = calculate_stock_entry_values(entry.item, crates, discount)
+    quantity_delta = quantity_to_stock_units(added_quantity) - quantity_to_stock_units(entry.quantity)
 
     with transaction.atomic():
-        entry.item.stock_quantity += int(quantity_delta)
+        entry.item.stock_quantity += quantity_delta
         entry.item.save(update_fields=["stock_quantity"])
 
         entry.date = date_value
@@ -275,10 +283,10 @@ def update_stock_entry(entry, *, crates, date_value):
 def delete_stock_entry(entry):
     impacted_company_id = entry.company_id
     impacted_date = entry.date
-    quantity = parse_decimal(entry.quantity)
+    quantity = quantity_to_stock_units(entry.quantity)
 
     with transaction.atomic():
-        entry.item.stock_quantity -= int(quantity)
+        entry.item.stock_quantity -= quantity
         entry.item.save(update_fields=["stock_quantity"])
         entry.delete()
         sync_stock_entry_totals([(impacted_company_id, impacted_date)])

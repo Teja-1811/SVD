@@ -114,6 +114,21 @@
     border-radius: 8px;
 }
 
+.date-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.date-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
 /* =================================
    TOP RIGHT BUTTON + preview thumbnail
 =================================== */
@@ -193,13 +208,68 @@
         </div>
 
         <div class="header-right">
-          <!-- update button (top-right) -->
-          <a href="{% url 'milk_agency:update_stock' %}" class="update-btn">
+          <a href="{% url 'milk_agency:update_stock' %}?date={{ selected_date|date:'Y-m-d' }}" class="update-btn">
             <i class="bi bi-pencil-square"></i>
-            <span class="update-text">Update Stock</span>
+            <span class="update-text">Manage Stock</span>
           </a>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card table-card p-3 fade-in-up">
+        <div class="date-toolbar">
+          <div>
+            <h6 class="fw-bold mb-1"><i class="bi bi-calendar-date me-2"></i>Date-wise Crate Records</h6>
+            <div class="text-muted small">Saved crates for {{ selected_date|date:"d M Y" }} with edit support for the same date.</div>
+          </div>
+          <form method="get" class="date-filter-form">
+            <label for="recordDate" class="fw-semibold">Date</label>
+            <input id="recordDate" type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control">
+            <button type="submit" class="btn btn-outline-primary">Load Records</button>
+            <a href="{% url 'milk_agency:update_stock' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-outline-success">Add / Edit</a>
+          </form>
+        </div>
+
+        <div class="table-responsive mt-3">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Time</th>
+                <th>Company</th>
+                <th>Item</th>
+                <th>Crates</th>
+                <th>Quantity</th>
+                <th>Value</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in date_entries %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ entry.created_at|date:"h:i A" }}</td>
+                <td>{{ entry.company.name|default:"No company" }}</td>
+                <td>{{ entry.item.name }}</td>
+                <td>{{ entry.crates|floatformat:2 }}</td>
+                <td>{{ entry.quantity|floatformat:2 }}</td>
+                <td>Rs. {{ entry.value|floatformat:2 }}</td>
+                <td>
+                  <a href="{% url 'milk_agency:edit_stock_entry' entry.id %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8" class="text-center py-4 text-muted">No crate records found for this date.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
