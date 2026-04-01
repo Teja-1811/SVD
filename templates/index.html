@@ -40,7 +40,7 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 .section-head p{margin:0;max-width:58ch;color:#5d667f}
 .products-stage,.contact-stage{padding:clamp(1.2rem,2vw,2rem)}
 .products-shell{display:grid;gap:1.1rem}
-.products-showcase{grid-template-columns:minmax(0,1.18fr) minmax(300px,.82fr);align-items:start}
+.products-showcase{grid-template-columns:minmax(0,1fr);align-items:start}
 .products-slider{display:grid}
 .product-slide{display:none;grid-template-columns:minmax(280px,.92fr) minmax(0,1.08fr);gap:1.25rem;align-items:center;padding:clamp(1.2rem,2vw,1.6rem);border-radius:28px;background:radial-gradient(circle at top right,rgba(255,215,120,.2),transparent 25%),linear-gradient(135deg,#fff 0%,#f6f8ff 100%);border:1px solid rgba(102,126,234,.12);box-shadow:0 20px 45px rgba(22,37,73,.08);animation:productFade .35s ease}
 .product-slide.active{display:grid}
@@ -60,10 +60,20 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 .product-toolbar{justify-content:space-between;padding:.2rem 0 .35rem}
 .product-nav button{width:46px;height:46px;border:0;border-radius:14px;background:#4c62da;color:#fff;box-shadow:0 16px 26px rgba(76,98,218,.2)}
 .product-counter{color:#66708b;font-weight:700}
-.product-peek-list{display:grid;gap:.85rem}
-.product-peek{display:grid;grid-template-columns:64px minmax(0,1fr);gap:.9rem;align-items:center;padding:.85rem;border-radius:20px;background:rgba(248,250,255,.98);border:1px solid rgba(102,126,234,.1);cursor:pointer;transition:.2s ease}
-.product-peek.active,.product-peek:hover{transform:translateY(-2px);border-color:rgba(76,98,218,.28);box-shadow:0 14px 28px rgba(22,37,73,.08)}
-.product-peek img{width:64px;height:64px;object-fit:contain;border-radius:16px;background:#fff;padding:8px}
+.product-section-footer{display:flex;justify-content:center;padding-top:.2rem}
+.product-view-all{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.88rem 1.2rem;border-radius:16px;border:1px solid rgba(76,98,218,.18);background:#fff;color:#3149c6;font-weight:700;box-shadow:0 14px 28px rgba(22,37,73,.08)}
+.product-view-all:hover{background:#f5f7ff;color:#2237ad}
+.product-modal .modal-dialog{max-width:min(1100px,92vw)}
+.product-modal .modal-content{border:0;border-radius:28px;overflow:hidden;box-shadow:0 30px 70px rgba(22,37,73,.24)}
+.product-modal .modal-header{padding:1.2rem 1.4rem;border-bottom:1px solid rgba(102,126,234,.1);background:linear-gradient(135deg,#f7f9ff 0%,#eef3ff 100%)}
+.product-modal .modal-title{font-size:1.2rem;font-weight:800;color:#23304b}
+.product-modal .modal-body{padding:1.25rem}
+.product-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.product-modal-card{display:grid;gap:.8rem;padding:1rem;border-radius:22px;border:1px solid rgba(102,126,234,.12);background:linear-gradient(180deg,#fff 0%,#f8faff 100%)}
+.product-modal-card img{width:100%;height:150px;object-fit:contain;border-radius:18px;background:#fff;padding:.8rem;border:1px solid rgba(102,126,234,.08)}
+.product-modal-card h3{margin:0;font-size:1.02rem;line-height:1.25;color:#1f2740}
+.product-modal-meta{display:grid;gap:.4rem;color:#5f6882;font-size:.93rem}
+.product-modal-price{font-size:1.2rem;font-weight:800;color:#3149c6}
 .feature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .feature-card{padding:1.4rem;background:linear-gradient(180deg,#fff 0%,#f7f9ff 100%);border:1px solid rgba(102,126,234,.1);box-shadow:0 18px 36px rgba(22,37,73,.08)}
 .feature-icon-badge{width:62px;height:62px;display:inline-flex;align-items:center;justify-content:center;border-radius:20px;background:linear-gradient(135deg,#5d73e7,#7a60de);color:#fff;font-size:1.4rem;box-shadow:0 16px 28px rgba(93,115,231,.24);margin-bottom:1rem}
@@ -84,8 +94,8 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
 .contact-submit{border:0;border-radius:16px;padding:1rem 1.3rem;font-weight:700;background:linear-gradient(135deg,#556be2,#7258db);color:#fff;box-shadow:0 18px 30px rgba(85,107,226,.22)}
 @keyframes productFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media (max-width:1199.98px){.hero-grid,.products-showcase,.contact-grid,.feature-grid,.trust-band{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-title{font-size:clamp(2.8rem,5.8vw,5rem)}}
-@media (max-width:991.98px){.hero-grid,.products-showcase,.contact-grid{grid-template-columns:1fr}.hero-title{max-width:none}.hero-card{margin-top:.25rem;justify-self:stretch;max-width:none}.hero-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.product-peek-list{grid-template-columns:1fr 1fr}}
-@media (max-width:767.98px){.landing-shell{padding:0}.landing-section{padding:1rem 0 1.35rem}.landing-panel{border-radius:24px}.hero-wrap{padding:.5rem 0 1rem}.hero-stage{min-height:auto;padding:1.2rem 1rem 1.35rem;border-radius:0}.products-stage,.contact-stage{padding:1.05rem;border-radius:24px}.landing-eyebrow{font-size:.68rem;letter-spacing:.1em;padding:.5rem .72rem}.hero-logo{width:84px;height:84px;padding:10px;border-radius:20px}.hero-title{font-size:clamp(2.5rem,12vw,3.5rem);line-height:.96;max-width:none}.hero-copy{font-size:.96rem}.hero-metrics,.feature-grid,.trust-band,.product-meta-grid,.product-slide{grid-template-columns:1fr}.hero-metric,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:22px}.hero-metric strong,.trust-card strong{font-size:1.25rem}.hero-company-item,.contact-pill{padding:.8rem}.hero-company-item{align-items:flex-start}.hero-company-item img{width:50px;height:50px;border-radius:14px}.hero-strip{display:grid;grid-template-columns:1fr;gap:.65rem}.hero-strip span,.product-chip{width:100%;justify-content:center}.product-slide{gap:1rem;padding:1rem;border-radius:22px}.product-slide h3{font-size:1.7rem}.product-slide p{font-size:.95rem}.product-slide-media{min-height:220px;border-radius:18px}.product-slide-media img{max-width:220px;max-height:220px}.product-toolbar{gap:.8rem}.product-nav{width:100%;justify-content:space-between}.product-nav button{flex:1;max-width:calc(50% - .35rem)}.product-counter{font-size:.92rem}.product-peek-list{grid-template-columns:1fr}.product-peek{grid-template-columns:56px minmax(0,1fr);gap:.7rem;width:100%;padding:.72rem;border-radius:16px;text-align:left}.product-peek img{width:56px;height:56px;border-radius:14px}.section-head,.product-toolbar{flex-direction:column;align-items:flex-start}.section-head h2{font-size:1.8rem}.section-head p{font-size:.95rem}.feature-card{padding:1.1rem}.feature-icon-badge{width:54px;height:54px;border-radius:18px;font-size:1.2rem}.feature-card h3{font-size:1.08rem}.feature-points span{align-items:flex-start;font-size:.92rem}.contact-grid iframe{height:240px}.contact-pill{flex-direction:column;gap:.45rem}.contact-form-card .form-control{padding:.82rem .9rem}}
+@media (max-width:991.98px){.hero-grid,.products-showcase,.contact-grid{grid-template-columns:1fr}.hero-title{max-width:none}.hero-card{margin-top:.25rem;justify-self:stretch;max-width:none}.hero-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:767.98px){.landing-shell{padding:0}.landing-section{padding:1rem 0 1.35rem}.landing-panel{border-radius:24px}.hero-wrap{padding:.5rem 0 1rem}.hero-stage{min-height:auto;padding:1.2rem 1rem 1.35rem;border-radius:0}.products-stage,.contact-stage{padding:1.05rem;border-radius:24px}.landing-eyebrow{font-size:.68rem;letter-spacing:.1em;padding:.5rem .72rem}.hero-logo{width:84px;height:84px;padding:10px;border-radius:20px}.hero-title{font-size:clamp(2.5rem,12vw,3.5rem);line-height:.96;max-width:none}.hero-copy{font-size:.96rem}.hero-metrics,.feature-grid,.trust-band,.product-meta-grid,.product-slide{grid-template-columns:1fr}.hero-metric,.trust-card,.feature-card,.contact-card,.contact-form-card{border-radius:22px}.hero-metric strong,.trust-card strong{font-size:1.25rem}.hero-company-item,.contact-pill{padding:.8rem}.hero-company-item{align-items:flex-start}.hero-company-item img{width:50px;height:50px;border-radius:14px}.hero-strip{display:grid;grid-template-columns:1fr;gap:.65rem}.hero-strip span,.product-chip{width:100%;justify-content:center}.product-slide{gap:1rem;padding:1rem;border-radius:22px}.product-slide h3{font-size:1.7rem}.product-slide p{font-size:.95rem}.product-slide-media{min-height:220px;border-radius:18px}.product-slide-media img{max-width:220px;max-height:220px}.product-toolbar{gap:.8rem}.product-nav{width:100%;justify-content:space-between}.product-nav button{flex:1;max-width:calc(50% - .35rem)}.product-counter{font-size:.92rem}.section-head,.product-toolbar{flex-direction:column;align-items:flex-start}.section-head h2{font-size:1.8rem}.section-head p{font-size:.95rem}.feature-card{padding:1.1rem}.feature-icon-badge{width:54px;height:54px;border-radius:18px;font-size:1.2rem}.feature-card h3{font-size:1.08rem}.feature-points span{align-items:flex-start;font-size:.92rem}.contact-grid iframe{height:240px}.contact-pill{flex-direction:column;gap:.45rem}.contact-form-card .form-control{padding:.82rem .9rem}.product-modal-grid{grid-template-columns:1fr}}
 @media (max-width:479.98px){.landing-shell{padding:0 2px}.hero-actions{gap:.7rem}.hero-primary-btn,.hero-secondary-btn{padding:.9rem 1rem;border-radius:14px;font-size:.95rem}.hero-metric{padding:.85rem}.product-meta-card{padding:.8rem}.contact-card,.contact-form-card{padding:1rem}.contact-grid iframe{height:220px}}
 </style>
 {% endblock extra_css %}
@@ -166,50 +176,39 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
                     </div>
                 </div>
                 <div class="products-showcase">
-                <div class="products-slider">
-                    {% for product in products %}
-                    <article class="product-slide {% if forloop.first %}active{% endif %}" data-slide-index="{{ forloop.counter0 }}">
-                        <div class="product-slide-media">
-                            <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
-                        </div>
-                        <div class="product-slide-copy">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="product-chip company"><i class="bi bi-building"></i> {{ product.company.name|default:"SVD Product" }}</span>
-                                <span class="product-chip status"><i class="bi bi-check-circle-fill"></i> Available now</span>
+                    <div class="products-slider">
+                        {% for product in products %}
+                        <article class="product-slide {% if forloop.first %}active{% endif %}" data-slide-index="{{ forloop.counter0 }}">
+                            <div class="product-slide-media">
+                                <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
                             </div>
-                            <h3>{{ product.name }}</h3>
-                            <p>{{ product.description|default:"Product information is available here for customer review." }}</p>
-                            <div class="product-price">&#8377;{{ product.mrp }}</div>
-                            <div class="product-meta-grid">
-                                <div class="product-meta-card"><small>Company</small><strong>{{ product.company.name|default:"SVD" }}</strong></div>
-                                <div class="product-meta-card"><small>Status</small><strong>Active listing</strong></div>
+                            <div class="product-slide-copy">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="product-chip company"><i class="bi bi-building"></i> {{ product.company.name|default:"SVD Product" }}</span>
+                                    <span class="product-chip status"><i class="bi bi-check-circle-fill"></i> Available now</span>
+                                </div>
+                                <h3>{{ product.name }}</h3>
+                                <p>{{ product.description|default:"Product information is available here for customer review." }}</p>
+                                <div class="product-price">&#8377;{{ product.mrp }}</div>
+                                <div class="product-meta-grid">
+                                    <div class="product-meta-card"><small>Company</small><strong>{{ product.company.name|default:"SVD" }}</strong></div>
+                                    <div class="product-meta-card"><small>Status</small><strong>Active listing</strong></div>
+                                </div>
                             </div>
-                        </div>
-                    </article>
-                    {% empty %}
-                    <article class="product-slide active position-relative">
-                        <div class="product-slide-media"><img src="{% static 'images/placeholder.png' %}" alt="No products"></div>
-                        <div><h3>No products available right now.</h3><p>Product listings will appear here as soon as active items are published for the website.</p></div>
-                    </article>
-                    {% endfor %}
-                </div>
-                <div class="product-peek-list">
-                    {% for product in products %}
-                    <button type="button" class="product-peek {% if forloop.first %}active{% endif %}" data-peek-index="{{ forloop.counter0 }}">
-                        <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
-                        <span class="text-start">
-                            <strong>{{ product.name }}</strong>
-                            <small>{{ product.company.name|default:"SVD Product" }} • &#8377;{{ product.mrp }}</small>
-                        </span>
-                    </button>
-                    {% empty %}
-                    <div class="product-peek active">
-                        <img src="{% static 'images/placeholder.png' %}" alt="No products">
-                        <span class="text-start"><strong>No active products</strong><small>Please check back soon.</small></span>
+                        </article>
+                        {% empty %}
+                        <article class="product-slide active" data-slide-index="0">
+                            <div class="product-slide-media"><img src="{% static 'images/placeholder.png' %}" alt="No products"></div>
+                            <div class="product-slide-copy"><h3>No products available right now.</h3><p>Product listings will appear here as soon as active items are published for the website.</p></div>
+                        </article>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
+                <div class="product-section-footer">
+                    <button type="button" class="product-view-all" data-bs-toggle="modal" data-bs-target="#allProductsModal">
+                        <i class="bi bi-grid-3x3-gap"></i><span>View all products</span>
+                    </button>
+                </div>
             </div>
         </div>
     </section>
@@ -292,11 +291,49 @@ body{overflow-x:hidden;background:radial-gradient(circle at top left,rgba(102,12
         </div>
     </section>
 </div>
+
+<div class="modal fade product-modal" id="allProductsModal" tabindex="-1" aria-labelledby="allProductsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="allProductsModalLabel">All products</h2>
+                    <p class="mb-0 text-muted">Review the complete catalogue in one place.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="product-modal-grid">
+                    {% for product in products %}
+                    <article class="product-modal-card">
+                        <img src="{{ product.resolved_image_url }}" alt="{{ product.name }}">
+                        <h3>{{ product.name }}</h3>
+                        <div class="product-modal-meta">
+                            <span><strong>Company:</strong> {{ product.company.name|default:"SVD" }}</span>
+                            <span><strong>Status:</strong> Active listing</span>
+                            <span>{{ product.description|default:"Product information is available for customer review." }}</span>
+                        </div>
+                        <div class="product-modal-price">&#8377;{{ product.mrp }}</div>
+                    </article>
+                    {% empty %}
+                    <article class="product-modal-card">
+                        <img src="{% static 'images/placeholder.png' %}" alt="No products">
+                        <h3>No products available</h3>
+                        <div class="product-modal-meta">
+                            <span>The catalogue will appear here once products are published.</span>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/contact-whatsapp.js' %}?v=2"></script>
 <script>
-(function(){const slides=[...document.querySelectorAll('.product-slide')],peeks=[...document.querySelectorAll('.product-peek[data-peek-index]')],prevBtn=document.getElementById('productPrev'),nextBtn=document.getElementById('productNext'),currentEl=document.getElementById('productCounterCurrent'),totalEl=document.getElementById('productCounterTotal');if(!slides.length||!peeks.length){return}let currentIndex=0,autoRotate;if(totalEl){totalEl.textContent=slides.length}function renderSlide(index){currentIndex=(index+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentIndex));peeks.forEach((peek,i)=>peek.classList.toggle('active',i===currentIndex));if(currentEl){currentEl.textContent=currentIndex+1}}function restartAutoRotate(){window.clearInterval(autoRotate);autoRotate=window.setInterval(()=>renderSlide(currentIndex+1),3500)}if(prevBtn){prevBtn.addEventListener('click',()=>{renderSlide(currentIndex-1);restartAutoRotate()})}if(nextBtn){nextBtn.addEventListener('click',()=>{renderSlide(currentIndex+1);restartAutoRotate()})}peeks.forEach(peek=>peek.addEventListener('click',()=>{renderSlide(Number(peek.dataset.peekIndex||0));restartAutoRotate()}));renderSlide(0);restartAutoRotate()})();
+(function(){const slides=[...document.querySelectorAll('.product-slide[data-slide-index]')],prevBtn=document.getElementById('productPrev'),nextBtn=document.getElementById('productNext'),currentEl=document.getElementById('productCounterCurrent'),totalEl=document.getElementById('productCounterTotal');if(!slides.length){return}let currentIndex=0,autoRotate;const hasMultiple=slides.length>1;if(totalEl){totalEl.textContent=slides.length}function renderSlide(index){currentIndex=(index+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentIndex));if(currentEl){currentEl.textContent=currentIndex+1}}function restartAutoRotate(){window.clearInterval(autoRotate);if(!hasMultiple){return}autoRotate=window.setInterval(()=>renderSlide(currentIndex+1),3200)}if(prevBtn){prevBtn.disabled=!hasMultiple;prevBtn.addEventListener('click',()=>{renderSlide(currentIndex-1);restartAutoRotate()})}if(nextBtn){nextBtn.disabled=!hasMultiple;nextBtn.addEventListener('click',()=>{renderSlide(currentIndex+1);restartAutoRotate()})}renderSlide(0);restartAutoRotate()})();
 </script>
 {% endblock extra_js %}
