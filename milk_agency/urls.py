@@ -77,6 +77,8 @@ urlpatterns = [
     # Stock Dashboard URLs
     path('stock-dashboard/', views_stock_dashboard.stock_dashboard, name='stock_dashboard'),
     path('update-stock/', views_stock_dashboard.update_stock, name='update_stock'),
+    path('update-stock/edit/<int:entry_id>/', views_stock_dashboard.edit_stock_entry_view, name='edit_stock_entry'),
+    path('update-stock/delete/<int:entry_id>/', views_stock_dashboard.delete_stock_entry_view, name='delete_stock_entry'),
     path('api/stock-data/', views_stock_dashboard.stock_data_api, name='stock_data_api'),
 
     # Legacy invoice URL (keeping for backward compatibility)

@@ -1,0 +1,91 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Edit Stock Entry{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 ma-page-shell">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h3 class="mb-1">Edit stock entry</h3>
+                            <div class="text-muted">{{ entry.item.name }}{% if entry.company %} | {{ entry.company.name }}{% endif %}</div>
+                        </div>
+                        <a href="{% url 'milk_agency:update_stock' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-outline-secondary">Back</a>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Date</label>
+                            <input type="date" name="entry_date" value="{{ entry.date|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Crates</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                name="crates"
+                                value="{{ entry.crates|floatformat:2 }}"
+                                class="form-control"
+                                id="editCrates"
+                                data-pcs="{{ entry.item.pcs_count }}"
+                                data-price="{{ entry.item.buying_price }}"
+                                required
+                            >
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="small text-muted">Pcs / crate</div>
+                                    <div class="fw-bold">{{ entry.item.pcs_count }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="small text-muted">Quantity</div>
+                                    <div class="fw-bold" id="quantityPreview">{{ entry.quantity|floatformat:2 }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="small text-muted">Value</div>
+                                    <div class="fw-bold" id="valuePreview">{{ entry.value|floatformat:2 }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'milk_agency:update_stock' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const input = document.getElementById("editCrates");
+    const quantityPreview = document.getElementById("quantityPreview");
+    const valuePreview = document.getElementById("valuePreview");
+
+    function recalc() {
+        const crates = parseFloat(input.value || "0");
+        const pcs = parseFloat(input.dataset.pcs || "0");
+        const price = parseFloat(input.dataset.price || "0");
+        quantityPreview.textContent = (crates * pcs).toFixed(2);
+        valuePreview.textContent = (crates * pcs * price).toFixed(2);
+    }
+
+    input.addEventListener("input", recalc);
+    recalc();
+})();
+</script>
+{% endblock %}

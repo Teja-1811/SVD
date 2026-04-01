@@ -252,6 +252,26 @@ class CashbookEntry(models.Model):
     coin2 = models.IntegerField(default=0)
     coin1 = models.IntegerField(default=0)
 
+class StockInEntry(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='stock_in_entries')
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='stock_in_entries')
+    date = models.DateField(default=timezone.localdate)
+    crates = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['company']),
+        ]
+
+    def __str__(self):
+        return f"{self.item.name} - {self.quantity} pcs - ₹{self.value}"
+
 class DailyPayment(models.Model):
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True, related_name='daily_payments')
     date = models.DateField()

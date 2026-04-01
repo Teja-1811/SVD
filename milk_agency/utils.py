@@ -2,10 +2,13 @@ import os
 from datetime import datetime
 from calendar import month_name
 from django.conf import settings
+from django.db import transaction
+from django.db.models import Sum
+from django.utils import timezone
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.contrib import messages
-from .models import Item, BillItem, Customer
+from .models import Item, BillItem, Customer, DailyPayment, MonthlyPaymentSummary, StockInEntry
 
 class InvoicePDFUtils:
     """
@@ -116,6 +119,169 @@ def process_bill_items(bill, item_ids, quantities, discounts):
                 raise
 
     return total_bill, total_profit
+
+
+def refresh_monthly_payment_summary(target_date):
+    totals = DailyPayment.objects.filter(
+        date__year=target_date.year,
+        date__month=target_date.month
+    ).aggregate(
+        total_invoice=Sum("invoice_amount"),
+        total_paid=Sum("paid_amount")
+    )
+
+    total_invoice = totals["total_invoice"] or Decimal("0")
+    total_paid = totals["total_paid"] or Decimal("0")
+    total_due = total_invoice - total_paid
+
+    MonthlyPaymentSummary.objects.update_or_create(
+        year=target_date.year,
+        month=target_date.month,
+        defaults={
+            "total_invoice": total_invoice,
+            "total_paid": total_paid,
+            "total_due": total_due,
+        }
+    )
+
+
+def parse_decimal(value, default="0"):
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return Decimal(default)
+
+
+def calculate_stock_entry_values(item, crates):
+    crates_decimal = parse_decimal(crates)
+    pcs_count = parse_decimal(item.pcs_count)
+    added_quantity = crates_decimal * pcs_count
+    stock_value = added_quantity * parse_decimal(item.buying_price)
+    return crates_decimal, added_quantity, stock_value
+
+
+def recalculate_daily_payment(company_id, target_date):
+    if not company_id:
+        return
+
+    invoice_total = StockInEntry.objects.filter(
+        company_id=company_id,
+        date=target_date,
+    ).aggregate(total=Sum("value"))["total"] or Decimal("0")
+
+    payment = DailyPayment.objects.filter(company_id=company_id, date=target_date).first()
+
+    if payment:
+        payment.invoice_amount = invoice_total
+        if invoice_total == Decimal("0") and not payment.paid_amount:
+            payment.delete()
+        else:
+            payment.save(update_fields=["invoice_amount", "updated_at"])
+    elif invoice_total > Decimal("0"):
+        DailyPayment.objects.create(
+            company_id=company_id,
+            date=target_date,
+            invoice_amount=invoice_total,
+            paid_amount=None,
+        )
+
+
+def sync_stock_entry_totals(changes):
+    impacted = set()
+    for company_id, entry_date in changes:
+        if company_id and entry_date:
+            impacted.add((company_id, entry_date))
+
+    months = set()
+    for company_id, entry_date in impacted:
+        recalculate_daily_payment(company_id, entry_date)
+        months.add((entry_date.year, entry_date.month, entry_date))
+
+    for _, _, any_date_in_month in months:
+        refresh_monthly_payment_summary(any_date_in_month)
+
+
+def apply_stock_updates(stock_updates, *, entry_date=None):
+    target_date = entry_date or timezone.localdate()
+    updated_items = []
+    impacted_changes = []
+
+    with transaction.atomic():
+        for stock_update in stock_updates:
+            item = stock_update["item"]
+            crates_decimal, added_qty, stock_value = calculate_stock_entry_values(
+                item, stock_update.get("crates", 0)
+            )
+            if crates_decimal <= 0:
+                continue
+
+            old_quantity = item.stock_quantity
+            item.stock_quantity += int(added_qty)
+            item.save(update_fields=["stock_quantity"])
+
+            StockInEntry.objects.create(
+                item=item,
+                company=item.company,
+                date=target_date,
+                crates=crates_decimal,
+                quantity=added_qty,
+                value=stock_value,
+            )
+
+            impacted_changes.append((item.company_id, target_date))
+
+            updated_items.append({
+                "id": item.id,
+                "name": item.name,
+                "old_quantity": old_quantity,
+                "new_quantity": item.stock_quantity,
+                "added_quantity": float(added_qty),
+                "difference": float(added_qty),
+                "value": float(stock_value),
+            })
+
+        if impacted_changes:
+            sync_stock_entry_totals(impacted_changes)
+
+    return updated_items
+
+
+def update_stock_entry(entry, *, crates, date_value):
+    previous_company_id = entry.company_id
+    previous_date = entry.date
+
+    crates_decimal, added_quantity, stock_value = calculate_stock_entry_values(entry.item, crates)
+    quantity_delta = added_quantity - parse_decimal(entry.quantity)
+
+    with transaction.atomic():
+        entry.item.stock_quantity += int(quantity_delta)
+        entry.item.save(update_fields=["stock_quantity"])
+
+        entry.date = date_value
+        entry.company = entry.item.company
+        entry.crates = crates_decimal
+        entry.quantity = added_quantity
+        entry.value = stock_value
+        entry.save(update_fields=["date", "company", "crates", "quantity", "value", "updated_at"])
+
+        sync_stock_entry_totals([
+            (previous_company_id, previous_date),
+            (entry.company_id, entry.date),
+        ])
+
+    return entry
+
+
+def delete_stock_entry(entry):
+    impacted_company_id = entry.company_id
+    impacted_date = entry.date
+    quantity = parse_decimal(entry.quantity)
+
+    with transaction.atomic():
+        entry.item.stock_quantity -= int(quantity)
+        entry.item.save(update_fields=["stock_quantity"])
+        entry.delete()
+        sync_stock_entry_totals([(impacted_company_id, impacted_date)])
 
 
 def calculate_monthly_commissions(year, month):

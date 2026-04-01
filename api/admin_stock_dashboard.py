@@ -5,7 +5,8 @@ from django.db.models import Sum, F, FloatField, ExpressionWrapper, Value
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from milk_agency.models import Item, BillItem
+from milk_agency.models import Item, BillItem, StockInEntry
+from milk_agency.utils import apply_stock_updates
 
 
 # ==========================================================
@@ -59,8 +60,13 @@ def stock_dashboard_api(request):
 
     top_items = list(top_items_qs)
 
-    # -------- STOCK OUT LAST 30 DAYS ----------
+    # -------- STOCK IN / OUT LAST 30 DAYS ----------
     thirty_days_ago = datetime.today() - timedelta(days=30)
+    stock_in = StockInEntry.objects.filter(
+        date__gte=thirty_days_ago.date()
+    ).aggregate(
+        total=Coalesce(Sum("quantity"), Value(0.0), output_field=FloatField())
+    )["total"]
 
     stock_out = BillItem.objects.filter(
         bill__invoice_date__gte=thirty_days_ago
@@ -87,7 +93,7 @@ def stock_dashboard_api(request):
             "total_items": total_items,
             "total_stock_value": float(total_stock_value or 0),
             "low_stock_count": low_stock_count,
-            "stock_in_30d": float(total_stock_value or 0) - float(stock_out or 0),
+            "stock_in_30d": float(stock_in or 0),
             "stock_out_30d": float(stock_out or 0),
         },
         "all_items": all_items,
@@ -114,30 +120,21 @@ def update_stock_api(request):
 
     items = request.data.get("updates", [])
     print("Received stock update:", items)
-    updated = []
+    stock_updates = []
 
     for entry in items:
         try:
             item = Item.objects.get(id=entry["id"])
             crates = float(entry.get("crates", 0))
-
-            old_qty = item.stock_quantity
-            pcs = item.pcs_count if item.pcs_count > 0 else 1
-
-            added_qty = crates * pcs
-            item.stock_quantity += added_qty
-            item.save()
-
-            updated.append({
-                "id": item.id,
-                "name": item.name,
-                "old_quantity": old_qty,
-                "new_quantity": item.stock_quantity,
-                "added_quantity": added_qty
+            stock_updates.append({
+                "item": item,
+                "crates": crates,
             })
 
         except Item.DoesNotExist:
             continue
+
+    updated = apply_stock_updates(stock_updates)
 
     return Response({
         "status": "success",

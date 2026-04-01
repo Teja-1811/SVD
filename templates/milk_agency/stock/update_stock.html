@@ -1,313 +1,386 @@
 {% extends "milk_agency/home/base.html" %}
 {% load static %}
 
-{% block title %}Update Stock{% endblock %}
+{% block title %}Stock In Ledger{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/common.css' %}">
-<link rel="stylesheet" href="{% static 'css/milk_agency/update_stock.css' %}">
-
 <style>
+.si-shell {
+    display: grid;
+    gap: 1.5rem;
+}
 
-/* -------------------------------------------------------------- */
-/* MAIN PURPLE HEADER */
-/* -------------------------------------------------------------- */
+.si-hero {
+    background: linear-gradient(135deg, #073b4c 0%, #118ab2 48%, #f4a261 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 1.75rem;
+    box-shadow: 0 20px 50px rgba(7, 59, 76, 0.22);
+}
 
-.custom-stock-header {
-    background: linear-gradient(135deg, #6a11cb, #4e63d7);
-    border-radius: 16px 16px 0 0;
-    padding: 28px 26px;
-    position: relative;
+.si-card {
+    background: #fff;
+    border: 1px solid #dbe6ea;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.si-card-head {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #e8eef2;
+}
+
+.si-card-body {
+    padding: 1.25rem;
+}
+
+.si-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.si-stat {
+    border-radius: 18px;
+    padding: 1rem 1.1rem;
+    background: #f6fbfc;
+    border: 1px solid #d7e7ec;
+}
+
+.si-stat-label {
+    font-size: 0.82rem;
+    color: #4f6b75;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.si-stat-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #073b4c;
+}
+
+.si-toolbar {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 160px;
+    gap: 0.9rem;
+}
+
+.si-company-block {
+    border: 1px solid #e4ecef;
+    border-radius: 18px;
     overflow: hidden;
 }
 
-.custom-stock-header::before {
-    content: "";
-    position: absolute;
-    top: -20px;
-    right: -40px;
-    width: 280px;
-    height: 180px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    filter: blur(45px);
-}
-
-.icon-box {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.28);
-    border-radius: 50%;
+.si-company-head {
+    background: #f7fafb;
+    padding: 0.9rem 1rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 1rem;
     align-items: center;
-    color: white;
-    flex-shrink: 0;
-    font-size: 1.4rem;
 }
 
-/* -------------------------------------------------------------- */
-/* FILTER BOX */
-/* -------------------------------------------------------------- */
-
-.filter-box {
-    background: #f9faff;
-    border: 1px solid #e2e5ff;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 18px;
+.si-table-wrap {
+    max-height: 420px;
+    overflow: auto;
 }
 
-.filter-label {
-    font-size: .8rem;
-    font-weight: 600;
-    color: #59628f;
+.si-table {
+    width: 100%;
+    margin: 0;
 }
 
-.search-wrapper { position: relative; }
-.search-wrapper i {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    color: #7f85a1;
+.si-table th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
 }
 
-.search-input { padding-left: 34px !important; }
-
-/* -------------------------------------------------------------- */
-/* MOBILE CARD SYSTEM (Displayed Everywhere) */
-/* -------------------------------------------------------------- */
-
-.mobile-list {
-    display: block !important;
+.si-table th,
+.si-table td {
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
-.mobile-header {
-    display: grid;
-    grid-template-columns: 1fr 70px 70px;
-    background: #ebedff;
-    border: 1px solid #d6d9ff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: .82rem;
+.si-name {
+    white-space: normal;
+    min-width: 220px;
 }
 
-.item-tile {
-    background: white;
-    border: 1px solid rgba(0,0,0,.08);
-    padding: 10px;
-    border-radius: 10px;
+.si-input {
+    min-width: 88px;
 }
 
-.mobile-row {
-    display: grid;
-    grid-template-columns: 1fr 70px 70px;
-    column-gap: 8px;
+.si-history-table td,
+.si-history-table th {
+    vertical-align: middle;
 }
 
-.qty-badge {
-    width: 55px;
-    text-align: center;
-    padding: 6px 0 !important;
+.si-muted {
+    color: #6b7f87;
 }
 
-.stock-input {
-    width: 65px !important;
-    height: 36px !important;
+@media (max-width: 991px) {
+    .si-toolbar {
+        grid-template-columns: 1fr;
+    }
 }
-
-/* Hide Desktop Table Entirely */
-.desktop-table {
-    display: none !important;
-}
-
 </style>
 {% endblock %}
 
-
-
 {% block content %}
-
 <div class="container-fluid py-4 ma-page-shell">
-    <div class="row justify-content-center">
-        <div class="col-12 col-xl-10">
-
-            <div class="card shadow-sm mb-4">
-
-                <!-- HEADER -->
-                <div class="custom-stock-header">
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="icon-box">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
-
-                        <div class="text-white">
-                            <div class="fw-bold fs-5 mb-0">Update Stock</div>
-                            <small class="text-white-50">Manage inventory levels</small>
-                        </div>
-
-                    </div>
+    <div class="si-shell">
+        <section class="si-hero">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+                <div>
+                    <div class="text-uppercase small fw-semibold opacity-75">Stock In</div>
+                    <h2 class="mb-1">Daily stock value ledger</h2>
+                    <div class="opacity-75">Value is calculated as `crates x pcs_count x buying_price` for each item.</div>
                 </div>
-
-                <div class="card-body">
-
-                    <form method="post" action="{% url 'milk_agency:update_stock' %}">
-                        {% csrf_token %}
-
-                        <!-- FILTER BOX -->
-                        <div class="filter-box">
-                            <div class="row g-2 align-items-end">
-
-                                <div class="col-md-6">
-                                    <label class="filter-label">Search Items</label>
-                                    <div class="search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input id="itemSearch"
-                                               class="form-control search-input"
-                                               placeholder="Search by name/code">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="filter-label">Filter by Company</label>
-                                    <select id="companyFilter" class="form-select">
-                                        <option value="all">All Companies</option>
-                                        {% for company in companies %}
-                                        <option value="{{ company }}">{{ company }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <button type="button"
-                                            onclick="clearAllInputs()"
-                                            class="btn btn-outline-danger w-100">
-                                        Clear
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- CATEGORY CARDS (MOBILE LAYOUT SHOWN EVERYWHERE) -->
-                        <div class="row gy-4">
-                            {% for category, items in grouped_items.items %}
-                            {% if items %}
-                            <div class="col-lg-6">
-
-                                <div class="category-card shadow-sm p-3">
-
-                                    <h5 class="fw-semibold">{{ category|title }}</h5>
-                                    <small class="text-muted">{{ items|length }} items</small>
-
-                                    <hr>
-
-                                    <!-- MOBILE STYLE LIST (VISIBLE EVERYWHERE) -->
-                                    <div class="mobile-list mt-2">
-
-                                        <div class="mobile-header">
-                                            <div>Item</div>
-                                            <div>Qty</div>
-                                            <div>Cr</div>
-                                        </div>
-
-                                        <div class="d-flex flex-column gap-2 mt-2">
-
-                                            {% for item in items %}
-                                            <div class="item-tile"
-                                                 data-name="{{ item.name|lower }}"
-                                                 data-company="{{ item.company.name }}">
-
-                                                <div class="mobile-row">
-
-                                                    <!-- Name -->
-                                                    <div>
-                                                        <strong>{{ item.name }}</strong><br>
-                                                        <small class="text-muted">{{ item.company.name }}</small>
-                                                    </div>
-
-                                                    <!-- Current Qty -->
-                                                    <div>
-                                                        <span class="badge bg-primary qty-badge">
-                                                            {{ item.stock_quantity }}
-                                                        </span>
-                                                    </div>
-
-                                                    <!-- Add Crates -->
-                                                    <div>
-                                                        <input type="number"
-                                                               name="stock_{{ item.id }}"
-                                                               class="form-control form-control-sm stock-input"
-                                                               value="0" min="0" step="any"
-                                                               data-item-id="{{ item.id }}"
-                                                               data-current="{{ item.stock_quantity }}"
-                                                               data-units="{{ item.pcs_count }}">
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-                                            {% endfor %}
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{% url 'milk_agency:stock_dashboard' %}"
-                               class="btn btn-outline-secondary btn-sm">Cancel</a>
-
-                            <button type="submit" class="btn btn-success btn-sm">Update Stock</button>
-                        </div>
-
-                    </form>
-
+                <div class="text-end">
+                    <div class="small opacity-75">Selected date</div>
+                    <div class="fs-4 fw-bold">{{ selected_date|date:"d M Y" }}</div>
                 </div>
-
             </div>
+        </section>
 
-        </div>
+        <section class="si-summary-grid">
+            <div class="si-stat">
+                <div class="si-stat-label">Items Available</div>
+                <div class="si-stat-value">{{ total_items }}</div>
+            </div>
+            <div class="si-stat">
+                <div class="si-stat-label">Entries On Date</div>
+                <div class="si-stat-value">{{ entries|length }}</div>
+            </div>
+            <div class="si-stat">
+                <div class="si-stat-label">Day Total Value</div>
+                <div class="si-stat-value">Rs. {{ grand_total|floatformat:2 }}</div>
+            </div>
+        </section>
+
+        <section class="si-card">
+            <div class="si-card-head d-flex flex-wrap justify-content-between gap-3 align-items-center">
+                <div>
+                    <h4 class="mb-1">Add stock entries</h4>
+                    <div class="si-muted">Enter crates for any items you received today. Each saved row will also update company dues for the same date.</div>
+                </div>
+                <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+                    <label class="fw-semibold">Date</label>
+                    <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control">
+                    <button type="submit" class="btn btn-outline-primary">Load</button>
+                </form>
+            </div>
+            <div class="si-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="si-toolbar mb-4">
+                        <input id="stockSearch" class="form-control" placeholder="Search item name or company">
+                        <select id="companyFilter" class="form-select">
+                            <option value="all">All companies</option>
+                            {% for company in companies %}
+                            <option value="{{ company }}">{{ company }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="date" name="entry_date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control">
+                    </div>
+
+                    <div class="d-grid gap-4">
+                        {% for category, items in grouped_items.items %}
+                        {% if items %}
+                        <div class="si-company-block">
+                            <div class="si-company-head">
+                                <div>
+                                    <div class="fw-semibold">{{ category|title }}</div>
+                                    <div class="small si-muted">{{ items|length }} items</div>
+                                </div>
+                            </div>
+                            <div class="si-table-wrap">
+                                <table class="table si-table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Company</th>
+                                            <th>Current pcs</th>
+                                            <th>Pcs / crate</th>
+                                            <th>Buying price</th>
+                                            <th>Crates</th>
+                                            <th>Quantity</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in items %}
+                                        <tr class="stock-row" data-name="{{ item.name|lower }}" data-company="{{ item.company.name|default:''|lower }}">
+                                            <td class="si-name">
+                                                <div class="fw-semibold">{{ item.name }}</div>
+                                                <div class="small si-muted">{{ item.code|default:"No code" }}</div>
+                                            </td>
+                                            <td>{{ item.company.name|default:"No company" }}</td>
+                                            <td>{{ item.stock_quantity }}</td>
+                                            <td class="pcs-count">{{ item.pcs_count }}</td>
+                                            <td class="buying-price">{{ item.buying_price }}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    name="stock_{{ item.id }}"
+                                                    value="0"
+                                                    class="form-control si-input crate-input"
+                                                    data-pcs="{{ item.pcs_count }}"
+                                                    data-price="{{ item.buying_price }}"
+                                                >
+                                            </td>
+                                            <td><span class="quantity-preview">0.00</span></td>
+                                            <td><span class="value-preview">0.00</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-success px-4">Save stock entries</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="si-card">
+            <div class="si-card-head">
+                <h4 class="mb-1">Company totals for {{ selected_date|date:"d M Y" }}</h4>
+                <div class="si-muted">These totals are saved into `DailyPayment.invoice_amount` for each company and rolled into the month summary.</div>
+            </div>
+            <div class="si-card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Total crates</th>
+                                <th>Total quantity</th>
+                                <th>Total value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in company_totals %}
+                            <tr>
+                                <td>{{ row.company__name }}</td>
+                                <td>{{ row.total_crates|floatformat:2 }}</td>
+                                <td>{{ row.total_quantity|floatformat:2 }}</td>
+                                <td>Rs. {{ row.total_value|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center si-muted py-4">No stock entries saved for this date yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="si-card">
+            <div class="si-card-head">
+                <h4 class="mb-1">Saved entries for {{ selected_date|date:"d M Y" }}</h4>
+                <div class="si-muted">Use edit or delete if any crate count changes. Totals will be recalculated automatically.</div>
+            </div>
+            <div class="si-card-body">
+                <div class="table-responsive">
+                    <table class="table si-history-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Company</th>
+                                <th>Item</th>
+                                <th>Crates</th>
+                                <th>Quantity</th>
+                                <th>Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.created_at|date:"h:i A" }}</td>
+                                <td>{{ entry.company.name|default:"No company" }}</td>
+                                <td>{{ entry.item.name }}</td>
+                                <td>{{ entry.crates|floatformat:2 }}</td>
+                                <td>{{ entry.quantity|floatformat:2 }}</td>
+                                <td>Rs. {{ entry.value|floatformat:2 }}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'milk_agency:edit_stock_entry' entry.id %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="post" action="{% url 'milk_agency:delete_stock_entry' entry.id %}" onsubmit="return confirm('Delete this stock entry?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="entry_date" value="{{ selected_date|date:'Y-m-d' }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center si-muted py-4">No entries saved for this date.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 
-
-<!-- JS -->
 <script>
-(function(){
-    const qs = s => document.querySelector(s);
-    const qsa = s => document.querySelectorAll(s);
+(function () {
+    const formatNumber = (value) => Number(value || 0).toFixed(2);
 
-    // Search filter
-    qs("#itemSearch").addEventListener("input", function(){
-        const val = this.value.toLowerCase();
-        qsa("[data-name]").forEach(el => {
-            el.style.display = el.dataset.name.includes(val) ? "" : "none";
-        });
+    document.querySelectorAll(".crate-input").forEach((input) => {
+        const row = input.closest("tr");
+        const qtyPreview = row.querySelector(".quantity-preview");
+        const valuePreview = row.querySelector(".value-preview");
+
+        const recalc = () => {
+            const crates = parseFloat(input.value || "0");
+            const pcs = parseFloat(input.dataset.pcs || "0");
+            const price = parseFloat(input.dataset.price || "0");
+            const quantity = crates * pcs;
+            const value = quantity * price;
+            qtyPreview.textContent = formatNumber(quantity);
+            valuePreview.textContent = formatNumber(value);
+        };
+
+        input.addEventListener("input", recalc);
+        recalc();
     });
 
-    // Company filter
-    qs("#companyFilter").addEventListener("change", function(){
-        const val = this.value;
-        qsa("[data-company]").forEach(el => {
-            el.style.display = (val === "all" || el.dataset.company === val) ? "" : "none";
-        });
-    });
+    const searchInput = document.getElementById("stockSearch");
+    const companyFilter = document.getElementById("companyFilter");
 
-    // Clear all inputs
-    window.clearAllInputs = () => {
-        qsa(".stock-input").forEach(el => el.value = 0);
-    };
+    function applyFilters() {
+        const search = (searchInput.value || "").toLowerCase();
+        const company = (companyFilter.value || "all").toLowerCase();
+
+        document.querySelectorAll(".stock-row").forEach((row) => {
+            const matchesSearch = row.dataset.name.includes(search) || row.dataset.company.includes(search);
+            const matchesCompany = company === "all" || row.dataset.company === company;
+            row.style.display = matchesSearch && matchesCompany ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    companyFilter.addEventListener("change", applyFilters);
 })();
 </script>
-
 {% endblock %}
