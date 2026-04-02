@@ -241,7 +241,7 @@ input[type="number"] {
                                             <label class="form-label mb-1 fw-bold">Qty</label>
                                             <div class="input-group input-group-sm">
                                                 <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
-                                                <input type="number" name="quantities" class="form-control quantity-input text-center" min="0" value="0">
+                                                <input type="number" class="form-control quantity-input text-center" min="0" value="0">
                                                 <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
                                             </div>
                                         </div>
@@ -249,7 +249,7 @@ input[type="number"] {
                                             <label class="form-label mb-1 fw-bold">Disc</label>
                                             <div class="input-group input-group-sm">
                                                 <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
-                                                <input type="number" name="discounts" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
+                                                <input type="number" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
                                                 <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
                                             </div>
                                         </div>
@@ -298,6 +298,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalQty = 0;
         let totalDiscAmt = 0;
         let totalAmt = 0;
+
+        // Reset submitted values before rebuilding active rows.
+        document.querySelectorAll('.quantity-hidden, .discount-hidden').forEach(input => {
+            input.value = 0;
+        });
 
         // Get all item rows
         document.querySelectorAll('.item-row').forEach(row => {
