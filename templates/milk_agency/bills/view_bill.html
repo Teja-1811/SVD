@@ -4,83 +4,47 @@
 
 {% block content %}
 
-<!-- ===================== -->
-<!-- RESPONSIVE FIX CSS ONLY -->
-<!-- ===================== -->
 <style>
-
-/* TOP BUTTON ROW RESPONSIVE */
 @media (max-width: 768px) {
     .bill-topbar {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 10px;
     }
+
     .bill-topbar .btn {
         width: 100%;
         justify-content: center;
     }
-}
 
-/* TWO CARDS RESPONSIVE */
-@media (max-width: 768px) {
     .row .col-md-6 {
         width: 100% !important;
         margin-bottom: 15px;
     }
+
     .card-header h5 {
         font-size: 1rem;
     }
-}
 
-/* TABLE RESPONSIVENESS */
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width:768px){
-    table th, table td {
+    table th,
+    table td {
         white-space: nowrap !important;
         font-size: 0.85rem;
         padding: 6px 8px !important;
     }
+
     tfoot td {
         font-size: 0.9rem;
     }
-}
 
-/* Desktop: show icons + text 
-   Mobile: show icon only */
-@media (max-width: 768px) {
     .action-btn-responsive .btn-text {
         display: none !important;
     }
+
     .action-btn-responsive i {
         font-size: 20px;
     }
-    .action-btn-responsive {
-        width: 48px !important;
-        padding: 6px !important;
-        text-align: center;
-    }
-}
 
-@media (min-width: 769px) {
-    .action-btn-responsive i {
-        margin-right: 6px;
-    }
-}
-
-/* Desktop: show icons + text 
-   Mobile: show icon only */
-@media (max-width: 768px) {
-    .action-btn-responsive .btn-text {
-        display: none !important;
-    }
-    .action-btn-responsive i {
-        font-size: 20px;
-    }
     .action-btn-responsive {
         width: 45px !important;
         height: 40px !important;
@@ -95,20 +59,32 @@
     }
 }
 
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
 </style>
 
 <div class="container-fluid py-4 ma-page-shell">
-
-    <!-- ============================== -->
-    <!-- TOP BAR: TITLE + ACTION BUTTONS -->
-    <!-- ============================== -->
     <div class="d-flex justify-content-between align-items-center mb-4 bill-topbar">
         <h3>Bill Details - {{ bill.invoice_number }}</h3>
         <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" 
-                class="btn btn-outline-primary me-2 btn-sm col-lg-auto action-btn-responsive"
-                download="invoice_{{ bill.invoice_number }}.pdf">
-                <i class="bi bi-printer"></i> 
+            {% if bill.customer %}
+            <button type="button"
+                    class="btn btn-outline-warning me-2 btn-sm col-lg-auto action-btn-responsive"
+                    id="open-balance-modal-btn"
+                    data-customer-id="{{ bill.customer.id }}"
+                    data-customer-name="{{ bill.customer.name|escapejs }}"
+                    data-current-balance="{{ current_due|floatformat:2 }}">
+                <i class="bi bi-cash-coin"></i>
+                <span class="btn-text">Update Balance</span>
+            </button>
+            {% endif %}
+
+            <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}"
+               class="btn btn-outline-primary me-2 btn-sm col-lg-auto action-btn-responsive"
+               download="{{ bill.invoice_number }}.pdf">
+                <i class="bi bi-printer"></i>
                 <span class="btn-text">Print Bill</span>
             </a>
 
@@ -118,21 +94,15 @@
                 <span class="btn-text">Share Bill</span>
             </button>
 
-            <a href="{% url 'milk_agency:bills_dashboard' %}" 
-            class="btn btn-outline-info btn-sm col-lg-auto action-btn-responsive">
-                <i class="bi bi-arrow-left"></i> 
+            <a href="{% url 'milk_agency:bills_dashboard' %}"
+               class="btn btn-outline-info btn-sm col-lg-auto action-btn-responsive">
+                <i class="bi bi-arrow-left"></i>
                 <span class="btn-text">Back</span>
             </a>
-
         </div>
     </div>
 
-    <!-- ======================== -->
-    <!-- TWO CARDS: INFO + SUMMARY -->
-    <!-- ======================== -->
     <div class="row">
-
-        <!-- BILL INFORMATION CARD -->
         <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
@@ -166,7 +136,6 @@
             </div>
         </div>
 
-        <!-- BILL SUMMARY CARD -->
         <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
@@ -177,34 +146,39 @@
                     <table class="table table-borderless">
                         <tr>
                             <td><strong>Total Amount:</strong></td>
-                            <td class="text-end">₹{{ bill.total_amount }}</td>
+                            <td class="text-end">&#8377;{{ bill.total_amount }}</td>
                         </tr>
                         {% if delivery_charge > 0 %}
                         <tr>
                             <td><strong>Items Subtotal:</strong></td>
-                            <td class="text-end">₹{{ items_subtotal|floatformat:2 }}</td>
+                            <td class="text-end">&#8377;{{ items_subtotal|floatformat:2 }}</td>
                         </tr>
                         <tr>
                             <td><strong>Delivery Charge:</strong></td>
-                            <td class="text-end">₹{{ delivery_charge|floatformat:2 }}</td>
+                            <td class="text-end">&#8377;{{ delivery_charge|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
-
                         <tr>
                             <td><strong>Opening Due:</strong></td>
-                            <td class="text-end">₹{{ bill.op_due_amount }}</td>
+                            <td class="text-end">&#8377;{{ bill.op_due_amount }}</td>
                         </tr>
-
                         <tr>
                             <td><strong>Last Paid:</strong></td>
-                            <td class="text-end">₹{{ bill.last_paid }}</td>
+                            <td class="text-end" id="summary-last-paid">&#8377;{{ bill.last_paid|floatformat:2 }}</td>
                         </tr>
-
+                        <tr>
+                            <td><strong>Bill Due:</strong></td>
+                            <td class="text-end">
+                                <span id="summary-bill-due" class="{% if bill_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    &#8377;{{ bill_due|floatformat:2 }}
+                                </span>
+                            </td>
+                        </tr>
                         <tr>
                             <td><strong>Current Due:</strong></td>
                             <td class="text-end">
-                                <span class="{% if current_due > 0 %}text-danger{% else %}text-success{% endif %}">
-                                    ₹{{ current_due|floatformat:2 }}
+                                <span id="summary-current-due" class="{% if current_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    &#8377;{{ current_due|floatformat:2 }}
                                 </span>
                             </td>
                         </tr>
@@ -212,12 +186,8 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- ======================== -->
-    <!-- BILL ITEMS TABLE -->
-    <!-- ======================== -->
     <div class="card shadow mt-4">
         <div class="card-header bg-info text-white">
             <h5 class="mb-0">Bill Items ({{ bill_items.count }} items)</h5>
@@ -226,7 +196,6 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped">
-
                     <thead>
                         <tr>
                             <th>#</th>
@@ -244,15 +213,15 @@
                             <td>{{ forloop.counter }}</td>
                             <td>{{ item.item.name }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>₹{{ item.price_per_unit }}</td>
+                            <td>&#8377;{{ item.price_per_unit }}</td>
                             <td>
                                 {% if item.discount > 0 %}
-                                    ₹{{ item.discount }}
+                                    &#8377;{{ item.discount }}
                                 {% else %}
                                     -
                                 {% endif %}
                             </td>
-                            <td>₹{{ item.total_amount }}</td>
+                            <td>&#8377;{{ item.total_amount }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -261,47 +230,91 @@
                         {% if delivery_charge > 0 %}
                         <tr class="table-light">
                             <td colspan="5" class="text-end"><strong>Items Subtotal:</strong></td>
-                            <td><strong>₹{{ items_subtotal|floatformat:2 }}</strong></td>
+                            <td><strong>&#8377;{{ items_subtotal|floatformat:2 }}</strong></td>
                         </tr>
                         <tr class="table-light">
                             <td colspan="5" class="text-end"><strong>Delivery Charge:</strong></td>
-                            <td><strong>₹{{ delivery_charge|floatformat:2 }}</strong></td>
+                            <td><strong>&#8377;{{ delivery_charge|floatformat:2 }}</strong></td>
                         </tr>
                         {% endif %}
                         <tr class="table-dark">
                             <td colspan="5" class="text-end"><strong>Total:</strong></td>
-                            <td><strong>₹{{ bill.total_amount }}</strong></td>
+                            <td><strong>&#8377;{{ bill.total_amount }}</strong></td>
                         </tr>
                     </tfoot>
-
                 </table>
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- ======================== -->
-<!-- WHATSAPP SHARE SCRIPT -->
-<!-- ======================== -->
-<script>
-function shareBillOnWhatsApp() {
+{% if bill.customer %}
+<div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Balance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-    // Customer & bill details
+            <form id="balanceForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Customer</label>
+                        <div><strong id="modalCustomerName"></strong></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Current Balance</label>
+                        <div>&#8377;<strong id="modalCurrentBalance">0.00</strong></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="balanceAmount" class="form-label">Received Amount (&#8377;)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="balanceAmount" required>
+                    </div>
+
+                    <input type="hidden" id="balanceCustomerId" value="{{ bill.customer.id }}">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        return parts.pop().split(';').shift();
+    }
+    return '';
+}
+
+function shareBillOnWhatsApp() {
     let customerName = "{{ bill.customer.name|default:'' }}";
     let agencyName = "{{ bill.customer.shop_name|default:'' }}";
     let customerPhone = "{{ bill.customer.phone|default:'' }}";
 
     const invoiceNumber = "{{ bill.invoice_number }}";
     const invoiceDate = "{{ bill.invoice_date|date:'d-M-Y' }}";
-    const currentDue = "{{ current_due|floatformat:2 }}";
+    const currentDue = parseFloat("{{ current_due|floatformat:2 }}") || 0;
 
-    // Ensure phone number has country code (India)
     if (customerPhone.length === 10) {
         customerPhone = "91" + customerPhone;
     }
 
-    // WhatsApp message
+    const balanceLine = currentDue < 0
+        ? `Wallet Balance: ₹${Math.abs(Math.round(currentDue))}`
+        : `Current Due: ₹${currentDue.toFixed(2)}`;
+
     const whatsappMessage =
 `Dear ${customerName}${agencyName ? " (" + agencyName + ")" : ""},
 
@@ -310,7 +323,7 @@ Please find your invoice details below:
 Invoice No: ${invoiceNumber}
 Invoice Date: ${invoiceDate}
 
-Current Due: ₹${currentDue}
+${balanceLine}
 
 Thank you for your continued business with
 Sri Vijaya Durga Milk Agencies.
@@ -318,12 +331,98 @@ Sri Vijaya Durga Milk Agencies.
 Place your orders at:
 svdagencies.shop`;
 
-    // Encode and open WhatsApp
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
+    const whatsappURL = `https://api.whatsapp.com/send/?phone=${customerPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 
     window.open(whatsappURL, "_blank");
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const triggerBtn = document.getElementById('open-balance-modal-btn');
+    const balanceModalEl = document.getElementById('balanceModal');
+    const balanceForm = document.getElementById('balanceForm');
+
+    if (!triggerBtn || !balanceModalEl || !balanceForm) {
+        return;
+    }
+
+    const balanceModal = new bootstrap.Modal(balanceModalEl);
+    const csrftoken = getCookie('csrftoken');
+    const modalCustomerName = document.getElementById('modalCustomerName');
+    const modalCurrentBalance = document.getElementById('modalCurrentBalance');
+    const balanceCustomerId = document.getElementById('balanceCustomerId');
+    const balanceAmount = document.getElementById('balanceAmount');
+    const summaryCurrentDue = document.getElementById('summary-current-due');
+    const summaryLastPaid = document.getElementById('summary-last-paid');
+    const summaryBillDue = document.getElementById('summary-bill-due');
+    let currentBalance = parseFloat('{{ current_due|floatformat:2 }}') || 0;
+    let currentLastPaid = parseFloat('{{ bill.last_paid|floatformat:2 }}') || 0;
+    let currentBillDue = parseFloat('{{ bill_due|floatformat:2 }}') || 0;
+
+    triggerBtn.addEventListener('click', function() {
+        modalCustomerName.textContent = this.dataset.customerName;
+        modalCurrentBalance.textContent = currentBalance.toFixed(2);
+        balanceCustomerId.value = this.dataset.customerId;
+        balanceAmount.value = '';
+        balanceModal.show();
+    });
+
+    balanceForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const customerId = balanceCustomerId.value;
+        const amount = parseFloat(balanceAmount.value);
+
+        if (!customerId || Number.isNaN(amount) || amount <= 0) {
+            alert('Enter a valid amount.');
+            return;
+        }
+
+        const submitBtn = balanceForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+
+        try {
+            const url = "{% url 'milk_agency:update_customer_balance' 0 %}".replace('0', customerId);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: `balance=${encodeURIComponent(amount)}`,
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Failed to update balance.');
+            }
+
+            currentBalance = parseFloat(data.new_balance) || 0;
+            currentLastPaid += amount;
+            currentBillDue -= amount;
+
+            triggerBtn.dataset.currentBalance = currentBalance.toFixed(2);
+            modalCurrentBalance.textContent = currentBalance.toFixed(2);
+
+            summaryCurrentDue.textContent = `₹${currentBalance.toFixed(2)}`;
+            summaryCurrentDue.classList.toggle('text-danger', currentBalance > 0);
+            summaryCurrentDue.classList.toggle('text-success', currentBalance <= 0);
+
+            summaryLastPaid.textContent = `₹${currentLastPaid.toFixed(2)}`;
+
+            summaryBillDue.textContent = `₹${currentBillDue.toFixed(2)}`;
+            summaryBillDue.classList.toggle('text-danger', currentBillDue > 0);
+            summaryBillDue.classList.toggle('text-success', currentBillDue <= 0);
+
+            balanceModal.hide();
+        } catch (error) {
+            alert(error.message || 'Failed to update balance.');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+});
 </script>
 
 {% endblock %}

@@ -86,6 +86,7 @@ def monthly_sales_summary(request):
     if customer:
         bills = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).order_by('invoice_date')
@@ -124,6 +125,7 @@ def monthly_sales_summary(request):
     if customer:
         bills = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).order_by('invoice_date')
@@ -194,6 +196,7 @@ def monthly_sales_summary(request):
         # Get all bill items for the customer in the selected month
         bill_items = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).prefetch_related('items__item')
@@ -316,6 +319,7 @@ def generate_monthly_sales_pdf(request):
     if customer:
         bills = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).order_by('invoice_date')
@@ -354,6 +358,7 @@ def generate_monthly_sales_pdf(request):
     if customer:
         bills = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).order_by('invoice_date')
@@ -424,6 +429,7 @@ def generate_monthly_sales_pdf(request):
         # Get all bill items for the customer in the selected month
         bill_items = Bill.objects.filter(
             customer__retailer_id=customer.retailer_id,
+            is_deleted=False,
             invoice_date__year=year,
             invoice_date__month=month,
         ).prefetch_related('items__item')

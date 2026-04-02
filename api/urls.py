@@ -20,6 +20,7 @@ from .admin_enquiry import (
 )
 from .customer_offers import *
 from .admin_customer import *
+from .admin_users import *
 from .admin_items import *
 from .admin_bills import *
 from .admin_cashbook import *
@@ -30,6 +31,7 @@ from .admin_stock_dashboard import *
 from .admin_customer_payments import *
 from .admin_companies import *
 from .admin_monthly_sales_summary import *
+from .admin_category_sales import *
 from .admin_subscriptions import *
 from .admin_offers import *
 from .user_dashboard import *
@@ -57,6 +59,11 @@ urlpatterns = [
     path('customer-freeze/<int:pk>/', api_toggle_freeze, name='api_toggle_freeze'),
     path('customer-balance/<int:pk>/', api_update_balance, name='api_update_balance'),
     path('customer-add/', api_add_edit_customer, name='api_add_customer'),
+    path('users/', api_user_list, name='api_user_list'),
+    path('users/<int:pk>/', api_user_detail, name='api_user_detail'),
+    path('users/freeze/<int:pk>/', api_toggle_user_freeze, name='api_toggle_user_freeze'),
+    path('users/balance/<int:pk>/', api_update_user_balance, name='api_update_user_balance'),
+    path('users/add/', api_add_edit_user, name='api_add_user'),
     
     # Companies APIs
     path('companies/', companies_list_api, name='companies_list_api'),
@@ -105,12 +112,16 @@ urlpatterns = [
     #Admin Stock Dashboard API
     path('stock/dashboard/', stock_dashboard_api, name='stock_dashboard_api'),
     path('stock/update/', update_stock_api, name='update_stock_api'),
+    path('stock/entries/<int:entry_id>/edit/', edit_stock_entry_api, name='edit_stock_entry_api'),
+    path('stock/entries/<int:entry_id>/delete/', delete_stock_entry_api, name='delete_stock_entry_api'),
     path('stock/leakage/save/', save_leakage_api, name='save_leakage_api'),
     path('stock/leakage/<int:leakage_id>/delete/', delete_leakage_api, name='delete_leakage_api'),
     
     # Monthly Sales Summary API
     path('sales/monthly-summary/', api_monthly_sales_summary, name='api_monthly_sales_summary'),
     path('sales/monthly-summary/pdf/', monthly_summary_pdf_api, name='monthly_summary_pdf_api'),
+    path('sales/monthly-summary/update-remaining-due/', update_remaining_due_api, name='update_remaining_due_api'),
+    path('sales/category-summary/', api_sales_summary_by_category, name='api_sales_summary_by_category'),
     
     # Subscriptions APIs
     path("subscriptions/dashboard/", api_subscription_dashboard, name="api_subscription_dashboard"),

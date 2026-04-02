@@ -68,11 +68,13 @@ def view_bill(request, bill_id):
         delivery_charge = Decimal(linked_order.delivery_charge or 0)
     display_items = bill_items.exclude(item__code=DELIVERY_ITEM_CODE)
 
-    current_due = bill.op_due_amount + bill.total_amount
+    bill_due = Decimal(bill.op_due_amount or 0) + Decimal(bill.total_amount or 0) - Decimal(bill.last_paid or 0)
+    current_due = bill.customer.get_actual_due() if bill.customer_id else bill_due
 
     return render(request, 'milk_agency/bills/view_bill.html', {
         'bill': bill,
         'bill_items': display_items,
+        'bill_due': bill_due,
         'current_due': current_due,
         'linked_order': linked_order,
         'delivery_charge': delivery_charge,
@@ -121,6 +123,8 @@ def edit_bill(request, bill_id):
     bill_items = BillItem.objects.filter(bill=bill)
 
     if request.method == 'POST':
+        previous_customer = bill.customer
+        original_opening_due = Decimal(bill.op_due_amount or 0)
         customer_id = request.POST.get('customer')
         item_ids = request.POST.getlist('items')
         quantities = request.POST.getlist('quantities')
@@ -142,31 +146,43 @@ def edit_bill(request, bill_id):
                 messages.error(request, 'Invalid invoice date format.')
                 return redirect('milk_agency:edit_bill', bill_id=bill_id)
 
-        # -------- RESTORE STOCK --------
-        for bi in bill_items:
-            bi.item.stock_quantity += bi.quantity
-            bi.item.save()
-
-        # Remove old items
-        bill_items.delete()
-
-        # -------- UPDATE BILL CUSTOMER --------
-        bill.customer = customer
-        bill.op_due_amount = customer.get_actual_due()
-
         try:
-            total_bill, total_profit = process_bill_items(bill, item_ids, quantities, discounts)
+            with transaction.atomic():
+                # -------- RESTORE STOCK --------
+                for bi in bill_items.select_related('item'):
+                    bi.item.stock_quantity += bi.quantity
+                    bi.item.save(update_fields=['stock_quantity'])
+
+                # Remove old items
+                bill_items.delete()
+
+                # -------- UPDATE BILL CUSTOMER --------
+                bill.customer = customer
+
+                # Preserve the bill's original opening due when editing the same bill.
+                # Replacing it with customer.get_actual_due() double-counts the old bill
+                # and makes the invoice summary incorrect after edits.
+                if previous_customer and previous_customer.id == customer.id:
+                    bill.op_due_amount = original_opening_due
+                else:
+                    bill.op_due_amount = customer.get_actual_due()
+
+                total_bill, total_profit = process_bill_items(bill, item_ids, quantities, discounts)
+
+                bill.total_amount = total_bill
+                bill.profit = total_profit
+                bill.save()
+
+                # -------- RECALCULATE DUE SAFELY --------
+                if previous_customer and previous_customer.id != customer.id:
+                    previous_customer.due = previous_customer.get_actual_due()
+                    previous_customer.save(update_fields=['due'])
+
+                customer.due = customer.get_actual_due()
+                customer.save(update_fields=['due'])
         except Exception:
             messages.error(request, 'Invalid items or quantities.')
             return redirect('milk_agency:edit_bill', bill_id=bill_id)
-
-        bill.total_amount = total_bill
-        bill.profit = total_profit
-        bill.save()
-
-        # -------- RECALCULATE DUE SAFELY --------
-        customer.due = customer.get_actual_due()
-        customer.save()
 
         messages.success(request, 'Bill updated successfully.')
         return redirect('milk_agency:bills_dashboard')

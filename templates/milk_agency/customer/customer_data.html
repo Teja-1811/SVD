@@ -392,9 +392,9 @@ document.querySelectorAll(".send-whatsapp").forEach(btn => {
     let message = `Hello ${name},\n\n`;
 
     if (due > 0) {
-      message += `Your due amount is \u20B9${due.toFixed(2)}.\n`;
+      message += `Current Due: \u20B9${due.toFixed(2)}.\n`;
     } else if (due < 0) {
-      message += `Your wallet balance is \u20B9${Math.abs(due).toFixed(2)}.\n`;
+      message += `Wallet Balance: \u20B9${Math.abs(Math.round(due))}.\n`;
     } else {
       message += `Your account balance is clear.\n`;
     }

@@ -54,7 +54,7 @@ class UserPDFGenerator:
         buffer.close()
 
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f"attachment; filename=user_invoice_{bill.invoice_number}.pdf"
+        response["Content-Disposition"] = f'attachment; filename="{bill.invoice_number}.pdf"'
         response.write(pdf)
         return response
 

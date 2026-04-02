@@ -241,7 +241,7 @@ input[type="number"] {
                                             <label class="form-label mb-1 fw-bold">Qty</label>
                                             <div class="input-group input-group-sm">
                                                 <button type="button" class="btn btn-outline-primary minus-qty-btn">−</button>
-                                                <input type="number" class="form-control quantity-input text-center" min="0" value="0">
+                                                <input type="number" class="form-control quantity-input text-center" min="0" value="0" disabled>
                                                 <button type="button" class="btn btn-outline-primary plus-qty-btn">+</button>
                                             </div>
                                         </div>
@@ -249,7 +249,7 @@ input[type="number"] {
                                             <label class="form-label mb-1 fw-bold">Disc</label>
                                             <div class="input-group input-group-sm">
                                                 <button type="button" class="btn btn-outline-primary minus-discount-btn">−</button>
-                                                <input type="number" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}">
+                                                <input type="number" class="form-control discount-input text-center" min="0" value="0" step="0.1" data-item-id="{{ item.id }}" disabled>
                                                 <button type="button" class="btn btn-outline-primary plus-discount-btn">+</button>
                                             </div>
                                         </div>
@@ -285,11 +285,20 @@ input[type="number"] {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const billForm = document.querySelector('form[action*="generate_bill"], form[action*="generate-bill"], form');
     const totalAmountInput = document.getElementById('total-amount');
     const billedItemsBody = document.getElementById('billed-items-body');
     const totalQtyEl = document.getElementById('total-qty');
     const totalDiscAmtEl = document.getElementById('total-disc-amt');
     const totalAmtEl = document.getElementById('total-amt');
+
+    // Helper inputs in the hidden items container are only used as JS state,
+    // never as submitted form fields.
+    document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
+        input.disabled = true;
+        input.removeAttribute('name');
+        input.required = false;
+    });
 
     function updateTable() {
         // Clear existing rows
@@ -491,6 +500,16 @@ document.querySelector(`.discount-input[data-item-id="${itemId}"]`);
 
     // Initial table update
     updateTable();
+
+    if (billForm) {
+        billForm.addEventListener('submit', function() {
+            document.querySelectorAll('.quantity-input, .discount-input').forEach(input => {
+                input.disabled = true;
+                input.removeAttribute('name');
+                input.required = false;
+            });
+        });
+    }
 });
 
 // Function to filter by area

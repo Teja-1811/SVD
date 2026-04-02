@@ -306,36 +306,37 @@ function shareMonthlySummaryOnWhatsApp() {
     const totalCommission = "{{ total_commission|floatformat:2 }}";
 
     // 👇 two different dues
-    const remainingDue = "{{ remaining_due|floatformat:2 }}";
-    const balanceDue = "{{ due_amount|floatformat:2 }}";
+    const remainingDue = parseFloat("{{ remaining_due|floatformat:2 }}") || 0;
+    const balanceDue = parseFloat("{{ due_amount|floatformat:2 }}") || 0;
 
     // Base message
     let whatsappMessage =
 `Dear ${customerName},
 Monthly Sales Summary (${period})
 
-Total Sales: ₹${totalSales}`;
+Total Sales: \u20B9${totalSales}`;
 
-    // ✅ Commissioned customer
     if (isCommissioned) {
+        const commissionedBalanceLine = remainingDue < 0
+            ? `Wallet Balance: \u20B9${Math.abs(Math.round(remainingDue))}`
+            : `Remaining Due: \u20B9${remainingDue.toFixed(2)}`;
         whatsappMessage += `
-Commission Earned: ₹${totalCommission}
-Remaining Due: ₹${remainingDue}`;
-    }
-    // ❌ Non-commissioned customer
-    else {
+Commission Earned: \u20B9${totalCommission}
+${commissionedBalanceLine}`;
+    } else {
+        const regularBalanceLine = balanceDue < 0
+            ? `Wallet Balance: \u20B9${Math.abs(Math.round(balanceDue))}`
+            : `Balance Due: \u20B9${balanceDue.toFixed(2)}`;
         whatsappMessage += `
-Balance Due: ₹${balanceDue}`;
+${regularBalanceLine}`;
     }
 
-    // Footer
     whatsappMessage += `
 
 Thank you,
 SVD Agencies
 svdagencies.shop`;
 
-    // Send WhatsApp
     const encodedMessage = encodeURIComponent(whatsappMessage);
     window.open(`https://wa.me/${customerPhone}?text=${encodedMessage}`, "_blank");
 }

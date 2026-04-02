@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db import transaction
 from milk_agency.models import Item, BillItem, StockInEntry, LeakageEntry
-from milk_agency.utils import apply_stock_updates
+from milk_agency.utils import apply_stock_updates, delete_stock_entry, parse_decimal, update_stock_entry
 
 
 # ==========================================================
@@ -286,3 +286,58 @@ def delete_leakage_api(request, leakage_id):
         leakage.delete()
 
     return Response({"success": True, "message": "Leakage deleted and stock restored"})
+
+
+@api_view(["PUT", "PATCH"])
+def edit_stock_entry_api(request, entry_id):
+    entry = StockInEntry.objects.select_related("item", "company").filter(id=entry_id).first()
+    if not entry:
+        return Response({"success": False, "message": "Stock entry not found"}, status=404)
+
+    crates = parse_decimal(request.data.get("crates"))
+    discount = parse_decimal(request.data.get("discount"))
+    date_raw = request.data.get("entry_date") or request.data.get("date")
+
+    if crates <= 0:
+        return Response({"success": False, "message": "Crates must be greater than zero"}, status=400)
+
+    try:
+        selected_date = datetime.strptime(date_raw, "%Y-%m-%d").date() if date_raw else entry.date
+    except ValueError:
+        return Response({"success": False, "message": "Invalid entry date"}, status=400)
+
+    updated_entry = update_stock_entry(entry, crates=crates, discount=discount, date_value=selected_date)
+    return Response(
+        {
+            "success": True,
+            "message": "Stock entry updated successfully",
+            "entry": {
+                "id": updated_entry.id,
+                "date": str(updated_entry.date),
+                "crates": float(updated_entry.crates),
+                "quantity": float(updated_entry.quantity),
+                "value": float(updated_entry.value),
+                "item_id": updated_entry.item_id,
+                "item_name": updated_entry.item.name,
+                "company_name": updated_entry.company.name if updated_entry.company else None,
+            },
+            "item_stock_quantity": updated_entry.item.stock_quantity,
+        }
+    )
+
+
+@api_view(["DELETE", "POST"])
+def delete_stock_entry_api(request, entry_id):
+    entry = StockInEntry.objects.select_related("item", "company").filter(id=entry_id).first()
+    if not entry:
+        return Response({"success": False, "message": "Stock entry not found"}, status=404)
+
+    item = entry.item
+    delete_stock_entry(entry)
+    return Response(
+        {
+            "success": True,
+            "message": "Stock entry deleted successfully",
+            "item_stock_quantity": item.stock_quantity,
+        }
+    )

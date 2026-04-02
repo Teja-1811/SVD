@@ -1,6 +1,7 @@
 from decimal import Decimal
 from datetime import datetime, date, timedelta
 import calendar
+import json
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
 
 from milk_agency.models import (
-    Customer, Bill, DailySalesSummary
+    Customer, Bill, DailySalesSummary, CustomerMonthlyCommission
 )
 from milk_agency.views_sales_summary import extract_liters_from_name
 from milk_agency.monthly_sales_summary import (
@@ -302,3 +303,52 @@ def monthly_summary_pdf_api(request):
 
     pdf = PDFGenerator()
     return pdf.generate_monthly_sales_pdf(context)
+
+
+@api_view(["POST"])
+def update_remaining_due_api(request):
+    customer_id = request.data.get("customer_id")
+    remaining_due_str = request.data.get("remaining_due")
+
+    if not customer_id or remaining_due_str is None:
+        return Response({"message": "customer_id and remaining_due are required"}, status=400)
+
+    try:
+        customer = Customer.objects.get(id=customer_id)
+        remaining_due = Decimal(str(remaining_due_str))
+    except Exception:
+        return Response({"message": "Error updating balance. Invalid data or customer not found."}, status=400)
+
+    customer.due = remaining_due
+    customer.save(update_fields=["due"])
+
+    selected_month = request.data.get("selected_month")
+    commission_data = request.data.get("commission_data")
+    if selected_month and commission_data:
+        try:
+            year, month = map(int, selected_month.split("-"))
+            commission_dict = json.loads(commission_data) if isinstance(commission_data, str) else commission_data
+            if commission_dict.get("total_commission", 0):
+                CustomerMonthlyCommission.objects.update_or_create(
+                    customer=customer,
+                    year=year,
+                    month=month,
+                    defaults={
+                        "milk_volume": commission_dict.get("milk_volume", 0),
+                        "curd_volume": commission_dict.get("curd_volume", 0),
+                        "total_volume": commission_dict.get("avg_volume", 0),
+                        "milk_commission_rate": commission_dict.get("milk_commission_rate", 0),
+                        "curd_commission_rate": commission_dict.get("curd_commission_rate", 0),
+                        "commission_amount": commission_dict.get("total_commission", 0),
+                    },
+                )
+        except Exception:
+            pass
+
+    return Response(
+        {
+            "message": f"Customer balance updated successfully to {remaining_due}",
+            "remaining_due": float(remaining_due),
+        },
+        status=200,
+    )
