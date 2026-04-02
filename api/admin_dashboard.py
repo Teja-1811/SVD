@@ -26,8 +26,8 @@ def dashboard_api(request):
         total=Sum("total_amount")
     )["total"] or 0
 
-    # Total dues (cached fast value)
-    total_dues = Customer.objects.aggregate(total=Sum("due"))["total"] or 0
+    # Total dues aligned with website due calculation
+    total_dues = sum((customer.get_actual_due() or 0) for customer in Customer.objects.all())
 
     # Stock Value (accurate decimal calculation)
     stock_value = Item.objects.aggregate(

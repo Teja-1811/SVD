@@ -43,7 +43,7 @@ def api_get_customers(request):
             "name": c.name,
             "phone": c.phone,
             "area": c.area or "",
-            "due": str(c.due)  # cached value (fast UI)
+            "due": str(c.get_actual_due() or 0)
         }
         for c in customers
     ])
@@ -83,7 +83,7 @@ def api_list_bills(request):
             "customer": b.customer.name if b.customer else "Anonymous",
             "total_amount": str(b.total_amount),
             "op_due": str(b.op_due_amount),
-            "current_due": str(b.customer.due) if b.customer else "0",
+            "current_due": str(b.customer.get_actual_due()) if b.customer else "0",
             "profit": str(b.profit)
         })
 
@@ -114,7 +114,7 @@ def api_bill_detail(request, bill_id):
         "total_amount": float(bill.total_amount),
         "op_due_amount": float(bill.op_due_amount),
         "last_paid": float(bill.last_paid),
-        "current_due": float(bill.customer.due if bill.customer else 0),
+        "current_due": float(bill.customer.get_actual_due() if bill.customer else 0),
         "profit": float(bill.profit)
     })
 
@@ -167,7 +167,7 @@ def api_create_bill(request):
             invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
             invoice_date=bill_date,
             total_amount=Decimal(0),
-            op_due_amount=customer.due if customer else 0,
+            op_due_amount=customer.get_actual_due() if customer else 0,
             last_paid=Decimal(0),
             profit=Decimal(0)
         )
@@ -323,7 +323,7 @@ def api_edit_bill(request, bill_id):
         old_customer = bill.customer
 
         bill.customer = new_customer
-        bill.op_due_amount = new_customer.due if new_customer else Decimal(0)
+        bill.op_due_amount = new_customer.get_actual_due() if new_customer else Decimal(0)
         bill.total_amount = total
         bill.profit = total_profit
         bill.save()

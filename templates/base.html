@@ -17,6 +17,52 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <style>
+        html, body {
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 767.98px) {
+            .public-container {
+                padding-left: 0.9rem;
+                padding-right: 0.9rem;
+            }
+
+            .public-nav-meta {
+                align-items: stretch !important;
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }
+
+            .public-nav-meta .nav-item,
+            .public-nav-meta .btn-place-order,
+            .public-clock {
+                width: 100%;
+            }
+
+            .public-navbar .navbar-collapse {
+                padding-top: 0.75rem;
+            }
+
+            .public-navbar .nav-link {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .public-page,
+            .public-main {
+                overflow-x: hidden;
+            }
+
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-dialog {
+                margin: 0.75rem;
+            }
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="public-body">

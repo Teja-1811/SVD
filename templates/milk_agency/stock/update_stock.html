@@ -128,26 +128,45 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 767.98px) {
+    .si-card-head,
+    .si-card-body {
+        padding: 0.9rem;
+    }
+
+    .si-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .si-company-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .si-table {
+        min-width: 860px;
+    }
+
+    .si-history-table {
+        min-width: 720px;
+    }
+
+    .si-card-head form {
+        width: 100%;
+    }
+
+    .si-card-head form .form-control,
+    .si-card-head form .btn {
+        width: 100%;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4 ma-page-shell">
     <div class="si-shell">
-        <section class="si-hero">
-            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
-                <div>
-                    <div class="text-uppercase small fw-semibold opacity-75">Stock In</div>
-                    <h2 class="mb-1">Daily stock value ledger</h2>
-                    <div class="opacity-75">Value is calculated as `crates x pcs_count x buying_price - discount`. Discount is applied in calculation only and is not stored separately.</div>
-                </div>
-                <div class="text-end">
-                    <div class="small opacity-75">Selected date</div>
-                    <div class="fs-4 fw-bold">{{ selected_date|date:"d M Y" }}</div>
-                </div>
-            </div>
-        </section>
-
         <section class="si-summary-grid">
             <div class="si-stat">
                 <div class="si-stat-label">Items Available</div>

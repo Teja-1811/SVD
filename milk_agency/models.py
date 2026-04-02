@@ -148,19 +148,20 @@ class Customer(AbstractBaseUser, PermissionsMixin):
         return self.name
     
     def get_actual_due(self):
-        total_billed = self.bills.filter(
-        is_deleted=False
-    ).aggregate(total=Sum('total_amount'))['total'] or 0
+        active_bills = self.bills.filter(is_deleted=False).order_by('invoice_date', 'id')
 
-        total_paid = self.customerpayment_set.filter(
-            status="SUCCESS"
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        opening_due = Decimal("0.00")
+        if active_bills.exists():
+            opening_due = Decimal(active_bills.first().op_due_amount or 0)
 
-        total_commission = self.monthly_commissions.filter(
-            status=True
-        ).aggregate(total=Sum('commission_amount'))['total'] or 0
+        total_billed = Decimal(
+            active_bills.aggregate(total=Sum('total_amount'))['total'] or 0
+        )
+        total_paid = Decimal(
+            self.customerpayment_set.filter(status="SUCCESS").aggregate(total=Sum('amount'))['total'] or 0
+        )
 
-        return total_billed - total_paid - total_commission
+        return opening_due + total_billed - total_paid
 
 class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -197,6 +198,30 @@ class Item(models.Model):
     @property
     def resolved_image_url(self):
         return _resolved_media_url(self.image, 'items', self.code, self.name)
+
+class LeakageEntry(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='leakage_entries')
+    date = models.DateField(default=timezone.localdate)
+    quantity = models.PositiveIntegerField()
+    unit_cost = models.DecimalField(max_digits=10, decimal_places=3)
+    total_loss = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    notes = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['item']),
+        ]
+
+    def save(self, *args, **kwargs):
+        self.unit_cost = Decimal(self.unit_cost or 0)
+        self.total_loss = Decimal(self.quantity or 0) * self.unit_cost
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.item.name} leakage - {self.quantity} pcs - ₹{self.total_loss}"
 
 class Bill(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='bills')

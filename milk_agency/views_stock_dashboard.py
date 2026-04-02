@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 
-from .models import Item, BillItem, Company, StockInEntry
+from .models import Item, BillItem, Company, StockInEntry, LeakageEntry
 from .utils import apply_stock_updates, parse_decimal, update_stock_entry, delete_stock_entry
 
 
@@ -95,14 +95,40 @@ def _stock_update_redirect(selected_date):
 @login_required
 def stock_dashboard(request):
     selected_date = _parse_entry_date(request.GET.get("date"))
+    today = timezone.localdate()
+    selected_month = int(request.GET.get("month", today.month))
+    selected_year = int(request.GET.get("year", today.year))
+    months = [
+        (1, "January"), (2, "February"), (3, "March"),
+        (4, "April"), (5, "May"), (6, "June"),
+        (7, "July"), (8, "August"), (9, "September"),
+        (10, "October"), (11, "November"), (12, "December"),
+    ]
+    years = list(range(today.year - 5, today.year + 2))
     date_entries = (
         StockInEntry.objects.filter(date=selected_date)
         .select_related("item", "company")
         .order_by("-created_at", "-id")
     )
+    leakage_entries = (
+        LeakageEntry.objects.filter(date__year=selected_year, date__month=selected_month)
+        .select_related("item", "item__company")
+        .order_by("-date", "-created_at")
+    )
+    monthly_loss = leakage_entries.aggregate(
+        total=Coalesce(Sum("total_loss"), Value(0), output_field=DecimalField(max_digits=12, decimal_places=2))
+    )["total"]
     return render(request, "milk_agency/stock/stock_dashboard.html", {
         "selected_date": selected_date,
         "date_entries": date_entries,
+        "selected_month": selected_month,
+        "selected_year": selected_year,
+        "months": months,
+        "years": years,
+        "leakage_entries": leakage_entries,
+        "leakage_items": Item.objects.filter(frozen=False).select_related("company").order_by("name"),
+        "monthly_loss": monthly_loss,
+        "today": today,
     })
 
 

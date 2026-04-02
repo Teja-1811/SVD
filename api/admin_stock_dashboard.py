@@ -5,7 +5,8 @@ from django.db.models import Sum, F, FloatField, ExpressionWrapper, Value
 from django.db.models.functions import Coalesce
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from milk_agency.models import Item, BillItem, StockInEntry
+from django.db import transaction
+from milk_agency.models import Item, BillItem, StockInEntry, LeakageEntry
 from milk_agency.utils import apply_stock_updates
 
 
@@ -15,6 +16,17 @@ from milk_agency.utils import apply_stock_updates
 
 @api_view(["GET"])
 def stock_dashboard_api(request):
+    today = datetime.today().date()
+    try:
+        selected_date = datetime.strptime(request.GET.get("date", str(today)), "%Y-%m-%d").date()
+    except ValueError:
+        selected_date = today
+
+    try:
+        month = int(request.GET.get("month", today.month))
+        year = int(request.GET.get("year", today.year))
+    except ValueError:
+        return Response({"error": "Invalid month or year"}, status=400)
 
     # -------- SUMMARY ----------
     total_items = Item.objects.count()
@@ -88,6 +100,31 @@ def stock_dashboard_api(request):
 
     company_data = list(company_data_qs)
 
+    date_entries = list(
+        StockInEntry.objects.filter(date=selected_date)
+        .select_related("item", "company")
+        .order_by("-created_at", "-id")
+        .values(
+            "id",
+            "date",
+            "created_at",
+            "crates",
+            "quantity",
+            "value",
+            item_name=F("item__name"),
+            company_name=F("company__name"),
+        )
+    )
+
+    leakage_qs = LeakageEntry.objects.filter(
+        date__year=year,
+        date__month=month
+    ).select_related("item", "item__company").order_by("-date", "-created_at")
+
+    monthly_loss = leakage_qs.aggregate(
+        total=Coalesce(Sum("total_loss"), Value(0.0), output_field=FloatField())
+    )["total"]
+
     return Response({
         "summary": {
             "total_items": total_items,
@@ -95,7 +132,33 @@ def stock_dashboard_api(request):
             "low_stock_count": low_stock_count,
             "stock_in_30d": float(stock_in or 0),
             "stock_out_30d": float(stock_out or 0),
+            "monthly_loss": float(monthly_loss or 0),
         },
+        "selected_date": str(selected_date),
+        "month": month,
+        "year": year,
+        "date_entries": [
+            {
+                **entry,
+                "date": str(entry["date"]),
+                "created_at": entry["created_at"].strftime("%Y-%m-%d %H:%M:%S") if entry["created_at"] else None,
+            }
+            for entry in date_entries
+        ],
+        "leakage_entries": [
+            {
+                "id": entry.id,
+                "date": str(entry.date),
+                "item_id": entry.item_id,
+                "item_name": entry.item.name if entry.item else None,
+                "company_name": entry.item.company.name if entry.item and entry.item.company else None,
+                "quantity": entry.quantity,
+                "unit_cost": float(entry.unit_cost),
+                "total_loss": float(entry.total_loss),
+                "notes": entry.notes,
+            }
+            for entry in leakage_qs
+        ],
         "all_items": all_items,
         "top_items": top_items,
         "company_data": company_data,
@@ -118,25 +181,108 @@ def update_stock_api(request):
     }
     """
 
-    items = request.data.get("updates", [])
+    items = request.data.get("updates", request.data.get("items", []))
     print("Received stock update:", items)
     stock_updates = []
+    entry_date = request.data.get("entry_date")
+    try:
+        entry_date_value = datetime.strptime(entry_date, "%Y-%m-%d").date() if entry_date else None
+    except ValueError:
+        return Response({"status": "error", "message": "Invalid entry_date"}, status=400)
 
     for entry in items:
         try:
             item = Item.objects.get(id=entry["id"])
             crates = float(entry.get("crates", 0))
+            discount = float(entry.get("discount", 0) or 0)
             stock_updates.append({
                 "item": item,
                 "crates": crates,
+                "discount": discount,
             })
 
         except Item.DoesNotExist:
             continue
 
-    updated = apply_stock_updates(stock_updates)
+    updated = apply_stock_updates(stock_updates, entry_date=entry_date_value)
 
     return Response({
         "status": "success",
         "updated_items": updated
     })
+
+
+@api_view(["POST"])
+def save_leakage_api(request):
+    item_id = request.data.get("item")
+    quantity = request.data.get("quantity")
+    date_value = request.data.get("date")
+    notes = request.data.get("notes", "")
+
+    if not item_id or not quantity:
+        return Response({"success": False, "message": "item and quantity are required"}, status=400)
+
+    try:
+        quantity = int(quantity)
+        if quantity <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return Response({"success": False, "message": "quantity must be greater than 0"}, status=400)
+
+    try:
+        leakage_date = datetime.strptime(date_value, "%Y-%m-%d").date() if date_value else datetime.today().date()
+    except ValueError:
+        return Response({"success": False, "message": "Invalid date"}, status=400)
+
+    with transaction.atomic():
+        item = Item.objects.select_for_update().filter(id=item_id, frozen=False).first()
+        if not item:
+            return Response({"success": False, "message": "Item not found"}, status=404)
+
+        if item.stock_quantity < quantity:
+            return Response(
+                {"success": False, "message": f"Leakage quantity exceeds available stock ({item.stock_quantity})"},
+                status=400,
+            )
+
+        item.stock_quantity -= quantity
+        item.save(update_fields=["stock_quantity"])
+
+        leakage = LeakageEntry.objects.create(
+            item=item,
+            date=leakage_date,
+            quantity=quantity,
+            unit_cost=item.buying_price,
+            notes=notes,
+        )
+
+    return Response({
+        "success": True,
+        "message": "Leakage recorded successfully",
+        "entry": {
+            "id": leakage.id,
+            "date": str(leakage.date),
+            "item_id": item.id,
+            "item_name": item.name,
+            "quantity": leakage.quantity,
+            "unit_cost": float(leakage.unit_cost),
+            "total_loss": float(leakage.total_loss),
+            "notes": leakage.notes,
+            "stock_quantity": item.stock_quantity,
+        },
+    })
+
+
+@api_view(["DELETE", "POST"])
+def delete_leakage_api(request, leakage_id):
+    leakage = LeakageEntry.objects.select_related("item").filter(id=leakage_id).first()
+    if not leakage:
+        return Response({"success": False, "message": "Leakage entry not found"}, status=404)
+
+    with transaction.atomic():
+        item = Item.objects.select_for_update().get(id=leakage.item_id)
+        item.stock_quantity += leakage.quantity
+        item.save(update_fields=["stock_quantity"])
+        leakage.delete()
+
+    return Response({"success": True, "message": "Leakage deleted and stock restored"})

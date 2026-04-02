@@ -200,21 +200,42 @@
     font-size: 1.5rem;
     margin-bottom: 0.85rem;
 }
+
+@media (max-width: 767.98px) {
+    .companies-page > .d-flex {
+        margin-bottom: 0;
+    }
+
+    .companies-add-btn {
+        width: 100%;
+    }
+
+    .companies-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .company-card-body {
+        padding: 0 0.85rem 0.85rem;
+    }
+
+    .company-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .company-btn {
+        width: 100%;
+    }
+}
 </style>
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="companies-page">
-        <section class="companies-topbar">
-            <div>
-                <span class="companies-eyebrow">Companies</span>
-                <h1>Company Records</h1>
-                <p>Manage company catalogues, logo records, item counts, and stock value summaries.</p>
-            </div>
+        <div class="d-flex justify-content-end mb-3">
             <a href="{% url 'milk_agency:add_company' %}" class="companies-add-btn">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add Company</span>
             </a>
-        </section>
+        </div>
 
         {% if companies %}
         <div class="companies-grid">

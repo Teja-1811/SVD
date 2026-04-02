@@ -4,117 +4,485 @@
 
 {% block content %}
 <div class="container-fluid py-4 gs-page-shell">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Expenses List</h2>
-        <a href="{% url 'general_store:cashbook' %}" class="btn btn-primary">
-            <i class="bi bi-arrow-left me-1"></i>Back to CashBook
-        </a>
-    </div>
+    <style>
+        .expenses-page {
+            --expenses-ink: #143642;
+            --expenses-muted: #5f7482;
+            --expenses-surface: rgba(255, 255, 255, 0.92);
+            --expenses-border: rgba(20, 54, 66, 0.12);
+            --expenses-accent: #ff7a59;
+            --expenses-accent-deep: #e45d39;
+            --expenses-highlight: #0f9d8a;
+            --expenses-bg: radial-gradient(circle at top left, rgba(255, 205, 142, 0.28), transparent 28%), radial-gradient(circle at top right, rgba(15, 157, 138, 0.18), transparent 22%), linear-gradient(180deg, #fffdf8 0%, #eef6f8 100%);
+        }
 
-    <!-- Main Content Layout -->
-    <div class="row mb-4">
-        <!-- Left Column: Filters and Summary Cards -->
-        <div class="col-md-4">
-            <!-- Filters -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Filter Expenses by Date Range</h6>
+        .expenses-page .expenses-hero,
+        .expenses-page .expenses-card,
+        .expenses-page .expenses-table-card,
+        .expenses-page .modal-content {
+            border: 1px solid var(--expenses-border);
+            box-shadow: 0 24px 60px rgba(20, 54, 66, 0.10);
+        }
+
+        .expenses-page .expenses-hero {
+            background: var(--expenses-bg);
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .expenses-page .expenses-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.22), transparent 45%);
+            pointer-events: none;
+        }
+
+        .expenses-page .expenses-card,
+        .expenses-page .expenses-table-card,
+        .expenses-page .modal-content {
+            background: var(--expenses-surface);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+        }
+
+        .expenses-page .expenses-kicker {
+            color: var(--expenses-accent-deep);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .expenses-page .expenses-title {
+            color: var(--expenses-ink);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 0.75rem;
+        }
+
+        .expenses-page .expenses-subtitle,
+        .expenses-page .expenses-meta,
+        .expenses-page .table-note {
+            color: var(--expenses-muted);
+        }
+
+        .expenses-page .expenses-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(20, 54, 66, 0.08);
+            color: var(--expenses-ink);
+            font-weight: 600;
+        }
+
+        .expenses-page .expenses-btn-primary {
+            background: linear-gradient(135deg, var(--expenses-accent) 0%, var(--expenses-accent-deep) 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 14px 30px rgba(228, 93, 57, 0.28);
+        }
+
+        .expenses-page .expenses-btn-primary:hover,
+        .expenses-page .expenses-btn-primary:focus {
+            color: #fff;
+            background: linear-gradient(135deg, #ff6b47 0%, #cf4f2f 100%);
+        }
+
+        .expenses-page .expenses-btn-secondary {
+            border: 1px solid rgba(20, 54, 66, 0.12);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--expenses-ink);
+        }
+
+        .expenses-page .expenses-stat-card {
+            min-height: 100%;
+        }
+
+        .expenses-page .stat-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .expenses-page .stat-total .stat-icon {
+            background: rgba(228, 93, 57, 0.12);
+            color: var(--expenses-accent-deep);
+        }
+
+        .expenses-page .stat-range .stat-icon {
+            background: rgba(15, 157, 138, 0.12);
+            color: var(--expenses-highlight);
+        }
+
+        .expenses-page .expense-value {
+            color: var(--expenses-ink);
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .expenses-page .expense-label {
+            color: var(--expenses-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .expenses-page .expense-form-label,
+        .expenses-page .modal label {
+            color: var(--expenses-ink);
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .expenses-page .expense-input,
+        .expenses-page .modal .form-control,
+        .expenses-page .modal .form-select {
+            border-radius: 16px;
+            border: 1px solid rgba(20, 54, 66, 0.12);
+            min-height: 52px;
+            box-shadow: none;
+        }
+
+        .expenses-page .expense-input:focus,
+        .expenses-page .modal .form-control:focus,
+        .expenses-page .modal .form-select:focus {
+            border-color: rgba(228, 93, 57, 0.45);
+            box-shadow: 0 0 0 0.2rem rgba(255, 122, 89, 0.14);
+        }
+
+        .expenses-page .chart-shell {
+            height: 320px;
+        }
+
+        .expenses-page .category-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .expenses-page .category-petrol {
+            color: #8a4b00;
+            background: rgba(255, 193, 7, 0.18);
+        }
+
+        .expenses-page .category-food {
+            color: #0b6b57;
+            background: rgba(25, 135, 84, 0.16);
+        }
+
+        .expenses-page .category-others {
+            color: #5d4c7a;
+            background: rgba(108, 117, 125, 0.14);
+        }
+
+        .expenses-page .expenses-table {
+            margin-bottom: 0;
+        }
+
+        .expenses-page .expenses-table thead th {
+            border-bottom: 1px solid rgba(20, 54, 66, 0.08);
+            color: #587081;
+            font-size: 0.84rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 800;
+            padding: 1rem;
+            background: rgba(244, 247, 248, 0.8);
+        }
+
+        .expenses-page .expenses-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: rgba(20, 54, 66, 0.08);
+            color: var(--expenses-ink);
+        }
+
+        .expenses-page .expenses-table tbody tr:hover {
+            background: rgba(255, 122, 89, 0.05);
+        }
+
+        .expenses-page .action-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .expenses-page .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+            color: var(--expenses-muted);
+        }
+
+        @media (max-width: 991.98px) {
+            .expenses-page .chart-shell {
+                height: 280px;
+            }
+        }
+    </style>
+
+    <div class="expenses-page">
+        <section class="expenses-hero p-4 p-lg-5 mb-4">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <div class="expenses-kicker mb-2">Cashbook Control</div>
+                    <h1 class="expenses-title">Track every rupee that leaves the store.</h1>
+                    <p class="expenses-subtitle mb-4">A cleaner expense dashboard with quick filters, live category insight, and a fast add-expense modal right on the page.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn expenses-btn-primary px-4 py-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                            <i class="bi bi-plus-circle me-2"></i>Add Expense
+                        </button>
+                        <a href="{% url 'general_store:cashbook' %}" class="btn expenses-btn-secondary px-4 py-3">
+                            <i class="bi bi-arrow-left me-2"></i>Back to CashBook
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="col-lg-5">
+                    <div class="d-grid gap-3">
+                        <div class="expenses-chip">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ start_date }} to {{ end_date }}</span>
+                        </div>
+                        <div class="expenses-chip">
+                            <i class="bi bi-receipt-cutoff"></i>
+                            <span>{{ expenses|length }} expense{{ expenses|length|pluralize }} in this range</span>
+                        </div>
+                        <div class="expenses-chip">
+                            <i class="bi bi-pie-chart"></i>
+                            <span>{{ chart_labels|length }} categor{{ chart_labels|length|pluralize:"y,ies" }} active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="expenses-card expenses-stat-card stat-total p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="expense-label mb-2">Total Expenses</div>
+                            <div class="expense-value">Rs {{ total_expenses|floatformat:2 }}</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                    <div class="expenses-meta">Filtered total for the selected period.</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="expenses-card expenses-stat-card stat-range p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="expense-label mb-2">Selected Window</div>
+                            <div class="expense-value fs-3">{{ expenses|length }}</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-calendar-range"></i>
+                        </div>
+                    </div>
+                    <div class="expenses-meta">Entries between your start and end dates.</div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="expenses-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="expense-label mb-2">Filter Expenses</div>
+                            <h3 class="h5 mb-0" style="color: var(--expenses-ink);">Refine the date range</h3>
+                        </div>
+                        <i class="bi bi-sliders2 fs-4" style="color: var(--expenses-accent-deep);"></i>
+                    </div>
                     <form method="get" class="row g-3">
-                        <div class="col-12">
-                            <label for="start_date" class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                        <div class="col-md-6">
+                            <label for="start_date" class="expense-form-label form-label">Start Date</label>
+                            <input type="date" class="form-control expense-input" id="start_date" name="start_date" value="{{ start_date }}">
                         </div>
-                        <div class="col-12">
-                            <label for="end_date" class="form-label">End Date</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                        <div class="col-md-6">
+                            <label for="end_date" class="expense-form-label form-label">End Date</label>
+                            <input type="date" class="form-control expense-input" id="end_date" name="end_date" value="{{ end_date }}">
                         </div>
-                        <div class="col-6">
-                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        <div class="col-sm-6">
+                            <button type="submit" class="btn expenses-btn-primary w-100 py-3">Apply Filter</button>
                         </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-secondary w-100" onclick="resetFilters()">Reset</button>
+                        <div class="col-sm-6">
+                            <button type="button" class="btn expenses-btn-secondary w-100 py-3" onclick="resetFilters()">Reset Range</button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Summary Card -->
-            <div class="card border-left-danger shadow py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                Total Expenses
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="expenses-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <div class="expense-label mb-2">Quick Add</div>
+                            <h3 class="h5 mb-0" style="color: var(--expenses-ink);">Capture a new expense</h3>
+                        </div>
+                        <button type="button" class="btn expenses-btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="expenses-chip w-100 justify-content-between">
+                                <span><i class="bi bi-lightning-charge me-2"></i>Fast entry modal</span>
+                                <span>Live on this page</span>
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ total_expenses|floatformat:2 }}</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="bi bi-cash-stack fa-2x text-gray-300"></i>
+                        <div class="col-12">
+                            <div class="expenses-chip w-100 justify-content-between">
+                                <span><i class="bi bi-tags me-2"></i>Categories</span>
+                                <span>{% for value, label in expense_categories %}{{ label }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                            </div>
                         </div>
+                        <div class="col-12">
+                            <div class="expenses-chip w-100 justify-content-between">
+                                <span><i class="bi bi-calendar-check me-2"></i>Default date</span>
+                                <span>{{ today }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="expenses-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <div class="expense-label mb-2">Visual Breakdown</div>
+                            <h3 class="h5 mb-0" style="color: var(--expenses-ink);">Expenses by category</h3>
+                        </div>
+                        <i class="bi bi-bar-chart-line fs-4" style="color: var(--expenses-highlight);"></i>
+                    </div>
+                    <div class="chart-shell">
+                        <canvas id="expensesChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Chart -->
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Expenses by Category</h6>
+        <div class="expenses-table-card p-3 p-lg-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <div class="expense-label mb-2">Expense Register</div>
+                    <h3 class="h5 mb-1" style="color: var(--expenses-ink);">All recorded expenses</h3>
+                    <div class="table-note">Use the action buttons to update or remove a row.</div>
                 </div>
-                <div class="card-body">
-                    <canvas id="expensesChart" width="400" height="300"></canvas>
-                </div>
+                <button type="button" class="btn expenses-btn-primary px-4 py-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                    <i class="bi bi-wallet2 me-2"></i>Add Another Expense
+                </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Expenses Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">All Expenses</h6>
-        </div>
-        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
+                <table class="table expenses-table align-middle">
+                    <thead>
                         <tr>
                             <th>Date</th>
                             <th>Category</th>
                             <th>Amount</th>
                             <th>Description</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for expense in expenses %}
                         <tr>
-                            <td>{{ expense.date|date:"d M Y" }}</td>
                             <td>
-                                <span class="badge bg-{% if expense.category == 'petrol' %}warning{% elif expense.category == 'food' %}success{% elif expense.category == 'profits' %}info{% else %}secondary{% endif %}">
-                                    {{ expense.category|title }}
-                                </span>
+                                <div class="fw-semibold">{{ expense.date|date:"d M Y" }}</div>
+                                <div class="table-note small">Logged entry</div>
                             </td>
-                            <td class="text-end">₹{{ expense.amount|floatformat:2 }}</td>
-                            <td>{{ expense.description|default:"-" }}</td>
                             <td>
-                                <a href="{% url 'general_store:edit_expense' expense.pk %}" class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="bi bi-pencil"></i> Edit
+                                <span class="category-pill category-{{ expense.category }}">{{ expense.category|title }}</span>
+                            </td>
+                            <td class="fw-bold">Rs {{ expense.amount|floatformat:2 }}</td>
+                            <td>{{ expense.description|default:"No description added." }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'general_store:edit_expense' expense.pk %}" class="btn btn-outline-primary action-btn me-2" title="Edit expense">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{% url 'general_store:delete_expense' expense.pk %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Delete
+                                <a href="{% url 'general_store:delete_expense' expense.pk %}" class="btn btn-outline-danger action-btn" title="Delete expense">
+                                    <i class="bi bi-trash"></i>
                                 </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted">No expenses found.</td>
+                            <td colspan="5" class="empty-state">
+                                <div class="mb-2 fs-3"><i class="bi bi-inbox"></i></div>
+                                <div class="fw-semibold mb-1">No expenses found for this date range.</div>
+                                <div>Try changing the filter or add a fresh expense using the button above.</div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0">
+                    <div class="modal-header border-0 px-4 pt-4 pb-2">
+                        <div>
+                            <div class="expenses-kicker mb-1">New Entry</div>
+                            <h5 class="modal-title" id="addExpenseModalLabel" style="color: var(--expenses-ink);">Add Expense</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'general_store:save_expense' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="general_store:expenses_list">
+                        <div class="modal-body px-4 pb-2">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="expense-date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="expense-date" name="date" value="{{ today }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="expense-amount" class="form-label">Amount</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="expense-amount" name="amount" placeholder="0.00" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="expense-category" class="form-label">Category</label>
+                                    <select class="form-select" id="expense-category" name="category" required>
+                                        <option value="">Select a category</option>
+                                        {% for value, label in expense_categories %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="expense-description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="expense-description" name="description" rows="4" placeholder="Add a note about what this expense was for"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 px-4 pb-4 pt-3">
+                            <button type="button" class="btn expenses-btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn expenses-btn-primary px-4">Save Expense</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -125,93 +493,92 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function resetFilters() {
-    document.getElementById('start_date').value = '';
-    document.getElementById('end_date').value = '';
     window.location.href = '{% url "general_store:expenses_list" %}';
 }
 
-// Chart.js for expenses trend
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('expensesChart');
-    if (ctx) {
-        const chartLabels = {{ chart_labels|safe }};
-        const chartValues = {{ chart_values|safe }};
+    if (!ctx) {
+        return;
+    }
 
-        // Define colors for different categories
-        const categoryColors = {
-            'petrol': { bg: 'rgba(255, 193, 7, 0.6)', border: 'rgba(255, 193, 7, 1)' },    // Yellow/Amber
-            'food': { bg: 'rgba(25, 135, 84, 0.6)', border: 'rgba(25, 135, 84, 1)' },      // Green
-            'profits': { bg: 'rgba(23, 162, 184, 0.6)', border: 'rgba(23, 162, 184, 1)' }, // Cyan/Info
-            'transport': { bg: 'rgba(13, 110, 253, 0.6)', border: 'rgba(13, 110, 253, 1)' }, // Blue
-            'utilities': { bg: 'rgba(102, 16, 242, 0.6)', border: 'rgba(102, 16, 242, 1)' }, // Purple
-            'maintenance': { bg: 'rgba(255, 87, 34, 0.6)', border: 'rgba(255, 87, 34, 1)' }, // Orange
-            'supplies': { bg: 'rgba(156, 39, 176, 0.6)', border: 'rgba(156, 39, 176, 1)' },  // Magenta
-            'other': { bg: 'rgba(121, 85, 72, 0.6)', border: 'rgba(121, 85, 72, 1)' }       // Brown
-        };
+    const chartLabels = {{ chart_labels|safe }};
+    const chartValues = {{ chart_values|safe }};
 
-        // Assign colors based on category
-        const backgroundColors = chartLabels.map(label => {
-            const category = label.toLowerCase();
-            return categoryColors[category] ? categoryColors[category].bg : 'rgba(108, 117, 125, 0.6)'; // Default gray
-        });
+    const categoryColors = {
+        petrol: { bg: 'rgba(255, 193, 7, 0.65)', border: 'rgba(212, 142, 0, 1)' },
+        food: { bg: 'rgba(25, 135, 84, 0.65)', border: 'rgba(15, 107, 87, 1)' },
+        others: { bg: 'rgba(111, 66, 193, 0.45)', border: 'rgba(93, 76, 122, 1)' }
+    };
 
-        const borderColors = chartLabels.map(label => {
-            const category = label.toLowerCase();
-            return categoryColors[category] ? categoryColors[category].border : 'rgba(108, 117, 125, 1)'; // Default gray
-        });
+    const backgroundColors = chartLabels.map((label) => {
+        const color = categoryColors[label.toLowerCase()];
+        return color ? color.bg : 'rgba(95, 116, 130, 0.45)';
+    });
 
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Category Expenses (₹)',
-                    data: chartValues,
-                    backgroundColor: backgroundColors,
-                    borderColor: borderColors,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return '₹' + context.parsed.y.toFixed(2);
-                            }
-                        }
+    const borderColors = chartLabels.map((label) => {
+        const color = categoryColors[label.toLowerCase()];
+        return color ? color.border : 'rgba(95, 116, 130, 1)';
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Category Expenses (Rs)',
+                data: chartValues,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 1.5,
+                borderRadius: 14,
+                borderSkipped: false,
+                maxBarThickness: 74
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        boxWidth: 14,
+                        color: '#143642'
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '₹' + value;
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Rs ' + Number(context.parsed.y || 0).toFixed(2);
                         }
                     }
                 }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(20, 54, 66, 0.08)'
+                    },
+                    ticks: {
+                        color: '#5f7482',
+                        callback: function(value) {
+                            return 'Rs ' + value;
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#143642'
+                    }
+                }
             }
-        });
-    }
+        }
+    });
 });
 </script>
 {% endblock %}
-
-
-

@@ -297,8 +297,22 @@
       grid-template-columns: 1fr;
     }
 
+    .enquiry-panel-head,
     .enquiry-item-top {
       flex-direction: column;
+    }
+
+    .enquiry-panel-body {
+      padding: 0 0.9rem 0.9rem;
+    }
+
+    .enquiry-item {
+      padding: 0.85rem;
+      border-radius: 16px;
+    }
+
+    .enquiry-btn {
+      width: 100%;
     }
   }
 </style>
@@ -307,37 +321,6 @@
 {% block content %}
 <div class="container-fluid py-2 px-0 ma-page-shell">
   <div class="enquiry-page">
-    <section class="enquiry-topbar">
-      <div class="enquiry-topbar-head">
-        <div class="enquiry-heading">
-          <span class="enquiry-eyebrow">Support Desk</span>
-          <h1>Customer Enquiries</h1>
-          <p>Track active website enquiries, review contact details, and update resolution status after follow-up.</p>
-        </div>
-        <div class="enquiry-alert-pill">
-          <i class="bi bi-bell-fill"></i>
-          <span>{{ unresolved_queries_count }} unresolved</span>
-        </div>
-      </div>
-
-      <div class="enquiry-stats">
-        <div class="enquiry-stat">
-          <small>Active enquiries</small>
-          <strong>{{ active_enquiries|length }}</strong>
-        </div>
-        <div class="enquiry-stat">
-          <small>Resolved enquiries</small>
-          <strong>{{ resolved_enquiries|length }}</strong>
-        </div>
-        <div class="enquiry-stat">
-          <small>Total records</small>
-          {% with active_count=active_enquiries|length resolved_count=resolved_enquiries|length %}
-          <strong>{{ active_count|add:resolved_count }}</strong>
-          {% endwith %}
-        </div>
-      </div>
-    </section>
-
     <div class="enquiry-grid">
       <section class="enquiry-panel">
         <div class="enquiry-panel-head">

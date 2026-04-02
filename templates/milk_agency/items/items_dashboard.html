@@ -288,6 +288,23 @@
 }
 
 @media (max-width: 767.98px) {
+    .items-toolbar,
+    .item-content {
+        padding: 0.85rem;
+    }
+
+    .items-company-pill,
+    .items-company-reset {
+        width: 62px;
+        height: 62px;
+        border-radius: 16px;
+    }
+
+    .items-company-pill img {
+        width: 42px;
+        height: 42px;
+    }
+
     .items-actions,
     .item-meta-grid,
     .item-price-grid,
@@ -295,8 +312,38 @@
         grid-template-columns: 1fr;
     }
 
+    .items-actions {
+        display: grid;
+        width: 100%;
+    }
+
     .items-search {
         min-width: 100%;
+    }
+
+    .items-add-btn,
+    .action-btn {
+        width: 100%;
+    }
+
+    .item-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .item-media {
+        min-height: 190px;
+        padding: 1rem;
+    }
+
+    .item-image-box {
+        width: 132px;
+        height: 132px;
+    }
+
+    .item-company-logo {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
     }
 }
 </style>
@@ -305,12 +352,6 @@
 {% block content %}
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="items-page">
-        <section class="items-topbar">
-            <span class="items-eyebrow">Catalogue</span>
-            <h1>Items Dashboard</h1>
-            <p>Browse items by company, search catalogue records, and review pricing and stock from a cleaner item view.</p>
-        </section>
-
         <section class="items-toolbar">
             <div class="items-company-strip">
                 {% for c in companies %}

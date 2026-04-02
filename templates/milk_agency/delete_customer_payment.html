@@ -1,0 +1,43 @@
+{% extends "milk_agency/home/base.html" %}
+
+{% block title %}Delete Payment{% endblock %}
+
+{% block content %}
+<style>
+    .cp-delete-card {
+        border-radius: 20px;
+        border: 1px solid rgba(220,53,69,0.14);
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 18px 42px rgba(23,53,62,0.08);
+    }
+</style>
+
+<div class="container-fluid py-4 ma-page-shell">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="card cp-delete-card">
+                <div class="card-body p-4">
+                    <h3 class="mb-3 text-danger">Delete Payment</h3>
+                    <p class="text-muted mb-4">This will remove the payment record and recalculate the linked customer due and bill paid amount.</p>
+
+                    <div class="mb-3">
+                        <strong>Customer:</strong> {{ payment.customer.name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Transaction ID:</strong> {{ payment.transaction_id }}
+                    </div>
+                    <div class="mb-4">
+                        <strong>Amount:</strong> &#8377;{{ payment.amount }}
+                    </div>
+
+                    <form method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <a href="{% url 'milk_agency:customer_payments' %}" class="btn btn-secondary flex-fill">Cancel</a>
+                        <button type="submit" class="btn btn-danger flex-fill">Delete Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

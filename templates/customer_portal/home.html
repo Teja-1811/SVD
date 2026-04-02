@@ -4,7 +4,7 @@
 {% block title %}User Portal - Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/customer_portal/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/customer_portal/home.css' %}?v=20260401b">
 {% endblock %}
 
 {% block content %}
@@ -48,22 +48,38 @@
                             {% if user.frozen %}Frozen{% else %}Active{% endif %}
                         </span>
                     </div>
+                    <div class="spotlight-summary">
+                        <strong>{% if outstanding_due > 0 %}Payment attention needed{% elif wallet_balance > 0 %}Credit available in wallet{% else %}Account is balanced{% endif %}</strong>
+                        <p>
+                            {% if outstanding_due > 0 %}
+                                There is a pending amount waiting for settlement.
+                            {% elif wallet_balance > 0 %}
+                                Your account already has credit available for future billing.
+                            {% else %}
+                                There is no pending due or extra credit right now.
+                            {% endif %}
+                        </p>
+                    </div>
                     <div class="spotlight-grid">
                         <div>
                             <small>Outstanding</small>
-                            <strong>₹{{ outstanding_due|floatformat:2 }}</strong>
+                            <strong>&#8377;{{ outstanding_due|floatformat:2 }}</strong>
+                            <span>{% if outstanding_due > 0 %}Needs settlement{% else %}No due pending{% endif %}</span>
                         </div>
                         <div>
                             <small>Wallet credit</small>
-                            <strong>₹{{ wallet_balance|floatformat:2 }}</strong>
+                            <strong>&#8377;{{ wallet_balance|floatformat:2 }}</strong>
+                            <span>{% if wallet_balance > 0 %}Ready to offset bills{% else %}No credit available{% endif %}</span>
                         </div>
                         <div>
                             <small>Invoices this month</small>
                             <strong>{{ monthly_invoice_count }}</strong>
+                            <span>Billing activity this cycle</span>
                         </div>
                         <div>
                             <small>Profile complete</small>
                             <strong>{{ profile_completion }}%</strong>
+                            <span>{% if profile_completion == 100 %}All details added{% else %}Complete missing fields{% endif %}</span>
                         </div>
                     </div>
                 </div>
@@ -73,26 +89,47 @@
         <div class="insight-grid">
             <article class="insight-card tone-sunrise">
                 <div class="insight-icon"><i class="bi bi-wallet2"></i></div>
-                <div>
-                    <span class="insight-label">Current balance</span>
-                    <h3>₹{{ actual_due|floatformat:2 }}</h3>
+                <div class="insight-body">
+                    <div class="insight-head">
+                        <span class="insight-label">Current balance</span>
+                        <span class="insight-chip {% if actual_due > 0 %}warn{% elif actual_due < 0 %}good{% else %}neutral{% endif %}">
+                            {% if actual_due > 0 %}Due{% elif actual_due < 0 %}Credit{% else %}Clear{% endif %}
+                        </span>
+                    </div>
+                    <h3>&#8377;{{ actual_due|floatformat:2 }}</h3>
                     <p>{% if actual_due > 0 %}Pending amount to settle{% elif actual_due < 0 %}You have available credit{% else %}Your account is fully settled{% endif %}</p>
+                    <div class="insight-meta">
+                        <span>Outstanding: &#8377;{{ outstanding_due|floatformat:2 }}</span>
+                        <span>Wallet: &#8377;{{ wallet_balance|floatformat:2 }}</span>
+                    </div>
                 </div>
             </article>
 
             <article class="insight-card tone-mint">
                 <div class="insight-icon"><i class="bi bi-calendar-check"></i></div>
-                <div>
-                    <span class="insight-label">Monthly billing</span>
-                    <h3>₹{{ monthly_spend|floatformat:2 }}</h3>
+                <div class="insight-body">
+                    <div class="insight-head">
+                        <span class="insight-label">Monthly billing</span>
+                        <span class="insight-chip neutral">This month</span>
+                    </div>
+                    <h3>&#8377;{{ monthly_spend|floatformat:2 }}</h3>
                     <p>{{ monthly_invoice_count }} invoice{{ monthly_invoice_count|pluralize }} generated this month</p>
+                    <div class="insight-meta">
+                        <span>Invoice count: {{ monthly_invoice_count }}</span>
+                        <span>{% if monthly_invoice_count %}Billing is active{% else %}No invoice yet{% endif %}</span>
+                    </div>
                 </div>
             </article>
 
             <article class="insight-card tone-ocean">
                 <div class="insight-icon"><i class="bi bi-truck"></i></div>
-                <div>
-                    <span class="insight-label">Latest delivery</span>
+                <div class="insight-body">
+                    <div class="insight-head">
+                        <span class="insight-label">Latest delivery</span>
+                        <span class="insight-chip {% if latest_delivery %}good{% else %}neutral{% endif %}">
+                            {% if latest_delivery %}Tracked{% else %}Waiting{% endif %}
+                        </span>
+                    </div>
                     <h3>{% if latest_delivery %}{{ latest_delivery.status|title }}{% else %}No updates{% endif %}</h3>
                     <p>
                         {% if latest_delivery %}
@@ -101,15 +138,28 @@
                             Delivery tracking will appear here after your first order.
                         {% endif %}
                     </p>
+                    <div class="insight-meta">
+                        <span>{% if latest_delivery %}Order: {{ latest_delivery.order.order_number }}{% else %}No tracked order yet{% endif %}</span>
+                        <span>{% if latest_delivery %}Latest delivery event available{% else %}Awaiting delivery activity{% endif %}</span>
+                    </div>
                 </div>
             </article>
 
             <article class="insight-card tone-rose">
                 <div class="insight-icon"><i class="bi bi-stars"></i></div>
-                <div>
-                    <span class="insight-label">Live offers</span>
+                <div class="insight-body">
+                    <div class="insight-head">
+                        <span class="insight-label">Live offers</span>
+                        <span class="insight-chip {% if active_offers|length %}good{% else %}neutral{% endif %}">
+                            {% if active_offers|length %}Available{% else %}None today{% endif %}
+                        </span>
+                    </div>
                     <h3>{{ active_offers|length }}</h3>
                     <p>Active savings available for user accounts today</p>
+                    <div class="insight-meta">
+                        <span>{% if active_offers %}Savings are currently available{% else %}No live offers published{% endif %}</span>
+                        <span>See details below</span>
+                    </div>
                 </div>
             </article>
         </div>
@@ -140,7 +190,7 @@
                     </div>
                     <div class="detail-row">
                         <span>Total amount</span>
-                        <strong>₹{{ latest_order.display_total_amount|floatformat:2 }}</strong>
+                        <strong>&#8377;{{ latest_order.display_total_amount|floatformat:2 }}</strong>
                     </div>
                 </div>
                 <div class="card-action-row">
@@ -172,7 +222,7 @@
                     <div class="mini-metrics">
                         <div>
                             <small>Plan price</small>
-                            <strong>₹{{ active_subscription.subscription_plan.price|floatformat:2 }}</strong>
+                            <strong>&#8377;{{ active_subscription.subscription_plan.price|floatformat:2 }}</strong>
                         </div>
                         <div>
                             <small>Valid until</small>
@@ -227,7 +277,7 @@
                             <p>{{ offer.offer_type }}{% if offer.description %} · {{ offer.description }}{% endif %}</p>
                         </div>
                         <div class="offer-meta">
-                            <strong>₹{{ offer.price|floatformat:2 }}</strong>
+                            <strong>&#8377;{{ offer.price|floatformat:2 }}</strong>
                             <small>Ends {{ offer.end_date|date:"M d" }}</small>
                         </div>
                     </article>

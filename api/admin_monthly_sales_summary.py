@@ -70,7 +70,7 @@ def api_monthly_sales_summary(request):
         total=Coalesce(Sum('last_paid'), Decimal('0.00'))
     )['total']
 
-    opening_due = bills.first().op_due_amount if bills.exists() else (customer.due if customer else Decimal('0'))
+    opening_due = bills.first().op_due_amount if bills.exists() else (customer.get_actual_due() if customer else Decimal('0'))
 
     due_total = opening_due + invoice_total - paid_total
 
@@ -236,7 +236,7 @@ def monthly_summary_pdf_api(request):
     total_sales = sum(b["total_amount"] for b in customer_bills.values())
     paid_amount = sum(b["paid_amount"] for b in customer_bills.values())
 
-    opening_due = bills.first().op_due_amount if bills.exists() else customer.due
+    opening_due = bills.first().op_due_amount if bills.exists() else customer.get_actual_due()
     due_amount = customer.get_actual_due()
 
     # ---------------------------

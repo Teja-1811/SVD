@@ -193,9 +193,27 @@
   }
 
   @media (max-width: 767.98px) {
+    .sub-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .sub-action {
+      width: 100%;
+    }
+
     .sub-kpis,
     .sub-plan-meta {
       grid-template-columns: 1fr;
+    }
+
+    .sub-plan-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sub-card-head {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .sub-mobile-table thead { display: none; }
@@ -208,19 +226,6 @@
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
   <div class="sub-page">
-    <section class="sub-topbar">
-      <span class="sub-eyebrow">Subscriptions</span>
-      <h1>Subscription Management</h1>
-      <p>Manage plans, customer subscriptions, payment records, and delivery-related subscription actions.</p>
-
-      <div class="sub-kpis">
-        <div class="sub-kpi active"><small>Active</small><strong>{{ total_active }}</strong></div>
-        <div class="sub-kpi expired"><small>Expired</small><strong>{{ total_expired }}</strong></div>
-        <div class="sub-kpi expiring"><small>Expiring Soon</small><strong>{{ expiring_count }}</strong></div>
-        <div class="sub-kpi plans"><small>Plans</small><strong>{{ total_plans }}</strong></div>
-      </div>
-    </section>
-
     <div class="sub-actions">
       <button class="sub-action primary" data-bs-toggle="modal" data-bs-target="#createPlanModal">Add Plan</button>
       <button class="sub-action success" data-bs-toggle="modal" data-bs-target="#assignSubscriptionModal">Assign Subscription</button>

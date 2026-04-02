@@ -410,45 +410,29 @@
         display: grid;
         grid-template-columns: 1fr;
     }
+
+    .delivery-action {
+        width: 100%;
+    }
+
+    .delivery-grid {
+        grid-template-columns: 1fr;
+        padding: 0.85rem;
+    }
+
+    .delivery-section-head,
+    .delivery-filters {
+        padding: 0.9rem;
+    }
+
+    .delivery-item {
+        padding: 0.85rem;
+    }
 }
 </style>
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="delivery-page">
-        <section class="delivery-topbar">
-            <div class="delivery-topbar-head">
-                <div class="delivery-heading">
-                    <span class="delivery-eyebrow">Delivery Desk</span>
-                    <h1>Delivery Status Dashboard</h1>
-                    <p>Review customer orders, subscription deliveries, and related billing records from one operations view.</p>
-                </div>
-            </div>
-
-            <div class="delivery-meta-row">
-                <span class="delivery-meta-pill"><i class="bi bi-calendar-event"></i> {{ today|date:"M d, Y" }}</span>
-                <span class="delivery-meta-pill"><i class="bi bi-clock-history"></i> Subscription billing run at 6:00 AM daily</span>
-            </div>
-
-            <div class="delivery-stat-grid">
-                <div class="delivery-stat-card delivery-stat-card--pending">
-                    <small>Pending deliveries</small>
-                    <strong>{{ pending_total }}</strong>
-                </div>
-                <div class="delivery-stat-card delivery-stat-card--delivered">
-                    <small>Delivered deliveries</small>
-                    <strong>{{ delivered_total }}</strong>
-                </div>
-                <div class="delivery-stat-card">
-                    <small>Pending orders</small>
-                    <strong>{{ pending_orders_count }}</strong>
-                </div>
-                <div class="delivery-stat-card">
-                    <small>Pending subscriptions</small>
-                    <strong>{{ pending_subscriptions_count }}</strong>
-                </div>
-            </div>
-        </section>
-
         <section class="delivery-filters">
             <form method="get" class="delivery-filter-form">
                 <div class="delivery-filter-field">

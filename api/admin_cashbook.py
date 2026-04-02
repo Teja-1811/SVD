@@ -15,7 +15,8 @@ from milk_agency.models import (
     DailyPayment,
     Customer,
     Bill,
-    Item
+    Item,
+    LeakageEntry,
 )
 
 
@@ -46,7 +47,12 @@ def api_cashbook_dashboard(request):
         cash_entry.c100 * 100 +
         cash_entry.c50 * 50 +
         cash_entry.c20 * 20 +
-        cash_entry.c10 * 10
+        cash_entry.c10 * 10 +
+        cash_entry.coin20 * 20 +
+        cash_entry.coin10 * 10 +
+        cash_entry.coin5 * 5 +
+        cash_entry.coin2 * 2 +
+        cash_entry.coin1 * 1
     )
 
     denominations = {
@@ -56,6 +62,11 @@ def api_cashbook_dashboard(request):
         "c50": cash_entry.c50,
         "c20": cash_entry.c20,
         "c10": cash_entry.c10,
+        "coin20": cash_entry.coin20,
+        "coin10": cash_entry.coin10,
+        "coin5": cash_entry.coin5,
+        "coin2": cash_entry.coin2,
+        "coin1": cash_entry.coin1,
     }
 
     # ---- Cash Out (Expenses) ----
@@ -73,7 +84,7 @@ def api_cashbook_dashboard(request):
     )["total"]
 
     # ---- Bank Balance (latest entry) ----
-    bank_balance_obj = BankBalance.objects.get(id=1)  # Assuming a single entry for current balance
+    bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1, defaults={"amount": 0})
     bank_balance = bank_balance_obj.amount if bank_balance_obj else Decimal("0.00")
 
     # ---- Company Dues ----
@@ -103,10 +114,19 @@ def api_cashbook_dashboard(request):
     company_dues = [c for c in company_dues if c["total_due"] != 0]
     total_company_dues = sum(c["total_due"] for c in company_dues) or Decimal("0.00")
 
-    # ---- Customer Dues (cached total) ----
-    total_customer_dues = Customer.objects.aggregate(
+    # ---- Customer Dues aligned with website due calculation ----
+    total_customer_dues = sum(
+        max(customer.get_actual_due() or Decimal("0.00"), Decimal("0.00"))
+        for customer in Customer.objects.all()
+    )
+
+    leakage_entries = LeakageEntry.objects.filter(
+        date__year=year,
+        date__month=month
+    ).select_related("item", "item__company")
+    monthly_loss = leakage_entries.aggregate(
         total=Coalesce(
-            Sum("due"),
+            Sum("total_loss"),
             Decimal("0.00"),
             output_field=DecimalField(max_digits=12, decimal_places=2)
         )
@@ -126,8 +146,8 @@ def api_cashbook_dashboard(request):
     )["profit"]
 
     # ---- Net Calculations ----
-    net_profit = monthly_profit - total_cash_out
-    net_cash = cash_in + bank_balance + total_customer_dues
+    net_profit = monthly_profit - total_cash_out - monthly_loss
+    net_cash = cash_in + bank_balance
 
     # ---- Stock Value ----
     stock_value = Item.objects.aggregate(
@@ -153,11 +173,26 @@ def api_cashbook_dashboard(request):
         "company_dues": company_dues,
         "total_company_dues": total_company_dues,
         "total_customer_dues": total_customer_dues,
+        "monthly_loss": monthly_loss,
         "monthly_profit": monthly_profit,
         "net_profit": net_profit,
         "net_cash": net_cash,
         "stock_value": stock_value,
-        "remaining_amount": remaining_amount
+        "remaining_amount": remaining_amount,
+        "leakage_entries": [
+            {
+                "id": entry.id,
+                "date": str(entry.date),
+                "item_id": entry.item_id,
+                "item_name": entry.item.name if entry.item else None,
+                "company_name": entry.item.company.name if entry.item and entry.item.company else None,
+                "quantity": entry.quantity,
+                "unit_cost": float(entry.unit_cost),
+                "total_loss": float(entry.total_loss),
+                "notes": entry.notes,
+            }
+            for entry in leakage_entries
+        ],
     })
 
 
@@ -171,7 +206,7 @@ def api_save_cash_in(request):
     if not cash_entry:
         cash_entry = CashbookEntry.objects.create()
 
-    fields = ["c500", "c200", "c100", "c50", "c20", "c10"]
+    fields = ["c500", "c200", "c100", "c50", "c20", "c10", "coin20", "coin10", "coin5", "coin2", "coin1"]
 
     for field in fields:
         setattr(cash_entry, field, int(request.data.get(field, 0)))

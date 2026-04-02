@@ -182,6 +182,32 @@ body {
     color: #fff;
 }
 
+.cb-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cb-table th,
+.cb-table td {
+    padding: .75rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    font-size: .9rem;
+    vertical-align: middle;
+}
+
+.cb-table th {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+}
+
+.cb-empty {
+    padding: 1rem 0;
+    color: #64748b;
+    text-align: center;
+}
+
 /* ================= MOBILE OPTIMIZATION ================= */
 @media (max-width: 576px) {
 
@@ -385,6 +411,20 @@ body {
             </div>
         </div>
 
+        <!-- Loss -->
+        <div class="col-lg-2 col-md-3 col-6">
+            <div class="premium-card card-accent"
+                 style="--accent-start:#ef4444; --accent-end:#fca5a5;">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-title">Loss</div>
+                        <div class="stat-value">₹{{ monthly_loss|floatformat:2 }}</div>
+                    </div>
+                    <div class="icon-round"><i class="bi bi-exclamation-triangle fs-4 text-danger"></i></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Profit -->
         <div class="col-lg-2 col-md-3 col-6">
             <div class="premium-card card-accent"
@@ -443,7 +483,6 @@ body {
 
     </div>
 
-
         <!-- Company Dues -->
         <div class="col-md-12 mb-4">
             <div class="premium-card">
@@ -458,7 +497,7 @@ body {
                             <h4 class="{% if company.total_due > 0 %}text-danger{% else %}text-success{% endif %}">
                                 ₹{{ company.total_due|floatformat:2 }}
                             </h4>
-                            <small class="text-muted">Last updated: {{ company.updated_at|date:"d M Y" }}</small>
+                            <small class="text-muted">Last updated: {{ company.last_updated|date:"d M Y" }}</small>
                         </div>
                     </div>
                     {% endfor %}

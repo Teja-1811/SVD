@@ -148,6 +148,36 @@
     color: #617780;
 }
 
+.cp-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.cp-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    min-height: 36px;
+    padding: 0.45rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 0;
+}
+
+.cp-action-btn.edit {
+    background: rgba(37,99,235,0.12);
+    color: #2563eb;
+}
+
+.cp-action-btn.delete {
+    background: rgba(220,53,69,0.12);
+    color: #c62828;
+}
+
 @media (max-width: 991.98px) {
     .cp-filter-form {
         grid-template-columns: 1fr 1fr;
@@ -155,20 +185,34 @@
 }
 
 @media (max-width: 767.98px) {
+    .cp-filter-card,
+    .cp-table-card {
+        padding: 0.85rem;
+        border-radius: 18px;
+    }
+
     .cp-filter-form {
         grid-template-columns: 1fr;
+    }
+
+    .cp-btn,
+    .cp-action-btn {
+        width: 100%;
+    }
+
+    .cp-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .cp-table {
+        min-width: 760px;
     }
 }
 </style>
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="cp-page">
-        <section class="cp-topbar">
-            <span class="cp-eyebrow">Payments</span>
-            <h1>Customer Payments</h1>
-            <p>Search customer transactions by customer details or transaction reference and review payment records.</p>
-        </section>
-
         <section class="cp-filter-card">
             <form method="get" class="cp-filter-form">
                 <div class="cp-field">
@@ -196,6 +240,7 @@
                             <th>Method</th>
                             <th>Status</th>
                             <th>Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -212,10 +257,16 @@
                                 </span>
                             </td>
                             <td>{{ payment.created_at|date:"d M Y, H:i" }}</td>
+                            <td>
+                                <div class="cp-actions">
+                                    <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit">Edit</a>
+                                    <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete">Delete</a>
+                                </div>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="cp-empty">No payments found.</td>
+                            <td colspan="8" class="cp-empty">No payments found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

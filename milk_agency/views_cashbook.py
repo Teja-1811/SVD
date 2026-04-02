@@ -3,27 +3,105 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Max, F, ExpressionWrapper, DecimalField, Count
 from django.db.models.functions import Coalesce
+from django.db import transaction
 from django.utils import timezone
 from decimal import Decimal, InvalidOperation
+from datetime import datetime
 
 from .models import (
     CashbookEntry, Expense, BankBalance,
     MonthlyPaymentSummary, DailyPayment,
-    Customer, Bill, Item, Company
+    Customer, Bill, Item, Company, LeakageEntry, CustomerPayment
 )
 
-SUPERUSER_DUE_EXPENSE_CATEGORIES = {"Fuel", "Food", "Repair"}
+DELIVERY_DUE_EXPENSE_CATEGORIES = {"Fuel", "Food", "Repair"}
 
 
-def _adjust_superuser_due(amount, category, increase=True):
-    if category not in SUPERUSER_DUE_EXPENSE_CATEGORIES:
+def _safe_redirect_target(raw_target, fallback):
+    if raw_target and raw_target.startswith("/"):
+        return redirect(raw_target)
+    return redirect(fallback)
+
+
+def _get_delivery_customer():
+    return Customer.objects.filter(shop_name__iexact="Delivery").order_by("id").first()
+
+
+def _get_latest_bill(customer):
+    if not customer:
+        return None
+    return (
+        Bill.objects.filter(customer=customer, is_deleted=False)
+        .order_by("-invoice_date", "-id")
+        .first()
+    )
+
+
+def _expense_affects_delivery_due(category):
+    if category not in DELIVERY_DUE_EXPENSE_CATEGORIES:
+        return False
+    return True
+
+
+def _adjust_delivery_due(customer, amount, category, subtract=True):
+    if not customer or not _expense_affects_delivery_due(category):
         return
 
     delta = Decimal(amount)
-    if not increase:
+    if subtract:
         delta = -delta
 
-    Customer.objects.filter(is_superuser=True, name="Admin").update(due=F("due") + delta)
+    Customer.objects.filter(pk=customer.pk).update(due=F("due") + delta)
+
+
+def _recalculate_bill_last_paid(bill):
+    if not bill:
+        return
+
+    total_paid = (
+        CustomerPayment.objects.filter(bill=bill, status="SUCCESS")
+        .aggregate(total=Coalesce(Sum("amount"), Decimal("0.00"), output_field=DecimalField(max_digits=12, decimal_places=2)))["total"]
+    )
+    bill.last_paid = total_paid
+    bill.save(update_fields=["last_paid"])
+
+
+def _sync_delivery_expense_payment(customer, expense):
+    if not customer:
+        return
+
+    payment_qs = CustomerPayment.objects.filter(transaction_id=f"EXPENSE-{expense.pk}")
+    old_bill = payment_qs.first().bill if payment_qs.exists() else None
+
+    if not _expense_affects_delivery_due(expense.category):
+        payment_qs.delete()
+        _recalculate_bill_last_paid(old_bill)
+        return
+
+    latest_bill = _get_latest_bill(customer)
+    payment_qs.update_or_create(
+        transaction_id=f"EXPENSE-{expense.pk}",
+        defaults={
+            "customer": customer,
+            "bill": latest_bill,
+            "amount": Decimal(expense.amount),
+            "method": "Expense",
+            "status": "SUCCESS",
+        },
+    )
+    if old_bill and latest_bill and old_bill.pk != latest_bill.pk:
+        _recalculate_bill_last_paid(old_bill)
+    _recalculate_bill_last_paid(latest_bill)
+
+
+def _delete_delivery_expense_payment(expense):
+    payment = CustomerPayment.objects.filter(transaction_id=f"EXPENSE-{expense.pk}").first()
+    if not payment:
+        return
+
+    bill = payment.bill
+    payment.delete()
+    _recalculate_bill_last_paid(bill)
 
 
 # -------------------------------------------------------
@@ -122,6 +200,16 @@ def cashbook(request):
         total=Coalesce(Sum('due'), 0, output_field=DecimalField(max_digits=12, decimal_places=2))
     )['total']
 
+    # ---------------- LEAKAGE / LOSS ----------------
+    leakage_entries = LeakageEntry.objects.filter(
+        date__year=selected_year,
+        date__month=selected_month
+    ).select_related('item', 'item__company')
+
+    monthly_loss = leakage_entries.aggregate(
+        total=Coalesce(Sum('total_loss'), 0, output_field=DecimalField(max_digits=12, decimal_places=2))
+    )['total']
+
     # ---------------- MONTHLY PROFIT ----------------
     monthly_profit = Bill.objects.filter(
         invoice_date__year=selected_year,
@@ -129,7 +217,7 @@ def cashbook(request):
         is_deleted=False
     ).aggregate(total_profit=Sum('profit'))['total_profit'] or 0
 
-    net_profit = monthly_profit - total_cash_out
+    net_profit = monthly_profit - total_cash_out - monthly_loss
     net_cash = total_cash_in + bank_balance
 
     # ---------------- STOCK VALUE ----------------
@@ -166,6 +254,7 @@ def cashbook(request):
         'years': years,
         'selected_month': selected_month,
         'selected_year': selected_year,
+        'monthly_loss': monthly_loss,
     }
 
     return render(request, 'milk_agency/dashboards_other/cashbook.html', context)
@@ -231,18 +320,105 @@ def save_expense(request):
         try:
             amount = Decimal(request.POST.get('amount'))
             category = (request.POST.get('category') or '').strip()
+            expense_date = (request.POST.get('date') or '').strip()
+            delivery_customer = _get_delivery_customer()
 
-            Expense.objects.create(
-                amount=amount,
-                category=category,
-                description=request.POST.get('description')
-            )
-            _adjust_superuser_due(amount, category, increase=True)
+            try:
+                expense_date_obj = datetime.strptime(expense_date, '%Y-%m-%d').date() if expense_date else timezone.localdate()
+            except ValueError:
+                messages.error(request, "Invalid expense date")
+                return _safe_redirect_target(request.POST.get('next'), 'milk_agency:cashbook')
+
+            with transaction.atomic():
+                expense = Expense.objects.create(
+                    amount=amount,
+                    category=category,
+                    description=request.POST.get('description'),
+                    date=expense_date_obj
+                )
+                _adjust_delivery_due(delivery_customer, amount, category, subtract=True)
+                _sync_delivery_expense_payment(delivery_customer, expense)
             messages.success(request, "Expense added successfully")
         except (InvalidOperation, TypeError, ValueError):
             messages.error(request, "Invalid amount")
 
-    return redirect('milk_agency:cashbook')
+    return _safe_redirect_target(request.POST.get('next'), 'milk_agency:cashbook')
+
+
+# -------------------------------------------------------
+# SAVE LEAKAGE
+# -------------------------------------------------------
+@login_required
+def save_leakage(request):
+    if request.method == 'POST':
+        next_url = request.POST.get('next')
+        item_id = request.POST.get('item')
+        quantity_str = (request.POST.get('quantity') or '').strip()
+        leakage_date = (request.POST.get('date') or '').strip()
+        notes = (request.POST.get('notes') or '').strip()
+
+        try:
+            quantity = int(quantity_str)
+            if quantity <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, "Leakage quantity must be greater than 0.")
+            return _safe_redirect_target(next_url, 'milk_agency:cashbook')
+
+        try:
+            leakage_date_obj = datetime.strptime(leakage_date, '%Y-%m-%d').date() if leakage_date else timezone.localdate()
+        except ValueError:
+            messages.error(request, "Invalid leakage date.")
+            return _safe_redirect_target(next_url, 'milk_agency:cashbook')
+
+        with transaction.atomic():
+            item = get_object_or_404(Item.objects.select_for_update(), id=item_id, frozen=False)
+
+            if item.stock_quantity < quantity:
+                messages.error(
+                    request,
+                    f"Leakage quantity for {item.name} cannot exceed available stock ({item.stock_quantity})."
+                )
+                return _safe_redirect_target(next_url, 'milk_agency:cashbook')
+
+            item.stock_quantity -= quantity
+            item.save(update_fields=['stock_quantity'])
+
+            LeakageEntry.objects.create(
+                item=item,
+                date=leakage_date_obj,
+                quantity=quantity,
+                unit_cost=item.buying_price,
+                notes=notes,
+            )
+
+        messages.success(request, f"Leakage recorded for {item.name}. Stock reduced by {quantity}.")
+
+    return _safe_redirect_target(request.POST.get('next'), 'milk_agency:cashbook')
+
+
+# -------------------------------------------------------
+# DELETE LEAKAGE
+# -------------------------------------------------------
+@login_required
+def delete_leakage(request, pk):
+    leakage = get_object_or_404(LeakageEntry.objects.select_related('item'), pk=pk)
+
+    if request.method == 'POST':
+        next_url = request.POST.get('next')
+        with transaction.atomic():
+            item = Item.objects.select_for_update().get(pk=leakage.item_id)
+            item.stock_quantity += leakage.quantity
+            item.save(update_fields=['stock_quantity'])
+            item_name = item.name
+            restored_qty = leakage.quantity
+            leakage.delete()
+
+        messages.success(request, f"Leakage entry removed for {item_name}. Restored {restored_qty} stock.")
+
+        return _safe_redirect_target(next_url, 'milk_agency:cashbook')
+
+    return _safe_redirect_target(request.GET.get('next'), 'milk_agency:cashbook')
 
 
 # -------------------------------------------------------
@@ -259,16 +435,19 @@ def edit_expense(request, pk):
 
             new_amount = Decimal(request.POST.get('amount'))
             new_category = (request.POST.get('category') or '').strip()
+            delivery_customer = _get_delivery_customer()
 
-            _adjust_superuser_due(old_amount, old_category, increase=False)
+            with transaction.atomic():
+                _adjust_delivery_due(delivery_customer, old_amount, old_category, subtract=False)
 
-            expense.amount = new_amount
-            expense.category = new_category
-            expense.description = request.POST.get('description')
-            expense.date = request.POST.get('date')
-            expense.save()
+                expense.amount = new_amount
+                expense.category = new_category
+                expense.description = request.POST.get('description')
+                expense.date = request.POST.get('date')
+                expense.save()
 
-            _adjust_superuser_due(new_amount, new_category, increase=True)
+                _adjust_delivery_due(delivery_customer, new_amount, new_category, subtract=True)
+                _sync_delivery_expense_payment(delivery_customer, expense)
             messages.success(request, "Expense updated successfully")
             return redirect('milk_agency:expenses_list')
         except (InvalidOperation, TypeError, ValueError):
@@ -287,8 +466,12 @@ def delete_expense(request, pk):
     if request.method == 'POST':
         amount = expense.amount
         category = expense.category
-        _adjust_superuser_due(amount, category, increase=False)
-        expense.delete()
+        delivery_customer = _get_delivery_customer()
+
+        with transaction.atomic():
+            _adjust_delivery_due(delivery_customer, amount, category, subtract=False)
+            _delete_delivery_expense_payment(expense)
+            expense.delete()
         messages.success(request, f"Expense deleted: ₹{amount} ({category})")
         return redirect('milk_agency:expenses_list')
 
@@ -334,6 +517,8 @@ def expenses_list(request):
         'end_date': end_date,
         'chart_labels': chart_labels,
         'chart_values': chart_values,
+        'expense_categories': Expense.CATEGORY_CHOICES,
+        'today': today.strftime('%Y-%m-%d'),
     }
 
     return render(request, 'milk_agency/dashboards_other/expenses_list.html', context)

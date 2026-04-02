@@ -271,27 +271,44 @@
 }
 
 @media (max-width: 767.98px) {
+    .bills-page > .d-flex {
+        margin-bottom: 0;
+    }
+
+    .bills-primary-btn,
+    .bills-filter-btn {
+        width: 100%;
+    }
+
     .bills-filter-form,
     .bills-mobile-meta {
         grid-template-columns: 1fr;
+    }
+
+    .bills-filter-card,
+    .bills-mobile-card {
+        padding: 0.85rem;
+        border-radius: 18px;
+    }
+
+    .bills-mobile-card {
+        gap: 0.9rem;
+    }
+
+    .bills-actions {
+        justify-content: flex-start;
     }
 }
 </style>
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="bills-page">
-        <section class="bills-topbar">
-            <div class="bills-heading">
-                <span class="bills-eyebrow">Billing</span>
-                <h1>Bills Dashboard</h1>
-                <p>Review generated invoices, filter customer billing records, and open bill actions from one place.</p>
-            </div>
-
+        <div class="d-flex justify-content-end mb-3">
             <a href="{% url 'milk_agency:generate_bill' %}" class="bills-primary-btn">
                 <i class="bi bi-file-earmark-plus"></i>
                 <span>Generate Bill</span>
             </a>
-        </section>
+        </div>
 
         <section class="bills-filter-card">
             <form method="get" id="filterForm" class="bills-filter-form">

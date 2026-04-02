@@ -431,6 +431,13 @@
     .dashboard-action-row {
         justify-content: flex-start;
     }
+
+    .dashboard-shortcut,
+    .dashboard-bell,
+    .dashboard-quick-card {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
@@ -451,35 +458,6 @@
 
 {% block content %}
 <div class="container-fluid py-2 px-0 ma-page-shell">
-
-    <section class="dashboard-topbar mb-4">
-        <div class="dashboard-topbar-head">
-            <div class="dashboard-heading">
-                <span class="dashboard-label">Operations</span>
-                <strong>Milk Agency Control Panel</strong>
-                <span>Core records, stock tracking, billing, and delivery access.</span>
-            </div>
-        </div>
-
-        <div class="dashboard-stat-strip">
-            <div class="dashboard-mini-stat">
-                <small>Today's sales</small>
-                <strong>&#8377;{{ today_sales|floatformat:2 }}</strong>
-            </div>
-            <div class="dashboard-mini-stat">
-                <small>Total due</small>
-                <strong>&#8377;{{ total_due|floatformat:2 }}</strong>
-            </div>
-            <div class="dashboard-mini-stat">
-                <small>Stock items</small>
-                <strong>{{ total_stock_items }}</strong>
-            </div>
-            <div class="dashboard-mini-stat">
-                <small>Low stock</small>
-                <strong>{{ low_stock_items }}</strong>
-            </div>
-        </div>
-
         <div class="dashboard-action-row">
             <a href="{% url 'milk_agency:admin_enquiries' %}" class="dashboard-bell" title="Open unresolved enquiries">
                 <span class="dashboard-button-icon"><i class="bi bi-bell-fill"></i></span>
@@ -517,7 +495,6 @@
                 <span>Subscriptions</span>
             </a>
         </div>
-    </section>
 
     <div class="dashboard-filter-card mt-4">
         <form method="get" id="filterForm" class="d-flex flex-column flex-md-row gap-2">

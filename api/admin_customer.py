@@ -29,7 +29,7 @@ def api_customer_list(request):
             "name": c.name,
             "shop_name": c.shop_name or "",
             "phone": c.phone or "",
-            "due": float(c.due or 0),  # cached fast value
+            "due": float(c.get_actual_due() or 0),
             "frozen": c.frozen
         })
 
@@ -49,7 +49,7 @@ def api_customer_detail(request, pk):
         "name": c.name,
         "shop_name": c.shop_name or "",
         "phone": c.phone or "",
-        "due": float(c.due or 0),  # cached fast value
+        "due": float(c.get_actual_due() or 0),
         "city": c.city,
         "state": c.state,
         "frozen": c.frozen,

@@ -4,183 +4,162 @@
 
 {% block extra_css %}
 <style>
+    .expense-page-card {
+        background: #fff;
+        border: 1px solid #e7edf3;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+    }
 
-/* --------------------------
-   GLOBAL PREMIUM CARD STYLE
---------------------------- */
-.card {
-    background: #ffffff;
-    border-radius: 18px !important;
-    border: 1px solid #272626ff !important;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
-}
+    .expense-page-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #eef2f6;
+        border-radius: 18px 18px 0 0;
+    }
 
-.card-header {
-    background: white !important;
-    border-radius: 18px 18px 0 0 !important;
-    border-bottom: 1px solid #ececec !important;
-}
+    .expense-stat {
+        height: 100%;
+        padding: 1.5rem;
+    }
 
-/* Inputs */
-input.form-control {
-    height: 45px;
-    border-radius: 12px;
-    border: 1px solid #d9dfe5 !important;
-    font-size: 15px;
-}
+    .expense-stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7c8f;
+    }
 
-/* Buttons */
-.btn {
-    width: auto !important;
-    height: 45px;
-    font-weight: 600 !important;
-    border-radius: 10px !important;
-}
+    .expense-stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #163247;
+    }
 
-/* Desktop table visible only on desktops */
-.expense-table { display: block; }
+    .expense-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
 
-/* MOBILE cards hidden by default */
-.expense-cards { display: none; }
+    .expense-filter-form .form-control,
+    .expense-filter-form .form-select,
+    .expense-modal .form-control,
+    .expense-modal .form-select {
+        min-height: 46px;
+        border-radius: 12px;
+    }
 
-/* Category Left Border Colors */
-.border-petrol { border-left: 6px solid #ffc107 !important; }
-.border-food { border-left: 6px solid #198754 !important; }
-.border-profits { border-left: 6px solid #17a2b8 !important; }
-.border-transport { border-left: 6px solid #0d6efd !important; }
-.border-utilities { border-left: 6px solid #6610f2 !important; }
-.border-maintenance { border-left: 6px solid #ff5722 !important; }
-.border-supplies { border-left: 6px solid #9c27b0 !important; }
-.border-other { border-left: 6px solid #795548 !important; }
+    .expense-table thead th {
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #6b7c8f;
+        background: #f8fafc;
+    }
 
-/* MOBILE DESIGN */
-@media (max-width: 768px) {
-    .expense-table { display: none !important; }
-    .expense-cards { display: block !important; }
-    .card { border-radius: 16px !important; }
-}
+    .expense-table tbody td {
+        vertical-align: middle;
+    }
 
-/* Mobile card buttons */
-.card-action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin: auto;
-}
-/* Premium Soft Shadow Buttons */
-.expense-btn {
-    background: #ffffff !important;
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 12px 18px !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .expense-category-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
 
-.edit {
-    border: 1px solid #0d6efd !important;  /* blue */
-}
+    .cat-fuel { background: #fff3cd; color: #8a5a00; }
+    .cat-food { background: #d1fae5; color: #0f766e; }
+    .cat-rent { background: #ffe4e6; color: #be123c; }
+    .cat-salary { background: #dbeafe; color: #1d4ed8; }
+    .cat-electricity { background: #ede9fe; color: #6d28d9; }
+    .cat-repair { background: #ccfbf1; color: #0f766e; }
+    .cat-others { background: #e5e7eb; color: #4b5563; }
 
-.delete {
-    border: 1px solid #dc3545 !important;  /* red */
-}
+    .expense-action-btn {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+    }
 
-.expense-btn i {
-    font-size: 1.4rem !important;
-}
+    .mobile-expense-card {
+        display: none;
+    }
 
-.expense-btn.edit i {
-    color: #0d6efd !important;  /* blue */
-}
+    @media (max-width: 767.98px) {
+        .expense-table-wrap {
+            display: none;
+        }
 
-.expense-btn.delete i {
-    color: #dc3545 !important;  /* red */
-}
-
-/* Hover effect */
-.expense-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.12) !important;
-}
-
-
+        .mobile-expense-card {
+            display: block;
+        }
+    }
 </style>
 {% endblock %}
 
-
-
 {% block content %}
 <div class="container-fluid py-4 ma-page-shell">
-
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Expenses List</h2>
-        <a href="{% url 'milk_agency:cashbook' %}" class="btn btn-primary px-4">
-            <i class="bi bi-arrow-left me-1"></i>Back to CashBook
-        </a>
+    <div class="expense-toolbar mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Expenses List</h2>
+            <p class="text-muted mb-0">View, filter, and add milk agency expenses.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                <i class="bi bi-plus-circle me-1"></i>Add Expense
+            </button>
+            <a href="{% url 'milk_agency:cashbook' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to CashBook
+            </a>
+        </div>
     </div>
 
-
-    <!-- =============================
-         PREMIUM TOP SECTION
-    ============================== -->
-    <div class="row mb-4">
-
-        <!-- FILTER CARD -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0">
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card expense-page-card h-100">
                 <div class="card-header py-3">
-                    <h6 class="fw-bold text-primary m-0">Filter Expenses by Date Range</h6>
+                    <h6 class="fw-bold text-primary m-0">Filter Expenses</h6>
                 </div>
-
                 <div class="card-body">
-
-                    <form method="get" class="row g-3">
-
+                    <form method="get" class="row g-3 expense-filter-form">
                         <div class="col-12">
                             <label class="form-label fw-semibold">Start Date</label>
-                            <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
                         </div>
-
                         <div class="col-12">
                             <label class="form-label fw-semibold">End Date</label>
-                            <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
                         </div>
-
                         <div class="col-6 d-grid">
                             <button class="btn btn-primary">Filter</button>
                         </div>
-
                         <div class="col-6 d-grid">
                             <button type="button" onclick="resetFilters()" class="btn btn-secondary">Reset</button>
                         </div>
-
                     </form>
-
                 </div>
             </div>
         </div>
 
-
-        <!-- TOTAL EXPENSES -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 p-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-danger fw-bold text-uppercase small mb-1">Total Expenses</p>
-                        <h3 class="fw-bold">₹{{ total_expenses|floatformat:2 }}</h3>
-                    </div>
-                    <i class="bi bi-cash-stack text-secondary fs-1"></i>
-                </div>
+        <div class="col-lg-3">
+            <div class="card expense-page-card expense-stat">
+                <div class="expense-stat-label mb-2">Total Expenses</div>
+                <div class="expense-stat-value mb-2">Rs {{ total_expenses|floatformat:2 }}</div>
+                <div class="text-muted small">{{ expenses|length }} expense{{ expenses|length|pluralize }} in selected range</div>
             </div>
         </div>
 
-
-        <!-- CHART CARD -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0">
+        <div class="col-lg-5">
+            <div class="card expense-page-card h-100">
                 <div class="card-header py-3">
                     <h6 class="fw-bold text-primary m-0">Expenses by Category</h6>
                 </div>
@@ -189,135 +168,134 @@ input.form-control {
                 </div>
             </div>
         </div>
-
     </div>
 
-
-
-
-    <!-- =============================
-         DESKTOP TABLE
-    ============================== -->
-    <div class="card shadow-sm mb-4 expense-table">
-        <div class="card-header py-3">
+    <div class="card expense-page-card">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h6 class="fw-bold text-primary m-0">All Expenses</h6>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                <i class="bi bi-plus-circle me-1"></i>Add Expense
+            </button>
         </div>
 
         <div class="card-body">
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+            <div class="table-responsive expense-table-wrap">
+                <table class="table table-hover align-middle expense-table">
+                    <thead>
                         <tr>
                             <th>Date</th>
                             <th>Category</th>
                             <th>Amount</th>
                             <th>Description</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         {% for expense in expenses %}
                         <tr>
                             <td>{{ expense.date|date:"d M Y" }}</td>
-
                             <td>
-                                <span class="badge bg-
-                                    {% if expense.category == 'petrol' %}warning
-                                    {% elif expense.category == 'food' %}success
-                                    {% elif expense.category == 'profits' %}info
-                                    {% else %}secondary{% endif %}
-                                ">
-                                    {{ expense.category|title }}
-                                </span>
+                                <span class="expense-category-pill cat-{{ expense.category|lower }}">{{ expense.category }}</span>
                             </td>
-
-                            <td class="fw-bold">₹{{ expense.amount|floatformat:2 }}</td>
-
+                            <td class="fw-bold">Rs {{ expense.amount|floatformat:2 }}</td>
                             <td>{{ expense.description|default:"-" }}</td>
-
-                            <td>
-                                <a href="{% url 'milk_agency:edit_expense' expense.pk %}" 
-                                   class="btn btn-outline-primary btn-sm me-2">
+                            <td class="text-end">
+                                <a href="{% url 'milk_agency:edit_expense' expense.pk %}" class="btn btn-outline-primary btn-sm expense-action-btn me-2">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-
-                                <a href="{% url 'milk_agency:delete_expense' expense.pk %}" 
-                                   class="btn btn-outline-danger btn-sm">
+                                <a href="{% url 'milk_agency:delete_expense' expense.pk %}" class="btn btn-outline-danger btn-sm expense-action-btn">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-muted">No expenses found.</td></tr>
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No expenses found.</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
-
                 </table>
+            </div>
 
+            <div class="mobile-expense-card">
+                {% for expense in expenses %}
+                <div class="card expense-page-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-bold">{{ expense.date|date:"d M Y" }}</div>
+                                <div class="mt-2">
+                                    <span class="expense-category-pill cat-{{ expense.category|lower }}">{{ expense.category }}</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'milk_agency:edit_expense' expense.pk %}" class="btn btn-outline-primary btn-sm expense-action-btn">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'milk_agency:delete_expense' expense.pk %}" class="btn btn-outline-danger btn-sm expense-action-btn">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="fw-bold fs-5 mb-1">Rs {{ expense.amount|floatformat:2 }}</div>
+                        <div class="text-muted">{{ expense.description|default:"-" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">No expenses found.</div>
+                {% endfor %}
             </div>
         </div>
     </div>
 
-
-
-
-    <!-- =============================
-         MOBILE CARDS (PREMIUM)
-    ============================== -->
-    <div class="expense-cards">
-        {% for expense in expenses %}
-        <div class="
-    card p-3 mb-3
-    {% if expense.category == 'petrol' %}border-petrol
-    {% elif expense.category == 'food' %}border-food
-    {% elif expense.category == 'profits' %}border-profits
-    {% elif expense.category == 'transport' %}border-transport
-    {% elif expense.category == 'utilities' %}border-utilities
-    {% elif expense.category == 'maintenance' %}border-maintenance
-    {% elif expense.category == 'supplies' %}border-supplies
-    {% else %}border-other{% endif %}
-">
-
-    <!-- Top row: Date + Buttons -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="fw-bold m-0">{{ expense.date|date:"d M Y" }}</h6>
-
-        <div class="d-flex gap-2">
-            <a href="{% url 'milk_agency:edit_expense' expense.pk %}"
-               class="expense-btn edit">
-                <i class="bi bi-pencil"></i>
-            </a>
-
-            <a href="{% url 'milk_agency:delete_expense' expense.pk %}"
-               class="expense-btn delete">
-                <i class="bi bi-trash"></i>
-            </a>
+    <div class="modal fade expense-modal" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addExpenseModalLabel">Add Expense</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'milk_agency:save_expense' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'milk_agency:expenses_list' %}">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Date</label>
+                                <input type="date" class="form-control" name="date" value="{{ today }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Amount</label>
+                                <input type="number" step="0.01" min="0" class="form-control" name="amount" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for value, label in expense_categories %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Description</label>
+                                <textarea class="form-control" name="description" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Expense</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-    <!-- Amount -->
-    <div class="h4 fw-bold text-primary mt-2">
-        ₹{{ expense.amount|floatformat:2 }}
-    </div>
-
-    <!-- Description -->
-    <p class="text-muted mb-1">{{ expense.description }}</p>
-
-</div>
-
-        {% endfor %}
-    </div>
-
 </div>
 {% endblock %}
 
-
-
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 function resetFilters() {
     window.location.href = '{% url "milk_agency:expenses_list" %}';
@@ -327,22 +305,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const ctx = document.getElementById("expensesChart");
     if (!ctx) return;
 
+    const labels = {{ chart_labels|safe }};
+    const values = {{ chart_values|safe }};
+    const colors = {
+        fuel: { bg: "rgba(255, 193, 7, 0.65)", border: "rgba(212, 142, 0, 1)" },
+        food: { bg: "rgba(25, 135, 84, 0.65)", border: "rgba(15, 107, 87, 1)" },
+        rent: { bg: "rgba(244, 114, 182, 0.50)", border: "rgba(190, 24, 93, 1)" },
+        salary: { bg: "rgba(59, 130, 246, 0.55)", border: "rgba(29, 78, 216, 1)" },
+        electricity: { bg: "rgba(139, 92, 246, 0.50)", border: "rgba(109, 40, 217, 1)" },
+        repair: { bg: "rgba(20, 184, 166, 0.55)", border: "rgba(15, 118, 110, 1)" },
+        others: { bg: "rgba(156, 163, 175, 0.45)", border: "rgba(75, 85, 99, 1)" }
+    };
+
     new Chart(ctx, {
         type: "bar",
         data: {
-            labels: {{ chart_labels|safe }},
+            labels,
             datasets: [{
-                label: "Category Expenses (₹)",
-                data: {{ chart_values|safe }},
-                backgroundColor: "rgba(54,162,235,0.6)",
-                borderColor: "rgba(54,162,235,1)",
+                label: "Category Expenses (Rs)",
+                data: values,
+                backgroundColor: labels.map(label => (colors[label.toLowerCase()] || colors.others).bg),
+                borderColor: labels.map(label => (colors[label.toLowerCase()] || colors.others).border),
                 borderWidth: 1,
                 borderRadius: 6
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
         }
     });
 });

@@ -165,8 +165,8 @@
 
                 <!-- BALANCE COLOR LOGIC -->
                 <td class="balance-cell">
-                  &#8377;<span class="balance-value {% if customer.due > 0 %}text-danger{% else %}text-success{% endif %}">
-                    {{ customer.due|default:0|floatformat:2 }}
+                  &#8377;<span class="balance-value {% if customer.total_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ customer.total_balance|default:0|floatformat:2 }}
                   </span>
                 </td>
 
@@ -191,13 +191,13 @@
                       class="btn btn-sm btn-outline-success send-whatsapp"
                       data-phone="{{ customer.phone }}"
                       data-name="{{ customer.name|escapejs }}"
-                      data-due="{{ customer.due }}">
+                      data-due="{{ customer.total_balance|default:0 }}">
                       <i class="bi bi-whatsapp"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-primary balance-btn"
                         data-customer-id="{{ customer.id }}"
                         data-customer-name="{{ customer.name|escapejs }}"
-                        data-current-balance="{{ customer.due }}">
+                        data-current-balance="{{ customer.total_balance|default:0 }}">
                       <i class="bi bi-cash"></i>
                     </button>
                   </div>
@@ -231,8 +231,8 @@
 
         <!-- MOBILE BALANCE COLOR -->
         <div><strong>Balance:</strong> &#8377;
-          <span class="mobile-balance {% if customer.due > 0 %}text-danger{% else %}text-success{% endif %}">
-            {{ customer.due|default:0|floatformat:2 }}
+          <span class="mobile-balance {% if customer.total_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+            {{ customer.total_balance|default:0|floatformat:2 }}
           </span>
         </div>
 
@@ -253,14 +253,14 @@
           class="action-btn whatsapp-btn send-whatsapp"
           data-phone="{{ customer.phone }}"
           data-name="{{ customer.name|escapejs }}"
-          data-due="{{ customer.due }}">
+          data-due="{{ customer.total_balance|default:0 }}">
           <i class="bi bi-whatsapp"></i>
         </button>
 
         <button class="action-btn money-btn balance-btn"
                 data-customer-id="{{ customer.id }}"
                 data-customer-name="{{ customer.name|escapejs }}"
-                data-current-balance="{{ customer.due }}">
+                data-current-balance="{{ customer.total_balance|default:0 }}">
           <i class="bi bi-cash"></i>
         </button>
       </div>

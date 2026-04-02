@@ -110,6 +110,8 @@ def save_expense(request):
         amount = request.POST.get('amount')
         category = request.POST.get('category')
         description = request.POST.get('description')
+        date = request.POST.get('date') or timezone.now().date()
+        next_url = request.POST.get('next') or 'general_store:cashbook'
 
         try:
             amount = float(amount)
@@ -118,10 +120,12 @@ def save_expense(request):
             Expense.objects.create(
                 amount=amount,
                 category=category,
-                description=description
+                description=description,
+                date=date
             )
 
             messages.success(request, f'Expense added: ₹{amount} ({category})')
+            return redirect(next_url)
         except ValueError:
             messages.error(request, 'Invalid amount value')
 
@@ -169,6 +173,8 @@ def investments_list(request):
         'end_date': end_date,
         'chart_labels': chart_labels,
         'chart_values': chart_values,
+        'expense_categories': Expense.CATEGORY_CHOICES,
+        'today': today.strftime('%Y-%m-%d'),
     }
     return render(request, 'general_store/investments_list.html', context)
 
@@ -214,6 +220,8 @@ def expenses_list(request):
         'end_date': end_date,
         'chart_labels': chart_labels,
         'chart_values': chart_values,
+        'expense_categories': Expense.CATEGORY_CHOICES,
+        'today': today.strftime('%Y-%m-%d'),
     }
     return render(request, 'general_store/expenses_list.html', context)
 

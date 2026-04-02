@@ -144,8 +144,18 @@
   }
 
   @media (max-width: 767.98px) {
+    .sub-history-filter,
+    .sub-history-card {
+      border-radius: 18px;
+    }
+
     .sub-history-filter-grid {
       grid-template-columns: 1fr;
+    }
+
+    .sub-history-card-head {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .sub-history-table thead {
@@ -184,11 +194,6 @@
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
   <div class="sub-history-page">
-    <section class="sub-history-topbar">
-      <h1>Subscription History</h1>
-      <p>Review subscription records and related payment entries in one place.</p>
-    </section>
-
     <section class="sub-history-filter">
       <form method="get" class="sub-history-filter-grid">
         <div>

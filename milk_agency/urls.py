@@ -69,9 +69,11 @@ urlpatterns = [
     path('cashbook/', views_cashbook.cashbook, name='cashbook'),
     path('save_cash_in/', views_cashbook.save_cash_in, name='save_cash_in'),
     path('save_expense/', views_cashbook.save_expense, name='save_expense'),
+    path('save_leakage/', views_cashbook.save_leakage, name='save_leakage'),
     path('expenses-list/', views_cashbook.expenses_list, name='expenses_list'),
     path('edit-expense/<int:pk>/', views_cashbook.edit_expense, name='edit_expense'),
     path('delete-expense/<int:pk>/', views_cashbook.delete_expense, name='delete_expense'),
+    path('delete-leakage/<int:pk>/', views_cashbook.delete_leakage, name='delete_leakage'),
     path('save_bank_balance/', views_cashbook.save_bank_balance, name='save_bank_balance'),
 
     # Stock Dashboard URLs
@@ -87,6 +89,8 @@ urlpatterns = [
     # Payments Dashboard URL
     path('payments/', views_payments.payments_dashboard, name='payments_dashboard'),
     path('customer-payments/', customer_payments_views.customer_payments, name='customer_payments'),
+    path('customer-payments/edit/<int:pk>/', customer_payments_views.edit_customer_payment, name='edit_customer_payment'),
+    path('customer-payments/delete/<int:pk>/', customer_payments_views.delete_customer_payment, name='delete_customer_payment'),
 
     # Companies Dashboard and Company Forms URLs
     path('companies/', views_companies.companies_dashboard, name='companies_dashboard'),

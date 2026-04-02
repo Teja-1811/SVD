@@ -61,7 +61,7 @@ def record_customer_payment(request):
     return Response(
         {
             "status": "success",
-            "new_balance": str(customer.due)  # ✅ correct field
+            "new_balance": str(customer.get_actual_due())
         },
         status=status.HTTP_200_OK
     )

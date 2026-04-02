@@ -269,6 +269,46 @@
 @media (max-width: 768px) {
     .modal-dialog { max-width: 95%; margin: auto; }
     .switch-group .btn { min-width: 128px; }
+
+    .offers-page > .d-flex {
+        margin-bottom: 0;
+    }
+
+    .offers-primary-btn {
+        width: 100%;
+    }
+
+    .offers-switch-card {
+        padding: 0.85rem;
+    }
+
+    .switch-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .switch-group .btn {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .offers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .offer-top {
+        flex-direction: column;
+    }
+
+    .offer-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .offer-action {
+        width: 100%;
+    }
 }
 
 .modal-body { max-height: 70vh; overflow-y: auto; }
@@ -276,18 +316,12 @@
 
 <div class="container-fluid py-2 px-0 ma-page-shell">
     <div class="offers-page">
-        <section class="offers-topbar">
-            <div>
-                <span class="offers-eyebrow">Promotions</span>
-                <h1>Offers Dashboard</h1>
-                <p>Create and manage offer records for users and retailers, review bundled items, and update pricing windows.</p>
-            </div>
-
+        <div class="d-flex justify-content-end mb-3">
             <button class="offers-primary-btn" data-bs-toggle="modal" data-bs-target="#createOfferModal">
                 <i class="bi bi-plus-circle"></i>
                 <span>Create Offer</span>
             </button>
-        </section>
+        </div>
 
         <section class="offers-switch-card">
             <div class="offers-switch-copy">Switch between user and retailer offers to manage the relevant offer catalogue.</div>

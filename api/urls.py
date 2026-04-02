@@ -31,6 +31,7 @@ from .admin_customer_payments import *
 from .admin_companies import *
 from .admin_monthly_sales_summary import *
 from .admin_subscriptions import *
+from .admin_offers import *
 from .user_dashboard import *
 from .user_offers import *
 from .user_subscriptions import subscription_pause_resume_api
@@ -104,6 +105,8 @@ urlpatterns = [
     #Admin Stock Dashboard API
     path('stock/dashboard/', stock_dashboard_api, name='stock_dashboard_api'),
     path('stock/update/', update_stock_api, name='update_stock_api'),
+    path('stock/leakage/save/', save_leakage_api, name='save_leakage_api'),
+    path('stock/leakage/<int:leakage_id>/delete/', delete_leakage_api, name='delete_leakage_api'),
     
     # Monthly Sales Summary API
     path('sales/monthly-summary/', api_monthly_sales_summary, name='api_monthly_sales_summary'),
@@ -124,6 +127,15 @@ urlpatterns = [
     path("subscriptions/toggle/<int:subscription_id>/", api_toggle_subscription, name="api_toggle_subscription"),
     path("subscriptions/payment/<int:subscription_id>/", api_record_subscription_payment, name="api_record_subscription_payment"),
     path("subscriptions/today-deliveries/", api_today_deliveries, name="api_today_deliveries"),
+
+    # Admin offers APIs
+    path("offers/dashboard/", api_offers_dashboard, name="api_offers_dashboard"),
+    path("offers/create/", api_create_offer, name="api_create_offer"),
+    path("offers/update/<int:offer_id>/", api_update_offer, name="api_update_offer"),
+    path("offers/delete/<int:offer_id>/", api_delete_offer, name="api_delete_offer"),
+    path("offers/item/add/<int:offer_id>/", api_add_offer_item, name="api_add_offer_item"),
+    path("offers/item/update/<int:item_id>/", api_update_offer_item, name="api_update_offer_item"),
+    path("offers/item/delete/<int:item_id>/", api_delete_offer_item, name="api_delete_offer_item"),
     
     # Customer Payments API
     path('customer-payments/', customer_payments_api, name='customer_payments_api'),
