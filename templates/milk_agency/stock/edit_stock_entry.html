@@ -3,12 +3,27 @@
 {% block title %}Edit Stock Entry{% endblock %}
 
 {% block content %}
+<style>
+@media (max-width: 767.98px) {
+    .edit-stock-head,
+    .edit-stock-actions {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .edit-stock-head .btn,
+    .edit-stock-actions .btn {
+        width: 100%;
+    }
+}
+</style>
 <div class="container-fluid py-4 ma-page-shell">
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4 edit-stock-head">
                         <div>
                             <h3 class="mb-1">Edit stock entry</h3>
                             <div class="text-muted">{{ entry.item.name }}{% if entry.company %} | {{ entry.company.name }}{% endif %}</div>
@@ -72,7 +87,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2">
+                        <div class="d-flex justify-content-end gap-2 edit-stock-actions">
                             <a href="{% url 'milk_agency:update_stock' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-outline-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">Update entry</button>
                         </div>

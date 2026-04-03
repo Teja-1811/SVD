@@ -92,11 +92,53 @@
 ================================ */
 .table-responsive {
     border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    display: block;
+    max-width: 100%;
+    touch-action: pan-x;
+}
+
+.table-responsive > .table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.stock-table-scroll {
+    display: block;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+}
+
+.stock-table-scroll > .table {
+    width: max-content;
+}
+
+.date-records-table {
+    min-width: 920px;
+}
+
+.stock-overview-table {
+    min-width: 620px;
+}
+
+.leakage-table {
+    min-width: 1080px;
 }
 #stockOverviewTable thead th {
     background: #eef1f5 !important;
     border-bottom: 1px solid #dfe3e8 !important;
     font-weight: 700;
+}
+
+#stockOverviewTable th,
+#stockOverviewTable td {
+    white-space: nowrap;
 }
 #stockOverviewTable tbody tr:hover {
     background: #f7f9fc !important;
@@ -127,6 +169,11 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
+}
+
+.date-filter-form label,
+.leakage-filter-form label {
+    white-space: nowrap;
 }
 
 .leakage-toolbar {
@@ -207,12 +254,131 @@
 }
 .update-btn i { font-size: 1.15rem; }
 
+@media (max-width: 767.98px) {
+    .card {
+        border-radius: 14px !important;
+    }
+
+    .container-fluid.py-4.ma-page-shell.stock-dashboard {
+        padding-top: 0.85rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    .stock-header,
+    .date-toolbar,
+    .leakage-toolbar {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .header-right {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .update-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.72rem 0.9rem;
+    }
+
+    .card.table-card,
+    .card.chart-card {
+        padding: 0.9rem !important;
+    }
+
+    .card.stat-card {
+        padding: 1rem 0.8rem !important;
+        min-height: 100%;
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        margin-bottom: 0.45rem;
+    }
+
+    .stat-title {
+        font-size: 0.82rem;
+        line-height: 1.25;
+    }
+
+    .stat-value-number,
+    .leakage-stat-value {
+        font-size: 1.28rem;
+    }
+
+    .chart-container,
+    .pie-container {
+        height: 240px !important;
+    }
+
+    #companyChart {
+        max-width: 220px !important;
+        max-height: 220px !important;
+    }
+
+    .modal-body.p-4,
+    .modal-footer.px-4.pb-4 {
+        padding: 1rem !important;
+    }
+}
+
 /* MOBILE: icon-only */
 @media (max-width: 576px) {
     .update-text { display: none !important; }
     .update-btn { padding: 0.55rem 0.7rem !important; border-radius: 12px !important; gap: 0 !important; }
     .update-btn i { font-size: 1.35rem !important; }
     .dashboard-preview { display:none !important; } /* hide preview on tiny screens */
+
+    .date-filter-form,
+    .leakage-filter-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        align-items: end;
+    }
+
+    .date-filter-form .btn,
+    .date-filter-form input,
+    .leakage-filter-form .btn,
+    .leakage-filter-form select {
+        width: 100%;
+    }
+
+    .date-filter-form label,
+    .leakage-filter-form label {
+        grid-column: 1 / -1;
+    }
+
+    .date-filter-form input[type="date"] {
+        grid-column: 1 / -1;
+    }
+
+    .date-toolbar,
+    .leakage-toolbar,
+    .stock-header {
+        align-items: stretch;
+    }
+
+    .row.g-3.mb-3 > [class*="col-"] {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+
+    .table-responsive > .table {
+        min-width: 720px;
+    }
+
+    #stockOverviewTable {
+        min-width: 560px;
+    }
+
+    .table-responsive td,
+    .table-responsive th {
+        white-space: nowrap;
+    }
 }
 
 /* ================================
@@ -225,7 +391,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 ma-page-shell">
+<div class="container-fluid py-4 ma-page-shell stock-dashboard">
 
   <!-- HEADER -->
   <div class="row mb-3">
@@ -270,8 +436,8 @@
           </form>
         </div>
 
-        <div class="table-responsive mt-3">
-          <table class="table align-middle mb-0">
+        <div class="table-responsive stock-table-scroll mt-3">
+          <table class="table align-middle mb-0 date-records-table">
             <thead>
               <tr>
                 <th>#</th>
@@ -388,8 +554,8 @@
       <div class="card table-card p-3 fade-in-up">
         <h6 class="fw-bold mb-3"><i class="bi bi-table me-2"></i>Current Stock Overview</h6>
 
-        <div class="table-responsive">
-          <table class="table align-middle mb-0" id="stockOverviewTable">
+        <div class="table-responsive stock-table-scroll">
+          <table class="table align-middle mb-0 stock-overview-table" id="stockOverviewTable">
             <thead>
               <tr>
                 <th>#</th>
@@ -433,8 +599,8 @@
           </form>
         </div>
 
-        <div class="table-responsive mt-3">
-          <table class="table align-middle mb-0">
+        <div class="table-responsive stock-table-scroll mt-3">
+          <table class="table align-middle mb-0 leakage-table">
             <thead>
               <tr>
                 <th>#</th>

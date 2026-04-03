@@ -12,7 +12,8 @@
 
 .cp-topbar,
 .cp-filter-card,
-.cp-table-card {
+.cp-table-card,
+.cp-mobile-card {
     background: rgba(255,255,255,0.96);
     border: 1px solid rgba(23,53,62,0.08);
     border-radius: 24px;
@@ -53,6 +54,10 @@
 .cp-filter-card,
 .cp-table-card {
     padding: 1rem;
+}
+
+.cp-table-card {
+    overflow: hidden;
 }
 
 .cp-filter-form {
@@ -123,6 +128,10 @@
     vertical-align: middle;
 }
 
+.cp-table tbody tr {
+    border-bottom: 1px solid rgba(23,53,62,0.06);
+}
+
 .cp-status {
     display: inline-flex;
     align-items: center;
@@ -146,6 +155,53 @@
     text-align: center;
     padding: 2.2rem 1rem;
     color: #617780;
+}
+
+.cp-mobile-card {
+    padding: 1rem;
+    display: grid;
+    gap: 0.9rem;
+}
+
+.cp-mobile-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.cp-mobile-head strong {
+    color: #17353e;
+    font-size: 1.02rem;
+}
+
+.cp-phone {
+    color: #617780;
+    font-size: 0.92rem;
+}
+
+.cp-amount {
+    color: #17353e;
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.cp-mobile-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.cp-mobile-meta div {
+    padding: 0.8rem;
+    border-radius: 16px;
+    background: rgba(23,53,62,0.04);
+}
+
+.cp-mobile-meta small {
+    display: block;
+    color: #617780;
+    margin-bottom: 0.25rem;
 }
 
 .cp-actions {
@@ -186,17 +242,17 @@
 
 @media (max-width: 767.98px) {
     .cp-filter-card,
-    .cp-table-card {
+    .cp-table-card,
+    .cp-mobile-card {
         padding: 0.85rem;
         border-radius: 18px;
     }
 
     .cp-filter-form {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .cp-btn,
-    .cp-action-btn {
+    .cp-btn {
         width: 100%;
     }
 
@@ -205,8 +261,8 @@
         grid-template-columns: 1fr;
     }
 
-    .cp-table {
-        min-width: 760px;
+    .cp-mobile-meta {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -229,7 +285,7 @@
         </section>
 
         <section class="cp-table-card">
-            <div class="table-responsive">
+            <div class="table-responsive d-none d-md-block">
                 <table class="table cp-table">
                     <thead>
                         <tr>
@@ -271,6 +327,48 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="d-md-none">
+                {% for payment in payments %}
+                <article class="cp-mobile-card mb-3">
+                    <div class="cp-mobile-head">
+                        <div>
+                            <strong>{{ payment.customer.name }}</strong>
+                            <div class="cp-phone">{{ payment.customer.phone }}</div>
+                        </div>
+                        <span class="cp-status {% if payment.status == 'SUCCESS' %}success{% else %}failed{% endif %}">
+                            {{ payment.status }}
+                        </span>
+                    </div>
+
+                    <div class="cp-amount">&#8377;{{ payment.amount }}</div>
+
+                    <div class="cp-mobile-meta">
+                        <div>
+                            <small>Transaction ID</small>
+                            <strong>{{ payment.transaction_id }}</strong>
+                        </div>
+                        <div>
+                            <small>Method</small>
+                            <strong>{{ payment.method }}</strong>
+                        </div>
+                        <div>
+                            <small>Date</small>
+                            <strong>{{ payment.created_at|date:"d M Y, H:i" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="cp-actions">
+                        <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit">Edit</a>
+                        <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete">Delete</a>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="cp-mobile-card">
+                    <div class="cp-empty">No payments found.</div>
+                </div>
+                {% endfor %}
             </div>
 
             {% if payments.paginator %}

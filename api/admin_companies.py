@@ -6,6 +6,18 @@ from rest_framework.decorators import api_view
 from milk_agency.models import Company, Item
 
 
+def _absolute_media_url(request, file_field):
+    if not file_field:
+        return None
+
+    try:
+        url = file_field.url
+    except Exception:
+        return None
+
+    return request.build_absolute_uri(url)
+
+
 # ==========================================================
 # 1️⃣ LIST COMPANIES (DASHBOARD DATA)
 # ==========================================================
@@ -26,7 +38,7 @@ def companies_list_api(request):
         data.append({
             "id": c.id,
             "name": c.name,
-            "logo": c.logo.url if c.logo else None,
+            "logo": _absolute_media_url(request, c.logo),
             "website_link": c.website_link,
             "total_items": item_stats["total_items"] or 0,
             "total_qty": float(item_stats["total_qty"] or 0),

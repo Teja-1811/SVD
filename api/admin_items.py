@@ -3,6 +3,18 @@ from rest_framework.response import Response
 from milk_agency.models import Item
 
 
+def _absolute_media_url(request, file_field):
+    if not file_field:
+        return None
+
+    try:
+        url = file_field.url
+    except Exception:
+        return None
+
+    return request.build_absolute_uri(url)
+
+
 # -------------------------
 # 1️⃣ GET ALL CATEGORIES
 # -------------------------
@@ -40,14 +52,14 @@ def get_items_by_category(request):
             "code": item.code,
             "name": item.name,
             "company": item.company.name if item.company else None,
-            "company_logo": item.company.logo.url if item.company and item.company.logo else None,
+            "company_logo": _absolute_media_url(request, item.company.logo) if item.company else None,
             "category": item.category,
             "selling_price": str(item.selling_price),
             "buying_price": str(item.buying_price),
             "mrp": str(item.mrp),
             "stock_quantity": item.stock_quantity,
             "pcs_count": item.pcs_count,
-            "image": item.image.url if item.image else None,
+            "image": _absolute_media_url(request, item.image),
             "frozen": item.frozen,
         }
         for item in items

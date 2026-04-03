@@ -3,8 +3,24 @@
 {% block title %}Delete Expense{% endblock %}
 
 {% block content %}
+<style>
+@media (max-width: 767.98px) {
+    .delete-expense-head,
+    .delete-expense-actions {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .delete-expense-head .btn,
+    .delete-expense-actions .btn,
+    .delete-expense-actions form {
+        width: 100%;
+    }
+}
+</style>
 <div class="container-fluid py-4 ma-page-shell">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 delete-expense-head">
         <h2>Delete Expense</h2>
         <a href="{% url 'milk_agency:expenses_list' %}" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i>Back to Expenses List
@@ -28,12 +44,12 @@
                             <h6 class="card-title">Expense Details</h6>
                             <p class="card-text mb-1"><strong>Date:</strong> {{ expense.date|date:"d M Y" }}</p>
                             <p class="card-text mb-1"><strong>Category:</strong> {{ expense.category|title }}</p>
-                            <p class="card-text mb-1"><strong>Amount:</strong> ₹{{ expense.amount|floatformat:2 }}</p>
+                            <p class="card-text mb-1"><strong>Amount:</strong> &#8377;{{ expense.amount|floatformat:2 }}</p>
                             <p class="card-text mb-0"><strong>Description:</strong> {{ expense.description|default:"-" }}</p>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between delete-expense-actions">
                         <a href="{% url 'milk_agency:expenses_list' %}" class="btn btn-secondary">
                             <i class="bi bi-x-circle me-1"></i>Cancel
                         </a>
@@ -50,6 +66,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
