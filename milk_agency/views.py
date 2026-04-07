@@ -11,6 +11,7 @@ from django.contrib import messages
 from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, Contact
 from datetime import datetime
 import json
+from customer_portal.models import CustomerOrder
 
 
 # =========================================================
@@ -147,6 +148,7 @@ def home(request):
     )
 
     unresolved_queries_count = Contact.objects.filter(status="active").count()
+    pending_orders_count = CustomerOrder.objects.filter(status="pending").count()
 
     context = {
         "companies": companies,
@@ -165,6 +167,7 @@ def home(request):
         "today_active_customers": None,
         "today_bills_list": None,
         "unresolved_queries_count": unresolved_queries_count,
+        "pending_orders_count": pending_orders_count,
     }
 
     return render(request, "milk_agency/home/home_dashboard.html", context)

@@ -503,6 +503,9 @@
             <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--orders">
                 <span class="dashboard-button-icon"><i class="bi bi-clipboard-check"></i></span>
                 <span>Orders</span>
+                {% if pending_orders_count %}
+                <span class="dashboard-bell-badge">{{ pending_orders_count }}</span>
+                {% endif %}
             </a>
             <a href="{% url 'milk_agency:items_dashboard' %}" class="dashboard-quick-card dashboard-quick-card--items">
                 <span class="dashboard-button-icon"><i class="bi bi-tags"></i></span>
