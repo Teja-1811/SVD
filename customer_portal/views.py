@@ -102,6 +102,7 @@ def login_view(request):
 def home(request):
     customer = request.user
     today = timezone.localdate()
+    account_offer_type = "user" if getattr(customer, "user_type", "").lower() == "user" else "retailer"
     current_month_bills = Bill.objects.filter(
         customer=customer,
         is_deleted=False,
@@ -137,7 +138,7 @@ def home(request):
     )
     active_offers = _safe_list(
         Offers.objects.filter(
-            offer_for="user",
+            offer_for=account_offer_type,
             is_active=True,
             start_date__lte=today,
             end_date__gte=today,
@@ -174,6 +175,7 @@ def home(request):
         "next_subscription_delivery": next_subscription_delivery,
         "latest_delivery": latest_delivery,
         "active_offers": active_offers,
+        "account_offer_type": account_offer_type,
         "profile_completion": profile_completion,
         "primary_address": ", ".join(
             filter(None, [customer.flat_number, customer.area, customer.city, customer.state, customer.pin_code])
@@ -281,13 +283,13 @@ def place_order(request):
         now = timezone.localtime()
         current_time = now.time()
 
-        start_time = time(12, 0)  # 12 PM
-        end_time = time(5, 0)     # 5 AM
+        start_time = time(7, 0)   # 7 AM
+        end_time = time(16, 0)    # 4 PM
 
-        if end_time <= current_time < start_time:
+        if current_time < start_time or current_time >= end_time:
             return JsonResponse({
                 "success": False,
-                "message": "Orders allowed only between 12:00 PM and 5:00 AM"
+                "message": "Orders allowed only between 7:00 AM and 4:00 PM"
             }, status=403)
 
         data = json.loads(request.body)

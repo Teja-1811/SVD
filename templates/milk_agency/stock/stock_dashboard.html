@@ -206,6 +206,83 @@
     color: #6b7280;
 }
 
+.stock-mobile-list {
+    display: none;
+}
+
+.stock-mobile-entry {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.95rem;
+    border-radius: 18px;
+    background: rgba(23, 53, 62, 0.04);
+}
+
+.stock-mobile-entry + .stock-mobile-entry {
+    margin-top: 0.85rem;
+}
+
+.stock-mobile-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.stock-mobile-title {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.stock-mobile-title strong,
+.stock-mobile-meta strong,
+.stock-mobile-meta span,
+.stock-mobile-head span {
+    overflow-wrap: anywhere;
+}
+
+.stock-mobile-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(23, 53, 62, 0.08);
+    color: #17353e;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.stock-mobile-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.stock-mobile-meta div {
+    padding: 0.72rem 0.78rem;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid rgba(23, 53, 62, 0.08);
+}
+
+.stock-mobile-meta small {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #6b7280;
+}
+
+.stock-mobile-actions {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.stock-overview-mobile-list {
+    display: none;
+}
+
 /* =================================
    TOP RIGHT BUTTON + preview thumbnail
 =================================== */
@@ -293,6 +370,10 @@
         min-height: 100%;
     }
 
+    .row.g-3.mb-3 > .col-12.col-sm-6.col-lg-3 {
+        width: 50%;
+    }
+
     .stat-icon {
         width: 52px;
         height: 52px;
@@ -323,13 +404,17 @@
     .modal-footer.px-4.pb-4 {
         padding: 1rem !important;
     }
+
+    .stock-mobile-meta {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 /* MOBILE: icon-only */
 @media (max-width: 576px) {
-    .update-text { display: none !important; }
-    .update-btn { padding: 0.55rem 0.7rem !important; border-radius: 12px !important; gap: 0 !important; }
-    .update-btn i { font-size: 1.35rem !important; }
+    .update-text { display: inline !important; }
+    .update-btn { padding: 0.72rem 0.9rem !important; border-radius: 12px !important; gap: 0.45rem !important; }
+    .update-btn i { font-size: 1.1rem !important; }
     .dashboard-preview { display:none !important; } /* hide preview on tiny screens */
 
     .date-filter-form,
@@ -340,6 +425,14 @@
         align-items: end;
     }
 
+    .date-filter-form > :first-child {
+        grid-column: 1 / -1;
+    }
+
+    .leakage-filter-form > :last-child {
+        grid-column: 1 / -1;
+    }
+
     .date-filter-form .btn,
     .date-filter-form input,
     .leakage-filter-form .btn,
@@ -347,12 +440,7 @@
         width: 100%;
     }
 
-    .date-filter-form label,
-    .leakage-filter-form label {
-        grid-column: 1 / -1;
-    }
-
-    .date-filter-form input[type="date"] {
+    .date-filter-form label {
         grid-column: 1 / -1;
     }
 
@@ -363,6 +451,10 @@
     }
 
     .row.g-3.mb-3 > [class*="col-"] {
+        grid-template-columns: 1fr;
+    }
+
+    .row.g-3.mb-3 > .col-12.col-sm-6.col-lg-3 {
         flex: 0 0 auto;
         width: 50%;
     }
@@ -378,6 +470,40 @@
     .table-responsive td,
     .table-responsive th {
         white-space: nowrap;
+    }
+
+    .stock-table-scroll.d-mobile-hide {
+        display: none !important;
+    }
+
+    .stock-mobile-list {
+        display: block;
+        margin-top: 0.9rem;
+    }
+
+    .stock-overview-mobile-list {
+        display: block;
+        margin-top: 0.9rem;
+    }
+
+    .stock-mobile-head {
+        flex-direction: column;
+    }
+
+    .stock-mobile-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stock-mobile-meta > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+
+    .stock-mobile-actions .btn {
+        width: 100%;
+    }
+
+    #stockOverviewTable {
+        display: none;
     }
 }
 
@@ -436,7 +562,7 @@
           </form>
         </div>
 
-        <div class="table-responsive stock-table-scroll mt-3">
+        <div class="table-responsive stock-table-scroll d-mobile-hide mt-3">
           <table class="table align-middle mb-0 date-records-table">
             <thead>
               <tr>
@@ -471,6 +597,41 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <div class="stock-mobile-list">
+          {% for entry in date_entries %}
+          <article class="stock-mobile-entry">
+            <div class="stock-mobile-head">
+              <div class="stock-mobile-title">
+                <strong>{{ entry.item.name }}</strong>
+                <span class="text-muted small">{{ entry.company.name|default:"No company" }}</span>
+              </div>
+              <span class="stock-mobile-chip">{{ entry.created_at|date:"h:i A" }}</span>
+            </div>
+            <div class="stock-mobile-meta">
+              <div>
+                <small>Crates</small>
+                <strong>{{ entry.crates|floatformat:2 }}</strong>
+              </div>
+              <div>
+                <small>Quantity</small>
+                <strong>{{ entry.quantity|floatformat:2 }}</strong>
+              </div>
+              <div>
+                <small>Value</small>
+                <strong>Rs. {{ entry.value|floatformat:2 }}</strong>
+              </div>
+            </div>
+            <div class="stock-mobile-actions">
+              <a href="{% url 'milk_agency:edit_stock_entry' entry.id %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-primary">Edit</a>
+            </div>
+          </article>
+          {% empty %}
+          <div class="stock-mobile-entry">
+            <div class="text-center text-muted">No crate records found for this date.</div>
+          </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -561,13 +722,15 @@
                 <th>#</th>
                 <th>Item</th>
                 <th>Current Stock</th>
-                <th>Selling Price</th>
+                <th>Buying Price</th>
                 <th>Stock Value</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
+
+        <div class="stock-overview-mobile-list" id="stockOverviewMobileList"></div>
 
       </div>
     </div>
@@ -599,7 +762,7 @@
           </form>
         </div>
 
-        <div class="table-responsive stock-table-scroll mt-3">
+        <div class="table-responsive stock-table-scroll d-mobile-hide mt-3">
           <table class="table align-middle mb-0 leakage-table">
             <thead>
               <tr>
@@ -640,6 +803,49 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <div class="stock-mobile-list">
+          {% for leakage in leakage_entries %}
+          <article class="stock-mobile-entry">
+            <div class="stock-mobile-head">
+              <div class="stock-mobile-title">
+                <strong>{{ leakage.item.name }}</strong>
+                <span class="text-muted small">{{ leakage.item.company.name|default:"No company" }}</span>
+              </div>
+              <span class="stock-mobile-chip">{{ leakage.date|date:"d M Y" }}</span>
+            </div>
+            <div class="stock-mobile-meta">
+              <div>
+                <small>Leakage Qty</small>
+                <strong>{{ leakage.quantity }}</strong>
+              </div>
+              <div>
+                <small>Unit Cost</small>
+                <strong>Rs. {{ leakage.unit_cost|floatformat:3 }}</strong>
+              </div>
+              <div>
+                <small>Loss</small>
+                <strong class="text-danger">Rs. {{ leakage.total_loss|floatformat:2 }}</strong>
+              </div>
+              <div>
+                <small>Notes</small>
+                <span>{{ leakage.notes|default:"-" }}</span>
+              </div>
+            </div>
+            <div class="stock-mobile-actions">
+              <form method="post" action="{% url 'milk_agency:delete_leakage' leakage.id %}" class="w-100">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Delete this leakage entry and restore stock?');">Delete</button>
+              </form>
+            </div>
+          </article>
+          {% empty %}
+          <div class="stock-mobile-entry">
+            <div class="text-center text-muted">No leakage records found for the selected month.</div>
+          </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -785,16 +991,21 @@ function renderCompanyChart(data = []) {
 /* ---------- Table ---------- */
 function renderStockOverviewTable(items = []) {
   const tbody = document.querySelector('#stockOverviewTable tbody');
+  const mobileList = document.getElementById('stockOverviewMobileList');
   tbody.innerHTML = '';
+  if (mobileList) mobileList.innerHTML = '';
 
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No stock items found.</td></tr>`;
+    if (mobileList) {
+      mobileList.innerHTML = `<div class="stock-mobile-entry"><div class="text-center text-muted">No stock items found.</div></div>`;
+    }
     return;
   }
 
   items.forEach((item, idx) => {
     const stock = Number(item.stock_quantity || 0);
-    const price = Number(item.selling_price || 0);
+    const price = Number(item.buying_price || 0);
     const stockValue = stock * price;
     const lowThreshold = Number(item.min_stock ?? 5);
     const badgeClass = stock <= lowThreshold ? 'stock-low' : 'stock-ok';
@@ -808,6 +1019,29 @@ function renderStockOverviewTable(items = []) {
         <td>₹ ${stockValue.toLocaleString('en-IN')}</td>
       </tr>
     `;
+
+    if (mobileList) {
+      mobileList.innerHTML += `
+        <article class="stock-mobile-entry">
+          <div class="stock-mobile-head">
+            <div class="stock-mobile-title">
+              <strong>${escapeHtml(item.name)}</strong>
+            </div>
+            <span class="badge ${badgeClass}">${stock}</span>
+          </div>
+          <div class="stock-mobile-meta">
+            <div>
+              <small>Company</small>
+              <strong>${item.company_name ? escapeHtml(item.company_name) : 'No company'}</strong>
+            </div>
+            <div>
+              <small>Stock Value</small>
+              <strong>Rs. ${stockValue.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        </article>
+      `;
+    }
   });
 }
 

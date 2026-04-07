@@ -295,4 +295,49 @@ a {
     .ma-clock {
         align-items: center;
     }
+
+    .ma-brand {
+        min-width: 0;
+        gap: 0.65rem;
+    }
+
+    .ma-brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        flex: 0 0 auto;
+    }
+
+    .ma-brand-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .ma-brand-text {
+        min-width: 0;
+    }
+
+    .ma-brand-text strong,
+    .ma-brand-text small {
+        overflow-wrap: anywhere;
+    }
+
+    .milk-agency .card,
+    .milk-agency .modal-content,
+    .milk-agency .table-responsive {
+        border-radius: 18px;
+    }
+
+    .milk-agency .table th,
+    .milk-agency .table td {
+        padding: 0.68rem 0.62rem;
+        word-break: break-word;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .ma-brand-text small {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+    }
 }

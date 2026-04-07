@@ -2,147 +2,293 @@
 
 {% block title %}User Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+    .up-page-dashboard {
+        display: grid;
+        gap: 1.2rem;
+    }
+
+    .up-page-dashboard .up-page-header {
+        align-items: stretch;
+    }
+
+    .up-hero-compact {
+        display: grid;
+        gap: 1.1rem;
+    }
+
+    .up-hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .up-mini-stat {
+        padding: 1rem 1.05rem;
+        border-radius: 20px;
+        background: rgba(22, 52, 61, 0.04);
+        display: grid;
+        gap: 0.2rem;
+    }
+
+    .up-mini-stat span {
+        color: #60787a;
+        font-size: 0.9rem;
+    }
+
+    .up-mini-stat strong {
+        font-size: 1.45rem;
+        line-height: 1;
+        color: #16343d;
+    }
+
+    .up-spotlight-grid.compact {
+        margin-top: 0;
+    }
+
+    .up-page-dashboard .up-content {
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    }
+
+    .up-card h2,
+    .up-sidebar-card h2 {
+        margin-bottom: 0;
+    }
+
+    .up-list-rows {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .up-row-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        background: rgba(22, 52, 61, 0.04);
+    }
+
+    .up-row-card span {
+        color: #60787a;
+        font-size: 0.92rem;
+    }
+
+    .up-row-card strong {
+        color: #16343d;
+        text-align: right;
+    }
+
+    .up-order-callout {
+        padding: 1rem 1.05rem;
+        border-radius: 20px;
+        background: rgba(24, 127, 98, 0.08);
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    .up-order-callout span {
+        color: #60787a;
+        font-size: 0.9rem;
+    }
+
+    .up-order-callout strong {
+        color: #16343d;
+        font-size: 1.05rem;
+    }
+
+    .up-bills {
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .up-bill-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.6rem 1rem;
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        background: rgba(22, 52, 61, 0.04);
+    }
+
+    .up-bill-row strong,
+    .up-bill-row a {
+        color: #16343d;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .up-bill-row span,
+    .up-bill-row small {
+        color: #60787a;
+    }
+
+    @media (max-width: 1199.98px) {
+        .up-page-dashboard .up-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .up-hero-metrics {
+            grid-template-columns: 1fr;
+        }
+
+        .up-row-card,
+        .up-bill-row {
+            grid-template-columns: 1fr;
+        }
+
+        .up-row-card {
+            align-items: flex-start;
+        }
+
+        .up-row-card strong,
+        .up-bill-row strong {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="up-page-header">
-    <div class="up-hero">
-        <span class="up-eyebrow">User Dashboard</span>
-        <h1 class="up-title">Account and order overview.</h1>
-        <p class="up-subtitle">Review orders, billing, subscriptions, and offers from a single workspace.</p>
-        <div class="up-actions">
-            <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>View orders</span></a>
-            <a href="{% url 'users:invoices' %}" class="up-btn-secondary"><i class="bi bi-receipt"></i><span>Review invoices</span></a>
-            <a href="{% url 'users:offers' %}" class="up-btn-muted"><i class="bi bi-stars"></i><span>Explore offers</span></a>
-        </div>
-    </div>
-    <aside class="up-spotlight">
-        <span class="up-eyebrow">Account Snapshot</span>
-        <h3 class="mt-3 mb-2">Live status</h3>
-        <p class="up-subtitle">Summary of billing, product availability, and scheduled orders.</p>
-        <div class="up-spotlight-grid">
+<div class="up-page-dashboard">
+    <section class="up-page-header">
+        <div class="up-hero up-hero-compact">
             <div>
-                <small>Current due</small>
-                <strong>&#8377;{{ actual_due|floatformat:2 }}</strong>
+                <span class="up-eyebrow">User Dashboard</span>
+                <h1 class="up-title">Orders, invoices, and delivery details.</h1>
+                <p class="up-subtitle">Keep the dashboard focused on what you need most day to day.</p>
             </div>
-            <div>
-                <small>Available today</small>
-                <strong>{{ available_item_count }}</strong>
+            <div class="up-actions">
+                <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>Orders</span></a>
+                <a href="{% url 'users:invoices' %}" class="up-btn-secondary"><i class="bi bi-receipt"></i><span>Invoices</span></a>
             </div>
-            <div>
-                <small>Today's orders</small>
-                <strong>{{ today_order_count }}</strong>
-            </div>
-            <div>
-                <small>Pre-bookings</small>
-                <strong>{{ prebook_order_count }}</strong>
+            <div class="up-hero-metrics">
+                <div class="up-mini-stat">
+                    <span>Available today</span>
+                    <strong>{{ available_item_count }}</strong>
+                </div>
+                <div class="up-mini-stat">
+                    <span>Today's orders</span>
+                    <strong>{{ today_order_count }}</strong>
+                </div>
+                <div class="up-mini-stat">
+                    <span>Current due</span>
+                    <strong>&#8377;{{ actual_due|floatformat:2 }}</strong>
+                </div>
             </div>
         </div>
-    </aside>
-</section>
 
-<section class="up-kpi-row">
-    <article class="up-stat">
-        <span>Stock-ready products</span>
-        <strong>{{ available_item_count }}</strong>
-        <span class="up-muted">Same-day items currently available to order.</span>
-    </article>
-    <article class="up-stat">
-        <span>Orders for today</span>
-        <strong>{{ today_order_count }}</strong>
-        <span class="up-muted">Orders already lined up for today's delivery date.</span>
-    </article>
-    <article class="up-stat">
-        <span>Future pre-bookings</span>
-        <strong>{{ prebook_order_count }}</strong>
-        <span class="up-muted">Orders scheduled for upcoming delivery dates.</span>
-    </article>
-    <article class="up-stat">
-        <span>Profile completion</span>
-        <strong>{{ profile_completion }}%</strong>
-        <span class="up-muted">Keep your contact and address details delivery-ready.</span>
-    </article>
-</section>
-
-<section class="up-content">
-    <div class="up-stack">
-        <article class="up-card">
-            <div class="up-section-head">
+        <aside class="up-spotlight">
+            <div class="up-section-head" style="margin-bottom:0.9rem;">
                 <div>
-                    <span class="up-eyebrow">Profile</span>
-                    <h2>Delivery address</h2>
+                    <span class="up-eyebrow">Quick Snapshot</span>
+                    <h2 style="color:#fff;">Live status</h2>
                 </div>
-                <a href="{% url 'customer_portal:update_profile' %}">Edit profile</a>
             </div>
-            <div class="up-summary">
-                <div class="up-summary-item"><span>Name</span><strong>{{ user.name }}</strong></div>
-                <div class="up-summary-item"><span>Phone</span><strong>{{ user.phone }}</strong></div>
-                <div class="up-summary-item"><span>Address</span><strong>{{ primary_address|default:"Add your address details" }}</strong></div>
-                <div class="up-summary-item"><span>Readiness</span><strong>{{ profile_completion }}%</strong></div>
-            </div>
-        </article>
-
-        <article class="up-card">
-            <div class="up-section-head">
+            <div class="up-spotlight-grid compact">
                 <div>
-                    <span class="up-eyebrow">Offers</span>
-                    <h2>Active deals</h2>
+                    <small>Pre-bookings</small>
+                    <strong>{{ prebook_order_count }}</strong>
                 </div>
-                <a href="{% url 'users:offers' %}">View all offers</a>
-            </div>
-            {% if offers %}
-            <div class="up-grid-3">
-                {% for offer in offers %}
-                <article class="up-offer">
-                    <span class="up-chip chip-success">Live</span>
-                    <h3 class="mt-3 mb-2">{{ offer.name }}</h3>
-                    <p class="up-muted mb-0">{{ offer.offer_type }}</p>
-                </article>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="up-empty">No active user offers today.</div>
-            {% endif %}
-        </article>
-    </div>
-
-    <div class="up-stack">
-        <article class="up-sidebar-card">
-            <div class="up-section-head">
                 <div>
-                    <span class="up-eyebrow">Latest order</span>
-                    <h2>Order snapshot</h2>
+                    <small>Profile completion</small>
+                    <strong>{{ profile_completion }}%</strong>
                 </div>
-                <a href="{% url 'users:orders' %}">Manage orders</a>
-            </div>
-            {% if latest_order %}
-            <div class="up-summary">
-                <div class="up-summary-item"><span>Order number</span><strong>{{ latest_order.order_number }}</strong></div>
-                <div class="up-summary-item"><span>Delivery date</span><strong>{{ latest_order.delivery_date|date:"M d, Y" }}</strong></div>
-                <div class="up-summary-item"><span>Status</span><strong>{{ latest_order.status|title }}</strong></div>
-                <div class="up-summary-item"><span>Items total</span><strong>&#8377;{{ latest_order.total_amount|floatformat:2 }}</strong></div>
-            </div>
-            {% else %}
-            <div class="up-empty">No orders are available.</div>
-            {% endif %}
-        </article>
-
-        <article class="up-sidebar-card">
-            <div class="up-section-head">
                 <div>
-                    <span class="up-eyebrow">Subscription</span>
-                    <h2>Current plan</h2>
+                    <small>Address status</small>
+                    <strong>{% if primary_address %}Ready{% else %}Update needed{% endif %}</strong>
                 </div>
-                <a href="{% url 'users:subscriptions' %}">Subscription details</a>
+                <div>
+                    <small>Billing</small>
+                    <strong>{% if actual_due %}Pending{% else %}Clear{% endif %}</strong>
+                </div>
             </div>
-            {% if subscription %}
-            <div class="up-summary">
-                <div class="up-summary-item"><span>Plan</span><strong>{{ subscription.subscription_plan.name }}</strong></div>
-                <div class="up-summary-item"><span>Price</span><strong>&#8377;{{ subscription.subscription_plan.price|floatformat:2 }}</strong></div>
-                <div class="up-summary-item"><span>Valid until</span><strong>{{ subscription.end_date|date:"M d, Y" }}</strong></div>
-            </div>
-            {% else %}
-            <div class="up-empty">No active subscription assigned.</div>
-            {% endif %}
-        </article>
-    </div>
-</section>
+        </aside>
+    </section>
+
+    <section class="up-content">
+        <div class="up-stack">
+            <article class="up-card">
+                <div class="up-section-head">
+                    <div>
+                        <span class="up-eyebrow">Profile</span>
+                        <h2>Delivery details</h2>
+                    </div>
+                    <a href="{% url 'customer_portal:update_profile' %}">Edit profile</a>
+                </div>
+                <div class="up-list-rows">
+                    <div class="up-row-card">
+                        <span>Name</span>
+                        <strong>{{ user.name }}</strong>
+                    </div>
+                    <div class="up-row-card">
+                        <span>Phone</span>
+                        <strong>{{ user.phone }}</strong>
+                    </div>
+                    <div class="up-row-card">
+                        <span>Address</span>
+                        <strong>{{ primary_address|default:"Add your address details" }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="up-card">
+                <div class="up-section-head">
+                    <div>
+                        <span class="up-eyebrow">Invoices</span>
+                        <h2>Recent bills</h2>
+                    </div>
+                    <a href="{% url 'users:invoices' %}">View all</a>
+                </div>
+                {% if recent_bills %}
+                <div class="up-bills">
+                    {% for bill in recent_bills %}
+                    <div class="up-bill-row">
+                        <div>
+                            <strong>{{ bill.bill_no }}</strong><br>
+                            <small>{{ bill.invoice_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div>
+                            <strong>&#8377;{{ bill.total_amount|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="up-empty">No recent invoices available.</div>
+                {% endif %}
+            </article>
+        </div>
+
+        <div class="up-stack">
+            <article class="up-sidebar-card">
+                <div class="up-section-head">
+                    <div>
+                        <span class="up-eyebrow">Latest order</span>
+                        <h2>Order snapshot</h2>
+                    </div>
+                    <a href="{% url 'users:orders' %}">Manage orders</a>
+                </div>
+                {% if latest_order %}
+                <div class="up-summary">
+                    <div class="up-summary-item"><span>Order number</span><strong>{{ latest_order.order_number }}</strong></div>
+                    <div class="up-summary-item"><span>Delivery date</span><strong>{{ latest_order.delivery_date|date:"M d, Y" }}</strong></div>
+                    <div class="up-summary-item"><span>Status</span><strong>{{ latest_order.status|title }}</strong></div>
+                    <div class="up-summary-item"><span>Amount</span><strong>&#8377;{{ latest_order.total_amount|floatformat:2 }}</strong></div>
+                </div>
+                {% else %}
+                <div class="up-order-callout">
+                    <span>No active order</span>
+                    <strong>Your next order will appear here.</strong>
+                    <a href="{% url 'users:orders' %}" class="up-btn-primary" style="margin-top:0.4rem;">Start ordering</a>
+                </div>
+                {% endif %}
+            </article>
+        </div>
+    </section>
+</div>
 {% endblock %}

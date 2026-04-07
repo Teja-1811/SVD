@@ -1,582 +1,520 @@
 {% extends 'customer_portal/base.html' %}
 {% load static %}
 
-{% block title %}Place Order - Customer Portal{% endblock %}
-
-{% block extra_css %}
+{% block content %}
 <style>
-
-/* ------------------------------------------------------------
-   GLOBAL
------------------------------------------------------------- */
-.page-title {
-    font-weight: 600;
-    margin-bottom: 20px;
-}
-.card { border-radius: 12px; }
-
-/* ------------------------------------------------------------
-   COMPANY TABS (scrollable)
------------------------------------------------------------- */
-.company-tabs {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    flex-wrap: nowrap !important;
-    gap: 10px;
-    padding-bottom: 8px;
-    scrollbar-width: thin;
-}
-.company-tabs::-webkit-scrollbar { height: 4px; }
-
-.company-tabs .nav-link {
-    border-radius: 20px;
-    padding: 8px 16px;
-    background: #f1f3f4;
-    border: 1px solid #ddd;
-    white-space: nowrap;
-    font-size: 14px;
-}
-.company-tabs .nav-link.active {
-    background: #0d6efd;
-    color: #fff;
-    border-color: #0d6efd;
+.order-page {
+    padding-bottom: 96px;
 }
 
-/* ------------------------------------------------------------
-   CATEGORY TABS
------------------------------------------------------------- */
+.company-block {
+    margin-bottom: 1.75rem;
+}
+
+.company-title {
+    color: #2563eb;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+}
+
 .category-tabs {
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    white-space: nowrap !important;
-    flex-wrap: nowrap !important;
-    padding: 6px 0;
-}
-.category-tabs::-webkit-scrollbar { height: 4px; }
-
-.category-tabs .nav-link {
-    background: #f1f3f4;
-    border-radius: 18px;
-    padding: 6px 14px;
-    font-size: 13px;
-    border: 1px solid #ddd;
+    overflow-y: hidden;
     white-space: nowrap;
-}
-.category-tabs .nav-link.active {
-    background: #0d6efd;
-    color: #fff;
-    border-color: #0d6efd;
+    padding-bottom: 8px;
+    margin-bottom: 0.9rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
 
-/* ------------------------------------------------------------
-   PRODUCT GRID
------------------------------------------------------------- */
+.category-tab {
+    flex: 0 0 auto;
+    border: 1px solid #dbe2ea;
+    background: #fff;
+    color: #2563eb;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.category-tab.is-active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.category-panel {
+    display: none;
+}
+
+.category-panel.is-active {
+    display: block;
+}
+
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
-/* ------------------------------------------------------------
-   PRODUCT CARD
------------------------------------------------------------- */
 .product-card {
-    background: #fff;
-    border-radius: 12px;
+    border-radius: 18px;
     padding: 14px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.08);
-    transition: 0.2s ease;
+    border: 1px solid #e9eef5;
+    background: #fff;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
 }
-.product-card:hover { transform: translateY(-3px); }
 
 .product-row {
-    display: flex;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 14px;
     align-items: center;
 }
 
-/* Image box */
 .product-media-left {
-    width: 140px;
-    height: 140px;
-    background: #fafafa;
+    width: 88px;
+    height: 88px;
+    background: linear-gradient(180deg, #ffffff, #f1f5f9);
     border-radius: 14px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 }
+
 .product-media-left img {
-    width: 130px;
-    height: 130px;
+    width: 76px;
+    height: 76px;
     object-fit: contain;
 }
 
-/* Right side */
 .product-body-left {
-    flex: 1;
-    min-width: 160px;
+    min-width: 0;
 }
 
 .product-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
 }
 
 .product-price {
-    font-size: 16px;
+    color: #16a34a;
+    font-size: 15px;
     font-weight: 700;
-    color: #28a745;
 }
 
-/* Qty Row */
+.product-mrp {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.product-margin {
+    font-size: 12px;
+    color: #16a34a;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
 .qty-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    gap: 10px;
     margin-top: 10px;
 }
+
 .qty-control {
-    width: 120px;
+    display: inline-flex;
+    align-items: center;
 }
-.item-total {
-    margin-left: 12px;
+
+.qty-control button {
+    width: 30px;
+    height: 30px;
+    font-weight: 700;
+    border: 1px solid #94a3b8;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.qty-input {
+    width: 42px;
+    height: 30px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    margin: 0 4px;
+}
+
+.add-btn {
+    background: #2563eb;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: none;
     font-weight: 600;
 }
 
-/* ------------------------------------------------------------
-   SIDEBAR
------------------------------------------------------------- */
-.sticky-card {
-    position: sticky;
-    top: 90px;
+.item-total {
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
 }
 
-/* ------------------------------------------------------------
-   MOBILE FRIENDLY
------------------------------------------------------------- */
-@media (max-width: 576px) {
-    .product-grid {
-        grid-template-columns: 1fr !important;
+.mobile-order-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.mobile-order-bar button {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.order-summary-card {
+    margin-top: 1rem;
+    border-radius: 18px;
+    padding: 14px;
+    border: 1px solid #e9eef5;
+    background: #fff;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.order-summary-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 0.85rem;
+}
+
+.summary-empty {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.summary-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-top: 1px solid #eef2f7;
+}
+
+.summary-item:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.summary-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.summary-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.summary-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-total {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+}
+
+.summary-remove {
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+    color: #dc2626;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+    .order-page .container {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
     }
+
+    .product-card {
+        padding: 12px;
+    }
+
+    .product-row {
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+    }
+
     .product-media-left {
-        width: 110px;
-        height: 110px;
+        width: 76px;
+        height: 76px;
+        border-radius: 12px;
     }
+
     .product-media-left img {
-        width: 100px;
-        height: 100px;
+        width: 64px;
+        height: 64px;
+    }
+
+    .product-title {
+        font-size: 13px;
+    }
+
+    .qty-row {
+        margin-top: 8px;
     }
 }
-
 </style>
-{% endblock %}
 
-{% block content %}
-<div class="container-fluid my-5 portal-page-shell">
+<div class="container mt-3 order-page">
+    <h5 class="mb-3">New Order</h5>
 
-    <h2 class="page-title"><i class="bi bi-bag-check me-2"></i>Place a New Order</h2>
+    {% for company, categories in items_by_company.items %}
+    <section class="company-block" data-company-block>
+        <h6 class="company-title">{{ company }}</h6>
 
-    <!-- ===========================
-         LAST ORDER STATUS CARD
-    ============================ -->
-    {% if last_order %}
-    <div class="card shadow-sm mb-3" style="border-radius: 12px;">
-        <div class="card-body">
-
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 text-primary">
-                    <i class="bi bi-clock-history me-2"></i> Last Order Status
-                </h6>
-
-                <span class="badge
-                    {% if last_order.status == 'pending' %} bg-warning text-dark
-                    {% elif last_order.status == 'confirmed' %} bg-success
-                    {% elif last_order.status == 'cancelled' %} bg-danger
-                    {% elif last_order.status == 'rejected' %} bg-danger
-                    {% endif %}
-                ">
-                    {{ last_order.status|title }}
-                </span>
-            </div>
-
-            <div class="mt-2 small">
-                <strong>Order #:</strong> {{ last_order.order_number }} <br>
-                <strong>Date:</strong> {{ last_order.order_date|date:"M d, Y h:i A" }} <br>
-                <strong>Amount:</strong> ₹{{ last_order.display_total_amount|floatformat:2 }}
-            </div>
-
-            <div class="text-end mt-2">
-                <a href="{% url 'customer_portal:last_order_details' %}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-eye me-1"></i> View Full Order
-                </a>
-            </div>
-
+        <div class="category-tabs" role="tablist" aria-label="{{ company }} categories">
+            {% for category, items in categories.items %}
+            <button
+                type="button"
+                class="category-tab {% if forloop.first %}is-active{% endif %}"
+                data-category-tab
+                data-target="company-{{ forloop.parentloop.counter }}-category-{{ forloop.counter }}"
+            >
+                {{ category }}
+            </button>
+            {% endfor %}
         </div>
-    </div>
-    {% endif %}
 
-    <div class="row gap-4">
+        {% for category, items in categories.items %}
+        <div
+            class="category-panel {% if forloop.first %}is-active{% endif %}"
+            data-category-panel
+            id="company-{{ forloop.parentloop.counter }}-category-{{ forloop.counter }}"
+        >
+            <div class="product-grid">
+                {% for item in items %}
+                <article class="product-card">
+                    <div class="product-row">
+                        <div class="product-media-left">
+                            <img src="{{ item.resolved_image_url }}" alt="{{ item.name }}">
+                        </div>
 
-        <!-- LEFT: PRODUCT LIST -->
-        <div class="col-lg-8">
+                        <div class="product-body-left">
+                            <div class="product-title">{{ item.name }}</div>
+                            <div class="product-mrp">MRP: <del>&#8377;{{ item.mrp }}</del></div>
+                            <div class="product-price">&#8377;{{ item.display_price }}</div>
+                            <div class="product-margin">Margin: {{ item.margin_percent }}%</div>
 
-            <div class="card">
-                <div class="card-header d-flex justify-content-between bg-white">
-                    <h5><i class="bi bi-cart-plus me-2"></i>New Order</h5>
-                    <small class="text-muted">Select items and quantity</small>
-                </div>
+                            <div class="qty-row">
+                                <button class="add-btn">Add</button>
 
-                <div class="card-body">
-
-                    <!-- COMPANY TABS -->
-                    <ul class="nav nav-pills company-tabs mb-3 d-none">
-                        {% for company, categories in items_by_company.items %}
-                        <li class="nav-item">
-                            <button class="nav-link {% if forloop.first %}active{% endif %}"
-                                data-bs-toggle="tab"
-                                data-bs-target="#company-{{ forloop.counter }}">
-                                {{ company }}
-                            </button>
-                        </li>
-                        {% endfor %}
-                    </ul>
-
-                    <!-- COMPANY CONTENT -->
-                    <div class="tab-content">
-
-                        {% for company, categories in items_by_company.items %}
-                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}"
-                             id="company-{{ forloop.counter }}">
-
-                            <!-- CATEGORY TABS -->
-                            <ul class="nav category-tabs mb-3">
-                                {% for category, items in categories.items %}
-                                <li class="nav-item">
-                                    <button class="nav-link {% if forloop.first %}active{% endif %}"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#cat-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
-                                        {{ category }}
-                                    </button>
-                                </li>
-                                {% endfor %}
-                            </ul>
-
-                            <!-- CATEGORY PRODUCT LIST -->
-                            <div class="tab-content">
-
-                                {% for category, items in categories.items %}
-                                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}"
-                                     id="cat-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
-
-                                    <div class="product-grid mt-2 pb-3">
-
-                                        {% for item in items %}
-                                        <div class="product-card">
-                                            <div class="product-row">
-
-                                                <!-- IMAGE -->
-                                                <div class="product-media-left">
-                                                    <img src="{{ item.resolved_image_url }}">
-                                                </div>
-
-                                                <!-- DETAILS -->
-                                                <div class="product-body-left">
-
-                                                    <h6 class="product-title">{{ item.name }}</h6>
-
-                                                    <div class="mt-1">
-                                                        <div class="text-muted" style="font-size:13px;">
-                                                            MRP: <span style="text-decoration: line-through;">₹{{ item.mrp|floatformat:2 }}</span>
-                                                        </div>
-
-                                                        <div class="product-price">
-                                                            ₹{{ item.display_price|floatformat:2 }}
-                                                        </div>
-
-                                                        <div style="font-size: 13px; color: #6c757d;">
-                                                            Margin: <strong style="color:#28a745;">{{ item.margin_percent }}%</strong>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- QTY CONTROL -->
-                                                    <div class="qty-row mt-2">
-                                                        <div class="input-group input-group-sm qty-control">
-
-                                                            <button type="button" class="btn btn-outline-secondary btn-decr">−</button>
-
-                                                            <input type="number"
-                                                                class="form-control qty-input"
-                                                                value="0"
-                                                                min="0"
-                                                                data-item-id="{{ item.id }}"
-                                                                data-item-price="{{ item.display_price }}"
-                                                                style="text-align:center;">
-
-                                                            <button type="button" class="btn btn-outline-secondary btn-incr">+</button>
-
-                                                        </div>
-
-                                                        <div class="item-total">₹0.00</div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-
-                                    </div>
-
+                                <div class="qty-control d-none">
+                                    <button type="button" class="btn-decr">-</button>
+                                    <input
+                                        type="number"
+                                        value="1"
+                                        class="qty-input"
+                                        min="1"
+                                        max="100"
+                                        data-id="{{ item.id }}"
+                                        data-price="{{ item.display_price }}"
+                                    >
+                                    <button type="button" class="btn-incr">+</button>
                                 </div>
-                                {% endfor %}
 
+                                <div class="item-total">&#8377;0</div>
                             </div>
-
                         </div>
-                        {% endfor %}
-
                     </div>
-                    <div class="mt-3 d-grid">
-                        <div id="orderTimeInfo" class="alert alert-info small mt-2">
-                            <i class="bi bi-truck me-1"></i>
-                            Orders: <b>12:00 PM – 5:00 AM</b><br>
-                            Delivery by <b>5:00 PM</b><br>
-                            <span id="orderTimer" class="fw-bold text-dark"></span>
-                        </div>
-                        <button id="placeOrderBtn" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-circle me-2"></i>Place Order
-                        </button>
-                    </div>
-
-                </div>
+                </article>
+                {% endfor %}
             </div>
-
         </div>
+        {% endfor %}
+    </section>
+    {% endfor %}
 
-        <!-- RIGHT: SIDEBAR -->
-        <div class="col-lg-3">
-
-            <div class="card sticky-card">
-                <div class="card-header bg-white">
-                    <h6><i class="bi bi-receipt me-2"></i>Order Summary</h6>
-                </div>
-                <div class="card-body">
-                    <div id="orderSummary"><p class="text-muted small">No items selected</p></div>
-                    <hr>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>Delivery Charge</span>
-                        <strong id="deliveryCharge">₹0.00</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <strong>Total:</strong>
-                        <strong id="grandTotal">₹0.00</strong>
-                    </div>
-                </div>
-            </div>
-
+    <section class="order-summary-card">
+        <h6 class="order-summary-title">Order Summary</h6>
+        <div id="orderSummaryList">
+            <div class="summary-empty">No items selected yet.</div>
         </div>
-
-    </div>
-
+    </section>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<div class="mobile-order-bar">
+    <strong id="totalAmount">&#8377;0</strong>
+    <button id="placeOrderBtn">Place Order</button>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+let cart = {};
+const DELIVERY_CHARGE = 10;
+const MIN_ORDER = 100;
 
-    const csrfToken = "{{ csrf_token }}";
+function updateTotal() {
+    let total = 0;
+    const summaryEl = document.getElementById("orderSummaryList");
+    let summaryHtml = "";
 
-    const orderSummaryEl = document.getElementById("orderSummary");
-    const grandTotalEl = document.getElementById("grandTotal");
-    const placeOrderBtn = document.getElementById("placeOrderBtn");
-    const orderTimeInfo = document.getElementById("orderTimeInfo");
-    const orderTimerEl = document.getElementById("orderTimer");
-
-    /* =====================================================
-       ORDER WINDOW TIMER (12 PM → 5 AM)
-    ===================================================== */
-    function updateOrderWindow() {
-        const now = new Date();
-        const hour = now.getHours();
-
-        let targetTime = new Date(now);
-        let message = "";
-        let isClosed = false;
-
-        // ❌ Closed window: 5 AM → 12 PM
-        if (hour >= 5 && hour < 12) {
-            isClosed = true;
-            targetTime.setHours(12, 0, 0, 0);
-            message = "⏳ Orders open in ";
-        }
-        // ✅ Open: 12 PM → Midnight
-        else if (hour >= 12) {
-            targetTime.setDate(targetTime.getDate() + 1);
-            targetTime.setHours(5, 0, 0, 0);
-            message = "⏳ Orders close in ";
-        }
-        // ✅ Open: Midnight → 5 AM
-        else {
-            targetTime.setHours(5, 0, 0, 0);
-            message = "⏳ Orders close in ";
-        }
-
-        const diff = targetTime - now;
-
-        if (diff <= 0) {
-            location.reload();
-            return;
-        }
-
-        const hrs = Math.floor(diff / (1000 * 60 * 60));
-        const mins = Math.floor((diff / (1000 * 60)) % 60);
-        const secs = Math.floor((diff / 1000) % 60);
-
-        orderTimerEl.innerHTML = `
-            ${message}
-            <span class="text-primary">${hrs}h ${mins}m ${secs}s</span>
+    Object.values(cart).forEach(item => {
+        total += item.qty * item.price;
+        summaryHtml += `
+            <div class="summary-item">
+                <div>
+                    <div class="summary-name">${item.name}</div>
+                    <div class="summary-meta">Qty ${item.qty} x ₹${item.price.toFixed(2)}</div>
+                </div>
+                <div class="summary-actions">
+                    <span class="summary-total">₹${(item.qty * item.price).toFixed(2)}</span>
+                    <button type="button" class="summary-remove" data-remove-item="${item.id}">Remove</button>
+                </div>
+            </div>
         `;
+    });
 
-        // Button + message control
-        if (isClosed) {
-            placeOrderBtn.disabled = true;
-            placeOrderBtn.classList.replace("btn-success", "btn-secondary");
-            placeOrderBtn.innerText = "Orders closed (opens at 12:00 PM)";
+    summaryEl.innerHTML = summaryHtml || '<div class="summary-empty">No items selected yet.</div>';
+    document.getElementById("totalAmount").innerText =
+        "\u20B9" + (total + (total > 0 ? DELIVERY_CHARGE : 0)).toFixed(2);
+}
 
-            orderTimeInfo.classList.replace("alert-info", "alert-warning");
+document.body.addEventListener("click", function (e) {
+    if (e.target.matches("[data-category-tab]")) {
+        const block = e.target.closest("[data-company-block]");
+        if (!block) return;
+
+        block.querySelectorAll("[data-category-tab]").forEach(tab => {
+            tab.classList.toggle("is-active", tab === e.target);
+        });
+
+        const targetId = e.target.dataset.target;
+        block.querySelectorAll("[data-category-panel]").forEach(panel => {
+            panel.classList.toggle("is-active", panel.id === targetId);
+        });
+        return;
+    }
+
+    if (e.target.matches("[data-remove-item]")) {
+        const id = e.target.dataset.removeItem;
+        delete cart[id];
+
+        const input = document.querySelector(`.qty-input[data-id="${id}"]`);
+        if (input) {
+            input.value = 1;
+            const card = input.closest(".product-card");
+            if (card) {
+                card.querySelector(".qty-control").classList.add("d-none");
+                card.querySelector(".add-btn").classList.remove("d-none");
+                card.querySelector(".item-total").innerText = "\u20B90";
+            }
+        }
+
+        updateTotal();
+        return;
+    }
+
+    const card = e.target.closest(".product-card");
+    if (!card) return;
+
+    const addBtn = card.querySelector(".add-btn");
+    const qtyControl = card.querySelector(".qty-control");
+    const input = card.querySelector(".qty-input");
+    const totalEl = card.querySelector(".item-total");
+
+    if (e.target.classList.contains("add-btn")) {
+        addBtn.classList.add("d-none");
+        qtyControl.classList.remove("d-none");
+
+        const id = input.dataset.id;
+        const price = parseFloat(input.dataset.price);
+        const name = card.querySelector(".product-title").innerText;
+
+        cart[id] = { id, qty: 1, price, name };
+        totalEl.innerText = "\u20B9" + price.toFixed(2);
+        updateTotal();
+    }
+
+    if (e.target.classList.contains("btn-incr")) input.value++;
+    if (e.target.classList.contains("btn-decr")) input.value = Math.max(1, input.value - 1);
+
+    if (e.target.classList.contains("btn-incr") || e.target.classList.contains("btn-decr")) {
+        const id = input.dataset.id;
+        const price = parseFloat(input.dataset.price);
+        const qty = parseInt(input.value);
+        const name = card.querySelector(".product-title").innerText;
+
+        cart[id] = { id, qty, price, name };
+        totalEl.innerText = "\u20B9" + (qty * price).toFixed(2);
+        updateTotal();
+    }
+});
+
+document.getElementById("placeOrderBtn").addEventListener("click", function () {
+    if (Object.keys(cart).length === 0) {
+        alert("Select items");
+        return;
+    }
+
+    let total = 0;
+    Object.values(cart).forEach(i => total += i.qty * i.price);
+
+    if (total < MIN_ORDER) {
+        alert("Minimum order \u20B9" + MIN_ORDER);
+        return;
+    }
+
+    fetch("{% url 'customer_portal:place_order' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ items: cart })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert("Order placed! #" + data.order_number);
+            location.reload();
         } else {
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.classList.replace("btn-secondary", "btn-success");
-            placeOrderBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>Place Order`;
-
-            orderTimeInfo.classList.replace("alert-warning", "alert-info");
-        }
-    }
-
-    updateOrderWindow();
-    setInterval(updateOrderWindow, 1000);
-
-    /* =====================================================
-       UPDATE TOTALS
-    ===================================================== */
-    function updateTotals() {
-        let grandTotal = 0;
-        let summary = "";
-        let hasItems = false;
-        const deliveryCharge = 10;
-
-        document.querySelectorAll(".product-card").forEach(card => {
-            const qtyInput = card.querySelector(".qty-input");
-            const qty = parseInt(qtyInput.value) || 0;
-            const price = parseFloat(qtyInput.dataset.itemPrice);
-            const name = card.querySelector(".product-title").innerText;
-
-            const total = qty * price;
-            card.querySelector(".item-total").innerText = "₹" + total.toFixed(2);
-
-            if (qty > 0) {
-                hasItems = true;
-                grandTotal += total;
-                summary += `
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>${name} × ${qty}</span>
-                        <strong>₹${total.toFixed(2)}</strong>
-                    </div>
-                `;
-            }
-        });
-
-        orderSummaryEl.innerHTML = summary || `<p class="text-muted small">No items selected</p>`;
-        document.getElementById("deliveryCharge").innerText = hasItems ? "₹10.00" : "₹0.00";
-        grandTotalEl.innerText = "₹" + (grandTotal + (hasItems ? deliveryCharge : 0)).toFixed(2);
-    }
-
-    /* =====================================================
-       QTY BUTTONS
-    ===================================================== */
-    document.body.addEventListener("click", function (e) {
-
-        if (e.target.classList.contains("btn-incr")) {
-            const input = e.target.closest(".product-card").querySelector(".qty-input");
-            input.value = (parseInt(input.value) || 0) + 1;
-            updateTotals();
-        }
-
-        if (e.target.classList.contains("btn-decr")) {
-            const input = e.target.closest(".product-card").querySelector(".qty-input");
-            input.value = Math.max(0, (parseInt(input.value) || 0) - 1);
-            updateTotals();
+            alert(data.message);
         }
     });
-
-    /* =====================================================
-       INPUT CHANGE
-    ===================================================== */
-    document.body.addEventListener("input", function (e) {
-        if (e.target.classList.contains("qty-input")) {
-            if (e.target.value < 0 || isNaN(e.target.value)) e.target.value = 0;
-            updateTotals();
-        }
-    });
-
-    /* =====================================================
-       PLACE ORDER
-    ===================================================== */
-    placeOrderBtn.addEventListener("click", function () {
-
-        if (placeOrderBtn.disabled) {
-            alert("Orders can be placed only between 12:00 PM and 5:00 AM.");
-            return;
-        }
-
-        const items = [];
-
-        document.querySelectorAll(".qty-input").forEach(input => {
-            const qty = parseInt(input.value) || 0;
-            if (qty > 0) {
-                items.push({
-                    item_id: input.dataset.itemId,
-                    quantity: qty,
-                    price: parseFloat(input.dataset.itemPrice)
-                });
-            }
-        });
-
-        if (items.length === 0) {
-            alert("Please select at least one item.");
-            return;
-        }
-
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerText = "Placing Order...";
-
-        fetch("/customer/orders/place/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
-            },
-            body: JSON.stringify({ items })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                alert("Order placed successfully! Order # " + data.order_number);
-                window.location.reload();
-            } else {
-                alert("Error: " + data.message);
-                updateOrderWindow();
-            }
-        })
-        .catch(err => {
-            console.error("FETCH ERROR:", err);
-            updateOrderWindow();
-        });
-    });
-
-    updateTotals();
 });
 </script>
+
 {% endblock %}

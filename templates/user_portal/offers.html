@@ -2,57 +2,167 @@
 
 {% block title %}User Offers{% endblock %}
 
-{% block content %}
-<section class="up-page-header">
-    <div class="up-hero">
-        <span class="up-eyebrow">Offers</span>
-        <h1 class="up-title">Available offers.</h1>
-        <p class="up-subtitle">Review current offers available for this account.</p>
-    </div>
-    <aside class="up-spotlight">
-        <span class="up-eyebrow">Offer Status</span>
-        <div class="up-spotlight-grid">
-            <div>
-                <small>Live offers</small>
-                <strong>{{ offers|length }}</strong>
-            </div>
-            <div>
-                <small>Audience</small>
-                <strong>User</strong>
-            </div>
-        </div>
-    </aside>
-</section>
+{% block extra_css %}
+<style>
+    .up-offers-page {
+        display: grid;
+        gap: 1.2rem;
+    }
 
-<section class="up-grid-3">
-    {% for offer in offers %}
-    <article class="up-card">
-        <div class="up-section-head">
-            <div>
-                <span class="up-chip chip-success">Active</span>
-                <h2 class="mt-3">{{ offer.name }}</h2>
+    .up-offers-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .up-offer-card {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .up-offer-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .up-offer-top h2 {
+        margin: 0.7rem 0 0;
+    }
+
+    .up-offer-badge {
+        flex: 0 0 auto;
+    }
+
+    .up-offer-facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .up-offer-fact {
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        background: rgba(22, 52, 61, 0.04);
+        display: grid;
+        gap: 0.2rem;
+    }
+
+    .up-offer-fact span {
+        color: #60787a;
+        font-size: 0.88rem;
+    }
+
+    .up-offer-fact strong {
+        color: #16343d;
+        font-size: 1rem;
+    }
+
+    .up-offer-desc {
+        margin: 0;
+        color: #60787a;
+        line-height: 1.65;
+    }
+
+    .up-offer-items {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .up-offer-item {
+        padding: 0.9rem 1rem;
+        border-radius: 18px;
+        background: rgba(24, 127, 98, 0.08);
+        color: #16664d;
+        font-weight: 600;
+    }
+
+    @media (max-width: 991.98px) {
+        .up-offers-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .up-offer-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .up-offer-facts {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="up-offers-page">
+    <section class="up-page-header">
+        <div class="up-hero">
+            <span class="up-eyebrow">Offers</span>
+            <h1 class="up-title">Available offers.</h1>
+            <p class="up-subtitle">Review current offers available for this account.</p>
+        </div>
+        <aside class="up-spotlight">
+            <span class="up-eyebrow">Offer status</span>
+            <div class="up-spotlight-grid">
+                <div>
+                    <small>Live offers</small>
+                    <strong>{{ offers|length }}</strong>
+                </div>
+                <div>
+                    <small>Audience</small>
+                    <strong>User</strong>
+                </div>
             </div>
-        </div>
-        <div class="up-summary">
-            <div class="up-summary-item"><span>Offer type</span><strong>{{ offer.offer_type }}</strong></div>
-            <div class="up-summary-item"><span>Offer price</span><strong>&#8377;{{ offer.price|floatformat:2 }}</strong></div>
-            <div class="up-summary-item"><span>Ends</span><strong>{{ offer.end_date|date:"M d, Y" }}</strong></div>
-        </div>
-        {% if offer.description %}
-        <p class="up-muted mt-3 mb-0">{{ offer.description }}</p>
-        {% endif %}
-        {% if offer.items %}
-        <div class="up-list mt-3">
-            {% for item in offer.items %}
-            <div class="up-item">{{ item.item_name }} - Buy {{ item.buy_qty }}, get {{ item.offer_qty }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </article>
-    {% empty %}
-    <article class="up-card">
-        <div class="up-empty">No active user offers today.</div>
-    </article>
-    {% endfor %}
-</section>
+        </aside>
+    </section>
+
+    <section class="up-offers-grid">
+        {% for offer in offers %}
+        <article class="up-card up-offer-card">
+            <div class="up-offer-top">
+                <div>
+                    <span class="up-chip chip-success">Active</span>
+                    <h2>{{ offer.name }}</h2>
+                </div>
+                <span class="up-offer-badge up-chip chip-success">Live</span>
+            </div>
+
+            <div class="up-offer-facts">
+                <div class="up-offer-fact">
+                    <span>Offer type</span>
+                    <strong>{{ offer.offer_type }}</strong>
+                </div>
+                <div class="up-offer-fact">
+                    <span>Offer price</span>
+                    <strong>&#8377;{{ offer.price|floatformat:2 }}</strong>
+                </div>
+                <div class="up-offer-fact">
+                    <span>Ends</span>
+                    <strong>{{ offer.end_date|date:"M d, Y" }}</strong>
+                </div>
+            </div>
+
+            {% if offer.description %}
+            <p class="up-offer-desc">{{ offer.description }}</p>
+            {% endif %}
+
+            {% if offer.items %}
+            <div class="up-offer-items">
+                {% for item in offer.items %}
+                <div class="up-offer-item">{{ item.item_name }}: Buy {{ item.buy_qty }}, get {{ item.offer_qty }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </article>
+        {% empty %}
+        <article class="up-card">
+            <div class="up-empty">No active user offers today.</div>
+        </article>
+        {% endfor %}
+    </section>
+</div>
 {% endblock %}

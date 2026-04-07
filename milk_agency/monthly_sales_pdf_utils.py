@@ -86,22 +86,7 @@ class MonthlySalesPDFGenerator:
 
         # Draw final summary
         y_pos = self._draw_final_summary(c, context, width, y_pos)
-
-        # Check if signature and footer fit on current page
-        if y_pos - 150 < self.margin_bottom:  # Estimate space needed for signature and footer
-            c.showPage()
-            # Redraw border on new page
-            c.setLineWidth(2)
-            c.setStrokeColorRGB(0.8, 0, 0)
-            c.rect(margin, margin, width - 2*margin, height - 2*margin)
-            # Redraw watermark on new page
-            self._draw_watermark(c, width, height)
-
-        # Draw signature
-        self._draw_signature(c, width, height)
-
-        # Draw footer
-        self._draw_footer(c, width, height)
+        self._draw_terms_page(c, width, height)
 
 
 
@@ -121,6 +106,18 @@ class MonthlySalesPDFGenerator:
             try:
                 logo = ImageReader(logo_path)
                 c.drawImage(logo, left_x + 8, header_y + 14, width=110, height=44, mask="auto")
+            except Exception:
+                pass
+
+        header_logo_path = self._resolve_static_image("images/SVD1.png")
+        if header_logo_path:
+            try:
+                header_logo = ImageReader(header_logo_path)
+                logo_width = 64
+                logo_height = 64
+                logo_x = left_x + header_w - logo_width - 16
+                logo_y = header_y + (header_h - logo_height) / 2
+                c.drawImage(header_logo, logo_x, logo_y, width=logo_width, height=logo_height, mask="auto")
             except Exception:
                 pass
 
@@ -171,6 +168,22 @@ class MonthlySalesPDFGenerator:
         c.line(40, y_title-10, width - 40, y_title-10)
 
         return y_title - 20  # Return the y position after the header
+
+    def _resolve_static_image(self, *relative_paths):
+        """Resolve a static image path for ReportLab image loading."""
+        for rel_path in relative_paths:
+            finder_path = finders.find(rel_path)
+            if finder_path:
+                return finder_path
+
+            candidate_paths = [
+                os.path.join(settings.BASE_DIR, "static", rel_path),
+                os.path.join(settings.BASE_DIR, "staticfiles", rel_path),
+            ]
+            for path in candidate_paths:
+                if os.path.exists(path):
+                    return path
+        return None
 
 
 
@@ -304,7 +317,7 @@ class MonthlySalesPDFGenerator:
 
     def _draw_watermark(self, c, width, height):
         """Draw logo as watermark on the page"""
-        logo_path = finders.find('images/SVD1.png')
+        logo_path = self._resolve_static_image("images/SVD1.png")
         if logo_path and os.path.exists(logo_path):
             try:
                 logo = ImageReader(logo_path)
@@ -359,3 +372,129 @@ class MonthlySalesPDFGenerator:
         text_width = c.stringWidth(thank_you_text, "Helvetica-Bold", 9)
         x_center = (width - text_width) / 2
         c.drawString(x_center, footer_y - 10, thank_you_text)
+
+    def _draw_wrapped_text(self, c, text, x, y, max_width, font_name="Helvetica", font_size=8, leading=10):
+        """Draw wrapped footer text without overflowing the page width."""
+        words = text.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            test_line = " ".join(current_line + [word])
+            if c.stringWidth(test_line, font_name, font_size) <= max_width or not current_line:
+                current_line.append(word)
+            else:
+                lines.append(" ".join(current_line))
+                current_line = [word]
+
+        if current_line:
+            lines.append(" ".join(current_line))
+
+        c.setFont(font_name, font_size)
+        text_y = y
+        for line in lines:
+            c.drawString(x, text_y, line)
+            text_y -= leading
+        return text_y
+
+    def _draw_terms_page(self, c, width, height):
+        margin = 30
+        c.showPage()
+        c.setLineWidth(2)
+        c.setStrokeColorRGB(0.8, 0, 0)
+        c.rect(margin, margin, width - 2 * margin, height - 2 * margin)
+        self._draw_watermark(c, width, height)
+
+        top_y = height - 40
+        header_h = 74
+        header_w = width - 80
+        header_y = top_y - header_h
+        left_x = 40
+
+        c.setLineWidth(1)
+        c.rect(left_x, header_y, header_w, header_h)
+
+        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.webp")
+        if os.path.exists(logo_path):
+            try:
+                logo = ImageReader(logo_path)
+                c.drawImage(logo, left_x + 8, header_y + 14, width=110, height=44, mask="auto")
+            except Exception:
+                pass
+
+        header_logo_path = self._resolve_static_image("images/SVD1.png")
+        if header_logo_path:
+            try:
+                header_logo = ImageReader(header_logo_path)
+                c.drawImage(header_logo, left_x + header_w - 82, header_y + 5, width=64, height=64, mask="auto")
+            except Exception:
+                pass
+
+        center_x = left_x + (header_w / 2)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(center_x, header_y + 56, "DODLA DAIRY LIMITED")
+        c.setFont("Helvetica", 7)
+        c.drawCentredString(center_x, header_y + 44, "FSSAI No: 10012044000145, PAN No: AABCD5077E, CIN No: L15209TG1995PLC020324")
+        c.drawCentredString(center_x, header_y + 34, "GSTIN: 37AACCD5077E1ZQ")
+        c.drawCentredString(center_x, header_y + 24, "Dhulipalli Village, Guntur, Guntur, 522403, Andhra Pradesh, India")
+
+        title_y = header_y - 36
+        c.setFont("Helvetica-Bold", 16)
+        c.drawCentredString(center_x, title_y, "Terms, Conditions & Disclaimer")
+        c.setFont("Helvetica", 10)
+        c.drawCentredString(center_x, title_y - 16, "Please review the monthly statement terms below carefully.")
+
+        left_col_x = 60
+        right_col_x = width * 0.64
+        content_top = title_y - 46
+
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(left_col_x, content_top, "Terms & Conditions")
+        terms = [
+            "1. Monthly commission will be settled by the 10th of every month.",
+            "2. Commission applies only to milk and curd packets with an average sale of minimum 25 liters per month.",
+            "3. Goods once sold will not be taken back or exchanged.",
+            "4. Please verify monthly quantities, invoice values, payments, and dues before settlement.",
+        ]
+        term_y = content_top - 22
+        for term in terms:
+            term_y = self._draw_wrapped_text(c, term, left_col_x, term_y, right_col_x - left_col_x - 30, font_size=10, leading=14)
+            term_y -= 8
+
+        c.setFont("Helvetica-Bold", 12)
+        disclaimer_title_y = term_y - 10
+        c.drawString(left_col_x, disclaimer_title_y, "Disclaimer")
+        disclaimer = (
+            "Partnering companies are not responsible for this bill. Sri Vijaya Durga Milk Agencies is solely "
+            "accountable for this bill. For any bill-related issue, please contact only SVD Agencies. Partner "
+            "company details are shown only for trust-building and marketing purposes."
+        )
+        self._draw_wrapped_text(c, disclaimer, left_col_x, disclaimer_title_y - 22, right_col_x - left_col_x - 30, font_size=10, leading=14)
+
+        c.setLineWidth(1)
+        c.line(right_col_x - 18, margin + 30, right_col_x - 18, content_top + 10)
+
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(right_col_x, content_top, "Accountability")
+        accountability = (
+            "Sri Vijaya Durga Milk Agencies is the only accountable party for this monthly statement and any related billing concerns."
+        )
+        accountability_end_y = self._draw_wrapped_text(c, accountability, right_col_x, content_top - 22, width - right_col_x - 60, font_size=10, leading=14)
+
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(right_col_x, accountability_end_y - 10, "Contact")
+        contact_lines = [
+            "Sri Vijaya Durga Milk Agencies",
+            "Near Santa Market, Main Road",
+            "Gundugolanu, Bhimadolu, Eluru, AP - 534427",
+            "Phone: 9392890375",
+        ]
+        contact_y = accountability_end_y - 32
+        c.setFont("Helvetica", 10)
+        for line in contact_lines:
+            c.drawString(right_col_x, contact_y, line)
+            contact_y -= 14
+
+        self._draw_signature(c, width, height)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(center_x, margin + 24, "Thank you for your business!")

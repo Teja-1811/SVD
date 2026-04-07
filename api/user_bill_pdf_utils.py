@@ -4,6 +4,7 @@ from io import BytesIO
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.contrib.staticfiles import finders
 from num2words import num2words
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.utils import ImageReader
@@ -82,6 +83,7 @@ class UserPDFGenerator:
         y = self._draw_party_section(c, bill, x0, y, w)
         y, totals = self._draw_items_table(c, display_items, x0, y, w)
         self._draw_footer_sections(c, bill, bill_items, x0, y, w, totals)
+        self._draw_terms_page(c)
 
         c.save()
 
@@ -98,6 +100,18 @@ class UserPDFGenerator:
             except Exception:
                 pass
 
+        header_logo_path = self._resolve_static_image("images/SVD1.png")
+        if header_logo_path:
+            try:
+                header_logo = ImageReader(header_logo_path)
+                logo_width = 64
+                logo_height = 64
+                logo_x = x + w - logo_width - 16
+                logo_y = y + (row_h - logo_height) / 2
+                c.drawImage(header_logo, logo_x, logo_y, width=logo_width, height=logo_height, mask="auto")
+            except Exception:
+                pass
+
         center_x = x + (w / 2)
 
         c.setFont("Helvetica-Bold", 12)
@@ -109,6 +123,22 @@ class UserPDFGenerator:
         c.drawCentredString(center_x, y + 24, "Dhulipalli Village, Guntur, Guntur, 522403, Andhra Pradesh, India")
 
         return y
+
+    def _resolve_static_image(self, *relative_paths):
+        """Resolve a static image path for ReportLab image loading."""
+        for rel_path in relative_paths:
+            finder_path = finders.find(rel_path)
+            if finder_path:
+                return finder_path
+
+            candidate_paths = [
+                os.path.join(settings.BASE_DIR, "static", rel_path),
+                os.path.join(settings.BASE_DIR, "staticfiles", rel_path),
+            ]
+            for path in candidate_paths:
+                if os.path.exists(path):
+                    return path
+        return None
 
     def _draw_bill_heading(self, c, x, y_top, w):
         row_h = 34
@@ -279,11 +309,6 @@ class UserPDFGenerator:
         in_words = num2words(grand_total, to="cardinal", lang="en_IN")
         c.drawString(x + 8, y + footer_h - 44, f"Amount in words: {in_words.title()} only")
 
-        c.setFont("Helvetica", 7.5)
-        c.drawString(x + 8, y + 44, "Declaration:")
-        c.drawString(x + 8, y + 32, "Goods once sold will not be taken back or exchanged.")
-        c.drawString(x + 8, y + 20, "This is a computer generated invoice; signature not required.")
-
         summary_x = x + left_w + 8
         base_y = y + footer_h - 18
 
@@ -302,17 +327,6 @@ class UserPDFGenerator:
         else:
             c.drawString(summary_x, base_y - 74, f"Wallet Amount : {self._money(-due_amount)}")
 
-        signature_path = os.path.join(settings.BASE_DIR, "static", "images", "signature.png")
-        if os.path.exists(signature_path):
-            try:
-                signature = ImageReader(signature_path)
-                c.drawImage(signature, x + w - 130, y + 26, width=90, height=46, mask="auto")
-            except Exception:
-                pass
-
-        c.setFont("Helvetica-Bold", 8)
-        c.drawRightString(x + w - 20, y + 18, "AUTHORISED SIGNATORY")
-
     def _get_related_order(self, bill):
         return find_linked_order_for_bill(getattr(bill, "customer", None), bill)
 
@@ -328,3 +342,113 @@ class UserPDFGenerator:
             bill_items=bill_items,
             linked_order=self._get_related_order(bill),
         )
+
+    def _draw_wrapped_text(self, c, text, x, y, max_width, font_name="Helvetica", font_size=8, leading=10):
+        """Draw wrapped footer text without overflowing the page width."""
+        words = text.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            test_line = " ".join(current_line + [word])
+            if c.stringWidth(test_line, font_name, font_size) <= max_width or not current_line:
+                current_line.append(word)
+            else:
+                lines.append(" ".join(current_line))
+                current_line = [word]
+
+        if current_line:
+            lines.append(" ".join(current_line))
+
+        c.setFont(font_name, font_size)
+        text_y = y
+        for line in lines:
+            c.drawString(x, text_y, line)
+            text_y -= leading
+        return text_y
+
+    def _draw_terms_page(self, c):
+        c.showPage()
+        c.setLineWidth(1)
+
+        x0 = self.margin
+        y0 = self.margin
+        w = self.width - (2 * self.margin)
+        h = self.height - (2 * self.margin)
+        c.rect(x0, y0, w, h)
+
+        y = self.height - self.margin
+        y = self._draw_top_header(c, x0, y, w)
+
+        title_h = 36
+        title_y = y - title_h
+        c.rect(x0, title_y, w, title_h)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawCentredString(x0 + (w / 2), title_y + 22, "Terms, Conditions & Disclaimer")
+        c.setFont("Helvetica", 8.5)
+        c.drawCentredString(x0 + (w / 2), title_y + 10, "Please review the billing terms below carefully.")
+
+        content_top = title_y - 16
+        left_x = x0 + 20
+        right_x = x0 + (w * 0.62)
+
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(left_x, content_top, "Terms & Conditions")
+        terms = [
+            "1. Goods once sold will not be taken back or exchanged.",
+            "2. Please verify the delivered quantities and bill amount at the time of receipt.",
+            "3. This is a computer generated invoice; signature on the invoice page is not mandatory.",
+            "4. Payments should be settled only with Sri Vijaya Durga Milk Agencies against valid billing records.",
+        ]
+        term_y = content_top - 18
+        for term in terms:
+            term_y = self._draw_wrapped_text(c, term, left_x, term_y, right_x - left_x - 20, font_size=8.5, leading=12)
+            term_y -= 6
+
+        c.setFont("Helvetica-Bold", 10)
+        disclaimer_title_y = term_y - 8
+        c.drawString(left_x, disclaimer_title_y, "Disclaimer")
+        disclaimer = (
+            "Partnering companies are not responsible for this bill. Sri Vijaya Durga Milk Agencies is solely "
+            "accountable for this bill. For any bill-related issue, please contact only SVD Agencies. Partner "
+            "company details are shown only for trust-building and marketing purposes."
+        )
+        self._draw_wrapped_text(c, disclaimer, left_x, disclaimer_title_y - 18, right_x - left_x - 20, font_size=8.5, leading=12)
+
+        c.setLineWidth(1)
+        c.line(right_x - 12, y0 + 24, right_x - 12, title_y - 10)
+
+        sign_top = title_y - 6
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(right_x + 12, sign_top - 16, "Accountability")
+        accountability = (
+            "Sri Vijaya Durga Milk Agencies is the only accountable billing party for this invoice."
+        )
+        text_bottom = self._draw_wrapped_text(c, accountability, right_x + 12, sign_top - 34, x0 + w - right_x - 28, font_size=8.5, leading=12)
+
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(right_x + 12, text_bottom - 12, "Contact")
+        contact_lines = [
+            "Sri Vijaya Durga Milk Agencies",
+            "Near Santa Market, Main Road",
+            "Gundugolanu, Bhimadolu, Eluru, AP - 534427",
+            "Phone: 9392890375",
+        ]
+        contact_y = text_bottom - 30
+        c.setFont("Helvetica", 8.5)
+        for line in contact_lines:
+            c.drawString(right_x + 12, contact_y, line)
+            contact_y -= 12
+
+        signature_path = os.path.join(settings.BASE_DIR, "static", "images", "signature.png")
+        if os.path.exists(signature_path):
+            try:
+                signature = ImageReader(signature_path)
+                c.drawImage(signature, x0 + w - 150, y0 + 90, width=100, height=52, mask="auto")
+            except Exception:
+                pass
+
+        c.setFont("Helvetica-Bold", 9)
+        c.drawRightString(x0 + w - 24, y0 + 78, "AUTHORISED SIGNATORY")
+        c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(x0 + (w / 2), y0 + 22, "Thank you for your business!")

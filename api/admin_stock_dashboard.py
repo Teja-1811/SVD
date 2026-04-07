@@ -33,7 +33,7 @@ def stock_dashboard_api(request):
 
     total_stock_value = Item.objects.annotate(
         value=ExpressionWrapper(
-            F("stock_quantity") * F("selling_price"),
+            F("stock_quantity") * F("buying_price"),
             output_field=FloatField()
         )
     ).aggregate(
@@ -48,7 +48,7 @@ def stock_dashboard_api(request):
         "name",
         "stock_quantity",
         "pcs_count",
-        "selling_price",
+        "buying_price",
         category_name=F("category"),
         company_name=F("company__name"),
     )
@@ -58,14 +58,14 @@ def stock_dashboard_api(request):
     # -------- TOP 10 ITEMS BY STOCK VALUE ----------
     top_items_qs = Item.objects.annotate(
         stock_value=ExpressionWrapper(
-            F("stock_quantity") * F("selling_price"),
+            F("stock_quantity") * F("buying_price"),
             output_field=FloatField()
         )
     ).order_by("-stock_value").values(
         "id",
         "name",
         "stock_quantity",
-        "selling_price",
+        "buying_price",
         "stock_value",
         company_name=F("company__name"),
     )[:10]
@@ -92,7 +92,7 @@ def stock_dashboard_api(request):
     ).annotate(
         total_value=Sum(
             ExpressionWrapper(
-                F("stock_quantity") * F("selling_price"),
+                F("stock_quantity") * F("buying_price"),
                 output_field=FloatField()
             )
         )

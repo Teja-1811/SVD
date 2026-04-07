@@ -9,10 +9,348 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/user_portal.css' %}">
+    <link rel="stylesheet" href="{% static 'css/user_portal.css' %}?v=20260407a">
     <style>
         html, body {
             overflow-x: hidden;
+        }
+
+        .user-portal-body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Outfit", sans-serif;
+        }
+
+        .up-brand-mark {
+            width: 52px;
+            height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 18px;
+            flex: 0 0 auto;
+        }
+
+        .up-brand-mark img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .up-page {
+            width: 100%;
+        }
+
+        .up-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(circle at top left, rgba(240, 201, 106, 0.2), transparent 22%),
+                radial-gradient(circle at top right, rgba(24, 127, 98, 0.12), transparent 18%),
+                linear-gradient(180deg, #fcfaf5 0%, #f4efe4 100%);
+        }
+
+        .up-navbar {
+            background: rgba(251, 248, 241, 0.92);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(22, 52, 61, 0.08);
+            box-shadow: 0 6px 24px rgba(22, 52, 61, 0.04);
+        }
+
+        .up-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.9rem;
+            color: #16343d;
+            text-decoration: none;
+        }
+
+        .up-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.02;
+        }
+
+        .up-brand-text strong {
+            font-size: 1.2rem;
+        }
+
+        .up-brand-text small {
+            color: #60787a;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .up-nav {
+            gap: 0.45rem;
+        }
+
+        .up-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.8rem 1rem !important;
+            border-radius: 999px;
+            color: #60787a;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .up-nav-link:hover,
+        .up-nav-link.active {
+            color: #16343d;
+            background: rgba(24, 127, 98, 0.09);
+        }
+
+        .up-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .up-user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.55rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(22, 52, 61, 0.1);
+        }
+
+        .up-user-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dff2e9;
+            color: #187f62;
+        }
+
+        .up-user-pill strong {
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        .up-user-pill small {
+            display: block;
+            color: #60787a;
+        }
+
+        .up-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.88rem 1.2rem;
+            border-radius: 16px;
+            border: 0;
+            font-weight: 700;
+            text-decoration: none;
+            background: rgba(22, 52, 61, 0.08);
+            color: #16343d;
+        }
+
+        .up-main {
+            flex: 1;
+            padding: 6rem 0 2.25rem;
+        }
+
+        .up-page {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .up-page-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+            gap: 1.2rem;
+        }
+
+        .up-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+            gap: 1rem;
+        }
+
+        .up-kpi-row,
+        .up-grid-3 {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .up-kpi-row {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .up-grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .up-stack {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .up-hero,
+        .up-spotlight,
+        .up-card,
+        .up-stat,
+        .up-sidebar-card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(22, 52, 61, 0.1);
+            box-shadow: 0 22px 60px rgba(22, 52, 61, 0.1);
+            border-radius: 30px;
+            padding: 1.2rem;
+        }
+
+        .up-hero {
+            padding: 1.7rem;
+            background:
+                radial-gradient(circle at right top, rgba(240, 201, 106, 0.2), transparent 24%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 248, 245, 0.95));
+        }
+
+        .up-spotlight {
+            padding: 1.35rem;
+            background: linear-gradient(180deg, #16343d 0%, #1d4650 100%);
+            color: #fff;
+        }
+
+        .up-spotlight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .up-spotlight-grid > div {
+            padding: 0.9rem;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .up-eyebrow {
+            display: inline-block;
+            color: #187f62;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .up-title {
+            margin: 0.8rem 0;
+            font-size: clamp(2.3rem, 5vw, 4.2rem);
+            line-height: 0.97;
+            font-weight: 800;
+            max-width: 14ch;
+        }
+
+        .up-subtitle,
+        .up-muted {
+            color: #60787a;
+        }
+
+        .up-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1.15rem;
+        }
+
+        .up-btn-primary,
+        .up-btn-muted {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.88rem 1.2rem;
+            border-radius: 16px;
+            border: 0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .up-btn-primary {
+            background: #187f62;
+            color: #fff;
+        }
+
+        .up-btn-muted {
+            background: rgba(240, 201, 106, 0.28);
+            color: #7b5b00;
+        }
+
+        .up-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .up-section-head h2,
+        .up-section-head h3 {
+            margin: 0.22rem 0 0;
+            line-height: 1.04;
+        }
+
+        .up-section-head h2 {
+            font-size: clamp(1.6rem, 3vw, 2.35rem);
+        }
+
+        .up-section-head a {
+            color: #187f62;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .up-summary,
+        .up-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .up-summary-item,
+        .up-item,
+        .up-offer {
+            padding: 0.95rem 1rem;
+            border-radius: 18px;
+            background: rgba(22, 52, 61, 0.04);
+        }
+
+        .up-summary-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .up-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.45rem 0.78rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .chip-success {
+            background: rgba(24, 127, 98, 0.15);
+            color: #16664d;
+        }
+
+        .up-empty {
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(22, 52, 61, 0.04);
+            color: #60787a;
         }
 
         .table-responsive {
@@ -51,6 +389,194 @@
                 overflow-x: hidden;
             }
         }
+
+        body.user-portal-body .up-shell {
+            min-height: 100vh !important;
+        }
+
+        body.user-portal-body .up-main {
+            padding-top: 6rem !important;
+        }
+
+        body.user-portal-body .up-page-header,
+        body.user-portal-body .up-content {
+            display: grid !important;
+            gap: 1.2rem !important;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr) !important;
+        }
+
+        body.user-portal-body .up-kpi-row {
+            display: grid !important;
+            gap: 1rem !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        }
+
+        body.user-portal-body .up-stack,
+        body.user-portal-body .up-summary,
+        body.user-portal-body .up-list {
+            display: grid !important;
+            gap: 1rem !important;
+        }
+
+        body.user-portal-body .up-hero,
+        body.user-portal-body .up-spotlight,
+        body.user-portal-body .up-card,
+        body.user-portal-body .up-stat,
+        body.user-portal-body .up-sidebar-card {
+            display: block !important;
+            padding: 1.25rem !important;
+            border-radius: 30px !important;
+            border: 1px solid rgba(22, 52, 61, 0.1) !important;
+            background: rgba(255, 255, 255, 0.92) !important;
+            box-shadow: 0 22px 60px rgba(22, 52, 61, 0.1) !important;
+        }
+
+        body.user-portal-body .up-spotlight {
+            background: linear-gradient(180deg, #16343d 0%, #1d4650 100%) !important;
+            color: #fff !important;
+        }
+
+        body.user-portal-body .up-spotlight .up-eyebrow,
+        body.user-portal-body .up-spotlight .up-subtitle,
+        body.user-portal-body .up-spotlight .up-muted {
+            color: rgba(255, 255, 255, 0.78) !important;
+        }
+
+        body.user-portal-body .up-summary-item,
+        body.user-portal-body .up-item,
+        body.user-portal-body .up-offer,
+        body.user-portal-body .up-empty {
+            padding: 0.95rem 1rem !important;
+            border-radius: 18px !important;
+            background: rgba(22, 52, 61, 0.04) !important;
+        }
+
+        body.user-portal-body .up-summary-item {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 1rem !important;
+        }
+
+        body.user-portal-body .up-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 28px !important;
+            padding-right: 28px !important;
+        }
+
+        body.user-portal-body .up-brand {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.9rem !important;
+            text-decoration: none !important;
+        }
+
+        body.user-portal-body .up-brand-mark {
+            width: 52px !important;
+            height: 52px !important;
+            min-width: 52px !important;
+            min-height: 52px !important;
+            overflow: hidden !important;
+            border-radius: 18px !important;
+            background: linear-gradient(135deg, #fff0be, #fff8de) !important;
+            box-shadow: 0 12px 24px rgba(240, 201, 106, 0.34) !important;
+        }
+
+        body.user-portal-body .up-brand-mark img {
+            width: 36px !important;
+            height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            object-fit: contain !important;
+        }
+
+        body.user-portal-body .up-nav-link {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.55rem !important;
+            padding: 0.8rem 1rem !important;
+            border-radius: 999px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+        }
+
+        body.user-portal-body .up-actions {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+        }
+
+        body.user-portal-body .up-btn-primary,
+        body.user-portal-body .up-btn-secondary,
+        body.user-portal-body .up-btn-muted {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.55rem !important;
+            min-height: 48px !important;
+            padding: 0.88rem 1.2rem !important;
+            border-radius: 16px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+        }
+
+        body.user-portal-body .up-btn-primary {
+            background: #187f62 !important;
+            color: #fff !important;
+        }
+
+        body.user-portal-body .up-btn-secondary {
+            background: rgba(22, 52, 61, 0.08) !important;
+            color: #16343d !important;
+        }
+
+        body.user-portal-body .up-btn-muted {
+            background: rgba(240, 201, 106, 0.28) !important;
+            color: #7b5b00 !important;
+        }
+
+        @media (max-width: 1199.98px) {
+            body.user-portal-body .up-page-header,
+            body.user-portal-body .up-content,
+            body.user-portal-body .up-kpi-row {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            body.user-portal-body .up-container {
+                padding-left: 0.9rem !important;
+                padding-right: 0.9rem !important;
+            }
+
+            body.user-portal-body .up-main {
+                padding-top: 5.25rem !important;
+            }
+
+            body.user-portal-body .up-brand-mark {
+                width: 46px !important;
+                height: 46px !important;
+                min-width: 46px !important;
+                min-height: 46px !important;
+                border-radius: 15px !important;
+            }
+
+            body.user-portal-body .up-brand-mark img {
+                width: 32px !important;
+                height: 32px !important;
+                max-width: 32px !important;
+                max-height: 32px !important;
+            }
+
+            body.user-portal-body .up-nav-link,
+            body.user-portal-body .up-user-pill,
+            body.user-portal-body .up-btn-secondary,
+            body.user-portal-body .up-btn-primary,
+            body.user-portal-body .up-btn-muted {
+                width: 100% !important;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -59,7 +585,9 @@
         <nav class="navbar navbar-expand-xl up-navbar fixed-top">
             <div class="container-fluid up-container">
                 <a class="up-brand" href="{% url 'users:dashboard' %}">
-                    <span class="up-brand-mark"><img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies logo"></span>
+                    <span class="up-brand-mark" style="width:52px;height:52px;min-width:52px;min-height:52px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;border-radius:18px;">
+                        <img src="{% static 'images/SVD1.png' %}" alt="SVD Agencies logo" style="width:36px;height:36px;max-width:36px;max-height:36px;object-fit:contain;display:block;">
+                    </span>
                     <span class="up-brand-text">
                         <strong>User Portal</strong>
                         <small>SVD Agencies</small>

@@ -87,24 +87,6 @@
         </div>
 
         <div class="insight-grid">
-            <article class="insight-card tone-sunrise">
-                <div class="insight-icon"><i class="bi bi-wallet2"></i></div>
-                <div class="insight-body">
-                    <div class="insight-head">
-                        <span class="insight-label">Current balance</span>
-                        <span class="insight-chip {% if actual_due > 0 %}warn{% elif actual_due < 0 %}good{% else %}neutral{% endif %}">
-                            {% if actual_due > 0 %}Due{% elif actual_due < 0 %}Credit{% else %}Clear{% endif %}
-                        </span>
-                    </div>
-                    <h3>&#8377;{{ actual_due|floatformat:2 }}</h3>
-                    <p>{% if actual_due > 0 %}Pending amount to settle{% elif actual_due < 0 %}You have available credit{% else %}Your account is fully settled{% endif %}</p>
-                    <div class="insight-meta">
-                        <span>Outstanding: &#8377;{{ outstanding_due|floatformat:2 }}</span>
-                        <span>Wallet: &#8377;{{ wallet_balance|floatformat:2 }}</span>
-                    </div>
-                </div>
-            </article>
-
             <article class="insight-card tone-mint">
                 <div class="insight-icon"><i class="bi bi-calendar-check"></i></div>
                 <div class="insight-body">
@@ -141,24 +123,6 @@
                     <div class="insight-meta">
                         <span>{% if latest_delivery %}Order: {{ latest_delivery.order.order_number }}{% else %}No tracked order yet{% endif %}</span>
                         <span>{% if latest_delivery %}Latest delivery event available{% else %}Awaiting delivery activity{% endif %}</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="insight-card tone-rose">
-                <div class="insight-icon"><i class="bi bi-stars"></i></div>
-                <div class="insight-body">
-                    <div class="insight-head">
-                        <span class="insight-label">Live offers</span>
-                        <span class="insight-chip {% if active_offers|length %}good{% else %}neutral{% endif %}">
-                            {% if active_offers|length %}Available{% else %}None today{% endif %}
-                        </span>
-                    </div>
-                    <h3>{{ active_offers|length }}</h3>
-                    <p>Active savings available for user accounts today</p>
-                    <div class="insight-meta">
-                        <span>{% if active_offers %}Savings are currently available{% else %}No live offers published{% endif %}</span>
-                        <span>See details below</span>
                     </div>
                 </div>
             </article>
@@ -205,123 +169,6 @@
                     <a href="{% url 'customer_portal:customer_orders_dashboard' %}" class="btn btn-soft-primary">View orders</a>
                 </div>
                 {% endif %}
-            </section>
-
-            <section class="dashboard-card">
-                <div class="section-heading">
-                    <div>
-                        <span class="section-kicker">Subscription</span>
-                        <h2>Your active plan</h2>
-                    </div>
-                </div>
-
-                {% if active_subscription %}
-                <div class="subscription-highlight">
-                    <h3>{{ active_subscription.subscription_plan.name }}</h3>
-                    <p>{{ active_subscription.subscription_plan.description|default:"A scheduled delivery plan is active on your account." }}</p>
-                    <div class="mini-metrics">
-                        <div>
-                            <small>Plan price</small>
-                            <strong>&#8377;{{ active_subscription.subscription_plan.price|floatformat:2 }}</strong>
-                        </div>
-                        <div>
-                            <small>Valid until</small>
-                            <strong>{{ active_subscription.end_date|date:"M d, Y" }}</strong>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div class="empty-inline">
-                    <i class="bi bi-calendar2-plus"></i>
-                    <p>No active subscription is assigned yet.</p>
-                </div>
-                {% endif %}
-
-                <div class="subsection">
-                    <h3>Next delivery</h3>
-                    {% if next_subscription_delivery %}
-                    <div class="detail-stack compact">
-                        <div class="detail-row">
-                            <span>Item</span>
-                            <strong>{{ next_subscription_delivery.item.name }}</strong>
-                        </div>
-                        <div class="detail-row">
-                            <span>Date</span>
-                            <strong>{{ next_subscription_delivery.date|date:"M d, Y" }}</strong>
-                        </div>
-                        <div class="detail-row">
-                            <span>Quantity</span>
-                            <strong>{{ next_subscription_delivery.quantity }}</strong>
-                        </div>
-                    </div>
-                    {% else %}
-                    <p class="muted-copy">No upcoming subscription delivery is scheduled right now.</p>
-                    {% endif %}
-                </div>
-            </section>
-
-            <section class="dashboard-card">
-                <div class="section-heading">
-                    <div>
-                        <span class="section-kicker">Offers</span>
-                        <h2>Active savings</h2>
-                    </div>
-                </div>
-
-                {% if active_offers %}
-                <div class="offer-list">
-                    {% for offer in active_offers %}
-                    <article class="offer-item">
-                        <div>
-                            <h3>{{ offer.name }}</h3>
-                            <p>{{ offer.offer_type }}{% if offer.description %} · {{ offer.description }}{% endif %}</p>
-                        </div>
-                        <div class="offer-meta">
-                            <strong>&#8377;{{ offer.price|floatformat:2 }}</strong>
-                            <small>Ends {{ offer.end_date|date:"M d" }}</small>
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-inline">
-                    <i class="bi bi-gift"></i>
-                    <p>No active user offers today. Check back soon for combo deals and limited-time pricing.</p>
-                </div>
-                {% endif %}
-            </section>
-
-            <section class="dashboard-card">
-                <div class="section-heading">
-                    <div>
-                        <span class="section-kicker">Account</span>
-                        <h2>Profile & address</h2>
-                    </div>
-                    <a href="{% url 'customer_portal:update_profile' %}">Edit</a>
-                </div>
-
-                <div class="detail-stack compact">
-                    <div class="detail-row">
-                        <span>Phone</span>
-                        <strong>{{ user.phone }}</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>Address</span>
-                        <strong>{{ primary_address|default:"Add your address details" }}</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>Pin code</span>
-                        <strong>{{ user.pin_code|default:"Not set" }}</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span>Profile completion</span>
-                        <strong>{{ profile_completion }}%</strong>
-                    </div>
-                </div>
-
-                <div class="card-action-row single">
-                    <a href="{% url 'customer_portal:collect_payment' %}" class="btn btn-soft-dark">Go to payments</a>
-                </div>
             </section>
         </div>
     </div>

@@ -70,6 +70,7 @@
 .cp-field {
     display: grid;
     gap: 0.38rem;
+    min-width: 0;
 }
 
 .cp-field label {
@@ -82,6 +83,7 @@
 
 .cp-field input {
     min-height: 48px;
+    width: 100%;
     padding: 0.82rem 0.95rem;
     border-radius: 14px;
     border: 1px solid rgba(23,53,62,0.12);
@@ -170,6 +172,13 @@
     gap: 0.75rem;
 }
 
+.cp-mobile-head,
+.cp-mobile-meta strong,
+.cp-table td,
+.cp-table th {
+    overflow-wrap: anywhere;
+}
+
 .cp-mobile-head strong {
     color: #17353e;
     font-size: 1.02rem;
@@ -224,6 +233,10 @@
     border: 0;
 }
 
+.cp-action-btn i {
+    font-size: 1rem;
+}
+
 .cp-action-btn.edit {
     background: rgba(37,99,235,0.12);
     color: #2563eb;
@@ -232,6 +245,11 @@
 .cp-action-btn.delete {
     background: rgba(220,53,69,0.12);
     color: #c62828;
+}
+
+.cp-action-btn.share {
+    background: rgba(22,163,74,0.12);
+    color: #15803d;
 }
 
 @media (max-width: 991.98px) {
@@ -258,11 +276,26 @@
 
     .cp-actions {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .cp-mobile-meta {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cp-mobile-head {
+        flex-direction: column;
+    }
+
+    .cp-action-btn {
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        padding: 0.45rem;
+    }
+
+    .cp-mobile-meta > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 }
 </style>
@@ -315,8 +348,11 @@
                             <td>{{ payment.created_at|date:"d M Y, H:i" }}</td>
                             <td>
                                 <div class="cp-actions">
-                                    <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit">Edit</a>
-                                    <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete">Delete</a>
+                                    <button type="button" class="cp-action-btn share"
+                                        onclick="shareReceiptOnWhatsApp('{{ payment.customer.phone|default:''|escapejs }}', '{{ payment.customer.name|escapejs }}', '{{ payment.amount|escapejs }}', '{{ payment.transaction_id|escapejs }}', '{{ payment.method|escapejs }}', '{{ payment.status|escapejs }}', '{{ payment.created_at|date:'d M Y, H:i'|escapejs }}')"
+                                        aria-label="Share receipt"><i class="bi bi-whatsapp"></i></button>
+                                    <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit" aria-label="Edit payment"><i class="bi bi-pencil"></i></a>
+                                    <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete" aria-label="Delete payment"><i class="bi bi-trash"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -357,11 +393,18 @@
                             <small>Date</small>
                             <strong>{{ payment.created_at|date:"d M Y, H:i" }}</strong>
                         </div>
+                        <div>
+                            <small>Status</small>
+                            <strong>{{ payment.status }}</strong>
+                        </div>
                     </div>
 
                     <div class="cp-actions">
-                        <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit">Edit</a>
-                        <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete">Delete</a>
+                        <button type="button" class="cp-action-btn share"
+                            onclick="shareReceiptOnWhatsApp('{{ payment.customer.phone|default:''|escapejs }}', '{{ payment.customer.name|escapejs }}', '{{ payment.amount|escapejs }}', '{{ payment.transaction_id|escapejs }}', '{{ payment.method|escapejs }}', '{{ payment.status|escapejs }}', '{{ payment.created_at|date:'d M Y, H:i'|escapejs }}')"
+                            aria-label="Share receipt"><i class="bi bi-whatsapp"></i></button>
+                        <a href="{% url 'milk_agency:edit_customer_payment' payment.pk %}" class="cp-action-btn edit" aria-label="Edit payment"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'milk_agency:delete_customer_payment' payment.pk %}" class="cp-action-btn delete" aria-label="Delete payment"><i class="bi bi-trash"></i></a>
                     </div>
                 </article>
                 {% empty %}
@@ -379,4 +422,36 @@
         </section>
     </div>
 </div>
+<script>
+function shareReceiptOnWhatsApp(customerPhone, customerName, amount, transactionId, method, status, createdAt) {
+    let phone = (customerPhone || '').trim();
+
+    if (!phone) {
+        alert('Customer phone number is not available for this payment.');
+        return;
+    }
+
+    if (phone.length === 10) {
+        phone = '91' + phone;
+    }
+
+    const whatsappMessage =
+`Dear ${customerName},
+
+Payment receipt details:
+
+Amount: Rs.${amount}
+Transaction ID: ${transactionId}
+Method: ${method}
+Status: ${status}
+Date: ${createdAt}
+
+Thank you for your payment.
+Sri Vijaya Durga Milk Agencies.`;
+
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    const whatsappURL = `https://api.whatsapp.com/send/?phone=${phone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
+    window.open(whatsappURL, '_blank');
+}
+</script>
 {% endblock %}

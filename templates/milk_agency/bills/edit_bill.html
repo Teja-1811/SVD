@@ -9,11 +9,26 @@
     gap: 1rem;
 }
 
+.edit-bill-card {
+    border-radius: 24px;
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
+    overflow: hidden;
+}
+
+.edit-bill-card .card-header,
+.edit-bill-card .card-body {
+    padding: 1rem 1.1rem;
+}
+
 .edit-bill-item-row {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(120px, 0.7fr)) auto;
     gap: 0.75rem;
     align-items: center;
+    padding: 0.8rem;
+    border-radius: 18px;
+    background: rgba(23, 53, 62, 0.04);
 }
 
 .edit-bill-actions {
@@ -22,7 +37,18 @@
     gap: 0.75rem;
 }
 
+.edit-bill-title,
+.edit-bill-item-row,
+.edit-bill-item-row .form-select,
+.edit-bill-item-row .form-control {
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 767.98px) {
+    .edit-bill-card {
+        border-radius: 18px;
+    }
+
     .edit-bill-item-row {
         grid-template-columns: 1fr;
     }
@@ -40,13 +66,13 @@
 </style>
 <div class="container-fluid py-4 ma-page-shell">
     <div class="edit-bill-page">
-        <h2>Edit Bill - {{ bill.invoice_number }}</h2>
+        <h2 class="edit-bill-title">Edit Bill - {{ bill.invoice_number }}</h2>
         <form method="post" action="{% url 'milk_agency:edit_bill' bill.id %}">
             {% csrf_token %}
             <input type="hidden" name="customer" value="{{ bill.customer.id }}">
 
             <div class="mb-4">
-                <div class="card">
+                <div class="card edit-bill-card">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Customer Details</h5>
                     </div>
@@ -65,7 +91,7 @@
             </div>
 
             <div class="mb-4">
-                <div class="card">
+                <div class="card edit-bill-card">
                     <div class="card-body">
                         <label class="fw-bold">Invoice Date</label>
                         <input type="date" name="invoice_date" class="form-control" value="{{ bill.invoice_date|date:'Y-m-d' }}" required>
@@ -92,7 +118,7 @@
             <button type="button" class="btn btn-secondary mb-3" id="add-item-btn">Add Item</button>
 
             <div class="mb-3">
-                <div class="card">
+                <div class="card edit-bill-card">
                     <div class="card-body">
                         <h5 class="card-title">Bill Summary</h5>
                         <div class="row">

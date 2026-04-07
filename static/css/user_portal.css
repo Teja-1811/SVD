@@ -565,6 +565,7 @@ a {
     border-bottom: 1px solid rgba(22, 52, 61, 0.08);
     text-align: left;
     vertical-align: middle;
+    word-break: break-word;
 }
 
 .up-table th {
@@ -636,6 +637,32 @@ a {
         padding-right: 14px;
     }
 
+    .up-brand {
+        min-width: 0;
+        gap: 0.65rem;
+    }
+
+    .up-brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        flex: 0 0 auto;
+    }
+
+    .up-brand-mark img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .up-brand-text {
+        min-width: 0;
+    }
+
+    .up-brand-text strong,
+    .up-brand-text small {
+        overflow-wrap: anywhere;
+    }
+
     .up-title {
         max-width: none;
         font-size: 2.35rem;
@@ -672,5 +699,29 @@ a {
 
     .up-summary-card {
         position: static;
+    }
+
+    .up-hero,
+    .up-spotlight,
+    .up-card,
+    .up-stat,
+    .up-panel,
+    .up-sidebar-card {
+        border-radius: 22px;
+    }
+
+    .up-table {
+        min-width: 620px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .up-brand-text small {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+    }
+
+    .up-table {
+        min-width: 560px;
     }
 }

@@ -290,4 +290,57 @@ a {
     .gs-clock {
         align-items: center;
     }
+
+    .gs-brand {
+        min-width: 0;
+        gap: 0.65rem;
+    }
+
+    .gs-brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        flex: 0 0 auto;
+    }
+
+    .gs-brand-logo {
+        width: 34px;
+        height: 34px;
+    }
+
+    .gs-brand-text {
+        min-width: 0;
+    }
+
+    .gs-brand-text strong,
+    .gs-brand-text small {
+        overflow-wrap: anywhere;
+    }
+
+    .gs-main .card,
+    .gs-main .modal-content,
+    .gs-main .table-responsive,
+    .gs-main .alert {
+        border-radius: 18px;
+    }
+
+    .gs-main .card-header,
+    .gs-main .card-body,
+    .gs-main .card-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .gs-main .table th,
+    .gs-main .table td {
+        padding: 0.72rem 0.65rem;
+        word-break: break-word;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .gs-brand-text small {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+    }
 }

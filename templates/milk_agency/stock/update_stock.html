@@ -123,6 +123,98 @@
     color: #6b7f87;
 }
 
+.si-mobile-list {
+    display: none;
+}
+
+.si-mobile-entry {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.95rem;
+    border-radius: 18px;
+    background: #f8fbfc;
+    border: 1px solid #e4ecef;
+}
+
+.si-mobile-entry + .si-mobile-entry {
+    margin-top: 0.85rem;
+}
+
+.si-mobile-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.si-mobile-title {
+    display: grid;
+    gap: 0.18rem;
+}
+
+.si-mobile-inline-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-left: auto;
+}
+
+.si-mobile-icon-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    background: #fff;
+}
+
+.si-mobile-icon-btn.edit {
+    color: #0d6efd;
+    border-color: rgba(13, 110, 253, 0.2);
+    background: rgba(13, 110, 253, 0.06);
+}
+
+.si-mobile-icon-btn.delete {
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+    background: rgba(220, 53, 69, 0.06);
+}
+
+.si-mobile-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: #e9f4f7;
+    color: #073b4c;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.si-mobile-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.si-mobile-meta > div {
+    padding: 0.72rem 0.78rem;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e4ecef;
+}
+
+.si-mobile-meta small {
+    display: block;
+    margin-bottom: 0.18rem;
+    color: #6b7f87;
+}
+
 @media (max-width: 991px) {
     .si-toolbar {
         grid-template-columns: 1fr;
@@ -136,20 +228,16 @@
     }
 
     .si-summary-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .si-summary-grid > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 
     .si-company-head {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .si-table {
-        min-width: 860px;
-    }
-
-    .si-history-table {
-        min-width: 720px;
     }
 
     .si-card-head form {
@@ -159,6 +247,51 @@
     .si-card-head form .form-control,
     .si-card-head form .btn {
         width: 100%;
+    }
+
+    .si-card-head form {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: end;
+    }
+
+    .si-card-head form label {
+        grid-column: 1 / -1;
+    }
+
+    .si-card-head form .btn {
+        min-width: 110px;
+    }
+
+    .si-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .si-toolbar > :first-child {
+        grid-column: 1 / -1;
+    }
+
+    .si-table-wrap,
+    .si-card-body > .table-responsive {
+        display: none;
+    }
+
+    .si-mobile-list {
+        display: block;
+    }
+
+    .si-mobile-head {
+        flex-direction: column;
+    }
+
+    .si-mobile-meta {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .si-mobile-inline-actions form {
+        margin: 0;
     }
 }
 </style>
@@ -273,6 +406,61 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="si-mobile-list">
+                                {% for item in items %}
+                                <article class="si-mobile-entry stock-row" data-name="{{ item.name|lower }}" data-company="{{ item.company.name|default:''|lower }}">
+                                    <div class="si-mobile-head">
+                                        <div class="si-mobile-title">
+                                            <strong>{{ item.name }}</strong>
+                                            <span class="small si-muted">{{ item.code|default:"No code" }}</span>
+                                        </div>
+                                        <span class="si-mobile-chip">{{ item.stock_quantity }}</span>
+                                    </div>
+                                    <div class="si-mobile-meta">
+                                        <div>
+                                            <small>Company</small>
+                                            <strong>{{ item.company.name|default:"No company" }}</strong>
+                                        </div>
+                                        <div>
+                                            <small>Pcs / crate</small>
+                                            <strong>{{ item.pcs_count }}</strong>
+                                        </div>
+                                        <div>
+                                            <small>Crates</small>
+                                            <input
+                                                type="number"
+                                                step="0.001"
+                                                min="0"
+                                                name="stock_{{ item.id }}"
+                                                value="0"
+                                                class="form-control si-input crate-input"
+                                                data-pcs="{{ item.pcs_count }}"
+                                                data-price="{{ item.buying_price }}"
+                                            >
+                                        </div>
+                                        <div>
+                                            <small>Discount</small>
+                                            <input
+                                                type="number"
+                                                step="0.001"
+                                                min="0"
+                                                name="discount_{{ item.id }}"
+                                                value="0"
+                                                class="form-control si-input discount-input"
+                                            >
+                                        </div>
+                                        <div>
+                                            <small>Quantity</small>
+                                            <strong class="quantity-preview">0.000</strong>
+                                        </div>
+                                        <div>
+                                            <small>Value</small>
+                                            <strong class="value-preview">0.000</strong>
+                                        </div>
+                                    </div>
+                                </article>
+                                {% endfor %}
+                            </div>
                         </div>
                         {% endif %}
                         {% endfor %}
@@ -316,6 +504,35 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+                <div class="si-mobile-list">
+                    {% for row in company_totals %}
+                    <article class="si-mobile-entry">
+                        <div class="si-mobile-head">
+                            <div class="si-mobile-title">
+                                <strong>{{ row.company__name }}</strong>
+                            </div>
+                        </div>
+                        <div class="si-mobile-meta">
+                            <div>
+                                <small>Total crates</small>
+                                <strong>{{ row.total_crates|floatformat:3 }}</strong>
+                            </div>
+                            <div>
+                                <small>Total quantity</small>
+                                <strong>{{ row.total_quantity|floatformat:3 }}</strong>
+                            </div>
+                            <div>
+                                <small>Total value</small>
+                                <strong>Rs. {{ row.total_value|floatformat:3 }}</strong>
+                            </div>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="si-mobile-entry">
+                        <div class="text-center si-muted">No stock entries saved for this date yet.</div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </section>
@@ -367,6 +584,52 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="si-mobile-list">
+                    {% for entry in entries %}
+                    <article class="si-mobile-entry">
+                        <div class="si-mobile-head">
+                            <div class="si-mobile-title">
+                                <strong>{{ entry.item.name }}</strong>
+                                <span class="small si-muted">{{ entry.company.name|default:"No company" }}</span>
+                            </div>
+                            <div class="si-mobile-inline-actions">
+                                <a href="{% url 'milk_agency:edit_stock_entry' entry.id %}?date={{ selected_date|date:'Y-m-d' }}" class="si-mobile-icon-btn edit" aria-label="Edit entry">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'milk_agency:delete_stock_entry' entry.id %}" onsubmit="return confirm('Delete this stock entry?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="entry_date" value="{{ selected_date|date:'Y-m-d' }}">
+                                    <button type="submit" class="si-mobile-icon-btn delete" aria-label="Delete entry">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="si-mobile-meta">
+                            <div>
+                                <small>Time</small>
+                                <strong>{{ entry.created_at|date:"h:i A" }}</strong>
+                            </div>
+                            <div>
+                                <small>Crates</small>
+                                <strong>{{ entry.crates|floatformat:3 }}</strong>
+                            </div>
+                            <div>
+                                <small>Quantity</small>
+                                <strong>{{ entry.quantity|floatformat:3 }}</strong>
+                            </div>
+                            <div>
+                                <small>Value</small>
+                                <strong>Rs. {{ entry.value|floatformat:3 }}</strong>
+                            </div>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="si-mobile-entry">
+                        <div class="text-center si-muted">No entries saved for this date.</div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </section>
     </div>
@@ -376,11 +639,21 @@
 (function () {
     const formatNumber = (value) => Number(value || 0).toFixed(3);
 
+    function syncInputStates() {
+        const isMobile = window.innerWidth <= 767.98;
+        document.querySelectorAll(".si-table-wrap .crate-input, .si-table-wrap .discount-input").forEach((input) => {
+            input.disabled = isMobile;
+        });
+        document.querySelectorAll(".si-mobile-list .crate-input, .si-mobile-list .discount-input").forEach((input) => {
+            input.disabled = !isMobile;
+        });
+    }
+
     document.querySelectorAll(".crate-input").forEach((input) => {
-        const row = input.closest("tr");
-        const discountInput = row.querySelector(".discount-input");
-        const qtyPreview = row.querySelector(".quantity-preview");
-        const valuePreview = row.querySelector(".value-preview");
+        const container = input.closest("tr") || input.closest(".si-mobile-entry");
+        const discountInput = container.querySelector(".discount-input");
+        const qtyPreview = container.querySelector(".quantity-preview");
+        const valuePreview = container.querySelector(".value-preview");
 
         const recalc = () => {
             const crates = parseFloat(input.value || "0");
@@ -414,6 +687,9 @@
 
     searchInput.addEventListener("input", applyFilters);
     companyFilter.addEventListener("change", applyFilters);
+
+    syncInputStates();
+    window.addEventListener("resize", syncInputStates);
 })();
 </script>
 {% endblock %}

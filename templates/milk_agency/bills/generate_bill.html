@@ -5,6 +5,57 @@
 {% block content %}
 
 <style>
+.generate-bill-page {
+    display: grid;
+    gap: 1rem;
+}
+
+.generate-bill-card {
+    border-radius: 24px;
+    border: 1px solid rgba(23, 53, 62, 0.08);
+    box-shadow: 0 18px 42px rgba(23, 53, 62, 0.08);
+    overflow: hidden;
+}
+
+.generate-bill-card .card-body {
+    padding: 1.25rem;
+}
+
+.generate-bill-section-title {
+    margin: 0 0 0.85rem;
+    color: #17353e;
+    font-weight: 700;
+}
+
+.generate-bill-add-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr) repeat(3, minmax(88px, 0.72fr)) auto;
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.generate-bill-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.generate-bill-table th,
+.generate-bill-table td,
+.generate-bill-add-grid .form-label {
+    overflow-wrap: anywhere;
+}
+
+.generate-bill-submit {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.generate-bill-submit .btn {
+    min-height: 46px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
 /* ------------------------------
    RESPONSIVE FIXES (Option C)
    Keep layout exactly — only make responsive
@@ -47,6 +98,48 @@
     /* Make add item button full width on mobile */
     #add-item-btn {
         width: 100% !important;
+    }
+
+    .generate-bill-card {
+        border-radius: 18px;
+    }
+
+    .generate-bill-card .card-body {
+        padding: 0.95rem;
+    }
+
+    .generate-bill-add-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .generate-bill-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .generate-bill-filter-grid > :nth-child(3) {
+        grid-column: 1 / -1;
+    }
+
+    .generate-bill-add-grid > :nth-child(1),
+    .generate-bill-add-grid > :nth-child(2) {
+        grid-column: 1 / -1;
+    }
+
+    .generate-bill-add-grid > div,
+    .generate-bill-add-grid .form-control,
+    .generate-bill-add-grid .form-select,
+    .generate-bill-add-grid .btn {
+        width: 100%;
+    }
+
+    .generate-bill-submit {
+        justify-content: stretch;
+    }
+
+    .generate-bill-submit .btn {
+        width: 100%;
     }
 }
 
@@ -98,15 +191,15 @@ input[type="number"] {
 
 <div class="container-fluid py-4 ma-page-shell">
 
-    <form method="post" action="{% url 'milk_agency:generate_bill' %}">
+    <form method="post" action="{% url 'milk_agency:generate_bill' %}" class="generate-bill-page">
         {% csrf_token %}
 
         <!-- Top Card: Filters -->
-        <div class="card mb-4">
+        <div class="card mb-4 generate-bill-card">
             <div class="card-body">
-                <div class="row">
+                <div class="generate-bill-filter-grid">
                     <!-- Area Filter -->
-                    <div class="col-md-4">
+                    <div>
                         <label for="area-filter" class="form-label">Filter by Area</label>
                         <select id="area-filter" class="form-select" name="area" onchange="filterByArea()">
                             <option value="">All Areas</option>
@@ -117,7 +210,7 @@ input[type="number"] {
                     </div>
 
                     <!-- Customer Selection -->
-                    <div class="col-md-4">
+                    <div>
                         <label for="customer-select" class="form-label">Select Customer</label>
                         <select id="customer-select" class="form-select" name="customer" required>
                             <option value="">-- Select a customer --</option>
@@ -128,7 +221,7 @@ input[type="number"] {
                     </div>
 
                     <!-- Bill Date -->
-                    <div class="col-md-4">
+                    <div>
                         <label for="bill-date" class="form-label">Bill Date</label>
                         <input type="date" id="bill-date" name="bill_date" class="form-control"
                                value="{% if current_date %}{{ current_date|date:'Y-m-d' }}{% endif %}" required>
@@ -138,18 +231,18 @@ input[type="number"] {
                 <!-- Add Item to Bill Form -->
                 <div class="row mt-3">
                     <div class="col-md-12">
-                        <h6>Add Item to Bill</h6>
+                        <h6 class="generate-bill-section-title">Add Item to Bill</h6>
                     </div>
                 </div>
-                <div class="row">
+                <div class="generate-bill-add-grid">
                     <!-- Item Search -->
-                    <div class="col-md-3">
+                    <div>
                         <label for="item-search" class="form-label">Search Items</label>
                         <input type="text" id="item-search" class="form-control" placeholder="Type to search items...">
                     </div>
 
                     <!-- Item Selection -->
-                    <div class="col-md-2">
+                    <div>
                         <label for="item-select" class="form-label">Select Item</label>
                         <select id="item-select" class="form-select">
                             <option value="">-- Select an item --</option>
@@ -160,25 +253,25 @@ input[type="number"] {
                     </div>
 
                     <!-- Available Quantity -->
-                    <div class="col-md-1">
+                    <div>
                         <label class="form-label">Available Qty</label>
                         <input type="text" id="available-qty" class="form-control" readonly value="0">
                     </div>
 
                     <!-- Quantity -->
-                    <div class="col-md-1">
+                    <div>
                         <label for="add-qty" class="form-label">Qty</label>
                         <input type="number" id="add-qty" class="form-control" min="1" value="1">
                     </div>
 
                     <!-- Discount -->
-                    <div class="col-md-1">
+                    <div>
                         <label for="add-disc" class="form-label">Disc</label>
                         <input type="number" id="add-disc" class="form-control" min="0" value="0" step="0.1">
                     </div>
 
                     <!-- Add Button -->
-                    <div class="col-md-1 d-flex align-items-end mt-3">
+                    <div class="d-flex align-items-end">
                         <button type="button" id="add-item-btn" class="btn btn-outline-success btn-sm col-lg-auto">Add Item</button>
                     </div>
                 </div>
@@ -186,10 +279,10 @@ input[type="number"] {
         </div>
 
         <!-- Bottom Card: Billed Items Data -->
-        <div class="card">
+        <div class="card generate-bill-card">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered text-center" id="billed-items-table">
+                    <table class="table table-bordered text-center generate-bill-table" id="billed-items-table">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
@@ -275,7 +368,7 @@ input[type="number"] {
                     <label for="total-amount" class="form-label">Total Amount</label>
                     <input type="text" id="total-amount" name="total_amount" class="form-control" readonly>
                 </div>
-                <div class="mb-3 mt-4 text-end">
+                <div class="mb-3 mt-4 text-end generate-bill-submit">
                     <button type="submit" class="btn btn-outline-primary btn-sm col-lg-auto">Generate Bill</button>
                 </div>
             </div>
