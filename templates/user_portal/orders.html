@@ -264,6 +264,57 @@
         font-size: 0.92rem;
     }
 
+    .up-order-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .up-order-card {
+        padding: 1rem;
+        border-radius: 20px;
+        background: rgba(22, 52, 61, 0.04);
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .up-order-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .up-order-card-top strong {
+        color: #16343d;
+    }
+
+    .up-order-meta {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .up-order-meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        color: #60787a;
+        font-size: 0.94rem;
+    }
+
+    .up-order-meta-row b {
+        color: #16343d;
+    }
+
+    .chip-warning {
+        background: rgba(245, 158, 11, 0.16);
+        color: #a16207;
+    }
+
+    .chip-danger {
+        background: rgba(239, 68, 68, 0.14);
+        color: #b91c1c;
+    }
+
     @media (max-width: 1199.98px) {
         .up-orders-page .up-page-header,
         .up-orders-page .up-content {
@@ -469,6 +520,47 @@
                     <button type="button" id="submitOrderBtn" class="up-btn-primary w-100"><i class="bi bi-check2-circle"></i><span>Place order</span></button>
                 </div>
             </article>
+
+            <article class="up-sidebar-card">
+                <div class="up-section-head">
+                    <div>
+                        <span class="up-eyebrow">Active orders</span>
+                        <h2>Pending orders</h2>
+                    </div>
+                </div>
+                {% if active_orders %}
+                <div class="up-order-list">
+                    {% for order in active_orders %}
+                    <div class="up-order-card" id="order-card-{{ order.id }}">
+                        <div class="up-order-card-top">
+                            <div>
+                                <strong>{{ order.order_number }}</strong>
+                                <div class="up-muted">{{ order.order_date|date:"M d, Y" }}</div>
+                            </div>
+                            {% if order.status == "pending" %}
+                            <span class="up-chip chip-warning">Pending</span>
+                            {% elif order.status == "confirmed" %}
+                            <span class="up-chip chip-success">Confirmed</span>
+                            {% else %}
+                            <span class="up-chip chip-danger">{{ order.status|title }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="up-order-meta">
+                            <div class="up-order-meta-row"><span>Delivery</span><b>{{ order.delivery_date|date:"M d, Y" }}</b></div>
+                            <div class="up-order-meta-row"><span>Total</span><b>&#8377;{{ order.total_amount|floatformat:2 }}</b></div>
+                        </div>
+                        {% if order.status == "pending" %}
+                        <div class="up-actions">
+                            <button type="button" class="up-btn-secondary w-100 cancel-order-btn" data-order-id="{{ order.id }}">Cancel order</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="up-empty">No pending or confirmed orders right now.</div>
+                {% endif %}
+            </article>
         </div>
     </section>
 </div>
@@ -493,10 +585,12 @@
                     <span>Your UPI app will open with the exact order amount for payment confirmation.</span>
                     <span>UPI ID: <b>9392890375@pthdfc</b></span>
                 </div>
+                <div class="up-summary-note mt-3" id="paymentStepNote">Tap pay to open your UPI app. After payment is completed there, come back and confirm it here.</div>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="up-btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" id="confirmPaymentBtn" class="up-btn-primary">Pay</button>
+                <button type="button" id="completePaymentBtn" class="up-btn-primary" style="display:none;">I have completed payment</button>
             </div>
         </div>
     </div>
@@ -517,9 +611,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const prebookDate = document.getElementById("prebookDate");
     const submitOrderBtn = document.getElementById("submitOrderBtn");
     const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+    const completePaymentBtn = document.getElementById("completePaymentBtn");
     const paymentModalTotal = document.getElementById("paymentModalTotal");
+    const paymentStepNote = document.getElementById("paymentStepNote");
     const paymentModalElement = document.getElementById("paymentModal");
     const paymentModal = paymentModalElement ? new bootstrap.Modal(paymentModalElement) : null;
+    let paymentStarted = false;
 
     function getInputs(mode) {
         return Array.from(document.querySelectorAll(`.qty-input[data-mode="${mode}"]`));
@@ -570,6 +667,17 @@ document.addEventListener("DOMContentLoaded", () => {
             paymentModalTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
         }
         summaryDate.textContent = currentMode === "prebook" ? (prebookDate.value || minPrebookDate) : "Today";
+    }
+
+    function resetPaymentStep() {
+        paymentStarted = false;
+        confirmPaymentBtn.style.display = "";
+        completePaymentBtn.style.display = "none";
+        confirmPaymentBtn.textContent = "Pay";
+        completePaymentBtn.textContent = "I have completed payment";
+        if (paymentStepNote) {
+            paymentStepNote.textContent = "Tap pay to open your UPI app. After payment is completed there, come back and confirm it here.";
+        }
     }
 
     function collectItems() {
@@ -623,8 +731,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             submitOrderBtn.disabled = false;
             confirmPaymentBtn.disabled = false;
+            completePaymentBtn.disabled = false;
             submitOrderBtn.innerHTML = '<i class="bi bi-check2-circle"></i><span>Place order</span>';
             confirmPaymentBtn.textContent = 'Pay';
+            completePaymentBtn.textContent = 'I have completed payment';
         }
     }
 
@@ -632,6 +742,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const categoryButton = event.target.closest(".up-category-tab");
         if (categoryButton) {
             activateCategory(categoryButton.dataset.modeTab, categoryButton.dataset.category);
+            return;
+        }
+
+        const cancelButton = event.target.closest(".cancel-order-btn");
+        if (cancelButton) {
+            const orderId = cancelButton.dataset.orderId;
+            if (!orderId) return;
+            if (!window.confirm("Cancel this pending order?")) return;
+
+            fetch(`/users/orders/${orderId}/cancel/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (!data.success) {
+                        alert(data.message || "Could not cancel the order.");
+                        return;
+                    }
+                    const orderCard = document.getElementById(`order-card-${orderId}`);
+                    if (orderCard) {
+                        orderCard.remove();
+                    }
+                    alert(data.message || "Order cancelled successfully.");
+                    window.location.reload();
+                })
+                .catch(() => {
+                    alert("Something went wrong while cancelling the order.");
+                });
             return;
         }
 
@@ -665,29 +806,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (paymentModal) {
             paymentModalTotal.innerHTML = itemsTotal.innerHTML;
+            resetPaymentStep();
             paymentModal.show();
         }
     });
 
-    confirmPaymentBtn.addEventListener("click", async () => {
+    confirmPaymentBtn.addEventListener("click", () => {
+        const amountText = (itemsTotal.textContent || "").replace(/[^\d.]/g, "");
+        const amount = amountText || "0.00";
+        const transactionNote = encodeURIComponent(`SVD user order payment`);
+        const payeeName = encodeURIComponent("Sri Vijaya Durga Milk Agencies");
+        const upiUrl = `upi://pay?pa=9392890375@pthdfc&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
+        paymentStarted = true;
+        confirmPaymentBtn.style.display = "none";
+        completePaymentBtn.style.display = "";
+        if (paymentStepNote) {
+            paymentStepNote.textContent = "Your UPI app was opened. After completing the payment there, tap the button below to place the order.";
+        }
+        window.location.href = upiUrl;
+    });
+
+    completePaymentBtn.addEventListener("click", async () => {
+        if (!paymentStarted) {
+            alert("Please tap Pay first.");
+            return;
+        }
+        completePaymentBtn.disabled = true;
+        completePaymentBtn.textContent = "Placing order...";
         const orderResult = await submitOrder("UPI");
         if (!orderResult) {
             return;
         }
-
-        const amountText = (itemsTotal.textContent || "").replace(/[^\d.]/g, "");
-        const amount = amountText || "0.00";
-        const transactionNote = encodeURIComponent(`Order ${orderResult.order_number}`);
-        const payeeName = encodeURIComponent("Sri Vijaya Durga Milk Agencies");
-        const upiUrl = `upi://pay?pa=9392890375@pthdfc&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
-
-        window.location.href = upiUrl;
-
-        setTimeout(() => {
-            alert(`${orderResult.message} Order # ${orderResult.order_number}`);
-            window.location.reload();
-        }, 1200);
+        alert(`${orderResult.message} Order # ${orderResult.order_number}`);
+        window.location.reload();
     });
+
+    if (paymentModalElement) {
+        paymentModalElement.addEventListener("hidden.bs.modal", resetPaymentStep);
+    }
 
     setMode("regular");
 });
