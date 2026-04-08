@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <style>
-  .terms-shell { margin-top: 96px; }
   .terms-hero, .terms-card {
     border: 0;
     border-radius: 28px;
@@ -12,16 +11,38 @@
   }
   .terms-hero {
     background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 52%, #fff7ec 100%);
-    padding: 3rem;
-    margin-bottom: 2rem;
+  }
+  .terms-hero .lead {
+    max-width: 48ch;
+  }
+  .terms-clause-list {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  .terms-clause-item {
+    padding: 0.95rem 1.15rem;
+    border-radius: 18px;
+    background: rgba(17, 24, 39, 0.03);
+    border: 1px solid rgba(17, 24, 39, 0.07);
+  }
+  .terms-clause-item h4 {
+    margin: 0 0 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .terms-clause-item p {
+    margin: 0;
+    color: #4b5563;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="public-page-section">
   <div class="container terms-shell public-page-shell">
-    <div class="terms-hero">
+    <div class="terms-hero public-page-hero">
       <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Terms & Conditions</div>
       <h1 class="fw-bold mb-3">Website, Order And Payment Terms</h1>
       <p class="lead mb-0">
@@ -29,26 +50,76 @@
       </p>
     </div>
 
-    <div class="card terms-card p-4 p-md-5">
-      <h3 class="fw-bold mb-3">General Use</h3>
-      <p>
-        By accessing this website, users agree to use it lawfully and provide accurate information when making enquiries, placing requests or accessing customer services.
-      </p>
+    <div class="card terms-card public-page-card">
+      <h3 class="fw-bold mb-3">Important Clauses</h3>
+      <div class="terms-clause-list">
 
-      <h3 class="fw-bold mt-4 mb-3">Order Confirmation</h3>
-      <p>
-        Orders are subject to review and business confirmation. Quantity, address, schedule, invoice amount and payment instructions may be verified before final processing.
-      </p>
+        <div class="terms-clause-item">
+          <h4>Acceptance of Terms</h4>
+          <p>By accessing and using this website, you agree to comply with and be bound by these Terms & Conditions.</p>
+        </div>
 
-      <h3 class="fw-bold mt-4 mb-3">Pricing & Payments</h3>
-      <p>
-        Payment may be collected after delivery or invoice confirmation according to customer account terms. Online payment options are enabled only for approved dues and confirmed invoices.
-      </p>
+        <div class="terms-clause-item">
+          <h4>Definitions</h4>
+          <p>"Company" refers to Sri Vijaya Durga Milk Agencies. "User" refers to any individual accessing this website. "Services" include product enquiry, ordering, invoicing, and payments.</p>
+        </div>
 
-      <h3 class="fw-bold mt-4 mb-3">Refunds & Cancellations</h3>
-      <p>
-        Refund and cancellation requests are handled according to the published Refund Policy on this website.
-      </p>
+        <div class="terms-clause-item">
+          <h4>User Eligibility & Obligations</h4>
+          <p>Users must be at least 18 years old and agree not to misuse the website or engage in unlawful activities.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>General Use</h4>
+          <p>Users agree to use the website lawfully and provide accurate information while placing orders or making enquiries.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Order Confirmation</h4>
+          <p>Orders are subject to verification and confirmation. Quantity, address, schedule, and invoice details may be reviewed before processing.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Pricing & Payments</h4>
+          <p>Payments are collected based on agreed terms. Online payments via Paytm are enabled only for confirmed invoices and approved dues.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Refunds & Cancellations</h4>
+          <p>Refunds and cancellations are processed as per the Refund Policy available on this website.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Intellectual Property</h4>
+          <p>All website content, including text, images, and branding, is the property of the company and cannot be reused without permission.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Limitation of Liability</h4>
+          <p>The company shall not be liable for any indirect or incidental damages arising from the use of this website or services.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Third-Party Services</h4>
+          <p>We utilize third-party services, including payment gateways like Paytm, for processing transactions. The company will take responsibility for successful payments made with correct details. However, any technical issues, delays, or failures caused by the third-party service provider are beyond our direct control.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Termination</h4>
+          <p>We reserve the right to suspend or terminate access to our services in case of misuse or violation of terms.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Governing Law</h4>
+          <p>These terms are governed by the laws of India. Any disputes shall fall under the jurisdiction of Andhra Pradesh courts.</p>
+        </div>
+
+        <div class="terms-clause-item">
+          <h4>Modification of Terms</h4>
+          <p>The company reserves the right to update or modify these Terms & Conditions at any time without prior notice.</p>
+        </div>
+
+      </div>
 
       <h3 class="fw-bold mt-4 mb-3">Contact</h3>
       <p class="mb-0">

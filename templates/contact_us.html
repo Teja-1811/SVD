@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <style>
-  .contact-shell { margin-top: 96px; }
   .contact-hero, .contact-card {
     border: 0;
     border-radius: 28px;
@@ -12,8 +11,6 @@
   }
   .contact-hero {
     background: linear-gradient(135deg, #f8fbff 0%, #edf5ff 55%, #fff8ef 100%);
-    padding: 3rem;
-    margin-bottom: 2rem;
   }
   .contact-card { background: #fff; }
   .contact-kicker {
@@ -27,9 +24,9 @@
 {% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="public-page-section">
   <div class="container contact-shell public-page-shell">
-    <div class="contact-hero">
+    <div class="contact-hero public-page-hero">
       <div class="contact-kicker mb-2">Contact Us</div>
       <h1 class="fw-bold mb-3">Reach Our Team</h1>
       <p class="lead mb-0">
@@ -39,7 +36,7 @@
 
     <div class="row g-4">
       <div class="col-lg-5">
-        <div class="card contact-card p-4 p-md-5 h-100">
+        <div class="card contact-card public-page-card h-100">
           <h3 class="fw-bold mb-3">Business Contact</h3>
           <p class="mb-3"><strong>Business Name:</strong><br>Sri Vijaya Durga Milk Agency</p>
           <p class="mb-3"><strong>Address:</strong><br>10-92, Main Road Gundugolanu,<br>Near Santa Market, Bhimadolu,<br>Eluru, Andhra Pradesh - 534427</p>
@@ -50,7 +47,7 @@
       </div>
 
       <div class="col-lg-7">
-        <div class="card contact-card p-4 p-md-5 h-100">
+        <div class="card contact-card public-page-card h-100">
           <h3 class="fw-bold mb-3">Support We Provide</h3>
           <div class="row g-3 mb-4">
             <div class="col-md-6"><div class="border rounded-4 p-3 h-100">Household milk delivery enquiries</div></div>

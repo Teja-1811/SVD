@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <style>
-  .refund-shell { margin-top: 96px; }
   .refund-hero, .refund-card {
     border: 0;
     border-radius: 28px;
@@ -12,16 +11,14 @@
   }
   .refund-hero {
     background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 52%, #fff7ec 100%);
-    padding: 3rem;
-    margin-bottom: 2rem;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="public-page-section">
   <div class="container refund-shell public-page-shell">
-    <div class="refund-hero">
+    <div class="refund-hero public-page-hero">
       <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Refund Policy</div>
       <h1 class="fw-bold mb-3">Refund & Cancellation Terms</h1>
       <p class="lead mb-0">
@@ -29,7 +26,7 @@
       </p>
     </div>
 
-    <div class="card refund-card p-4 p-md-5">
+    <div class="card refund-card public-page-card">
       <h3 class="fw-bold mb-3">Refund Eligibility</h3>
       <ul>
         <li>Refunds will be processed only for orders that are cancelled before confirmation</li>

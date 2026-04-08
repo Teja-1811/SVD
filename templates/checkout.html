@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <style>
-  .flow-shell { margin-top: 96px; }
   .flow-hero, .flow-card {
     border: 0;
     border-radius: 28px;
@@ -12,8 +11,6 @@
   }
   .flow-hero {
     background: linear-gradient(135deg, #f7fbff 0%, #eef4ff 50%, #fff7ec 100%);
-    padding: 3rem;
-    margin-bottom: 2rem;
   }
   .flow-step {
     border: 1px solid #e8eef8;
@@ -26,9 +23,9 @@
 {% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="public-page-section">
   <div class="container flow-shell public-page-shell">
-    <div class="flow-hero">
+    <div class="flow-hero public-page-hero">
       <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Order Flow</div>
       <h1 class="fw-bold mb-3">How Orders And Payments Work</h1>
       <p class="lead mb-0">
@@ -38,7 +35,7 @@
 
     <div class="row g-4 mb-4">
       <div class="col-lg-6">
-        <div class="card flow-card p-4 p-md-5 h-100">
+        <div class="card flow-card public-page-card h-100">
           <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">User Flow</div>
           <h3 class="fw-bold mb-3">For `user` accounts</h3>
           <div class="row g-3">
@@ -51,7 +48,7 @@
       </div>
 
       <div class="col-lg-6">
-        <div class="card flow-card p-4 p-md-5 h-100">
+        <div class="card flow-card public-page-card h-100">
           <div class="text-uppercase fw-bold small text-primary mb-2" style="letter-spacing:0.14em;">Retailer Flow</div>
           <h3 class="fw-bold mb-3">For `retailer` accounts</h3>
           <div class="row g-3">
@@ -66,7 +63,7 @@
 
     <div class="row g-4">
       <div class="col-lg-6">
-        <div class="card flow-card p-4 p-md-5 h-100">
+        <div class="card flow-card public-page-card h-100">
           <h3 class="fw-bold mb-3">Orders We Support</h3>
           <ul class="mb-0">
             <li>Daily household milk delivery</li>
@@ -78,7 +75,7 @@
       </div>
 
       <div class="col-lg-6">
-        <div class="card flow-card p-4 p-md-5 h-100">
+        <div class="card flow-card public-page-card h-100">
           <h3 class="fw-bold mb-3">Online Payment Usage</h3>
           <p>Payment handling depends on the account type and order flow.</p>
           <ul class="mb-0">
