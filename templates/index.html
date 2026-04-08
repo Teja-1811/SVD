@@ -122,8 +122,8 @@
   }
   .hero-title {
     margin: 1rem 0;
-    font-size: clamp(3rem, 6vw, 6.4rem);
-    line-height: 0.9;
+    font-size: clamp(2.4rem, 4.8vw, 4.8rem);
+    line-height: 0.95;
     font-weight: 800;
     max-width: 10.5ch;
     letter-spacing: -0.04em;
@@ -200,28 +200,33 @@
     max-width: 580px;
     justify-self: end;
   }
-  .hero-company-list,
+  .hero-logo-row,
   .feature-points,
   .contact-stack {
     display: grid;
     gap: 0.75rem;
   }
-  .hero-company-item {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.85rem 0.9rem;
+  .hero-logo-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+  .hero-brand-logo {
+    display: grid;
+    place-items: center;
+    min-height: 108px;
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 1rem;
   }
-  .hero-company-item img {
-    width: 58px;
-    height: 58px;
+  .hero-brand-logo img {
+    width: 100%;
+    max-width: 96px;
+    height: 72px;
     object-fit: contain;
     border-radius: 16px;
     background: #fff;
-    padding: 8px;
-    flex-shrink: 0;
+    padding: 10px;
   }
   .hero-strip {
     display: flex;
@@ -267,14 +272,18 @@
     gap: 1.1rem;
   }
   .products-showcase {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    gap: 1rem;
     align-items: start;
   }
   .products-slider {
-    display: grid;
+    display: flex;
+    transition: transform 0.45s ease;
+    will-change: transform;
   }
   .product-slide {
-    display: none;
+    flex: 0 0 100%;
+    width: 100%;
     grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
     gap: 1.25rem;
     align-items: center;
@@ -289,10 +298,37 @@
       linear-gradient(135deg, #fff 0%, #f6f8ff 100%);
     border: 1px solid rgba(102, 126, 234, 0.12);
     box-shadow: 0 20px 45px rgba(22, 37, 73, 0.08);
-    animation: productFade 0.35s ease;
-  }
-  .product-slide.active {
     display: grid;
+  }
+  .products-viewport {
+    overflow: hidden;
+    border-radius: 28px;
+  }
+  .product-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .product-dot {
+    width: 10px;
+    height: 10px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(95, 104, 130, 0.24);
+    transition:
+      transform 0.25s ease,
+      background-color 0.25s ease,
+      width 0.25s ease;
+  }
+  .product-dot.active {
+    width: 28px;
+    background: #4b61d5;
+    transform: translateY(-1px);
+  }
+  .product-dot:focus-visible {
+    outline: 2px solid rgba(75, 97, 213, 0.35);
+    outline-offset: 3px;
   }
   .product-slide-media {
     display: grid;
@@ -681,16 +717,16 @@
     .trust-card strong {
       font-size: 1.25rem;
     }
-    .hero-company-item,
+    .hero-brand-logo,
     .contact-pill {
       padding: 0.8rem;
     }
-    .hero-company-item {
-      align-items: flex-start;
+    .hero-logo-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .hero-company-item img {
-      width: 50px;
-      height: 50px;
+    .hero-brand-logo img {
+      max-width: 82px;
+      height: 60px;
       border-radius: 14px;
     }
     .hero-strip {
@@ -860,17 +896,10 @@
             <div class="hero-card">
               <small class="text-white-50 d-block">Service snapshot</small>
               <h3 class="h4 mb-3 text-white">Brands we deliver</h3>
-              <div class="hero-company-list">
+              <div class="hero-logo-row">
                 {% for company in companies|slice:":4" %}
-                <div class="hero-company-item">
-                  <img
-                    src="{{ company.resolved_logo_url }}"
-                    alt="{{ company.name }}"
-                  />
-                  <div>
-                    <strong>{{ company.name }}</strong>
-                    <small>{{ company.description|default:"Trusted dairy partner brand" }}</small>
-                  </div>
+                <div class="hero-brand-logo">
+                  <img src="{{ company.resolved_logo_url }}" alt="{{ company.name }}" />
                 </div>
                 {% endfor %}
               </div>
@@ -955,10 +984,11 @@
           </div>
         </div>
         <div class="products-showcase">
-          <div class="products-slider">
+          <div class="products-viewport">
+            <div class="products-slider">
             {% for product in products %}
             <article
-              class="product-slide {% if forloop.first %}active{% endif %}"
+              class="product-slide"
               data-slide-index="{{ forloop.counter0 }}"
             >
               <div class="product-slide-media">
@@ -970,28 +1000,15 @@
               <div class="product-slide-copy">
                 <div class="d-flex flex-wrap gap-2">
                   <span class="product-chip company"
-                    ><i class="bi bi-building"></i> {{
-                    product.company.name|default:"SVD Product" }}</span
+                    ><i class="bi bi-building"></i> {{ product.company.name|default:"SVD Product" }}</span
                   >
                   <span class="product-chip status"
                     ><i class="bi bi-check-circle-fill"></i> Available now</span
                   >
                 </div>
                 <h3>{{ product.name }}</h3>
-                <p>
-                  {{ product.description|default:"Product information is
-                  available here for customer review." }}
-                </p>
+                <p>{{ product.description|default:"Product information is available here for customer review." }}</p>
                 <div class="product-price">&#8377;{{ product.mrp }}</div>
-                <div class="product-meta-grid">
-                  <div class="product-meta-card">
-                    <small>Company</small
-                    ><strong>{{ product.company.name|default:"SVD" }}</strong>
-                  </div>
-                  <div class="product-meta-card">
-                    <small>Status</small><strong>Active listing</strong>
-                  </div>
-                </div>
               </div>
             </article>
             {% empty %}
@@ -1011,7 +1028,9 @@
               </div>
             </article>
             {% endfor %}
+            </div>
           </div>
+          <div class="product-dots" id="productDots" aria-label="Product slide navigation"></div>
         </div>
         <div class="product-section-footer">
           <button
@@ -1293,15 +1312,9 @@
             />
             <h3>{{ product.name }}</h3>
             <div class="product-modal-meta">
-              <span
-                ><strong>Company:</strong> {{ product.company.name|default:"SVD"
-                }}</span
-              >
+              <span><strong>Company:</strong> {{ product.company.name|default:"SVD" }}</span>
               <span><strong>Status:</strong> Active listing</span>
-              <span
-                >{{ product.description|default:"Product information is
-                available for customer review." }}</span
-              >
+              <span>{{ product.description|default:"Product information is available for customer review." }}</span>
             </div>
             <div class="product-modal-price">&#8377;{{ product.mrp }}</div>
           </article>
@@ -1332,24 +1345,47 @@
     const slides = [
         ...document.querySelectorAll(".product-slide[data-slide-index]"),
       ],
+      slider = document.querySelector(".products-slider"),
       prevBtn = document.getElementById("productPrev"),
       nextBtn = document.getElementById("productNext"),
+      dotsWrap = document.getElementById("productDots"),
       currentEl = document.getElementById("productCounterCurrent"),
       totalEl = document.getElementById("productCounterTotal");
-    if (!slides.length) {
+    if (!slides.length || !slider) {
       return;
     }
     let currentIndex = 0,
       autoRotate;
     const hasMultiple = slides.length > 1;
+    const dots = slides.map((slide, index) => {
+      if (!dotsWrap) {
+        return null;
+      }
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "product-dot";
+      dot.setAttribute("aria-label", `Show product ${index + 1}`);
+      dot.addEventListener("click", () => {
+        renderSlide(index);
+        restartAutoRotate();
+      });
+      dotsWrap.appendChild(dot);
+      return dot;
+    });
     if (totalEl) {
       totalEl.textContent = slides.length;
     }
     function renderSlide(index) {
       currentIndex = (index + slides.length) % slides.length;
-      slides.forEach((slide, i) =>
-        slide.classList.toggle("active", i === currentIndex),
-      );
+      slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+      dots.forEach((dot, i) => {
+        if (!dot) {
+          return;
+        }
+        const isActive = i === currentIndex;
+        dot.classList.toggle("active", isActive);
+        dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
       if (currentEl) {
         currentEl.textContent = currentIndex + 1;
       }
@@ -1377,6 +1413,9 @@
         renderSlide(currentIndex + 1);
         restartAutoRotate();
       });
+    }
+    if (dotsWrap) {
+      dotsWrap.hidden = !hasMultiple;
     }
     renderSlide(0);
     restartAutoRotate();
