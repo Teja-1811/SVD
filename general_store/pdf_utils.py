@@ -93,8 +93,9 @@ class PDFGenerator:
         c.setFont("Helvetica-Bold", 14)
         c.drawString(40, height - 50, "Sri Vijaya Durga General Store")
         c.setFont("Helvetica", 10)
-        c.drawString(40, height - 65, "Near Santa Market, Main Road")
-        c.drawString(40, height - 80, "Gundugolanu, Bhimadolu, Eluru, AP - 534427")
+        c.drawString(40, height - 65, "Main road Gundugolanu, Near Santa Market")
+        c.drawString(40, height - 80, "Besides Srivasa Pesticides, Gundugolanu, Bhimadolu Mandal")
+        c.drawString(40, height - 95, "Eluru Dist - 534427")
         c.drawString(40, height - 95, "Phone: 9392890375")
 
         # Logo

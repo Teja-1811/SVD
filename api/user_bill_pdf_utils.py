@@ -183,8 +183,9 @@ class UserPDFGenerator:
 
         c.setFont("Helvetica", 8)
         c.drawString(x + 8, y + row_h - 28, "Sri Vijaya Durga Milk Agencies")
-        c.drawString(x + 8, y + row_h - 40, "Near Santa Market, Main Road")
-        c.drawString(x + 8, y + row_h - 52, "Gundugolanu, Bhimadolu, Eluru, AP - 534427")
+        c.drawString(x + 8, y + row_h - 40, "Main road Gundugolanu, Near Santa Market")
+        c.drawString(x + 8, y + row_h - 52, "Besides Srivasa Pesticides, Gundugolanu, Bhimadolu Mandal")
+        c.drawString(x + 8, y + row_h - 64, "Eluru Dist - 534427")
         c.drawString(x + 8, y + row_h - 64, "Phone: 9392890375")
 
         customer = bill.customer
@@ -430,8 +431,9 @@ class UserPDFGenerator:
         c.drawString(right_x + 12, text_bottom - 12, "Contact")
         contact_lines = [
             "Sri Vijaya Durga Milk Agencies",
-            "Near Santa Market, Main Road",
-            "Gundugolanu, Bhimadolu, Eluru, AP - 534427",
+            "Main road Gundugolanu, Near Santa Market",
+            "Besides Srivasa Pesticides, Gundugolanu, Bhimadolu Mandal",
+            "Eluru Dist - 534427",
             "Phone: 9392890375",
         ]
         contact_y = text_bottom - 30

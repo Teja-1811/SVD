@@ -485,8 +485,9 @@ class MonthlySalesPDFGenerator:
         c.drawString(right_col_x, accountability_end_y - 10, "Contact")
         contact_lines = [
             "Sri Vijaya Durga Milk Agencies",
-            "Near Santa Market, Main Road",
-            "Gundugolanu, Bhimadolu, Eluru, AP - 534427",
+            "Main road Gundugolanu, Near Santa Market",
+            "Besides Srivasa Pesticides, Gundugolanu, Bhimadolu Mandal",
+            "Eluru Dist - 534427",
             "Phone: 9392890375",
         ]
         contact_y = accountability_end_y - 32
