@@ -1,9 +1,8 @@
 import json
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 from django.db import connection, transaction
 from django.db.models import Q
-from milk_agency.views_bills import generate_bill_from_order
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -12,6 +11,7 @@ from django.utils import timezone
 from milk_agency.models import OrderDelivery, SubscriptionDelivery, SubscriptionOrder
 from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
+from customer_portal.order_workflow import finalize_order_after_payment
 
 
 class SubscriptionDeliveryFallback:
@@ -353,13 +353,13 @@ def confirm_order(request, order_id):
             order.total_amount = total_amount
             order.save()
 
-            # -------- GENERATE BILL FIRST --------
-            bill = generate_bill_from_order(order)
-
-            # -------- MARK ORDER CONFIRMED --------
-            order.status = 'confirmed'
-            order.approved_by = request.user
-            order.save()
+            bill = finalize_order_after_payment(
+                order,
+                payment_reference=order.payment_reference or f"ADMIN-{order.order_number}",
+                payment_method=order.payment_method or "ADMIN",
+                approved_by=request.user,
+                mark_paid=False,
+            )[1]
 
             return JsonResponse({
                 'success': True,

@@ -45,6 +45,7 @@ from .order_creator import (
 )
 from .delivery import delivery_today_list
 from .delivery import delivery_update
+from .payment_gateway import confirm_order_payment_api
 
 urlpatterns = [
     # Auth / Login
@@ -202,6 +203,7 @@ urlpatterns = [
     path('user/orders/<int:order_id>/edit/', user_edit_order, name='user_edit_order'),
     path('user/orders/<int:order_id>/delete/', user_delete_order, name='user_delete_order'),
     path('user/orders/pending/', user_pending_orders, name='user_pending_orders'),
+    path('payments/orders/confirm/', confirm_order_payment_api, name='confirm_order_payment_api'),
     
     # Delivery agent view (today's pending/completed deliveries for orders + subscriptions)
     path('delivery/today/', delivery_today_list, name='delivery_today_list'),

@@ -218,6 +218,20 @@
         text-align: right;
     }
 
+    .up-stock-warning {
+        display: none;
+        max-width: 180px;
+        text-align: right;
+        color: #b45309;
+        font-size: 0.82rem;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .up-stock-warning.visible {
+        display: block;
+    }
+
     .up-summary-card {
         position: sticky;
         top: 6.9rem;
@@ -443,6 +457,7 @@
                                         <input type="number" min="0" max="{{ item.stock_quantity }}" value="0" class="qty-input" data-mode="regular" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-price="{{ item.display_price }}">
                                         <button type="button" class="qty-plus">+</button>
                                     </div>
+                                    <span class="up-stock-warning">Only {{ item.stock_quantity }} available.</span>
                                     <span class="up-stock-note up-muted">Same-day</span>
                                 </div>
                             </article>
@@ -576,8 +591,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body pt-3">
+                <div class="up-payment-confirm mb-3">
+                    <strong>Order summary</strong>
+                    <div id="paymentModalItems" class="mt-3">
+                        <div class="up-empty">No items selected yet.</div>
+                    </div>
+                </div>
                 <div class="up-summary-item mb-3">
-                    <span>Order total</span>
+                    <span>Total amount</span>
                     <strong id="paymentModalTotal">&#8377;0.00</strong>
                 </div>
                 <div class="up-payment-confirm">
@@ -585,12 +606,11 @@
                     <span>Your UPI app will open with the exact order amount for payment confirmation.</span>
                     <span>UPI ID: <b>9392890375@pthdfc</b></span>
                 </div>
-                <div class="up-summary-note mt-3" id="paymentStepNote">Tap pay to open your UPI app. After payment is completed there, come back and confirm it here.</div>
+                <div class="up-summary-note mt-3" id="paymentStepNote">Tap pay to open your UPI app. Your order will be created only after payment is confirmed by the payment gateway.</div>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="up-btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" id="confirmPaymentBtn" class="up-btn-primary">Pay</button>
-                <button type="button" id="completePaymentBtn" class="up-btn-primary" style="display:none;">I have completed payment</button>
             </div>
         </div>
     </div>
@@ -601,6 +621,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const minPrebookDate = "{{ min_prebooking_date|date:'Y-m-d' }}";
+    const preparePaymentOrderUrl = "{% url 'users:prepare_payment_order' %}";
     let currentMode = "regular";
     const modeButtons = document.querySelectorAll(".up-mode-btn");
     const panels = document.querySelectorAll(".up-mode-panel");
@@ -611,15 +632,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const prebookDate = document.getElementById("prebookDate");
     const submitOrderBtn = document.getElementById("submitOrderBtn");
     const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
-    const completePaymentBtn = document.getElementById("completePaymentBtn");
+    const paymentModalItems = document.getElementById("paymentModalItems");
     const paymentModalTotal = document.getElementById("paymentModalTotal");
     const paymentStepNote = document.getElementById("paymentStepNote");
     const paymentModalElement = document.getElementById("paymentModal");
     const paymentModal = paymentModalElement ? new bootstrap.Modal(paymentModalElement) : null;
     let paymentStarted = false;
+    let preparedPaymentOrder = null;
 
     function getInputs(mode) {
         return Array.from(document.querySelectorAll(`.qty-input[data-mode="${mode}"]`));
+    }
+
+    function setStockWarning(input, visible) {
+        const productActions = input.closest(".up-product-actions");
+        const warning = productActions ? productActions.querySelector(".up-stock-warning") : null;
+        if (!warning) return;
+        warning.classList.toggle("visible", visible);
     }
 
     function activateCategory(mode, category) {
@@ -663,6 +692,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         selectedItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
         itemsTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
+        if (paymentModalItems) {
+            paymentModalItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
+        }
         if (paymentModalTotal) {
             paymentModalTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
         }
@@ -671,12 +703,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resetPaymentStep() {
         paymentStarted = false;
-        confirmPaymentBtn.style.display = "";
-        completePaymentBtn.style.display = "none";
+        preparedPaymentOrder = null;
         confirmPaymentBtn.textContent = "Pay";
-        completePaymentBtn.textContent = "I have completed payment";
+        confirmPaymentBtn.disabled = false;
         if (paymentStepNote) {
-            paymentStepNote.textContent = "Tap pay to open your UPI app. After payment is completed there, come back and confirm it here.";
+            paymentStepNote.textContent = "Tap pay to open your UPI app. Your order will be created only after payment is confirmed by the payment gateway.";
         }
     }
 
@@ -731,10 +762,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             submitOrderBtn.disabled = false;
             confirmPaymentBtn.disabled = false;
-            completePaymentBtn.disabled = false;
             submitOrderBtn.innerHTML = '<i class="bi bi-check2-circle"></i><span>Place order</span>';
             confirmPaymentBtn.textContent = 'Pay';
-            completePaymentBtn.textContent = 'I have completed payment';
         }
     }
 
@@ -781,13 +810,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const current = parseInt(input.value || "0", 10);
         const next = event.target.classList.contains("qty-plus") ? current + 1 : Math.max(0, current - 1);
         const max = input.getAttribute("max");
-        input.value = max && next > parseInt(max, 10) ? max : next;
+        const maxValue = max ? parseInt(max, 10) : null;
+        const hitMax = maxValue !== null && next > maxValue;
+        input.value = hitMax ? max : next;
+        setStockWarning(input, hitMax);
         refreshSummary();
     });
 
     document.body.addEventListener("input", (event) => {
         if (!event.target.classList.contains("qty-input")) return;
         if (parseInt(event.target.value || "0", 10) < 0) event.target.value = 0;
+        const max = event.target.getAttribute("max");
+        if (max) {
+            const maxValue = parseInt(max, 10);
+            const currentValue = parseInt(event.target.value || "0", 10);
+            if (currentValue > maxValue) {
+                event.target.value = maxValue;
+                setStockWarning(event.target, true);
+            } else {
+                setStockWarning(event.target, false);
+            }
+        }
         refreshSummary();
     });
 
@@ -805,40 +848,73 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         if (paymentModal) {
+            if (paymentModalItems) {
+                paymentModalItems.innerHTML = selectedItems.innerHTML;
+            }
             paymentModalTotal.innerHTML = itemsTotal.innerHTML;
             resetPaymentStep();
             paymentModal.show();
         }
     });
 
-    confirmPaymentBtn.addEventListener("click", () => {
-        const amountText = (itemsTotal.textContent || "").replace(/[^\d.]/g, "");
-        const amount = amountText || "0.00";
-        const transactionNote = encodeURIComponent(`SVD user order payment`);
+    async function preparePaymentOrder() {
+        const payload = {
+            items: collectItems(),
+            payment_method: "UPI",
+        };
+        if (currentMode === "prebook") {
+            payload.delivery_date = prebookDate.value;
+        }
+
+        const response = await fetch(preparePaymentOrderUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify(payload),
+        });
+        return response.json();
+    }
+
+    confirmPaymentBtn.addEventListener("click", async () => {
+        if (paymentStarted) {
+            return;
+        }
+        confirmPaymentBtn.disabled = true;
+        confirmPaymentBtn.textContent = "Preparing payment...";
+
+        let paymentOrder;
+        try {
+            paymentOrder = await preparePaymentOrder();
+        } catch (error) {
+            console.error(error);
+            alert("Could not prepare the payment order.");
+            resetPaymentStep();
+            return;
+        }
+
+        if (!paymentOrder || !paymentOrder.success) {
+            alert((paymentOrder && paymentOrder.message) || "Could not prepare the payment order.");
+            resetPaymentStep();
+            return;
+        }
+
+        preparedPaymentOrder = paymentOrder;
+        const amount = Number(paymentOrder.grand_total || 0).toFixed(2);
+        if (paymentModalTotal) {
+            paymentModalTotal.innerHTML = `&#8377;${amount}`;
+        }
+        const transactionNote = encodeURIComponent(`SVD order ${paymentOrder.order_number}`);
         const payeeName = encodeURIComponent("Sri Vijaya Durga Milk Agencies");
         const upiUrl = `upi://pay?pa=9392890375@pthdfc&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
         paymentStarted = true;
-        confirmPaymentBtn.style.display = "none";
-        completePaymentBtn.style.display = "";
+        confirmPaymentBtn.textContent = "Waiting for payment confirmation";
+        confirmPaymentBtn.disabled = true;
         if (paymentStepNote) {
-            paymentStepNote.textContent = "Your UPI app was opened. After completing the payment there, tap the button below to place the order.";
+            paymentStepNote.textContent = `Your UPI app was opened for order ${paymentOrder.order_number}. This order will be confirmed automatically after gateway verification.`;
         }
         window.location.href = upiUrl;
-    });
-
-    completePaymentBtn.addEventListener("click", async () => {
-        if (!paymentStarted) {
-            alert("Please tap Pay first.");
-            return;
-        }
-        completePaymentBtn.disabled = true;
-        completePaymentBtn.textContent = "Placing order...";
-        const orderResult = await submitOrder("UPI");
-        if (!orderResult) {
-            return;
-        }
-        alert(`${orderResult.message} Order # ${orderResult.order_number}`);
-        window.location.reload();
     });
 
     if (paymentModalElement) {

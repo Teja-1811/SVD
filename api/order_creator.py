@@ -20,7 +20,7 @@ from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Customer, Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 
-ACTIVE_ORDER_STATUSES = ("pending", "confirmed", "processing", "ready")
+ACTIVE_ORDER_STATUSES = ("payment_pending", "pending", "confirmed", "processing", "ready")
 
 
 # -------------------------------------------------------------------
@@ -93,6 +93,9 @@ def create_or_replace_order(
     customer: Customer,
     items: Iterable[Mapping],
     delivery_date_str: Optional[str] = None,
+    *,
+    initial_status: str = "pending",
+    payment_method: str = "",
 ) -> CustomerOrder:
     items = _coerce_items(items)
     delivery_date, _ = _parse_delivery_date(delivery_date_str)
@@ -101,7 +104,7 @@ def create_or_replace_order(
         order = CustomerOrder.objects.filter(
             customer=customer,
             delivery_date=delivery_date,
-            status="pending",
+            status=initial_status,
         ).first()
 
         if order:
@@ -114,7 +117,8 @@ def create_or_replace_order(
                 created_by=customer,
                 delivery_date=delivery_date,
                 delivery_address=_build_address(customer),
-                status="pending",
+                status=initial_status,
+                payment_method=payment_method or "",
             )
 
         total = Decimal("0")
@@ -124,7 +128,9 @@ def create_or_replace_order(
         order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
         order.total_amount = total
         order.approved_total_amount = total
-        order.save(update_fields=["total_amount", "approved_total_amount", "delivery_charge"])
+        order.payment_method = payment_method or order.payment_method
+        order.payment_status = "pending" if initial_status == "payment_pending" else order.payment_status
+        order.save(update_fields=["total_amount", "approved_total_amount", "delivery_charge", "payment_method", "payment_status"])
         return order
 
 

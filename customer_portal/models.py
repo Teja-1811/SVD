@@ -7,10 +7,17 @@ from milk_agency.models import Customer, Item
 
 class CustomerOrder(models.Model):
     STATUS_CHOICES = [
+        ('payment_pending', 'Payment Pending'),
         ('pending', 'Pending Review'),
         ('confirmed', 'Confirmed'),
         ('cancelled', 'Cancelled'),
         ('rejected', 'Rejected'),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
     ]
 
     order_number = models.CharField(max_length=50, unique=True, help_text='Unique order number')
@@ -21,6 +28,10 @@ class CustomerOrder(models.Model):
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Total order amount')
     delivery_charge = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Charge for Delivery')
     approved_total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Admin approved total amount')
+    payment_method = models.CharField(max_length=20, blank=True, default='', help_text='Payment method selected by customer')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    payment_reference = models.CharField(max_length=120, blank=True, default='', help_text='Gateway payment reference / transaction id')
+    payment_confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -28,6 +39,7 @@ class CustomerOrder(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='created_orders')
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL, related_name='approved_orders')
+    bill = models.ForeignKey('milk_agency.Bill', blank=True, null=True, on_delete=models.SET_NULL, related_name='linked_orders')
 
     class Meta:
         verbose_name = 'Customer Order'

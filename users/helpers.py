@@ -158,6 +158,21 @@ def save_user_order(customer, raw_items, raw_delivery_date):
     )
 
 
+def prepare_user_payment_order(customer, raw_items, raw_delivery_date, *, payment_method="UPI"):
+    delivery_date, is_prebooking = parse_delivery_date(raw_delivery_date)
+    if is_prebooking and delivery_date < minimum_prebook_date():
+        raise ValueError("Pre-booking is allowed only from 2 days ahead.")
+
+    normalized_items = validate_order_payload(raw_items, is_prebooking=is_prebooking)
+    return create_or_replace_order(
+        customer=customer,
+        items=normalized_items,
+        delivery_date_str=raw_delivery_date or None,
+        initial_status="payment_pending",
+        payment_method=payment_method,
+    )
+
+
 def save_user_order_response(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
@@ -185,6 +200,43 @@ def save_user_order_response(request):
             "delivery_date": str(order.delivery_date),
             "is_prebooking": order.delivery_date > timezone.localdate(),
             "message": "Pre-booking saved successfully." if order.delivery_date > timezone.localdate() else "Order saved successfully.",
+        }
+    )
+
+
+def prepare_user_payment_order_response(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
+
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+    try:
+        order = prepare_user_payment_order(
+            customer=request.user,
+            raw_items=payload.get("items", []),
+            raw_delivery_date=str(payload.get("delivery_date") or "").strip(),
+            payment_method=str(payload.get("payment_method") or "UPI").strip() or "UPI",
+        )
+    except ValueError as exc:
+        return JsonResponse({"success": False, "message": str(exc)}, status=400)
+    except Exception as exc:
+        return JsonResponse({"success": False, "message": str(exc)}, status=500)
+
+    grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+    return JsonResponse(
+        {
+            "success": True,
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "delivery_date": str(order.delivery_date),
+            "payment_method": order.payment_method,
+            "items_total": float(order.total_amount),
+            "delivery_charge": float(order.delivery_charge),
+            "grand_total": float(grand_total),
+            "message": "Payment order prepared successfully.",
         }
     )
 

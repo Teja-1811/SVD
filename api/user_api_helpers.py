@@ -229,6 +229,12 @@ def find_linked_order_for_bill(customer, bill):
     if not customer:
         return None
 
+    direct_match = getattr(bill, "linked_orders", None)
+    if direct_match is not None:
+        linked_order = direct_match.order_by("-id").first()
+        if linked_order:
+            return linked_order
+
     exact_match = (
         CustomerOrder.objects.filter(
             customer=customer,

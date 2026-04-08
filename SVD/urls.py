@@ -86,8 +86,9 @@ urlpatterns = [
 
 
 # ======================================================
-# STATIC & MEDIA (DEBUG ONLY)
+# STATIC & MEDIA
+# Keep local static/media asset routes available even when DEBUG is False,
+# because this project is commonly run via Django's built-in server.
 # ======================================================
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += staticfiles_urlpatterns()
