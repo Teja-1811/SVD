@@ -1,8 +1,11 @@
+from django.contrib import messages
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from decimal import Decimal
+from django.views.decorators.csrf import csrf_exempt
 
 from customer_portal.models import CustomerOrder
+from api.paytm_notifications import extract_paytm_params, process_paytm_notification
 from .helpers import (
     active_orders,
     grouped_catalog,
@@ -73,6 +76,50 @@ def place_order(request):
 @user_required
 def prepare_payment_order(request):
     return prepare_user_payment_order_response(request)
+
+
+@user_required
+def paytm_checkout(request, order_id):
+    order = get_object_or_404(CustomerOrder, id=order_id, customer=request.user)
+    paytm_checkout_map = request.session.get("paytm_checkout_map", {})
+    checkout = paytm_checkout_map.get(str(order.id))
+    if not checkout:
+        messages.error(request, "The Paytm session expired. Please try the payment again.")
+        return redirect("users:orders")
+    return render(
+        request,
+        "user_portal/paytm_checkout.html",
+        {
+            "order": order,
+            "checkout": checkout,
+        },
+    )
+
+@csrf_exempt
+def paytm_callback(request):
+    params = extract_paytm_params(request)
+    if not params and request.method == "GET":
+        params = request.GET.dict()
+
+    result = process_paytm_notification(params)
+    order = result.get("order")
+    order_id = getattr(order, "id", None)
+
+    if order_id:
+        paytm_checkout_map = request.session.get("paytm_checkout_map", {})
+        if str(order_id) in paytm_checkout_map:
+            paytm_checkout_map.pop(str(order_id), None)
+            request.session["paytm_checkout_map"] = paytm_checkout_map
+            request.session.modified = True
+
+    if result["success"]:
+        messages.success(request, result["message"])
+    else:
+        messages.error(request, result["message"])
+
+    if order_id:
+        return redirect("users:order_detail", order_id=order_id)
+    return redirect("users:orders")
 
 
 @user_required

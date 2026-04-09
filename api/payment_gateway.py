@@ -43,7 +43,7 @@ def confirm_order_payment_api(request):
     order_id = payload.get("order_id")
     order_number = str(payload.get("order_number") or "").strip()
     payment_reference = str(payload.get("transaction_id") or payload.get("payment_reference") or "").strip()
-    payment_method = str(payload.get("payment_method") or "UPI").strip() or "UPI"
+    payment_method = str(payload.get("payment_method") or "PAYTM").strip() or "PAYTM"
     payment_status = str(payload.get("status") or "").strip().lower()
 
     if not payment_reference:
@@ -64,7 +64,7 @@ def confirm_order_payment_api(request):
         return JsonResponse(
             {
                 "success": False,
-                "message": "This order is not awaiting online payment confirmation.",
+                "message": "This order is not awaiting Paytm payment confirmation.",
             },
             status=400,
         )

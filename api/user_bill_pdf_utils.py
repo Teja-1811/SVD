@@ -297,7 +297,7 @@ class UserPDFGenerator:
         c.setFont("Helvetica-Bold", 8)
         c.drawString(x + 8, y + footer_h - 16, "Payment Details")
         c.setFont("Helvetica", 8)
-        c.drawString(x + 8, y + footer_h - 28, "Mode: Cash / UPI")
+        c.drawString(x + 8, y + footer_h - 28, "Mode: Cash / Paytm / Bank Transfer")
 
         opening_due = Decimal(bill.op_due_amount or 0)
         delivery_charge = self._get_delivery_charge(bill, bill_items)

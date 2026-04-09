@@ -7,9 +7,11 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
 
 from api.order_creator import ACTIVE_ORDER_STATUSES, create_or_replace_order
+from api.paytm import PaytmConfigError, PaytmGatewayError, initiate_paytm_transaction
 from api.user_api_helpers import get_active_offers, get_latest_subscription
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Bill, Item, SubscriptionItem
@@ -158,7 +160,7 @@ def save_user_order(customer, raw_items, raw_delivery_date):
     )
 
 
-def prepare_user_payment_order(customer, raw_items, raw_delivery_date, *, payment_method="UPI"):
+def prepare_user_payment_order(customer, raw_items, raw_delivery_date, *, payment_method="PAYTM"):
     delivery_date, is_prebooking = parse_delivery_date(raw_delivery_date)
     if is_prebooking and delivery_date < minimum_prebook_date():
         raise ValueError("Pre-booking is allowed only from 2 days ahead.")
@@ -218,7 +220,7 @@ def prepare_user_payment_order_response(request):
             customer=request.user,
             raw_items=payload.get("items", []),
             raw_delivery_date=str(payload.get("delivery_date") or "").strip(),
-            payment_method=str(payload.get("payment_method") or "UPI").strip() or "UPI",
+            payment_method=str(payload.get("payment_method") or "PAYTM").strip() or "PAYTM",
         )
     except ValueError as exc:
         return JsonResponse({"success": False, "message": str(exc)}, status=400)
@@ -226,6 +228,18 @@ def prepare_user_payment_order_response(request):
         return JsonResponse({"success": False, "message": str(exc)}, status=500)
 
     grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+    payment_method = (order.payment_method or "").upper()
+    if payment_method == "PAYTM":
+        try:
+            checkout = initiate_paytm_transaction(request, order, amount=grand_total)
+        except (PaytmConfigError, PaytmGatewayError) as exc:
+            return JsonResponse({"success": False, "message": str(exc)}, status=400)
+
+        paytm_checkout_map = request.session.get("paytm_checkout_map", {})
+        paytm_checkout_map[str(order.id)] = checkout
+        request.session["paytm_checkout_map"] = paytm_checkout_map
+        request.session.modified = True
+
     return JsonResponse(
         {
             "success": True,
@@ -236,6 +250,9 @@ def prepare_user_payment_order_response(request):
             "items_total": float(order.total_amount),
             "delivery_charge": float(order.delivery_charge),
             "grand_total": float(grand_total),
+            "paytm_redirect_url": (
+                reverse("users:paytm_checkout", kwargs={"order_id": order.id}) if payment_method == "PAYTM" else ""
+            ),
             "message": "Payment order prepared successfully.",
         }
     )

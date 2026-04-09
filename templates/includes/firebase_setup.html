@@ -1,0 +1,21 @@
+{% load static %}
+<script>
+  window.svdFirebaseConfig = {
+    apiKey: "{{ firebase_web_config.apiKey|escapejs }}",
+    authDomain: "{{ firebase_web_config.authDomain|escapejs }}",
+    projectId: "{{ firebase_web_config.projectId|escapejs }}",
+    storageBucket: "{{ firebase_web_config.storageBucket|escapejs }}",
+    messagingSenderId: "{{ firebase_web_config.messagingSenderId|escapejs }}",
+    appId: "{{ firebase_web_config.appId|escapejs }}",
+    measurementId: "{{ firebase_web_config.measurementId|escapejs }}",
+    vapidKey: "{{ firebase_push_vapid_key|escapejs }}",
+    pushEnabled: {% if firebase_push_enabled %}true{% else %}false{% endif %}
+  };
+  window.svdPushContext = {
+    isAuthenticated: {% if request.user.is_authenticated %}true{% else %}false{% endif %},
+    registerUrl: "{% url 'customer_portal:push_device_register' %}",
+    unregisterUrl: "{% url 'customer_portal:push_device_unregister' %}",
+    serviceWorkerUrl: "{% url 'firebase_messaging_sw' %}"
+  };
+</script>
+<script type="module" src="{% static 'js/firebase-push.js' %}"></script>

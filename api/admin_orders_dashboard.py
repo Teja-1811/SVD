@@ -5,12 +5,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
+from customer_portal.order_workflow import finalize_order_after_payment
+from milk_agency.push_notifications import notify_order_rejected
 from milk_agency.order_pricing import get_customer_unit_price
-from milk_agency.views_bills import generate_bill_from_order
 
 
 # ======================================================
@@ -180,11 +180,14 @@ def api_confirm_order(request, order_id):
             )
 
             order.total_amount = total_amount
-            order.status = "confirmed"
-            order.save()
-
-            # ---- Generate Bill ----
-            bill = generate_bill_from_order(order)
+            order.save(update_fields=["total_amount", "updated_at"])
+            order, bill, _payment = finalize_order_after_payment(
+                order,
+                payment_reference=order.payment_reference or f"ADMIN-{order.order_number}",
+                payment_method=order.payment_method or "ADMIN",
+                approved_by=request.user,
+                mark_paid=False,
+            )
 
             return Response({
                 "success": True,
@@ -216,6 +219,7 @@ def api_reject_order(request, order_id):
 
     order.status = "rejected"
     order.save()
+    transaction.on_commit(lambda order_id=order.id: notify_order_rejected(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
     return Response({
         "success": True,

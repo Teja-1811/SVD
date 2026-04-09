@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import json
 import os
 from pathlib import Path
 import dj_database_url
@@ -85,6 +86,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'SVD.context_processors.firebase_settings',
             ],
         },
     },
@@ -200,3 +202,36 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Login URL for authentication redirects
 # https://docs.djangoproject.com/en/5.2/ref/settings/#login-url
 LOGIN_URL = '/customer/login/'
+
+
+# Firebase web + push configuration
+FIREBASE_WEB_CONFIG = {
+    "apiKey": os.environ.get("FIREBASE_API_KEY", "AIzaSyBrnyg2eZowgA9uv7vjMhMCvId2XgskrVs"),
+    "authDomain": os.environ.get(
+        "FIREBASE_AUTH_DOMAIN",
+        "sri-vijaya-durga-agencie-16255.firebaseapp.com",
+    ),
+    "projectId": os.environ.get("FIREBASE_PROJECT_ID", "sri-vijaya-durga-agencie-16255"),
+    "storageBucket": os.environ.get(
+        "FIREBASE_STORAGE_BUCKET",
+        "sri-vijaya-durga-agencie-16255.firebasestorage.app",
+    ),
+    "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", "910196896431"),
+    "appId": os.environ.get("FIREBASE_APP_ID", "1:910196896431:web:5747bfbf37af910ad59a5a"),
+    "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "G-TR3FLXCYH4"),
+}
+FIREBASE_WEB_VAPID_KEY = os.environ.get(
+    "FIREBASE_WEB_VAPID_KEY",
+    "BOTwWU5cSbYJMKUm5Hq51YnI7hRO8TcSUb9mYYrJi-QEf-yhDsQNqlDmY2zogXEKx3IxfLxwrrJ0nvGY77ATwM",
+)
+FIREBASE_SERVICE_ACCOUNT_PATH = os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "").strip()
+FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
+FIREBASE_PUSH_ENABLED = bool(FIREBASE_WEB_CONFIG.get("messagingSenderId") and FIREBASE_WEB_VAPID_KEY)
+
+if FIREBASE_SERVICE_ACCOUNT_JSON:
+    try:
+        FIREBASE_SERVICE_ACCOUNT_INFO = json.loads(FIREBASE_SERVICE_ACCOUNT_JSON)
+    except json.JSONDecodeError:
+        FIREBASE_SERVICE_ACCOUNT_INFO = None
+else:
+    FIREBASE_SERVICE_ACCOUNT_INFO = None

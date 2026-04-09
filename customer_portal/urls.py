@@ -1,6 +1,7 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
 from . import views
+from .push_views import register_push_device, unregister_push_device
 
 app_name = 'customer_portal'
 
@@ -16,5 +17,7 @@ urlpatterns = [
     path('bill-details/<int:bill_id>/', views.bill_details, name='bill_details'),
     path("collect-payment/", views.collect_payment, name="collect_payment"),
     path('update-profile/', views.update_profile, name='update_profile'),
+    path("notifications/push/register/", register_push_device, name="push_device_register"),
+    path("notifications/push/unregister/", unregister_push_device, name="push_device_unregister"),
     path('logout/', views.logout_user, name='logout'),
 ]

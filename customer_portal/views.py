@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.db import OperationalError, ProgrammingError
+from django.db import OperationalError, ProgrammingError, transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -23,6 +23,7 @@ from milk_agency.models import (
     SubscriptionOrder,
 )
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
+from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_profile_updated
 
 from .models import CustomerOrder, CustomerOrderItem
 
@@ -309,6 +310,7 @@ def customer_orders_dashboard(request):
             order.delivery_charge = get_delivery_charge_amount(customer=request.user, address=order.delivery_address)
             order.total_amount = total_amount
             order.save()
+            transaction.on_commit(lambda order_id=order.id: notify_admin_order_placed(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
             return JsonResponse({'success': True, 'order_number': order_number})
 
@@ -422,6 +424,7 @@ def place_order(request):
         order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
         order.approved_total_amount = total_amount
         order.save()
+        transaction.on_commit(lambda order_id=order.id: notify_admin_order_placed(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
         return JsonResponse({"success": True, "order_number": order_number})
 
@@ -555,6 +558,7 @@ def update_profile(request):
         customer.state = request.POST.get('state', customer.state)
         customer.pin_code = request.POST.get('pin_code', customer.pin_code)
         customer.save()
+        notify_admin_profile_updated(customer)
 
         new_password = request.POST.get('new_password')
         if new_password:
@@ -582,8 +586,8 @@ def update_profile(request):
 @login_required
 def collect_payment(request):
     customer = request.user
-    upi_id = "9392890375@pthdfc"
-    payee_name = "Sri Vijaya Durga Milk Agencies"
+    manual_payment_upi_id = "9392890375@pthdfc"
+    manual_payment_payee_name = "Sri Vijaya Durga Milk Agencies"
     actual_due = Decimal(customer.get_actual_due() or 0)
     outstanding_due = actual_due if actual_due > 0 else Decimal("0.00")
     wallet_balance = abs(actual_due) if actual_due < 0 else Decimal("0.00")
@@ -632,8 +636,8 @@ def collect_payment(request):
         "actual_due": actual_due,
         "outstanding_due": outstanding_due,
         "wallet_balance": wallet_balance,
-        "upi_id": upi_id,
-        "payee_name": payee_name,
+        "manual_payment_upi_id": manual_payment_upi_id,
+        "manual_payment_payee_name": manual_payment_payee_name,
         "suggested_upi_amount": outstanding_due if outstanding_due > 0 else Decimal("0.00"),
         "latest_due_bill": latest_due_bill,
         "recent_payments": recent_payments,

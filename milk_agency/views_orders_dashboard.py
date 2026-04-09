@@ -9,6 +9,7 @@ from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 from django.utils import timezone
 from milk_agency.models import OrderDelivery, SubscriptionDelivery, SubscriptionOrder
+from milk_agency.push_notifications import notify_order_rejected
 from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from customer_portal.order_workflow import finalize_order_after_payment
@@ -443,5 +444,6 @@ def reject_order(request, order_id):
     order.status = 'rejected'
     order.approved_by = request.user
     order.save()
+    transaction.on_commit(lambda order_id=order.id: notify_order_rejected(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
     return JsonResponse({'success': True, 'message': 'Order rejected successfully.'})

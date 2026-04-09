@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from milk_agency.models import SubscriptionPause
+from milk_agency.push_notifications import notify_admin_subscription_action
 
 from .user_api_helpers import get_customer_or_response, get_latest_subscription
 from users.helpers import subscription_context
@@ -61,6 +62,7 @@ def subscription_pause_resume_api(request):
         )
         active_subscription.is_active = False
         active_subscription.save(update_fields=["is_active"])
+        notify_admin_subscription_action(customer, "paused", reason)
 
         return Response(
             {
@@ -85,6 +87,7 @@ def subscription_pause_resume_api(request):
         return Response({"error": "No active pause to resume"}, status=status.HTTP_400_BAD_REQUEST)
 
     pause.resume()
+    notify_admin_subscription_action(customer, "resumed")
 
     return Response(
         {

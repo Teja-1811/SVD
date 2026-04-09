@@ -163,6 +163,38 @@ class Customer(AbstractBaseUser, PermissionsMixin):
 
         return opening_due + total_billed - total_paid
 
+
+class PushDevice(models.Model):
+    DEVICE_TYPE_CHOICES = [
+        ("web", "Web"),
+        ("android", "Android"),
+    ]
+
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="push_devices",
+    )
+    token = models.TextField(unique=True)
+    device_type = models.CharField(max_length=20, choices=DEVICE_TYPE_CHOICES, default="web")
+    device_name = models.CharField(max_length=255, blank=True)
+    app_version = models.CharField(max_length=64, blank=True)
+    user_agent = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    last_seen_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_seen_at", "-updated_at"]
+        indexes = [
+            models.Index(fields=["customer", "is_active"]),
+            models.Index(fields=["last_seen_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.customer} - {self.device_type} push device"
+
 class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)

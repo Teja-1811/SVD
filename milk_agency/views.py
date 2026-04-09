@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from urllib.parse import quote
 from django.db.models import Sum, F, Case, When, Value, IntegerField
+from django.db import transaction
 from django.utils import timezone
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
@@ -9,6 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from .models import Bill, Customer, Item, CashbookEntry, CustomerMonthlyCommission, Contact
+from .push_notifications import notify_admin_enquiry_created
 from datetime import datetime
 import json
 from customer_portal.models import CustomerOrder
@@ -193,13 +195,14 @@ def contact_form_submit(request):
                 messages.error(request, 'Please fill all required fields.')
                 return redirect('/#contact')
 
-            Contact.objects.create(
+            contact = Contact.objects.create(
                 name=name,
                 phone=phone,
                 email=email if email else None,
                 subject=subject,
                 message=message
             )
+            transaction.on_commit(lambda contact_id=contact.id: notify_admin_enquiry_created(Contact.objects.get(pk=contact_id)))
 
             whatsapp_message = f"""
 New Contact Form Inquiry - SVD Milk Agencies

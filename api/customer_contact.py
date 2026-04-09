@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from milk_agency.models import Contact
+from milk_agency.push_notifications import notify_admin_enquiry_created
 
 
 def _serialize_contact_ticket(contact: Contact):
@@ -79,6 +80,7 @@ def customer_contact_api(request):
         subject=subject,
         message=message,
     )
+    notify_admin_enquiry_created(contact)
 
     return Response(
         {

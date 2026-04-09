@@ -8,6 +8,8 @@ from .orders import (
     order_detail_page,
     order_history_page,
     orders_page,
+    paytm_callback,
+    paytm_checkout,
     place_order,
     prepare_payment_order,
 )
@@ -23,6 +25,8 @@ urlpatterns = [
     path("orders/<int:order_id>/", order_detail_page, name="order_detail"),
     path("orders/place/", place_order, name="place_order"),
     path("orders/payment/prepare/", prepare_payment_order, name="prepare_payment_order"),
+    path("orders/<int:order_id>/paytm/checkout/", paytm_checkout, name="paytm_checkout"),
+    path("orders/paytm/callback/", paytm_callback, name="paytm_callback"),
     path("orders/<int:order_id>/cancel/", cancel_order, name="cancel_order"),
     path("offers/", offers_page, name="offers"),
     path("subscriptions/", subscriptions_page, name="subscriptions"),

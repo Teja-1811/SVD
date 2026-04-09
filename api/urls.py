@@ -46,6 +46,9 @@ from .order_creator import (
 from .delivery import delivery_today_list
 from .delivery import delivery_update
 from .payment_gateway import confirm_order_payment_api
+from .paytm_webhook import paytm_payment_webhook
+from .mobile_push import register_mobile_push_device, unregister_mobile_push_device
+from .mobile_payments import mobile_prepare_payment_order, mobile_payment_status
 
 urlpatterns = [
     # Auth / Login
@@ -204,6 +207,11 @@ urlpatterns = [
     path('user/orders/<int:order_id>/delete/', user_delete_order, name='user_delete_order'),
     path('user/orders/pending/', user_pending_orders, name='user_pending_orders'),
     path('payments/orders/confirm/', confirm_order_payment_api, name='confirm_order_payment_api'),
+    path('payments/paytm/webhook/', paytm_payment_webhook, name='paytm_payment_webhook'),
+    path('mobile/push/register/', register_mobile_push_device, name='register_mobile_push_device'),
+    path('mobile/push/unregister/', unregister_mobile_push_device, name='unregister_mobile_push_device'),
+    path('mobile/payments/prepare/', mobile_prepare_payment_order, name='mobile_prepare_payment_order'),
+    path('mobile/payments/status/<int:order_id>/', mobile_payment_status, name='mobile_payment_status'),
     
     # Delivery agent view (today's pending/completed deliveries for orders + subscriptions)
     path('delivery/today/', delivery_today_list, name='delivery_today_list'),

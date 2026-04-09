@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from api.user_bill_pdf_utils import UserPDFGenerator
 from milk_agency.models import CustomerPayment
+from milk_agency.push_notifications import notify_order_confirmed
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 from milk_agency.views_bills import generate_bill_from_order
 
@@ -60,7 +61,7 @@ def finalize_order_after_payment(
     order,
     *,
     payment_reference,
-    payment_method="UPI",
+    payment_method="PAYTM",
     approved_by=None,
     mark_paid=True,
 ):
@@ -141,5 +142,6 @@ def finalize_order_after_payment(
             locked_order.customer.due = locked_order.customer.get_actual_due()
             locked_order.customer.save(update_fields=["due"])
         UserPDFGenerator().generate_invoice_pdf(bill)
+        transaction.on_commit(lambda order_id=locked_order.id: notify_order_confirmed(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
         return locked_order, bill, payment

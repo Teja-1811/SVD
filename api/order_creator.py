@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Customer, Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
+from milk_agency.push_notifications import notify_admin_order_placed
 
 ACTIVE_ORDER_STATUSES = ("payment_pending", "pending", "confirmed", "processing", "ready")
 USER_COMPANY_NAME = "Dodla"
@@ -178,6 +179,7 @@ def create_or_replace_order(
         order.payment_method = payment_method or order.payment_method
         order.payment_status = "pending" if initial_status == "payment_pending" else order.payment_status
         order.save(update_fields=["total_amount", "approved_total_amount", "delivery_charge", "payment_method", "payment_status"])
+        transaction.on_commit(lambda order_id=order.id: notify_admin_order_placed(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
         return order
 
 

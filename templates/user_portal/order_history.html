@@ -49,8 +49,10 @@
                     <strong>{{ order.order_number }}</strong>
                     <div class="up-muted">{{ order.order_date|date:"M d, Y" }}</div>
                 </div>
-                {% if order.status == "pending" or order.status == "payment_pending" %}
-                <span class="up-chip chip-warning">{{ order.status|title }}</span>
+                {% if order.status == "payment_pending" %}
+                <span class="up-chip chip-warning">Awaiting Paytm</span>
+                {% elif order.status == "pending" %}
+                <span class="up-chip chip-warning">Pending review</span>
                 {% elif order.status == "confirmed" %}
                 <span class="up-chip chip-success">Confirmed</span>
                 {% elif order.status == "cancelled" or order.status == "rejected" %}
@@ -75,7 +77,7 @@
                 </div>
                 <div class="up-history-cell">
                     <small>Payment</small>
-                    <strong>{{ order.payment_status|default:"pending"|title }}</strong>
+                    <strong>{{ order.payment_method|default:"Not set" }}{% if order.payment_status %} • {{ order.payment_status|title }}{% endif %}</strong>
                 </div>
                 <div class="up-history-cell">
                     <small>Final total</small>

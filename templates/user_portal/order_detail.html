@@ -24,8 +24,10 @@
             <span class="up-eyebrow">Order detail</span>
             <h2>{{ order.order_number }}</h2>
         </div>
-        {% if order.status == "pending" or order.status == "payment_pending" %}
-        <span class="up-chip chip-warning">{{ order.status|title }}</span>
+        {% if order.status == "payment_pending" %}
+        <span class="up-chip chip-warning">Awaiting Paytm</span>
+        {% elif order.status == "pending" %}
+        <span class="up-chip chip-warning">Pending review</span>
         {% elif order.status == "confirmed" %}
         <span class="up-chip chip-success">Confirmed</span>
         {% elif order.status == "cancelled" or order.status == "rejected" %}
@@ -40,6 +42,7 @@
         <div class="up-detail-cell"><small class="up-muted">Delivery date</small><div><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div></div>
         <div class="up-detail-cell"><small class="up-muted">Payment method</small><div><strong>{{ order.payment_method|default:"Not set" }}</strong></div></div>
         <div class="up-detail-cell"><small class="up-muted">Payment status</small><div><strong>{{ order.payment_status|title }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Payment reference</small><div><strong>{{ order.payment_reference|default:"Not available" }}</strong></div></div>
         <div class="up-detail-cell" style="grid-column: 1 / -1;"><small class="up-muted">Delivery address</small><div><strong>{{ order.delivery_address }}</strong></div></div>
     </div>
 

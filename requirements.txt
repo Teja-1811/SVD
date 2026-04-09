@@ -6,10 +6,12 @@ django-mathfilters==1.0.0
 djangorestframework==3.16.1
 docopt==0.6.2
 dotenv==0.9.9
+firebase-admin==6.9.0
 gunicorn==25.3.0
 num2words==0.5.14
 packaging==26.0
 pillow==11.3.0
+paytmchecksum==1.7.0
 psycopg2-binary==2.9.11
 python-dotenv==1.2.2
 reportlab==4.4.3

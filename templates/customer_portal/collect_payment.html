@@ -235,7 +235,7 @@
         <div class="payments-card payments-pay-card">
             <div class="payments-pay-top">
                 <div>
-                    <span class="payments-eyebrow">UPI</span>
+                    <span class="payments-eyebrow">Manual Payment</span>
                     <div class="payments-due-label">Outstanding due</div>
                     <div class="payments-due-amount">Rs. {{ outstanding_due|floatformat:2 }}</div>
                 </div>
@@ -253,7 +253,7 @@
             </div>
 
             <div class="payments-actions">
-                <span class="payments-muted">Choose how you want to pay this due.</span>
+                <span class="payments-muted">Online order checkout now uses Paytm. This page remains for direct manual UPI due payments.</span>
             </div>
 
             <div class="payments-form">
@@ -272,7 +272,7 @@
                 <div class="payments-actions">
                     <a id="upiPayLink" href="#" class="payments-btn-primary">
                         <i class="bi bi-phone"></i>
-                        <span>Pay using UPI</span>
+                        <span>Open UPI app</span>
                     </a>
                 </div>
             </div>
@@ -330,8 +330,8 @@
     (function () {
         const upiLink = document.getElementById("upiPayLink");
         const amountInput = document.getElementById("upiAmountInput");
-        const payeeAddress = "{{ upi_id|escapejs }}";
-        const payeeName = "{{ payee_name|escapejs }}";
+        const payeeAddress = "{{ manual_payment_upi_id|escapejs }}";
+        const payeeName = "{{ manual_payment_payee_name|escapejs }}";
         const latestInvoice = "{% if latest_due_bill %}{{ latest_due_bill.invoice_number|escapejs }}{% endif %}";
 
         function updateUpiLink() {

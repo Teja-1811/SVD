@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.http import FileResponse, Http404
 from milk_agency.models import Item, Company
 from pathlib import Path
+from .firebase_views import firebase_messaging_sw
 
 
 # ======================================================
@@ -65,6 +66,7 @@ handler404 = "SVD.urls.custom_404_view"
 # ======================================================
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('firebase-messaging-sw.js', firebase_messaging_sw, name='firebase_messaging_sw'),
 
     # favicon
     path(

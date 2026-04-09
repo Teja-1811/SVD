@@ -1,46 +1,69 @@
 document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contactForm');
-    const whatsappBtn = document.getElementById('whatsappBtn');
+    const submitBtn = document.getElementById('contactSubmitBtn');
+    const alertBox = document.getElementById('contactFormAlert');
 
-    if (contactForm && whatsappBtn) {
+    if (contactForm && submitBtn) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Get form data
             const formData = new FormData(contactForm);
             const name = formData.get('name').trim();
             const phone = formData.get('phone').trim();
             const email = formData.get('email').trim();
-            const subject = formData.get('subject');
+            const subject = formData.get('subject').trim();
             const message = formData.get('message').trim();
 
-            // Validate required fields
             if (!name || !phone || !subject || !message) {
-                alert('Please fill in all required fields.');
+                showAlert('Please fill in all required fields.', 'danger');
                 return;
             }
 
-            // Generate WhatsApp message
-            const whatsappMessage = `New Contact Form Inquiry - SVD Milk Agencies\n\n` +
-                `Name: ${name}\n` +
-                `Phone: ${phone}\n` +
-                (email ? `Email: ${email}\n` : '') +
-                `Subject: ${subject}\n\n` +
-                `Message:\n${message}\n\n` +
-                `Inquiry received via SVD Milk Agencies website\n` +
-                `We typically respond within 24 hours`;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+            hideAlert();
 
-            // Encode the message for URL
-            const encodedMessage = encodeURIComponent(whatsappMessage);
-
-            // WhatsApp URL (using the phone number from the footer)
-            const whatsappURL = `https://wa.me/919392890375?text=${encodedMessage}`;
-
-            // Open WhatsApp
-            window.open(whatsappURL, '_blank');
-
-            // Optional: Reset form after sending
-            // contactForm.reset();
+            fetch('/milk_agency/contact/submit/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    contactForm.reset();
+                } else {
+                    showAlert(data.message || 'Unable to send message.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('An error occurred. Please try again.', 'danger');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send me-2"></i> Send Message';
+            });
         });
+    }
+
+    function showAlert(message, type) {
+        if (!alertBox) {
+            return;
+        }
+        alertBox.className = 'alert alert-' + type;
+        alertBox.textContent = message;
+    }
+
+    function hideAlert() {
+        if (!alertBox) {
+            return;
+        }
+        alertBox.className = 'alert d-none';
+        alertBox.textContent = '';
     }
 });

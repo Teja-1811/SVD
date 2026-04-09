@@ -552,8 +552,10 @@
                                 <strong>{{ order.order_number }}</strong>
                                 <div class="up-muted">{{ order.order_date|date:"M d, Y" }}</div>
                             </div>
-                            {% if order.status == "pending" %}
-                            <span class="up-chip chip-warning">Pending</span>
+                            {% if order.status == "payment_pending" %}
+                            <span class="up-chip chip-warning">Awaiting Paytm</span>
+                            {% elif order.status == "pending" %}
+                            <span class="up-chip chip-warning">Pending review</span>
                             {% elif order.status == "confirmed" %}
                             <span class="up-chip chip-success">Confirmed</span>
                             {% else %}
@@ -602,15 +604,15 @@
                     <strong id="paymentModalTotal">&#8377;0.00</strong>
                 </div>
                 <div class="up-payment-confirm">
-                    <strong>UPI payment</strong>
-                    <span>Your UPI app will open with the exact order amount for payment confirmation.</span>
-                    <span>UPI ID: <b>9392890375@pthdfc</b></span>
+                    <strong>Paytm payment</strong>
+                    <span>You will be redirected to the secure Paytm payment page with the exact order amount.</span>
+                    <span>Complete the payment there and we will verify it automatically.</span>
                 </div>
-                <div class="up-summary-note mt-3" id="paymentStepNote">Tap pay to open your UPI app. Your order will be created only after payment is confirmed by the payment gateway.</div>
+                <div class="up-summary-note mt-3" id="paymentStepNote">Tap continue to move to Paytm. Your order will be confirmed only after Paytm reports a successful payment.</div>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="up-btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmPaymentBtn" class="up-btn-primary">Pay</button>
+                <button type="button" id="confirmPaymentBtn" class="up-btn-primary">Continue to Paytm</button>
             </div>
         </div>
     </div>
@@ -704,10 +706,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function resetPaymentStep() {
         paymentStarted = false;
         preparedPaymentOrder = null;
-        confirmPaymentBtn.textContent = "Pay";
+        confirmPaymentBtn.textContent = "Continue to Paytm";
         confirmPaymentBtn.disabled = false;
         if (paymentStepNote) {
-            paymentStepNote.textContent = "Tap pay to open your UPI app. Your order will be created only after payment is confirmed by the payment gateway.";
+            paymentStepNote.textContent = "Tap continue to move to Paytm. Your order will be confirmed only after Paytm reports a successful payment.";
         }
     }
 
@@ -763,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
             submitOrderBtn.disabled = false;
             confirmPaymentBtn.disabled = false;
             submitOrderBtn.innerHTML = '<i class="bi bi-check2-circle"></i><span>Place order</span>';
-            confirmPaymentBtn.textContent = 'Pay';
+            confirmPaymentBtn.textContent = 'Continue to Paytm';
         }
     }
 
@@ -860,7 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function preparePaymentOrder() {
         const payload = {
             items: collectItems(),
-            payment_method: "UPI",
+            payment_method: "PAYTM",
         };
         if (currentMode === "prebook") {
             payload.delivery_date = prebookDate.value;
@@ -901,20 +903,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         preparedPaymentOrder = paymentOrder;
-        const amount = Number(paymentOrder.grand_total || 0).toFixed(2);
-        if (paymentModalTotal) {
-            paymentModalTotal.innerHTML = `&#8377;${amount}`;
+        const redirectUrl = paymentOrder.paytm_redirect_url;
+        if (!redirectUrl) {
+            alert("Could not start the Paytm payment flow.");
+            resetPaymentStep();
+            return;
         }
-        const transactionNote = encodeURIComponent(`SVD order ${paymentOrder.order_number}`);
-        const payeeName = encodeURIComponent("Sri Vijaya Durga Milk Agencies");
-        const upiUrl = `upi://pay?pa=9392890375@pthdfc&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
         paymentStarted = true;
-        confirmPaymentBtn.textContent = "Waiting for payment confirmation";
+        confirmPaymentBtn.textContent = "Redirecting to Paytm...";
         confirmPaymentBtn.disabled = true;
         if (paymentStepNote) {
-            paymentStepNote.textContent = `Your UPI app was opened for order ${paymentOrder.order_number}. This order will be confirmed automatically after gateway verification.`;
+            paymentStepNote.textContent = `Redirecting you to Paytm for order ${paymentOrder.order_number}. We will confirm the order after Paytm verification.`;
         }
-        window.location.href = upiUrl;
+        window.location.href = redirectUrl;
     });
 
     if (paymentModalElement) {

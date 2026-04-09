@@ -9,6 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from customer_portal.models import CustomerOrder
+from milk_agency.push_notifications import (
+    notify_order_delivery_status,
+    notify_subscription_delivery_status,
+)
 
 
 def _order_delivery_model():
@@ -299,6 +303,7 @@ def delivery_today_list(request):
 
 
 def _update_order_delivery(obj, data, user):
+    previous_status = obj.status
     status = data.get("status")
     if status:
         obj.status = status
@@ -312,9 +317,12 @@ def _update_order_delivery(obj, data, user):
         obj.notes = data.get("notes") or ""
     obj.delivered_by = user
     obj.save()
+    if obj.status != previous_status:
+        notify_order_delivery_status(obj.order, obj.status)
 
 
 def _update_subscription_delivery(obj, data, user):
+    previous_status = obj.status
     status = data.get("status")
     if status:
         obj.status = status
@@ -326,6 +334,8 @@ def _update_subscription_delivery(obj, data, user):
         obj.notes = data.get("notes") or ""
     obj.delivered_by = user
     obj.save()
+    if obj.status != previous_status:
+        notify_subscription_delivery_status(obj, obj.status)
 
 
 @api_view(["PATCH", "PUT"])

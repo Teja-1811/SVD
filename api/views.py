@@ -39,5 +39,10 @@ def login_api(request):
         "name": user.name,
         "role": role,
         "user_id": user.id,
-        "token": token.key
+        "token": token.key,
+        "capabilities": {
+            "push_registration": "/api/mobile/push/register/",
+            "push_unregistration": "/api/mobile/push/unregister/",
+            "prepare_payment_order": "/api/mobile/payments/prepare/",
+        },
     })
