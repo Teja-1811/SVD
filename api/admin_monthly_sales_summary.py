@@ -46,6 +46,11 @@ def api_monthly_sales_summary(request):
     sales_data = DailySalesSummary.objects.filter(
         date__year=year, date__month=month
     )
+    monthly_bills = Bill.objects.filter(
+        invoice_date__year=year,
+        invoice_date__month=month,
+        is_deleted=False,
+    )
 
     if customer_id:
         customer = Customer.objects.filter(id=customer_id).first()
@@ -53,7 +58,8 @@ def api_monthly_sales_summary(request):
             bills = Bill.objects.filter(
                 customer__retailer_id=customer.retailer_id,
                 invoice_date__year=year,
-                invoice_date__month=month
+                invoice_date__month=month,
+                is_deleted=False,
             ).order_by('invoice_date')
 
             sales_data = DailySalesSummary.objects.filter(
@@ -122,10 +128,30 @@ def api_monthly_sales_summary(request):
 
     remaining_due = customer.get_actual_due() - total_commission if customer else Decimal('0')
 
+    overview = {
+        "customers_count": monthly_bills.values("customer_id").distinct().count(),
+        "bills_count": monthly_bills.count(),
+        "total_sales": float(monthly_bills.aggregate(total=Coalesce(Sum('total_amount'), Decimal('0.00')))['total']),
+        "total_profit": float(monthly_bills.aggregate(total=Coalesce(Sum('profit'), Decimal('0.00')))['total']),
+    }
+
+    customer_options = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "phone": c.phone,
+            "retailer_id": c.retailer_id,
+        }
+        for c in Customer.objects.filter(user_type='retailer', frozen=False).order_by("name")
+    ]
+
     return Response({
         "year": year,
         "month": month,
         "days_in_month": days_in_month,
+        "selected_month": selected_month,
+        "overview": overview,
+        "customer_options": customer_options,
 
         "customer": {
             "id": customer.id if customer else None,

@@ -2,7 +2,7 @@
 Order creation/update/delete + pending listing for customer (user portal / Android).
 Uses CustomerOrder (with devivery_date) and CustomerOrderItem.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Iterable, Mapping, Optional, Tuple
 
@@ -21,6 +21,7 @@ from milk_agency.models import Customer, Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
 
 ACTIVE_ORDER_STATUSES = ("payment_pending", "pending", "confirmed", "processing", "ready")
+USER_COMPANY_NAME = "Dodla"
 
 
 # -------------------------------------------------------------------
@@ -50,7 +51,12 @@ def _parse_delivery_date(
     today = timezone.localdate()
     if not raw:
         return today, False
-    delivery_date = datetime.strptime(raw, "%Y-%m-%d").date()
+
+    try:
+        delivery_date = datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise ValueError("Invalid delivery date.") from exc
+
     if delivery_date < today and not (
         allow_past_if_same and delivery_date == allow_past_if_same
     ):
@@ -58,21 +64,60 @@ def _parse_delivery_date(
     return delivery_date, delivery_date != today
 
 
-def _coerce_items(items: Iterable[Mapping]) -> Iterable[Mapping]:
+def minimum_prebook_date():
+    return timezone.localdate() + timedelta(days=2)
+
+
+def _available_items(*, include_out_of_stock=False):
+    queryset = Item.objects.select_related("company").filter(
+        frozen=False,
+        company__name__iexact=USER_COMPANY_NAME,
+    )
+    if not include_out_of_stock:
+        queryset = queryset.filter(stock_quantity__gt=0)
+    return queryset
+
+
+def _coerce_items(items: Iterable[Mapping], *, is_prebooking: bool) -> Iterable[Mapping]:
     if not isinstance(items, list) or not items:
         raise ValueError("No items selected")
-    return items
+
+    normalized = {}
+    valid_items = {
+        item.id: item
+        for item in _available_items(include_out_of_stock=True)
+    }
+
+    for entry in items:
+        try:
+            item_id = int(entry.get("item_id"))
+            quantity = int(entry.get("quantity", 0))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid product selection.") from exc
+
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than zero")
+        if item_id not in valid_items:
+            raise ValueError("One or more selected products are unavailable.")
+
+        normalized.setdefault(item_id, {"item": valid_items[item_id], "quantity": 0})
+        normalized[item_id]["quantity"] += quantity
+
+    if not is_prebooking:
+        for entry in normalized.values():
+            item = entry["item"]
+            quantity = entry["quantity"]
+            if item.stock_quantity <= 0:
+                raise ValueError(f"{item.name} is out of stock.")
+            if quantity > item.stock_quantity:
+                raise ValueError(f"Only {item.stock_quantity} unit(s) available for {item.name}.")
+
+    return list(normalized.values())
 
 
 def _create_line(order: CustomerOrder, entry: Mapping) -> Decimal:
-    item_id = entry.get("item_id")
-    qty = int(entry.get("quantity", 0))
-    price = entry.get("price")
-
-    if qty <= 0:
-        raise ValueError("Quantity must be greater than zero")
-
-    item = get_object_or_404(Item, id=item_id)
+    item = entry["item"]
+    qty = int(entry["quantity"])
     unit_price = get_customer_unit_price(item, order.customer)
     line_total = unit_price * qty
 
@@ -97,8 +142,10 @@ def create_or_replace_order(
     initial_status: str = "pending",
     payment_method: str = "",
 ) -> CustomerOrder:
-    items = _coerce_items(items)
-    delivery_date, _ = _parse_delivery_date(delivery_date_str)
+    delivery_date, is_prebooking = _parse_delivery_date(delivery_date_str)
+    if is_prebooking and delivery_date < minimum_prebook_date():
+        raise ValueError("Pre-booking is allowed only from 2 days ahead.")
+    items = _coerce_items(items, is_prebooking=is_prebooking)
 
     with transaction.atomic():
         order = CustomerOrder.objects.filter(
@@ -140,15 +187,16 @@ def edit_order(
     items: Iterable[Mapping],
     delivery_date_str: Optional[str] = None,
 ) -> CustomerOrder:
-    items = _coerce_items(items)
-
     with transaction.atomic():
         order = get_object_or_404(CustomerOrder, id=order_id, customer=customer)
         # Allow editing an existing order even if its delivery date is now in the past,
         # as long as the client does not move it further back in time.
-        delivery_date, _ = _parse_delivery_date(
+        delivery_date, is_prebooking = _parse_delivery_date(
             delivery_date_str, allow_past_if_same=order.delivery_date
         )
+        if is_prebooking and delivery_date < minimum_prebook_date():
+            raise ValueError("Pre-booking is allowed only from 2 days ahead.")
+        items = _coerce_items(items, is_prebooking=is_prebooking)
         order.delivery_date = delivery_date
         order.items.all().delete()
 
@@ -187,7 +235,8 @@ def user_create_order(request):
             "success": True,
             "order_number": order.order_number,
             "delivery_date": str(order.delivery_date),
-            "message": "Order saved successfully",
+            "is_prebooking": order.delivery_date > timezone.localdate(),
+            "message": "Pre-booking saved successfully." if order.delivery_date > timezone.localdate() else "Order saved successfully.",
         })
     except Exception as e:
         return Response({"success": False, "message": str(e)}, status=400)

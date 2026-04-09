@@ -1,0 +1,96 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}Order History{% endblock %}
+
+{% block extra_css %}
+<style>
+.up-history { display:grid; gap:1rem; }
+.up-history-card {
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(22,52,61,0.1);
+    box-shadow: 0 22px 60px rgba(22,52,61,0.1);
+    border-radius: 28px;
+    padding: 1.2rem;
+}
+.up-history-grid {
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+.up-history-cell {
+    padding: 0.9rem 1rem;
+    border-radius: 18px;
+    background: rgba(22, 52, 61, 0.04);
+}
+.up-history-cell small { display:block; color:#60787a; margin-bottom:0.2rem; }
+.up-history-actions { margin-top: 1rem; display:flex; justify-content:flex-end; }
+.chip-neutral { background: rgba(22,52,61,0.08); color:#16343d; }
+@media (max-width: 767.98px) { .up-history-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="up-card">
+    <div class="up-section-head">
+        <div>
+            <span class="up-eyebrow">History</span>
+            <h2>Complete order history</h2>
+            <p class="up-muted mb-0">Every order is listed here, including cancelled and rejected ones.</p>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="up-history">
+        {% for order in orders %}
+        <article class="up-history-card">
+            <div class="up-order-card-top">
+                <div>
+                    <strong>{{ order.order_number }}</strong>
+                    <div class="up-muted">{{ order.order_date|date:"M d, Y" }}</div>
+                </div>
+                {% if order.status == "pending" or order.status == "payment_pending" %}
+                <span class="up-chip chip-warning">{{ order.status|title }}</span>
+                {% elif order.status == "confirmed" %}
+                <span class="up-chip chip-success">Confirmed</span>
+                {% elif order.status == "cancelled" or order.status == "rejected" %}
+                <span class="up-chip chip-danger">{{ order.status|title }}</span>
+                {% else %}
+                <span class="up-chip chip-neutral">{{ order.status|title }}</span>
+                {% endif %}
+            </div>
+
+            <div class="up-history-grid">
+                <div class="up-history-cell">
+                    <small>Delivery date</small>
+                    <strong>{{ order.delivery_date|date:"M d, Y" }}</strong>
+                </div>
+                <div class="up-history-cell">
+                    <small>Items total</small>
+                    <strong>&#8377;{{ order.approved_total_amount|default:order.total_amount|floatformat:2 }}</strong>
+                </div>
+                <div class="up-history-cell">
+                    <small>Delivery charge</small>
+                    <strong>&#8377;{{ order.delivery_charge|floatformat:2 }}</strong>
+                </div>
+                <div class="up-history-cell">
+                    <small>Payment</small>
+                    <strong>{{ order.payment_status|default:"pending"|title }}</strong>
+                </div>
+                <div class="up-history-cell">
+                    <small>Final total</small>
+                    <strong>&#8377;{{ order.display_total_amount|floatformat:2 }}</strong>
+                </div>
+            </div>
+
+            <div class="up-history-actions">
+                <a href="{% url 'users:order_detail' order.id %}" class="up-btn-primary">View</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="up-empty">No order history yet.</div>
+    {% endif %}
+</section>
+{% endblock %}

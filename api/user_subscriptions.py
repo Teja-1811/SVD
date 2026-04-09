@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from milk_agency.models import SubscriptionPause
 
 from .user_api_helpers import get_customer_or_response, get_latest_subscription
+from users.helpers import subscription_context
 
 
 @api_view(["POST"])
@@ -24,7 +25,7 @@ def subscription_pause_resume_api(request):
         return error
 
     if action == "pause":
-        active_subscription = get_latest_subscription(customer, active_only=True)
+        active_subscription, _ = subscription_context(customer)
         if not active_subscription:
             return Response({"error": "No active subscription found"}, status=status.HTTP_404_NOT_FOUND)
 

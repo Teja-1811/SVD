@@ -1,5 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db.models import Count, Sum, Value
+from django.db.models.functions import Coalesce
 from milk_agency.models import Item
 
 
@@ -21,7 +23,7 @@ def _absolute_media_url(request, file_field):
 @api_view(['GET'])
 def get_categories(request):
 
-    categories = (
+    categories = list(
         Item.objects
         .exclude(category__isnull=True)
         .exclude(category__exact="")
@@ -30,7 +32,22 @@ def get_categories(request):
         .order_by("category")
     )
 
-    return Response(list(categories))
+    summary = list(
+        Item.objects
+        .exclude(category__isnull=True)
+        .exclude(category__exact="")
+        .values("category")
+        .annotate(
+            total_items=Count("id"),
+            total_stock=Coalesce(Sum("stock_quantity"), Value(0)),
+        )
+        .order_by("category")
+    )
+
+    return Response({
+        "categories": categories,
+        "summary": summary,
+    })
 
 
 # -------------------------
@@ -44,7 +61,7 @@ def get_items_by_category(request):
     if not category:
         return Response({"error": "category parameter is required"}, status=400)
 
-    items = Item.objects.filter(category=category)
+    items = Item.objects.filter(category=category).select_related("company")
 
     data = [
         {
@@ -59,13 +76,19 @@ def get_items_by_category(request):
             "mrp": str(item.mrp),
             "stock_quantity": item.stock_quantity,
             "pcs_count": item.pcs_count,
+            "description": item.description or "",
             "image": _absolute_media_url(request, item.image),
             "frozen": item.frozen,
+            "stock_value": float((item.stock_quantity or 0) * (item.buying_price or 0)),
         }
         for item in items
     ]
 
-    return Response(data)
+    return Response({
+        "category": category,
+        "count": len(data),
+        "items": data,
+    })
 
 
 # -------------------------
@@ -101,7 +124,8 @@ def add_item(request):
         mrp=mrp or 0,
         stock_quantity=stock_quantity or 0,
         pcs_count=pcs_count or 1,
-        image=image
+        image=image,
+        description=request.data.get("description", ""),
     )
 
     return Response({
@@ -133,6 +157,7 @@ def edit_item(request, item_id):
     item.mrp = request.data.get("mrp", item.mrp)
     item.stock_quantity = request.data.get("stock_quantity", item.stock_quantity)
     item.pcs_count = request.data.get("pcs_count", item.pcs_count)
+    item.description = request.data.get("description", item.description)
 
     image = request.FILES.get("image")
     if image:
@@ -142,7 +167,8 @@ def edit_item(request, item_id):
 
     return Response({
         "success": True,
-        "message": "Item updated successfully"
+        "message": "Item updated successfully",
+        "item_id": item.id,
     })
 
 #-------------------------
@@ -162,5 +188,6 @@ def toggle_freeze_item(request, item_id):
     status = "frozen" if item.frozen else "unfrozen"
     return Response({
         "success": True,
-        "message": f"Item {status} successfully"
+        "message": f"Item {status} successfully",
+        "frozen": item.frozen,
     })

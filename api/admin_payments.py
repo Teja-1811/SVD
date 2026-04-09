@@ -78,6 +78,12 @@ def api_payments_dashboard(request):
     return Response({
         "year": year,
         "month": month,
+        "summary": {
+            "grand_total_invoice": float(grand_total_invoice),
+            "grand_total_paid": float(grand_total_paid),
+            "grand_total_due": float(grand_total_due),
+            "companies_count": len(payments),
+        },
         "payments": payments,
         "grand_total_invoice": float(grand_total_invoice),
         "grand_total_paid": float(grand_total_paid),
@@ -159,7 +165,14 @@ def api_save_daily_payments(request):
         }
     )
 
-    return Response({"success": True})
+    return Response({
+        "success": True,
+        "year": year,
+        "month": month,
+        "total_invoice": float(total_invoice),
+        "total_paid": float(total_paid),
+        "total_due": float(total_due),
+    })
 
 
 # ======================================================
@@ -187,6 +200,8 @@ def api_monthly_payment_summary(request):
         })
 
     return Response({
+        "year": year,
+        "month": month,
         "total_invoice": float(summary.total_invoice),
         "total_paid": float(summary.total_paid),
         "total_due": float(summary.total_due)

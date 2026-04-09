@@ -1,67 +1,58 @@
 from decimal import Decimal, InvalidOperation
+
 from django.db import transaction
-from milk_agency.models import Customer, CustomerPayment
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+
+from milk_agency.models import Bill, Customer, CustomerPayment
 
 
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def record_customer_payment(request):
+    customer = request.user
 
-    customer = request.user  # ✅ Correct (Customer is auth user)
-
-    # ---------- VALIDATE INPUT ----------
     try:
         amount = Decimal(request.data.get("amount"))
         if amount <= 0:
             raise InvalidOperation
     except (InvalidOperation, TypeError):
-        return Response(
-            {"error": "Invalid amount"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"error": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
 
     txn_id = request.data.get("transaction_id")
+    bill_id = request.data.get("bill_id")
+    method = request.data.get("method", "UPI")
+
     if not txn_id:
-        return Response(
-            {"error": "Transaction ID required"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"error": "Transaction ID required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # ---------- ATOMIC PAYMENT ----------
     with transaction.atomic():
-
-        # Lock row properly inside transaction
         customer = Customer.objects.select_for_update().get(pk=customer.pk)
 
         if CustomerPayment.objects.filter(transaction_id=txn_id).exists():
-            return Response(
-                {"error": "Duplicate transaction"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Duplicate transaction"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Save payment first (source of truth)
-        CustomerPayment.objects.create(
+        bill = None
+        if bill_id:
+            bill = Bill.objects.filter(id=bill_id, customer=customer, is_deleted=False).first()
+
+        payment = CustomerPayment.objects.create(
             customer=customer,
+            bill=bill,
             amount=amount,
             transaction_id=txn_id,
-            method="UPI",
-            status="SUCCESS"
+            method=method,
+            status="SUCCESS",
         )
 
-        # Recalculate due using accounting logic
         customer.due = customer.get_actual_due()
         customer.save()
 
     return Response(
-        {
-            "status": "success",
-            "new_balance": str(customer.get_actual_due())
-        },
-        status=status.HTTP_200_OK
+        {"status": "success", "payment_id": payment.id, "new_balance": str(customer.get_actual_due())},
+        status=status.HTTP_200_OK,
     )

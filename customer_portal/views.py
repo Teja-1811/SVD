@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import OperationalError, ProgrammingError
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
@@ -59,6 +60,84 @@ def _safe_count(queryset):
         return queryset.count()
     except (OperationalError, ProgrammingError):
         return 0
+
+
+def _customer_delivery_address(customer):
+    return ", ".join(
+        filter(
+            None,
+            [
+                customer.flat_number,
+                customer.area,
+                customer.city,
+                customer.state,
+                customer.pin_code,
+            ],
+        )
+    ) or "Not provided"
+
+
+def _normalize_order_items(raw_items):
+    if isinstance(raw_items, dict):
+        raw_items = list(raw_items.values())
+    if not isinstance(raw_items, list):
+        return []
+
+    normalized = []
+    for entry in raw_items:
+        if not isinstance(entry, dict):
+            continue
+
+        item_id = entry.get("item_id", entry.get("id"))
+        quantity = entry.get("quantity", entry.get("qty", 0))
+        normalized.append(
+            {
+                "item_id": item_id,
+                "quantity": quantity,
+            }
+        )
+    return normalized
+
+
+def _build_order_detail_payload(order_obj):
+    subtotal_amount = Decimal(order_obj.approved_total_amount or order_obj.total_amount or 0)
+    display_total_amount = subtotal_amount + Decimal(order_obj.delivery_charge or 0)
+    savings_amount = max(Decimal(order_obj.total_amount or 0) - subtotal_amount, Decimal("0.00"))
+    invoice_download_url = ""
+    bill = Bill.objects.filter(
+        customer=order_obj.customer,
+        total_amount=order_obj.approved_total_amount
+    ).order_by('-invoice_date').first()
+    if bill:
+        invoice_download_url = reverse("milk_agency:generate_invoice_pdf", args=[bill.id])
+
+    return {
+        "order": {
+            "id": order_obj.id,
+            "order_number": order_obj.order_number,
+            "status": order_obj.status,
+            "order_date": order_obj.order_date,
+            "delivery_date": order_obj.delivery_date,
+            "delivery_address": order_obj.delivery_address,
+            "delivery_charge": Decimal(order_obj.delivery_charge or 0),
+            "display_total_amount": display_total_amount,
+            "subtotal_amount": subtotal_amount,
+            "payment_method": order_obj.payment_method,
+            "payment_status": order_obj.payment_status,
+            "items": [
+                {
+                    "name": order_item.item.name if order_item.item else "",
+                    "requested_quantity": order_item.requested_quantity,
+                    "requested_price": Decimal(order_item.requested_price or 0),
+                    "requested_total": Decimal(order_item.requested_total or 0),
+                }
+                for order_item in order_obj.items.all()
+            ],
+        },
+        "subtotal_amount": subtotal_amount,
+        "invoice_download_url": invoice_download_url,
+        "savings_amount": savings_amount,
+    }
 
 
 # ======================================================
@@ -194,7 +273,7 @@ def customer_orders_dashboard(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            items = data.get('items', [])
+            items = _normalize_order_items(data.get('items', []))
 
             if not items:
                 return JsonResponse({'success': False, 'message': 'No items selected'})
@@ -204,13 +283,15 @@ def customer_orders_dashboard(request):
             order = CustomerOrder.objects.create(
                 order_number=order_number,
                 customer=request.user,
-                created_by=request.user
+                created_by=request.user,
+                delivery_date=today,
+                delivery_address=_customer_delivery_address(request.user),
             )
 
             total_amount = 0
             for i in items:
                 item = get_object_or_404(Item, id=i["item_id"])
-                qty = i["quantity"]
+                qty = int(i["quantity"])
                 price = get_customer_unit_price(item, request.user)
                 line_total = qty * price
 
@@ -293,7 +374,7 @@ def place_order(request):
             }, status=403)
 
         data = json.loads(request.body)
-        items = data.get("items", [])
+        items = _normalize_order_items(data.get("items", []))
 
         if not items:
             return JsonResponse({"success": False, "message": "No items selected"}, status=400)
@@ -301,13 +382,13 @@ def place_order(request):
         order_number = f"ORD-{now.strftime('%Y%m%d%H%M%S')}"
         customer = request.user
 
-        delivery_time = now.replace(hour=17, minute=0, second=0, microsecond=0)
-
         order = CustomerOrder.objects.create(
             order_number=order_number,
             customer=customer,
             created_by=customer,
-            delivery_time=delivery_time
+            order_date=now.date(),
+            delivery_date=now.date(),
+            delivery_address=_customer_delivery_address(customer),
         )
 
         total_amount = 0
@@ -385,21 +466,52 @@ def reports_dashboard(request):
 @never_cache
 @login_required
 def last_order_details(request):
-    order = CustomerOrder.objects.filter(customer=request.user).order_by('-order_date').first()
-    if order:
+    order_obj = (
+        CustomerOrder.objects.filter(customer=request.user)
+        .select_related("customer", "bill")
+        .prefetch_related("items__item")
+        .order_by("-order_date", "-id")
+        .first()
+    )
+    context = {
+        "order": None,
+        "invoice_download_url": "",
+        "savings_amount": Decimal("0.00"),
+    }
+    if order_obj:
+        context.update(_build_order_detail_payload(order_obj))
+    return render(request, "customer_portal/last_order_details.html", context)
+
+
+@never_cache
+@login_required
+def order_history(request):
+    orders = list(
+        CustomerOrder.objects.filter(customer=request.user)
+        .order_by("-order_date", "-id")
+    )
+    for order in orders:
         order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+    return render(
+        request,
+        "customer_portal/order_history.html",
+        {
+            "orders": orders,
+        },
+    )
 
-    bill = None
-    if order:
-        bill = Bill.objects.filter(
-            customer=order.customer,
-            total_amount=order.approved_total_amount
-        ).order_by('-invoice_date').first()
 
-    return render(request, "customer_portal/last_order_details.html", {
-        "order": order,
-        "bill": bill
-    })
+@never_cache
+@login_required
+def order_detail(request, order_id):
+    order_obj = get_object_or_404(
+        CustomerOrder.objects.filter(customer=request.user)
+        .select_related("customer", "bill")
+        .prefetch_related("items__item"),
+        id=order_id,
+    )
+    context = _build_order_detail_payload(order_obj)
+    return render(request, "customer_portal/order_detail.html", context)
 
 
 # ======================================================

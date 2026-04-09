@@ -1,0 +1,77 @@
+{% extends 'user_portal/base.html' %}
+
+{% block title %}Order Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+.up-detail-layout { display:grid; gap:1rem; }
+.up-detail-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:0.8rem; }
+.up-detail-cell, .up-item-row {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: rgba(22, 52, 61, 0.04);
+}
+.up-item-list { display:grid; gap:0.8rem; }
+.up-item-row { display:flex; justify-content:space-between; gap:1rem; align-items:center; }
+@media (max-width: 767.98px) { .up-detail-grid { grid-template-columns: 1fr; } .up-item-row { display:grid; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="up-card up-detail-layout">
+    <div class="up-section-head">
+        <div>
+            <span class="up-eyebrow">Order detail</span>
+            <h2>{{ order.order_number }}</h2>
+        </div>
+        {% if order.status == "pending" or order.status == "payment_pending" %}
+        <span class="up-chip chip-warning">{{ order.status|title }}</span>
+        {% elif order.status == "confirmed" %}
+        <span class="up-chip chip-success">Confirmed</span>
+        {% elif order.status == "cancelled" or order.status == "rejected" %}
+        <span class="up-chip chip-danger">{{ order.status|title }}</span>
+        {% else %}
+        <span class="up-chip">{{ order.status|title }}</span>
+        {% endif %}
+    </div>
+
+    <div class="up-detail-grid">
+        <div class="up-detail-cell"><small class="up-muted">Order date</small><div><strong>{{ order.order_date|date:"M d, Y" }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Delivery date</small><div><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Payment method</small><div><strong>{{ order.payment_method|default:"Not set" }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Payment status</small><div><strong>{{ order.payment_status|title }}</strong></div></div>
+        <div class="up-detail-cell" style="grid-column: 1 / -1;"><small class="up-muted">Delivery address</small><div><strong>{{ order.delivery_address }}</strong></div></div>
+    </div>
+
+    <div>
+        <div class="up-section-head">
+            <div>
+                <span class="up-eyebrow">Items</span>
+                <h3>Ordered products</h3>
+            </div>
+        </div>
+        <div class="up-item-list">
+            {% for item in order.items.all %}
+            <div class="up-item-row">
+                <div>
+                    <strong>{{ item.item.name }}</strong><br>
+                    <small class="up-muted">Qty {{ item.requested_quantity }} x &#8377;{{ item.requested_price|floatformat:2 }}</small>
+                </div>
+                <strong>&#8377;{{ item.requested_total|floatformat:2 }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="up-detail-grid">
+        <div class="up-detail-cell"><small class="up-muted">Subtotal</small><div><strong>&#8377;{{ subtotal_amount|floatformat:2 }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Delivery charge</small><div><strong>&#8377;{{ order.delivery_charge|floatformat:2 }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Final total</small><div><strong>&#8377;{{ display_total_amount|floatformat:2 }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Savings</small><div><strong>&#8377;{{ savings_amount|floatformat:2 }}</strong></div></div>
+    </div>
+
+    <div class="up-actions">
+        <a href="{% url 'users:order_history' %}" class="up-btn-secondary">Back to history</a>
+    </div>
+</section>
+{% endblock %}

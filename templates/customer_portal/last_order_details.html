@@ -60,19 +60,13 @@
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <p class="mb-1"><strong>Date:</strong> {{ order.order_date|date:"M d, Y - h:i A" }}</p>
+                    <p class="mb-1"><strong>Date:</strong> {{ order.order_date|date:"M d, Y" }}</p>
                     <p class="mb-1"><strong>Amount:</strong> Rs.{{ order.display_total_amount|floatformat:2 }}</p>
                 </div>
 
                 <div class="col-md-6">
                     <p class="mb-1"><strong>Delivery Address:</strong></p>
-                    <p class="text-muted small">{{ order.customer.shop_name }} <br>
-                        {{ order.customer.area }},
-                        {{ order.customer.city }},
-                        {{ order.customer.area }},
-                        {{ order.customer.state }} -
-                        {{ order.customer.pin_code }}
-                    </p>
+                    <p class="text-muted small">{{ order.delivery_address }}</p>
                 </div>
             </div>
 
@@ -80,11 +74,11 @@
 
             <h6 class="mb-2"><strong>Items</strong></h6>
 
-            {% for item in order.items.all %}
+            {% for item in order.items %}
             <div class="item-card">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <div class="item-name">{{ item.item.name }}</div>
+                        <div class="item-name">{{ item.name }}</div>
                         <div class="item-meta">
                             Qty: {{ item.requested_quantity }} x Rs.{{ item.requested_price|floatformat:2 }}
                         </div>
@@ -100,7 +94,7 @@
             <div class="totals-box mt-3">
                 <div class="d-flex justify-content-between mb-1">
                     <span>Subtotal</span>
-                    <strong>Rs.{{ order.approved_total_amount|default:order.total_amount|floatformat:2 }}</strong>
+                    <strong>Rs.{{ subtotal_amount|floatformat:2 }}</strong>
                 </div>
 
                 {% if order.delivery_charge > 0 %}
@@ -115,18 +109,18 @@
                     <strong>Rs.{{ order.display_total_amount|floatformat:2 }}</strong>
                 </div>
 
-                {% if order.approved_total_amount < order.total_amount %}
+                {% if savings_amount > 0 %}
                 <div class="d-flex justify-content-between text-success">
                     <span>You Saved</span>
-                    <strong>Rs.{{ order.total_amount|floatformat:2|add:"-"|add:order.approved_total_amount }}</strong>
+                    <strong>Rs.{{ savings_amount|floatformat:2 }}</strong>
                 </div>
                 {% endif %}
             </div>
 
             <div class="mt-3 d-flex justify-content-end gap-2">
                 {% if order.status == "confirmed" or order.status == "delivered" %}
-                    {% if bill %}
-                        <a href="{% url 'milk_agency:generate_invoice_pdf' bill.id %}" class="btn btn-secondary btn-sm">
+                    {% if invoice_download_url %}
+                        <a href="{{ invoice_download_url }}" class="btn btn-secondary btn-sm">
                             <i class="bi bi-download"></i> Download Invoice
                         </a>
                     {% endif %}

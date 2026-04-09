@@ -1,0 +1,113 @@
+{% extends "milk_agency/home/base.html" %}
+{% block title %}Order Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid ma-page-shell">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="text-primary mb-1">{{ order.order_number }}</h2>
+            <p class="text-muted mb-0">{{ order.customer.name }} • {{ order.customer.user_type|title }} • {{ order.customer.phone }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'milk_agency:customer_order_history' order.customer.id %}" class="btn btn-outline-primary">Back to history</a>
+            <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="btn btn-outline-secondary">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4" style="border-radius:16px;">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Status</div>
+                        <div class="fw-semibold">{{ order.status|title }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Order date</div>
+                        <div class="fw-semibold">{{ order.order_date|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Delivery date</div>
+                        <div class="fw-semibold">{{ order.delivery_date|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Payment</div>
+                        <div class="fw-semibold">{{ order.payment_status|title }}{% if order.payment_method %} • {{ order.payment_method }}{% endif %}</div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="bg-light rounded-3 p-3">
+                        <div class="small text-muted">Delivery address</div>
+                        <div class="fw-semibold">{{ order.delivery_address }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4" style="border-radius:16px;">
+        <div class="card-body">
+            <h5 class="mb-3">Items</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.item.name }}</td>
+                            <td>{{ item.requested_quantity }}</td>
+                            <td>Rs.{{ item.requested_price|floatformat:2 }}</td>
+                            <td>Rs.{{ item.requested_total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius:16px;">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Subtotal</div>
+                        <div class="fw-semibold">Rs.{{ subtotal_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Delivery charge</div>
+                        <div class="fw-semibold">Rs.{{ order.delivery_charge|floatformat:2 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Final total</div>
+                        <div class="fw-semibold">Rs.{{ display_total_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <div class="small text-muted">Savings</div>
+                        <div class="fw-semibold">Rs.{{ savings_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

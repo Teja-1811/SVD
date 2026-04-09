@@ -186,6 +186,10 @@
                                     <div class="col-sm-6"><strong>Customer:</strong><br>{{ order.customer.name }}</div>
                                     <div class="col-sm-6"><strong>Order Date:</strong><br>{{ order.order_date|localtime|date:"M d, Y h:i A" }}</div>
                                 </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-6"><strong>Type:</strong><br>{{ order.customer.user_type|title }}</div>
+                                    <div class="col-sm-6"><strong>Phone:</strong><br>{{ order.customer.phone }}</div>
+                                </div>
 
                                 <strong>Items:</strong>
                                 <div class="table-responsive mt-2">
@@ -236,6 +240,9 @@
                                 {% endif %}
 
                                 <div class="d-flex gap-2 order-actions mt-2">
+                                    <a class="btn btn-outline-primary btn-action" href="{% url 'milk_agency:customer_order_history' order.customer.id %}">
+                                        <i class="bi bi-clock-history"></i><span>History</span>
+                                    </a>
                                     <button class="btn btn-success btn-action" onclick="confirmOrder({{ order.id }})">
                                         <i class="bi bi-check-circle"></i><span>Confirm</span>
                                     </button>

@@ -1,5 +1,6 @@
 from django.http import JsonResponse
-from django.db.models import Sum, F
+from django.db.models import Count, Sum, F, DecimalField, ExpressionWrapper, Value, Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 
@@ -30,9 +31,19 @@ def companies_list_api(request):
     data = []
     for c in companies:
         item_stats = Item.objects.filter(company=c).aggregate(
-            total_items=Sum(1),
-            total_qty=Sum("stock_quantity"),
-            total_value=Sum(F("stock_quantity") * F("buying_price"))
+            total_items=Count("id"),
+            active_items=Count("id", filter=Q(frozen=False)),
+            total_qty=Coalesce(Sum("stock_quantity"), Value(0)),
+            total_value=Coalesce(
+                Sum(
+                    ExpressionWrapper(
+                        F("stock_quantity") * F("buying_price"),
+                        output_field=DecimalField(max_digits=14, decimal_places=2),
+                    )
+                ),
+                Value(0),
+            ),
+            low_stock_items=Count("id", filter=Q(stock_quantity__lte=5)),
         )
 
         data.append({
@@ -41,8 +52,10 @@ def companies_list_api(request):
             "logo": _absolute_media_url(request, c.logo),
             "website_link": c.website_link,
             "total_items": item_stats["total_items"] or 0,
+            "active_items": item_stats["active_items"] or 0,
             "total_qty": float(item_stats["total_qty"] or 0),
             "total_value": float(item_stats["total_value"] or 0),
+            "low_stock_items": item_stats["low_stock_items"] or 0,
         })
 
     return JsonResponse({
@@ -126,7 +139,7 @@ def company_items_api(request, company_id):
     items = Item.objects.filter(
         company_id=company_id,
         frozen=False
-    ).values("id", "name", "buying_price", "selling_price", "mrp")
+    ).values("id", "code", "name", "category", "buying_price", "selling_price", "mrp", "stock_quantity", "pcs_count")
 
     return JsonResponse(list(items), safe=False)
 

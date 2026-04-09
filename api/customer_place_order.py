@@ -1,107 +1,116 @@
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db import transaction
-from django.utils import timezone
-from django.shortcuts import get_object_or_404
 
+from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
-from customer_portal.models import CustomerOrder, CustomerOrderItem
 
 
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def place_order_api(request):
-    """
-    ANDROID PLACE ORDER API
-    Creates ONLY ONE order per day.
-    If order already exists -> update it.
-    """
-
     customer = request.user
     items = request.data.get("items", [])
     today = timezone.localdate()
+    delivery_date_raw = request.data.get("delivery_date")
+    delivery_address = str(request.data.get("delivery_address") or "").strip()
+    payment_method = str(request.data.get("payment_method") or "").strip().upper() or "COD"
 
     if not isinstance(items, list) or not items:
-        return Response(
-            {"success": False, "message": "No items selected"},
-            status=400
+        return Response({"success": False, "message": "No items selected"}, status=400)
+
+    try:
+        delivery_date = (
+            timezone.datetime.strptime(delivery_date_raw, "%Y-%m-%d").date()
+            if delivery_date_raw
+            else today
         )
+    except ValueError:
+        return Response({"success": False, "message": "Invalid delivery_date"}, status=400)
 
     try:
         with transaction.atomic():
-
-            # 🔎 CHECK TODAY ORDER
             order = CustomerOrder.objects.filter(
                 customer=customer,
-                order_date=today,
-                status="pending",
+                delivery_date=delivery_date,
+                status__in=["pending", "payment_pending"],
             ).first()
 
-            # 🆕 CREATE ORDER IF NOT EXISTS
             if not order:
                 order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
-
                 order = CustomerOrder.objects.create(
                     order_number=order_number,
+                    order_date=today,
+                    delivery_date=delivery_date,
+                    delivery_address=delivery_address,
                     customer=customer,
                     created_by=customer,
+                    payment_method=payment_method,
+                    payment_status="pending",
                 )
-
             else:
                 order_number = order.order_number
-
-                # OPTIONAL: clear previous items
                 order.items.all().delete()
+                order.delivery_date = delivery_date
+                if delivery_address:
+                    order.delivery_address = delivery_address
+                order.payment_method = payment_method
 
             total_amount = 0
 
-            for i in items:
-                item_id = i.get("item_id")
-                qty = int(i.get("quantity", 0))
+            for item_data in items:
+                item_id = item_data.get("item_id")
+                qty = int(item_data.get("quantity", 0))
 
                 item = get_object_or_404(Item, id=item_id)
                 price = get_customer_unit_price(item, customer)
 
                 if qty <= 0 or price <= 0:
-                    return Response(
-                        {"success": False, "message": "Invalid item data"},
-                        status=400
-                    )
+                    return Response({"success": False, "message": "Invalid item data"}, status=400)
 
                 line_total = qty * price
-
-                # CREATE ORDER ITEM
                 CustomerOrderItem.objects.create(
                     order=order,
                     item=item,
                     requested_quantity=qty,
                     requested_price=price,
-                    requested_total=line_total
+                    approved_quantity=qty,
+                    approved_price=price,
+                    requested_total=line_total,
                 )
-
                 total_amount += line_total
 
-            # UPDATE TOTAL
-            order.delivery_charge = get_delivery_charge_amount(customer=customer, address=order.delivery_address)
+            order.delivery_charge = get_delivery_charge_amount(
+                customer=customer,
+                address=order.delivery_address or delivery_address,
+            )
             order.total_amount = total_amount
             order.approved_total_amount = total_amount
+            order.status = "payment_pending" if payment_method not in ("COD", "CASH") else "pending"
             order.save()
 
-            return Response({
-                "success": True,
-                "order_number": order_number,
-                "message": "Order updated successfully"
-            })
+            return Response(
+                {
+                    "success": True,
+                    "order_id": order.id,
+                    "order_number": order_number,
+                    "delivery_date": str(order.delivery_date),
+                    "delivery_charge": float(order.delivery_charge or 0),
+                    "grand_total": float((order.total_amount or 0) + (order.delivery_charge or 0)),
+                    "status": order.status,
+                    "message": "Order updated successfully",
+                }
+            )
 
-    except Exception as e:
-        return Response(
-            {"success": False, "message": str(e)},
-            status=500
-        )
+    except Exception as exc:
+        return Response({"success": False, "message": str(exc)}, status=500)
+
 
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
@@ -111,25 +120,32 @@ def customer_current_day_order_api(request):
     today = timezone.localdate()
 
     orders = (
-        CustomerOrder.objects.filter(customer=customer, status="pending", order_date=today)
+        CustomerOrder.objects.filter(customer=customer, delivery_date=today)
         .prefetch_related("items__item")
-        .order_by("-order_date")
+        .order_by("-created_at")
     )
 
     if not orders.exists():
-        return Response({
-            "message": "No orders found for today",
-            "customer_id": customer.id,
-            "customer_name": customer.name
-        }, status=404)
+        return Response(
+            {"message": "No orders found for today", "customer_id": customer.id, "customer_name": customer.name},
+            status=404,
+        )
 
     orders_data = []
     for order in orders:
         order_data = {
+            "order_id": order.id,
             "order_number": order.order_number,
             "total_amount": float(order.total_amount),
+            "approved_total_amount": float(order.approved_total_amount or 0),
+            "delivery_charge": float(order.delivery_charge or 0),
+            "grand_total": float((order.total_amount or 0) + (order.delivery_charge or 0)),
             "status": order.status,
             "order_date": order.order_date.strftime("%Y-%m-%d"),
+            "delivery_date": order.delivery_date.strftime("%Y-%m-%d"),
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
+            "delivery_address": order.delivery_address,
             "created_at": timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M:%S"),
             "items": [],
         }
@@ -147,11 +163,4 @@ def customer_current_day_order_api(request):
 
         orders_data.append(order_data)
 
-    return Response(
-        {
-            "date": str(today),
-            "orders": orders_data,
-        },
-        status=200,
-    )
-
+    return Response({"date": str(today), "orders": orders_data}, status=200)

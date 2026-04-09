@@ -2,6 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from decimal import Decimal
@@ -58,6 +60,7 @@ def api_list_bills(request):
     customer_id = request.GET.get("customer")
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
+    q = (request.GET.get("q") or "").strip()
     page = request.GET.get("page", 1)
 
     bills = Bill.objects.filter(is_deleted=False).select_related("customer").order_by('-invoice_date', '-id')
@@ -71,6 +74,17 @@ def api_list_bills(request):
     if end_date:
         bills = bills.filter(invoice_date__lte=end_date)
 
+    if q:
+        bills = bills.filter(
+            Q(customer__name__icontains=q)
+            | Q(invoice_number__icontains=q)
+            | Q(customer__phone__icontains=q)
+        )
+
+    total_amount = bills.aggregate(
+        total=Coalesce(Sum("total_amount"), Decimal("0.00"))
+    )["total"]
+
     paginator = Paginator(bills, 25)
     page_obj = paginator.get_page(page)
 
@@ -81,13 +95,19 @@ def api_list_bills(request):
             "invoice_number": b.invoice_number,
             "invoice_date": str(b.invoice_date),
             "customer": b.customer.name if b.customer else "Anonymous",
+            "customer_id": b.customer_id,
             "total_amount": str(b.total_amount),
             "op_due": str(b.op_due_amount),
             "current_due": str(b.customer.get_actual_due()) if b.customer else "0",
-            "profit": str(b.profit)
+            "last_paid": str(b.last_paid),
+            "profit": str(b.profit),
         })
 
     return Response({
+        "summary": {
+            "total_amount": float(total_amount),
+            "bill_count": paginator.count,
+        },
         "results": data,
         "current_page": page_obj.number,
         "total_pages": paginator.num_pages,
@@ -111,11 +131,13 @@ def api_bill_detail(request, bill_id):
         "invoice_number": bill.invoice_number,
         "invoice_date": str(bill.invoice_date),
         "customer": bill.customer.name if bill.customer else None,
+        "customer_id": bill.customer_id,
         "total_amount": float(bill.total_amount),
         "op_due_amount": float(bill.op_due_amount),
         "last_paid": float(bill.last_paid),
         "current_due": float(bill.customer.get_actual_due() if bill.customer else 0),
-        "profit": float(bill.profit)
+        "profit": float(bill.profit),
+        "created_at": bill.created_at.isoformat() if bill.created_at else None,
     })
 
 
@@ -129,7 +151,11 @@ def api_bill_items(request, bill_id):
 
     return Response([
         {
+            "bill_item_id": i.id,
+            "item_id": i.item_id,
+            "item_code": i.item.code,
             "item_name": i.item.name,
+            "category": i.item.category,
             "quantity": i.quantity,
             "price_per_unit": float(i.price_per_unit),
             "discount": float(i.discount),
@@ -233,7 +259,7 @@ def api_create_bill(request):
             customer.due = customer.get_actual_due()
             customer.save()
 
-    return Response({"success": True, "bill_id": bill.id})
+    return Response({"success": True, "bill_id": bill.id, "invoice_number": bill.invoice_number})
 
 
 # ------------------------------------------
@@ -337,7 +363,7 @@ def api_edit_bill(request, bill_id):
             new_customer.due = new_customer.get_actual_due()
             new_customer.save()
 
-    return Response({"success": True})
+    return Response({"success": True, "bill_id": bill.id, "invoice_number": bill.invoice_number})
 
 
 # ------------------------------------------
@@ -363,7 +389,7 @@ def api_delete_bill(request, bill_id):
             bill.customer.due = bill.customer.get_actual_due()
             bill.customer.save()
 
-    return Response({"success": True})
+    return Response({"success": True, "bill_id": bill.id})
 
 
 @api_view(['GET'])

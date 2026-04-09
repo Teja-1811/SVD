@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from customer_portal.models import CustomerOrder, CustomerOrderItem
@@ -18,34 +19,61 @@ from milk_agency.views_bills import generate_bill_from_order
 @api_view(['GET'])
 def api_admin_orders_dashboard(request):
 
+    status_filter = request.GET.get("status", "").strip().lower()
     pending_orders = CustomerOrder.objects.filter(
-        status="pending"
-    ).select_related("customer").prefetch_related("items__item").order_by("-order_date")
+        status__in=["pending", "payment_pending", "confirmed"]
+    ).select_related("customer", "approved_by", "bill").prefetch_related("items__item").order_by("delivery_date", "-order_date")
+
+    if status_filter:
+        pending_orders = pending_orders.filter(status=status_filter)
 
     orders = []
 
     for order in pending_orders:
+        grand_total = float((order.total_amount or 0) + (order.delivery_charge or 0))
         orders.append({
             "order_id": order.id,
+            "order_number": order.order_number,
             "order_date": str(order.order_date),
+            "delivery_date": str(order.delivery_date),
             "customer_id": order.customer.id if order.customer else None,
             "customer_name": order.customer.name if order.customer else "",
+            "phone": order.customer.phone if order.customer else "",
+            "status": order.status,
             "total_amount": float(order.total_amount or 0),
+            "approved_total_amount": float(order.approved_total_amount or 0),
+            "delivery_charge": float(order.delivery_charge or 0),
+            "grand_total": grand_total,
+            "payment_status": order.payment_status,
+            "payment_method": order.payment_method,
+            "payment_reference": order.payment_reference,
+            "bill_id": order.bill_id,
             "items": [
                 {
+                    "order_item_id": oi.id,
                     "item_id": oi.item.id,
                     "item_name": oi.item.name,
                     "requested_price": float(oi.requested_price),
                     "requested_quantity": oi.requested_quantity,
+                    "approved_quantity": oi.approved_quantity,
+                    "approved_price": float(oi.approved_price or 0),
                     "discount": float(oi.discount or 0),
                     "discount_total": float(oi.discount_total or 0),
-                    "requested_total": float(oi.requested_total or 0)
+                    "requested_total": float(oi.requested_total or 0),
+                    "approved_total": float(oi.approved_total or 0),
+                    "admin_notes": oi.admin_notes or "",
                 }
                 for oi in order.items.all()
             ]
         })
 
     return Response({
+        "summary": {
+            "total_pending": pending_orders.count(),
+            "payment_pending": pending_orders.filter(status="payment_pending").count(),
+            "review_pending": pending_orders.filter(status="pending").count(),
+            "confirmed": pending_orders.filter(status="confirmed").count(),
+        },
         "total_pending": pending_orders.count(),
         "orders": orders
     })
@@ -74,10 +102,21 @@ def api_order_detail(request, order_id):
 
     return Response({
         "order_id": order.id,
+        "order_number": order.order_number,
         "order_date": str(order.order_date),
+        "delivery_date": str(order.delivery_date),
         "customer_name": order.customer.name if order.customer else "",
+        "customer_id": order.customer_id,
+        "phone": order.customer.phone if order.customer else "",
         "status": order.status,
         "total_amount": float(order.total_amount or 0),
+        "approved_total_amount": float(order.approved_total_amount or 0),
+        "delivery_charge": float(order.delivery_charge or 0),
+        "payment_status": order.payment_status,
+        "payment_method": order.payment_method,
+        "payment_reference": order.payment_reference,
+        "delivery_address": order.delivery_address,
+        "bill_id": order.bill_id,
         "items": items
     })
 

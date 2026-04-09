@@ -1,18 +1,21 @@
+from decimal import Decimal
+
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from api.user_bill_pdf_utils import UserPDFGenerator
 from customer_portal.models import CustomerOrder, CustomerOrderItem
-from milk_agency.models import Bill, BillItem, Customer, SubscriptionItem, SubscriptionPlan
+from milk_agency.models import Bill, BillItem, Customer, SubscriptionPlan
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE
+from users.helpers import dashboard_cards, latest_bills, minimum_prebook_date, subscription_context
 
 from .user_api_helpers import (
     coerce_bool,
     find_linked_order_for_bill,
     get_customer_or_response,
     get_delivery_charge_for_bill,
-    get_latest_subscription,
     serialize_auto_upi,
     serialize_customer,
     serialize_customer_subscription,
@@ -20,7 +23,18 @@ from .user_api_helpers import (
     serialize_subscription_item,
     serialize_subscription_pauses,
 )
-from .user_offers import get_active_user_offers
+
+
+def _parse_selected_month(raw_value):
+    selected_month = raw_value or timezone.now().strftime("%Y-%m")
+    try:
+        year, month = map(int, selected_month.split("-"))
+    except (TypeError, ValueError):
+        today = timezone.now()
+        year = today.year
+        month = today.month
+        selected_month = today.strftime("%Y-%m")
+    return selected_month, year, month
 
 
 def _serialize_bill_list_item(bill, current_due):
@@ -46,6 +60,12 @@ def _serialize_bill_item(bill_item):
         "quantity": bill_item.quantity,
         "total_amount": float(bill_item.total_amount),
     }
+
+
+def _serialize_dashboard_order(order):
+    if not order:
+        return None
+    return _serialize_order(order)
 
 
 def _serialize_order_item(order_item):
@@ -89,12 +109,9 @@ def user_dashboard_api(request):
     if error:
         return error
 
-    latest_subscription = get_latest_subscription(customer)
-    plan_items = []
-    if latest_subscription:
-        plan_items = SubscriptionItem.objects.filter(
-            subscription_plan=latest_subscription.subscription_plan
-        ).select_related("item")
+    cards = dashboard_cards(customer)
+    latest_subscription = cards["subscription"]
+    plan_items = cards["subscription_items"]
 
     response_payload = {
         "status": True,
@@ -102,8 +119,22 @@ def user_dashboard_api(request):
         "subscription": serialize_customer_subscription(latest_subscription, items=plan_items),
         "subscription_history": serialize_subscription_history(customer),
         "subscription_pauses": serialize_subscription_pauses(customer),
-        "offers": get_active_user_offers(),
+        "offers": cards["offers"],
         "auto_upi": serialize_auto_upi(customer),
+        "dashboard": {
+            "actual_due": float(cards["actual_due"]),
+            "available_item_count": cards["available_item_count"],
+            "today_order_count": cards["today_order_count"],
+            "prebook_order_count": cards["prebook_order_count"],
+            "latest_order": _serialize_dashboard_order(cards["latest_order"]),
+            "recent_bills": [
+                _serialize_bill_list_item(bill, float(cards["actual_due"]))
+                for bill in cards["recent_bills"]
+            ],
+            "profile_completion": cards["profile_completion"],
+            "primary_address": cards["primary_address"],
+            "minimum_prebook_date": minimum_prebook_date(),
+        },
     }
     return Response(response_payload, status=200)
 
@@ -115,9 +146,23 @@ def user_bills_api(request):
         return error
 
     current_due = float(customer.get_actual_due() or 0)
-    bills = Bill.objects.filter(customer=customer, is_deleted=False).order_by("-invoice_date", "-id")
+    selected_month, year, month = _parse_selected_month(request.GET.get("date"))
+    bills = latest_bills(customer).filter(invoice_date__year=year, invoice_date__month=month)
     data = [_serialize_bill_list_item(bill, current_due) for bill in bills]
-    return Response({"bills": data}, status=200)
+    total_amount = sum(Decimal(bill.total_amount or 0) for bill in bills)
+    average_amount = (total_amount / bills.count()) if bills else Decimal("0.00")
+    return Response(
+        {
+            "bills": data,
+            "selected_date": selected_month,
+            "current_year": year,
+            "current_month": month,
+            "total_amount": float(total_amount),
+            "average_amount": float(average_amount),
+            "current_due": current_due,
+        },
+        status=200,
+    )
 
 
 @api_view(["GET"])
@@ -274,11 +319,7 @@ def current_subscription_api(request):
     if error:
         return error
 
-    subscription = get_latest_subscription(customer, active_only=True)
-    if subscription:
-        items = SubscriptionItem.objects.filter(subscription_plan=subscription.subscription_plan).select_related("item")
-    else:
-        items = []
+    subscription, items = subscription_context(customer)
 
     return Response(serialize_customer_subscription(subscription, items=items), status=200)
 

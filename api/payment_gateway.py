@@ -60,6 +60,14 @@ def confirm_order_payment_api(request):
 
     if not order:
         return JsonResponse({"success": False, "message": "Order not found."}, status=404)
+    if order.status not in {"payment_pending", "confirmed"}:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "This order is not awaiting online payment confirmation.",
+            },
+            status=400,
+        )
 
     try:
         order, bill, payment = finalize_order_after_payment(

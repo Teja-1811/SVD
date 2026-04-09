@@ -1,51 +1,45 @@
+from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.utils import timezone
 
-from milk_agency.models import Offers, OfferItems
+from milk_agency.models import OfferItems, Offers
 
 
 @api_view(["GET"])
 def customer_offers(request):
-
     today = timezone.localdate()
-
     offers = Offers.objects.filter(
         offer_for="retailer",
         is_active=True,
         start_date__lte=today,
-        end_date__gte=today
-    )
+        end_date__gte=today,
+    ).order_by("end_date", "name")
 
     data = []
-
     for offer in offers:
+        items = OfferItems.objects.filter(offer=offer).select_related("item")
+        item_list = [
+            {
+                "item_id": item.item.id,
+                "item_name": item.item.name,
+                "buy_qty": item.buy_qty,
+                "offer_qty": item.offer_qty,
+                "offer_price": float(item.offer_price or 0),
+            }
+            for item in items
+        ]
 
-        items = OfferItems.objects.filter(offer=offer)
+        data.append(
+            {
+                "id": offer.id,
+                "name": offer.name,
+                "offer_type": offer.offer_type,
+                "price": float(offer.price or 0),
+                "description": offer.description,
+                "start_date": str(offer.start_date),
+                "end_date": str(offer.end_date),
+                "items": item_list,
+            }
+        )
 
-        item_list = []
-
-        for i in items:
-            item_list.append({
-                "item_id": i.item.id,
-                "item_name": i.item.name,
-                "buy_qty": i.buy_qty,
-                "offer_qty": i.offer_qty,
-                "offer_price": i.offer_price
-            })
-
-        data.append({
-            "id": offer.id,
-            "name": offer.name,
-            "offer_type": offer.offer_type,
-            "price": offer.price,
-            "description": offer.description,
-            "start_date": offer.start_date,
-            "end_date": offer.end_date,
-            "items": item_list
-        })
-
-    return Response({
-        "status": True,
-        "offers": data
-    })
+    return Response({"status": True, "count": len(data), "offers": data})

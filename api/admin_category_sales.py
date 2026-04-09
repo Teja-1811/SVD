@@ -138,6 +138,19 @@ def api_sales_summary_by_category(request):
         year_totals[str(year)] = round(total_liters, 3)
 
     customers = list(Customer.objects.order_by("name").values("id", "name"))
+    top_categories = sorted(
+        (
+            {
+                "category": category,
+                "volume": round(float(data_by_category.get(category, 0.0)), 3),
+                "amount": round(float(amount_by_category.get(category, 0.0)), 2),
+            }
+            for category in categories
+        ),
+        key=lambda row: row["volume"],
+        reverse=True,
+    )[:5]
+
     return Response(
         {
             "period": period,
@@ -156,6 +169,11 @@ def api_sales_summary_by_category(request):
             "total_compare_volume": round(total_compare_volume, 3),
             "diff_volume": round(diff_volume, 3),
             "diff_percent": round(diff_percent, 2) if diff_percent is not None else None,
+            "summary": {
+                "period": period,
+                "categories_count": len(categories),
+                "top_categories": top_categories,
+            },
             "customers": customers,
             "selected_customer": int(customer_id) if customer_id else None,
         },

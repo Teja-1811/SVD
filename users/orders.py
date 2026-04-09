@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from decimal import Decimal
 
+from customer_portal.models import CustomerOrder
 from .helpers import (
     active_orders,
     grouped_catalog,
@@ -21,6 +23,44 @@ def orders_page(request):
             "prebook_items_by_category": grouped_catalog(request.user, include_out_of_stock=True),
             "active_orders": active_orders(request.user),
             "min_prebooking_date": minimum_prebook_date(),
+        },
+    )
+
+
+@user_required
+def order_history_page(request):
+    orders = list(
+        CustomerOrder.objects.filter(customer=request.user)
+        .order_by("-order_date", "-id")
+    )
+    for order in orders:
+        order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+    return render(
+        request,
+        "user_portal/order_history.html",
+        {
+            "orders": orders,
+        },
+    )
+
+
+@user_required
+def order_detail_page(request, order_id):
+    order = get_object_or_404(
+        CustomerOrder.objects.filter(customer=request.user).prefetch_related("items__item"),
+        id=order_id,
+    )
+    subtotal_amount = Decimal(order.approved_total_amount or order.total_amount or 0)
+    display_total_amount = subtotal_amount + Decimal(order.delivery_charge or 0)
+    savings_amount = max(Decimal(order.total_amount or 0) - subtotal_amount, Decimal("0.00"))
+    return render(
+        request,
+        "user_portal/order_detail.html",
+        {
+            "order": order,
+            "subtotal_amount": subtotal_amount,
+            "display_total_amount": display_total_amount,
+            "savings_amount": savings_amount,
         },
     )
 

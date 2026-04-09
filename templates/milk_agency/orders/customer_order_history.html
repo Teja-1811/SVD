@@ -1,0 +1,67 @@
+{% extends "milk_agency/home/base.html" %}
+{% load tz %}
+{% block title %}Customer Order History{% endblock %}
+
+{% block content %}
+<div class="container-fluid ma-page-shell">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="text-primary mb-1">{{ history_customer.name }} Order History</h2>
+            <p class="text-muted mb-0">{{ history_customer.user_type|title }} account • {{ history_customer.phone }}</p>
+        </div>
+        <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="btn btn-outline-secondary">Back to dashboard</a>
+    </div>
+
+    {% if orders %}
+    <div class="row g-4">
+        {% for order in orders %}
+        <div class="col-lg-6 col-xl-4 col-md-6 col-12">
+            <div class="card shadow-sm border-0 h-100" style="border-radius:16px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h5 class="mb-1">{{ order.order_number }}</h5>
+                            <div class="text-muted small">{{ order.order_date|date:"M d, Y" }}</div>
+                        </div>
+                        {% if order.status == "pending" or order.status == "payment_pending" %}
+                        <span class="badge text-dark bg-warning">{{ order.status|title }}</span>
+                        {% elif order.status == "confirmed" %}
+                        <span class="badge bg-success">Confirmed</span>
+                        {% elif order.status == "cancelled" or order.status == "rejected" %}
+                        <span class="badge bg-danger">{{ order.status|title }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ order.status|title }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="small text-muted mb-2">Delivery date</div>
+                    <div class="fw-semibold mb-3">{{ order.delivery_date|date:"M d, Y" }}</div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 h-100">
+                                <div class="small text-muted">Items total</div>
+                                <div class="fw-semibold">Rs.{{ order.approved_total_amount|default:order.total_amount|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3 h-100">
+                                <div class="small text-muted">Final total</div>
+                                <div class="fw-semibold">Rs.{{ order.display_total_amount|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <a href="{% url 'milk_agency:admin_order_detail' order.id %}" class="btn btn-primary">View details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No order history found for this account.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -8,6 +8,7 @@ from milk_agency.models import Contact
 def _serialize_enquiry(contact: Contact):
     return {
         "id": contact.id,
+        "customer_id": contact.customer_id,
         "name": contact.name,
         "phone": contact.phone,
         "email": contact.email or "",

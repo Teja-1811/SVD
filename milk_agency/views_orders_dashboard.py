@@ -12,6 +12,8 @@ from milk_agency.models import OrderDelivery, SubscriptionDelivery, Subscription
 from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from customer_portal.order_workflow import finalize_order_after_payment
+from api.user_api_helpers import find_linked_order_for_bill, get_delivery_charge_for_bill
+from milk_agency.models import Bill
 
 
 class SubscriptionDeliveryFallback:
@@ -81,6 +83,23 @@ def _parse_filter_date(raw):
         return datetime.strptime(raw, "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _admin_order_detail_context(order):
+    subtotal_amount = Decimal(order.approved_total_amount or order.total_amount or 0)
+    display_total_amount = subtotal_amount + Decimal(order.delivery_charge or 0)
+    savings_amount = max(Decimal(order.total_amount or 0) - subtotal_amount, Decimal("0.00"))
+    bill = Bill.objects.filter(
+        customer=order.customer,
+        total_amount=order.approved_total_amount,
+    ).order_by("-invoice_date").first()
+    return {
+        "order": order,
+        "subtotal_amount": subtotal_amount,
+        "display_total_amount": display_total_amount,
+        "savings_amount": savings_amount,
+        "bill": bill,
+    }
 
 
 def _resolve_order_status(order, has_order_delivery_table):
@@ -164,6 +183,39 @@ def admin_orders_dashboard(request):
         'pending_orders': pending_orders,
         'total_pending': pending_orders.count()
     })
+
+
+@never_cache
+@login_required
+def customer_order_history(request, customer_id):
+    customer = get_object_or_404(Customer.objects, id=customer_id)
+    orders = (
+        CustomerOrder.objects.filter(customer_id=customer_id)
+        .select_related("customer", "approved_by")
+        .order_by("-order_date", "-id")
+    )
+    for order in orders:
+        order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+
+    return render(
+        request,
+        "milk_agency/orders/customer_order_history.html",
+        {
+            "history_customer": customer,
+            "orders": orders,
+        },
+    )
+
+
+@never_cache
+@login_required
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(
+        CustomerOrder.objects.select_related("customer", "approved_by", "bill").prefetch_related("items__item"),
+        id=order_id,
+    )
+    context = _admin_order_detail_context(order)
+    return render(request, "milk_agency/orders/admin_order_detail.html", context)
 
 
 @never_cache

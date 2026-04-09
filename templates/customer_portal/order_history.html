@@ -1,0 +1,90 @@
+{% extends 'customer_portal/base.html' %}
+
+{% block title %}Order History{% endblock %}
+
+{% block extra_css %}
+<style>
+.history-shell { padding-top: 2rem; }
+.history-stack { display: grid; gap: 1rem; }
+.history-card {
+    background: #fff;
+    border: 1px solid #e9eef5;
+    border-radius: 24px;
+    padding: 1.15rem;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+.history-cell {
+    background: #f8fafc;
+    border-radius: 18px;
+    padding: 0.85rem 1rem;
+}
+.history-cell small { display:block; color:#64748b; margin-bottom:0.22rem; }
+.history-cell strong { color:#0f172a; }
+.history-actions { margin-top: 1rem; display:flex; justify-content:flex-end; }
+.status-pill {
+    display:inline-flex; align-items:center; padding:0.45rem 0.8rem; border-radius:999px; font-weight:700; font-size:0.82rem;
+}
+.status-pending, .status-payment_pending { background:#fef3c7; color:#a16207; }
+.status-confirmed { background:#dcfce7; color:#166534; }
+.status-cancelled, .status-rejected { background:#fee2e2; color:#b91c1c; }
+@media (max-width: 767.98px) { .history-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid portal-page-shell history-shell">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Order History</h2>
+            <p class="text-muted mb-0">View every order including cancelled and rejected ones.</p>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="history-stack">
+        {% for order in orders %}
+        <article class="history-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">{{ order.order_number }}</h5>
+                    <div class="text-muted">{{ order.order_date|date:"M d, Y" }}</div>
+                </div>
+                <span class="status-pill status-{{ order.status }}">{{ order.status|title }}</span>
+            </div>
+
+            <div class="history-grid">
+                <div class="history-cell">
+                    <small>Delivery date</small>
+                    <strong>{{ order.delivery_date|date:"M d, Y" }}</strong>
+                </div>
+                <div class="history-cell">
+                    <small>Items total</small>
+                    <strong>Rs.{{ order.approved_total_amount|default:order.total_amount|floatformat:2 }}</strong>
+                </div>
+                <div class="history-cell">
+                    <small>Delivery charge</small>
+                    <strong>Rs.{{ order.delivery_charge|floatformat:2 }}</strong>
+                </div>
+                <div class="history-cell">
+                    <small>Final total</small>
+                    <strong>Rs.{{ order.display_total_amount|floatformat:2 }}</strong>
+                </div>
+            </div>
+
+            <div class="history-actions">
+                <a href="{% url 'customer_portal:order_detail' order.id %}" class="btn btn-soft-primary">View details</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No orders found yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

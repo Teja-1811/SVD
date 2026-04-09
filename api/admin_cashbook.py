@@ -166,6 +166,19 @@ def api_cashbook_dashboard(request):
         "date": str(today),
         "month": month,
         "year": year,
+        "summary": {
+            "cash_in": float(cash_in),
+            "cash_out": float(total_cash_out),
+            "bank_balance": float(bank_balance),
+            "total_company_dues": float(total_company_dues),
+            "total_customer_dues": float(total_customer_dues),
+            "monthly_loss": float(monthly_loss),
+            "monthly_profit": float(monthly_profit),
+            "net_profit": float(net_profit),
+            "net_cash": float(net_cash),
+            "stock_value": float(stock_value),
+            "remaining_amount": float(remaining_amount),
+        },
         "cash_in": cash_in,
         "denominations": denominations,
         "cash_out": total_cash_out,
@@ -179,6 +192,16 @@ def api_cashbook_dashboard(request):
         "net_cash": net_cash,
         "stock_value": stock_value,
         "remaining_amount": remaining_amount,
+        "expense_preview": [
+            {
+                "id": expense.id,
+                "date": str(expense.date),
+                "category": expense.category,
+                "amount": float(expense.amount),
+                "description": expense.description,
+            }
+            for expense in expenses.order_by("-date", "-created_at")[:10]
+        ],
         "leakage_entries": [
             {
                 "id": entry.id,
@@ -212,7 +235,7 @@ def api_save_cash_in(request):
         setattr(cash_entry, field, int(request.data.get(field, 0)))
 
     cash_entry.save()
-    return Response({"success": True})
+    return Response({"success": True, "denominations": fields})
 
 
 # ======================================================
@@ -315,6 +338,6 @@ def api_save_bank_balance(request):
         bank_balance_obj, _ = BankBalance.objects.get_or_create(id=1)
         bank_balance_obj.amount = amount
         bank_balance_obj.save()
-        return Response({"success": True})
+        return Response({"success": True, "amount": float(amount)})
     except Exception:
         return Response({"error": "Invalid amount"}, status=400)

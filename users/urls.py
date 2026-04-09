@@ -3,7 +3,14 @@ from django.urls import path
 from .dashboard import dashboard
 from .invoices import invoice_detail, invoices_page
 from .offers import offers_page
-from .orders import cancel_order, orders_page, place_order, prepare_payment_order
+from .orders import (
+    cancel_order,
+    order_detail_page,
+    order_history_page,
+    orders_page,
+    place_order,
+    prepare_payment_order,
+)
 from .subscriptions import subscriptions_page
 
 
@@ -12,6 +19,8 @@ app_name = "users"
 urlpatterns = [
     path("", dashboard, name="dashboard"),
     path("orders/", orders_page, name="orders"),
+    path("orders/history/", order_history_page, name="order_history"),
+    path("orders/<int:order_id>/", order_detail_page, name="order_detail"),
     path("orders/place/", place_order, name="place_order"),
     path("orders/payment/prepare/", prepare_payment_order, name="prepare_payment_order"),
     path("orders/<int:order_id>/cancel/", cancel_order, name="cancel_order"),

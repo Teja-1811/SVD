@@ -33,9 +33,21 @@ def api_user_list(request):
                 "frozen": user.frozen,
                 "retailer_id": user.retailer_id or "",
                 "area": user.area or "",
+                "city": user.city or "",
+                "state": user.state or "",
             }
         )
-    return Response({"users": data}, status=200)
+    return Response(
+        {
+            "summary": {
+                "total_users": len(data),
+                "frozen_users": sum(1 for row in data if row["frozen"]),
+                "active_users": sum(1 for row in data if not row["frozen"]),
+            },
+            "users": data,
+        },
+        status=200,
+    )
 
 
 @api_view(["GET"])
@@ -48,6 +60,8 @@ def api_user_detail(request, pk):
             "shop_name": user.shop_name or "",
             "phone": user.phone or "",
             "due": float(user.get_actual_due() or 0),
+            "flat_number": user.flat_number or "",
+            "pin_code": user.pin_code or "",
             "city": user.city,
             "state": user.state,
             "area": user.area,
@@ -122,6 +136,8 @@ def api_add_edit_user(request):
     name = request.data.get("name")
     shop_name = request.data.get("shop_name", "")
     phone = request.data.get("phone", "")
+    flat_number = request.data.get("flat_number", "")
+    pin_code = request.data.get("pin_code", "")
     city = request.data.get("city", "")
     state = request.data.get("state", "")
     retailer_id = request.data.get("retailer_id", "")
@@ -135,6 +151,8 @@ def api_add_edit_user(request):
         user.name = name
         user.shop_name = shop_name
         user.phone = phone
+        user.flat_number = flat_number
+        user.pin_code = pin_code
         user.city = city
         user.state = state
         user.area = area
@@ -142,17 +160,20 @@ def api_add_edit_user(request):
         user.save()
         message = "User updated successfully"
     else:
-        user = Customer.objects.create(
+        user = Customer(
             name=name,
             shop_name=shop_name,
             phone=phone,
+            flat_number=flat_number,
+            pin_code=pin_code,
             city=city,
             state=state,
             area=area,
             retailer_id=retailer_id,
             user_type="user",
-            password=phone or "123456",
         )
+        user.set_password(phone or "123456")
+        user.save()
         message = "User added successfully"
 
     return Response({"success": True, "message": message, "id": user.id}, status=200)

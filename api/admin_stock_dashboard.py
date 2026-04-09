@@ -30,6 +30,8 @@ def stock_dashboard_api(request):
 
     # -------- SUMMARY ----------
     total_items = Item.objects.count()
+    active_items = Item.objects.filter(frozen=False).count()
+    out_of_stock_count = Item.objects.filter(stock_quantity=0).count()
 
     total_stock_value = Item.objects.annotate(
         value=ExpressionWrapper(
@@ -128,8 +130,10 @@ def stock_dashboard_api(request):
     return Response({
         "summary": {
             "total_items": total_items,
+            "active_items": active_items,
             "total_stock_value": float(total_stock_value or 0),
             "low_stock_count": low_stock_count,
+            "out_of_stock_count": out_of_stock_count,
             "stock_in_30d": float(stock_in or 0),
             "stock_out_30d": float(stock_out or 0),
             "monthly_loss": float(monthly_loss or 0),
@@ -208,7 +212,8 @@ def update_stock_api(request):
 
     return Response({
         "status": "success",
-        "updated_items": updated
+        "updated_items": updated,
+        "updated_count": len(updated),
     })
 
 

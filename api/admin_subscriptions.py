@@ -9,7 +9,9 @@ from milk_agency.models import (
     Customer,
     CustomerSubscription,
     Item,
+    SubscriptionDelivery,
     SubscriptionItem,
+    SubscriptionOrder,
     SubscriptionPlan,
     UserPayment,
 )
@@ -120,6 +122,13 @@ def api_subscription_dashboard(request):
 
     return Response(
         {
+            "summary": {
+                "total_active": active_subscriptions.count(),
+                "total_expired": expired_subscriptions.count(),
+                "total_plans": plans.count(),
+                "expiring_count": expiring_soon.count(),
+                "deactivated_count": de_activated_subscriptions.count(),
+            },
             "plans": [_serialize_plan(p) for p in plans],
             "active_subscriptions": [_serialize_subscription(s) for s in active_subscriptions],
             "de_activated_subscriptions": [_serialize_subscription(s) for s in de_activated_subscriptions],
@@ -425,23 +434,49 @@ def api_record_subscription_payment(request, subscription_id):
 @api_view(["GET"])
 def api_today_deliveries(request):
     today = timezone.now().date()
-    deliveries = CustomerSubscription.objects.filter(
-        is_active=True,
-        end_date__gte=today,
-    ).select_related("customer", "subscription_plan")
+    deliveries = SubscriptionDelivery.objects.filter(
+        subscription_order__date=today
+    ).select_related(
+        "subscription_order__customer",
+        "subscription_order__subscription__subscription_plan",
+        "subscription_order__item",
+        "bill",
+        "delivered_by",
+    ).order_by("subscription_order__customer__name", "subscription_order__item__name")
 
     return Response(
-        [
+        {
+            "date": str(today),
+            "summary": {
+                "total": deliveries.count(),
+                "pending": deliveries.filter(status="pending").count(),
+                "out_for_delivery": deliveries.filter(status="out_for_delivery").count(),
+                "delivered": deliveries.filter(status="delivered").count(),
+                "failed": deliveries.filter(status="failed").count(),
+                "skipped": deliveries.filter(status="skipped").count(),
+            },
+            "deliveries": [
             {
-                "subscription_id": d.id,
-                "customer_id": d.customer_id,
-                "customer": d.customer.name,
-                "phone": d.customer.phone,
-                "plan_id": d.subscription_plan_id,
-                "plan": d.subscription_plan.name,
-                "start_date": str(d.start_date),
-                "end_date": str(d.end_date),
+                "delivery_id": d.id,
+                "subscription_order_id": d.subscription_order_id,
+                "subscription_id": d.subscription_order.subscription_id,
+                "customer_id": d.subscription_order.customer_id,
+                "customer": d.subscription_order.customer.name,
+                "phone": d.subscription_order.customer.phone,
+                "plan_id": d.subscription_order.subscription.subscription_plan_id if d.subscription_order.subscription else None,
+                "plan": d.subscription_order.subscription.subscription_plan.name if d.subscription_order.subscription else None,
+                "item_id": d.subscription_order.item_id,
+                "item_name": d.subscription_order.item.name if d.subscription_order.item else None,
+                "quantity": d.subscription_order.quantity,
+                "status": d.status,
+                "eta": d.eta.isoformat() if d.eta else None,
+                "delivered_at": d.delivered_at.isoformat() if d.delivered_at else None,
+                "notes": d.notes or "",
+                "bill_id": d.bill_id,
+                "invoice_number": d.bill.invoice_number if d.bill else None,
+                "delivered_by": d.delivered_by.name if d.delivered_by else None,
             }
             for d in deliveries
-        ]
+            ],
+        }
     )

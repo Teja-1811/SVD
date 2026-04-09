@@ -10,7 +10,6 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-from milk_agency.models import BillItem
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE
 from milk_agency.utils import InvoicePDFUtils
 
@@ -25,7 +24,7 @@ class UserPDFGenerator:
         self.margin = 20
 
     def generate_invoice_pdf(self, bill):
-        bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
+        bill_items = list(bill.items.all().select_related("item"))
         display_items = [item for item in bill_items if getattr(item.item, "code", "") != DELIVERY_ITEM_CODE]
 
         buffer = BytesIO()
@@ -44,7 +43,7 @@ class UserPDFGenerator:
         return pdf_path
 
     def generate_and_return_pdf(self, bill, request=None):
-        bill_items = list(BillItem.objects.filter(bill=bill).select_related("item"))
+        bill_items = list(bill.items.all().select_related("item"))
         display_items = [item for item in bill_items if getattr(item.item, "code", "") != DELIVERY_ITEM_CODE]
 
         buffer = BytesIO()

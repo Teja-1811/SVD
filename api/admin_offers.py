@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -37,8 +38,14 @@ def _serialize_offer(offer):
 def api_offers_dashboard(request):
     offers = Offers.objects.all().prefetch_related("offeritems_set__item").order_by("-id")
     items = Item.objects.filter(frozen=False).order_by("name")
+    today = timezone.localdate()
 
     return Response({
+        "summary": {
+            "total_offers": offers.count(),
+            "active_offers": offers.filter(is_active=True, start_date__lte=today, end_date__gte=today).count(),
+            "expired_offers": offers.filter(end_date__lt=today).count(),
+        },
         "offers": [_serialize_offer(offer) for offer in offers],
         "items": [
             {
@@ -46,6 +53,7 @@ def api_offers_dashboard(request):
                 "name": item.name,
                 "company_name": item.company.name if item.company else None,
                 "stock_quantity": item.stock_quantity,
+                "selling_price": float(item.selling_price or 0),
             }
             for item in items
         ],

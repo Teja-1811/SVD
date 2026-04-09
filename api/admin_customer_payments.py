@@ -1,5 +1,6 @@
 from django.http import JsonResponse
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 
@@ -14,8 +15,9 @@ def customer_payments_api(request):
 
     customer_filter = request.GET.get("customer", "").strip()
     transaction_id_filter = request.GET.get("transaction_id", "").strip()
+    status_filter = request.GET.get("status", "").strip()
 
-    payments = CustomerPayment.objects.select_related("customer").all().order_by("-created_at")
+    payments = CustomerPayment.objects.select_related("customer", "bill").all().order_by("-created_at")
 
     if customer_filter:
         payments = payments.filter(
@@ -25,6 +27,13 @@ def customer_payments_api(request):
     if transaction_id_filter:
         payments = payments.filter(transaction_id__icontains=transaction_id_filter)
 
+    if status_filter:
+        payments = payments.filter(status__iexact=status_filter)
+
+    total_amount = payments.aggregate(
+        total=Coalesce(Sum("amount"), 0)
+    )["total"]
+
     data = []
     for p in payments.values(
         "id",
@@ -33,12 +42,21 @@ def customer_payments_api(request):
         "method",
         "status",
         "created_at",
+        "bill_id",
+        bill_invoice_number=F("bill__invoice_number"),
         customer_name=F("customer__name"),
+        customer_id=F("customer_id"),
     ):
         p["created_at"] = p["created_at"].strftime("%Y-%m-%d %H:%M:%S")
         data.append(p)
 
     return JsonResponse({
+        "summary": {
+            "count": len(data),
+            "total_amount": float(total_amount or 0),
+            "success_count": sum(1 for p in data if str(p["status"]).upper() == "SUCCESS"),
+            "failed_count": sum(1 for p in data if str(p["status"]).upper() == "FAILED"),
+        },
         "count": len(data),
         "payments": data
     })

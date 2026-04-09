@@ -1,5 +1,3 @@
-from urllib.parse import quote
-
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +9,7 @@ from milk_agency.models import Contact
 def _serialize_contact_ticket(contact: Contact):
     return {
         "id": contact.id,
+        "customer_id": contact.customer_id,
         "name": contact.name,
         "phone": contact.phone,
         "email": contact.email or "",
@@ -28,6 +27,7 @@ def api_support_ticket_summary(request):
     customer_contacts = Contact.objects.filter(customer=request.user)
     raised_tickets = customer_contacts.filter(status="active").count()
     resolved_tickets = customer_contacts.filter(status="resolved").count()
+    latest_ticket = customer_contacts.order_by("-created_at").first()
 
     return Response(
         {
@@ -35,6 +35,7 @@ def api_support_ticket_summary(request):
             "raised_tickets": raised_tickets,
             "resolved_tickets": resolved_tickets,
             "total_tickets": raised_tickets + resolved_tickets,
+            "latest_ticket": _serialize_contact_ticket(latest_ticket) if latest_ticket else None,
         }
     )
 
@@ -50,6 +51,8 @@ def customer_raised_queries_api(request):
         {
             "success": True,
             "count": len(data),
+            "active_count": sum(1 for row in data if row["status"] == "active"),
+            "resolved_count": sum(1 for row in data if row["status"] == "resolved"),
             "queries": data,
         }
     )
@@ -66,13 +69,7 @@ def customer_contact_api(request):
     message = str(request.data.get("message", "")).strip()
 
     if not all([name, phone, subject, message]):
-        return Response(
-            {
-                "success": False,
-                "message": "Please fill all required fields.",
-            },
-            status=400,
-        )
+        return Response({"success": False, "message": "Please fill all required fields."}, status=400)
 
     contact = Contact.objects.create(
         customer=request.user,
@@ -82,7 +79,6 @@ def customer_contact_api(request):
         subject=subject,
         message=message,
     )
-
 
     return Response(
         {

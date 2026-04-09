@@ -30,10 +30,21 @@ def api_customer_list(request):
             "shop_name": c.shop_name or "",
             "phone": c.phone or "",
             "due": float(c.get_actual_due() or 0),
-            "frozen": c.frozen
+            "frozen": c.frozen,
+            "city": c.city or "",
+            "state": c.state or "",
+            "area": c.area or "",
+            "retailer_id": c.retailer_id or "",
         })
 
-    return Response({"customers": data})
+    return Response({
+        "summary": {
+            "total_customers": len(data),
+            "frozen_customers": sum(1 for row in data if row["frozen"]),
+            "active_customers": sum(1 for row in data if not row["frozen"]),
+        },
+        "customers": data,
+    })
 
 
 # =========================
@@ -50,10 +61,15 @@ def api_customer_detail(request, pk):
         "shop_name": c.shop_name or "",
         "phone": c.phone or "",
         "due": float(c.get_actual_due() or 0),
+        "flat_number": c.flat_number or "",
+        "area": c.area or "",
+        "pin_code": c.pin_code or "",
         "city": c.city,
         "state": c.state,
         "frozen": c.frozen,
-        "retailer_id": c.retailer_id
+        "retailer_id": c.retailer_id,
+        "is_delivery": c.is_delivery,
+        "is_commissioned": c.is_commissioned,
     })
 
 
@@ -152,6 +168,9 @@ def api_add_edit_customer(request):
     name = request.data.get("name")
     shop_name = request.data.get("shop_name", "")
     phone = request.data.get("phone", "")
+    area = request.data.get("area", "")
+    flat_number = request.data.get("flat_number", "")
+    pin_code = request.data.get("pin_code", "")
     city = request.data.get("city", "")
     state = request.data.get("state", "")
     retailer_id = request.data.get("retailer_id", "")
@@ -165,21 +184,31 @@ def api_add_edit_customer(request):
         customer.name = name
         customer.shop_name = shop_name
         customer.phone = phone
+        customer.area = area
+        customer.flat_number = flat_number
+        customer.pin_code = pin_code
         customer.city = city
         customer.state = state
         customer.retailer_id = retailer_id
         customer.save()
         message = "Customer updated successfully"
     else:
-        # Add new customer
-        Customer.objects.create(
+        customer = Customer(
             name=name,
             shop_name=shop_name,
             phone=phone,
+            area=area,
+            flat_number=flat_number,
+            pin_code=pin_code,
             city=city,
             state=state,
             retailer_id=retailer_id
         )
+        if phone:
+            customer.set_password(phone)
+        else:
+            customer.set_password("123456")
+        customer.save()
         message = "Customer added successfully"
 
-    return Response({"success": True, "message": message})
+    return Response({"success": True, "message": message, "customer_id": customer.id})

@@ -129,6 +129,8 @@ urlpatterns = [
     
     # Admin Orders Dashboard URLs
     path('admin-orders-dashboard/', views_orders_dashboard.admin_orders_dashboard, name='admin_orders_dashboard'),
+    path('admin-orders-dashboard/customer/<int:customer_id>/history/', views_orders_dashboard.customer_order_history, name='customer_order_history'),
+    path('admin-orders-dashboard/orders/<int:order_id>/', views_orders_dashboard.admin_order_detail, name='admin_order_detail'),
     path('admin-delivery-dashboard/', views_orders_dashboard.admin_delivery_dashboard, name='admin_delivery_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),
