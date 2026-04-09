@@ -109,28 +109,28 @@ def _normalized_amount(value):
     return str(Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
-def build_callback_url(request):
-    return request.build_absolute_uri(reverse("users:paytm_callback"))
+def build_callback_url(request, url_name="users:paytm_callback", *, kwargs=None):
+    return request.build_absolute_uri(reverse(url_name, kwargs=kwargs))
 
 
-def initiate_paytm_transaction(request, order, *, amount):
+def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None, callback_url=None):
     config = get_paytm_config()
-    callback_url = build_callback_url(request)
+    callback_url = callback_url or build_callback_url(request)
     body = {
         "requestType": "Payment",
         "mid": config.mid,
         "websiteName": config.website,
-        "orderId": order.order_number,
+        "orderId": gateway_order_id,
         "callbackUrl": callback_url,
         "txnAmount": {
             "value": _normalized_amount(amount),
             "currency": "INR",
         },
         "userInfo": {
-            "custId": str(order.customer_id),
-            "mobile": getattr(order.customer, "phone", "") or "",
-            "email": getattr(order.customer, "email", "") or "",
-            "firstName": getattr(order.customer, "name", "") or "",
+            "custId": str(getattr(customer, "id", "") or ""),
+            "mobile": getattr(customer, "phone", "") or "",
+            "email": getattr(customer, "email", "") or "",
+            "firstName": getattr(customer, "name", "") or "",
         },
     }
     signature = _generate_signature(body, config.merchant_key)
@@ -138,7 +138,7 @@ def initiate_paytm_transaction(request, order, *, amount):
         "body": body,
         "head": {"signature": signature},
     }
-    query = parse.urlencode({"mid": config.mid, "orderId": order.order_number})
+    query = parse.urlencode({"mid": config.mid, "orderId": gateway_order_id})
     response = _call_paytm_api(f"{config.initiate_transaction_url}?{query}", payload)
     result_info = response.get("body", {}).get("resultInfo", {})
     result_code = str(result_info.get("resultCode") or "").strip()
@@ -148,12 +148,22 @@ def initiate_paytm_transaction(request, order, *, amount):
         raise PaytmGatewayError(str(message))
     return {
         "mid": config.mid,
-        "order_id": order.order_number,
+        "order_id": gateway_order_id,
         "txn_token": txn_token,
         "amount": _normalized_amount(amount),
         "callback_url": callback_url,
         "gateway_url": f"{config.show_payment_page_url}?{query}",
     }
+
+
+def initiate_paytm_transaction(request, order, *, amount):
+    return initiate_paytm_checkout(
+        request,
+        gateway_order_id=order.order_number,
+        amount=amount,
+        customer=order.customer,
+        callback_url=build_callback_url(request, "users:paytm_callback"),
+    )
 
 
 def verify_callback_checksum(params):

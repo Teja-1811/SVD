@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
+from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_order_updated
 
 
 @api_view(["POST"])
@@ -41,6 +42,7 @@ def place_order_api(request):
                 delivery_date=delivery_date,
                 status__in=["pending", "payment_pending"],
             ).first()
+            created_new = order is None
 
             if not order:
                 order_number = f"ORD-{timezone.now().strftime('%Y%m%d%H%M%S')}"
@@ -94,6 +96,8 @@ def place_order_api(request):
             order.approved_total_amount = total_amount
             order.status = "payment_pending" if payment_method not in ("COD", "CASH") else "pending"
             order.save()
+            notifier = notify_admin_order_placed if created_new else notify_admin_order_updated
+            transaction.on_commit(lambda order_id=order.id, notify_func=notifier: notify_func(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
 
             return Response(
                 {

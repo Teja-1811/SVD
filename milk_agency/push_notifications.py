@@ -239,6 +239,39 @@ def notify_admin_order_placed(order):
     )
 
 
+def notify_admin_order_updated(order):
+    actor_type = "User" if getattr(order.customer, "user_type", "").lower() == "user" else "Retailer"
+    return send_admin_push(
+        title="Order Updated",
+        body=f"{actor_type} {order.customer.name} updated order {order.order_number}.",
+        data={
+            "click_action": reverse("milk_agency:admin_order_detail", args=[order.id]),
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "customer_id": order.customer_id,
+            "customer_name": order.customer.name,
+            "tag": f"admin-order-update-{order.id}",
+        },
+        tag=f"admin-order-update-{order.id}",
+    )
+
+
+def notify_admin_order_deleted(customer, order_id):
+    actor_type = "User" if getattr(customer, "user_type", "").lower() == "user" else "Retailer"
+    return send_admin_push(
+        title="Order Deleted",
+        body=f"{actor_type} {customer.name} deleted order #{order_id}.",
+        data={
+            "click_action": reverse("milk_agency:admin_orders_dashboard"),
+            "order_id": order_id,
+            "customer_id": customer.id,
+            "customer_name": customer.name,
+            "tag": f"admin-order-delete-{order_id}",
+        },
+        tag=f"admin-order-delete-{order_id}",
+    )
+
+
 def notify_admin_enquiry_created(contact):
     return send_admin_push(
         title="New Enquiry",

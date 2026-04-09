@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 from django.utils import timezone
-from milk_agency.models import OrderDelivery, SubscriptionDelivery, SubscriptionOrder
+from milk_agency.models import Customer, OrderDelivery, SubscriptionDelivery, SubscriptionOrder
 from milk_agency.push_notifications import notify_order_rejected
 from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
@@ -184,6 +184,47 @@ def admin_orders_dashboard(request):
         'pending_orders': pending_orders,
         'total_pending': pending_orders.count()
     })
+
+
+@never_cache
+@login_required
+def admin_orders_history(request):
+    selected_customer = (request.GET.get("customer") or "").strip()
+    order_query = (request.GET.get("order_id") or "").strip()
+
+    customer_choices = (
+        Customer.objects.filter(orders__isnull=False)
+        .distinct()
+        .order_by("name")
+    )
+
+    orders = (
+        CustomerOrder.objects.select_related("customer", "approved_by", "bill")
+        .prefetch_related("items__item")
+        .order_by("-order_date", "-id")
+    )
+
+    if selected_customer.isdigit():
+        orders = orders.filter(customer_id=int(selected_customer))
+
+    if order_query:
+        orders = orders.filter(order_number__icontains=order_query)
+
+    orders = list(orders)
+    for order in orders:
+        order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+        order.items_count = order.items.count()
+
+    return render(
+        request,
+        "milk_agency/orders/admin_order_history.html",
+        {
+            "orders": orders,
+            "customer_choices": customer_choices,
+            "selected_customer": selected_customer,
+            "order_query": order_query,
+        },
+    )
 
 
 @never_cache

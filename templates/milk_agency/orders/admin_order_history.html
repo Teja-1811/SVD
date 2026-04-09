@@ -1,0 +1,192 @@
+{% extends "milk_agency/home/base.html" %}
+{% load tz %}
+{% block title %}Orders History{% endblock %}
+
+{% block content %}
+<style>
+.history-shell {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.history-filter-card,
+.history-summary-card,
+.history-order-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 14px 32px rgba(15, 35, 64, 0.08);
+}
+
+.history-filter-card {
+    background: linear-gradient(135deg, #f7fbff 0%, #ffffff 100%);
+}
+
+.history-summary-card {
+    background: linear-gradient(135deg, #1f6bff 0%, #0d4ed8 100%);
+    color: #fff;
+}
+
+.history-summary-card .text-muted {
+    color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.history-order-card .badge {
+    font-size: 0.75rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+}
+
+.history-stat {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 0.95rem 1rem;
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.history-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.history-meta-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 0.85rem 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .history-meta {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="container-fluid ma-page-shell">
+    <div class="history-shell">
+        <div class="history-summary-card p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h2 class="mb-1">Orders History</h2>
+                    <p class="text-muted mb-0">Review all customer orders, then narrow the list by customer or order number.</p>
+                </div>
+                <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="btn btn-light">Back to Pending Orders</a>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-sm-4">
+                    <div class="history-stat">
+                        <div class="small text-uppercase">Showing</div>
+                        <div class="fs-4 fw-semibold">{{ orders|length }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="history-stat">
+                        <div class="small text-uppercase">Customers</div>
+                        <div class="fs-4 fw-semibold">{{ customer_choices|length }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="history-stat">
+                        <div class="small text-uppercase">Search</div>
+                        <div class="fs-6 fw-semibold">{% if order_query %}{{ order_query }}{% else %}All order records{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card history-filter-card">
+            <div class="card-body p-4">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-lg-5 col-md-6">
+                        <label for="customerFilter" class="form-label fw-semibold">Customer</label>
+                        <select id="customerFilter" name="customer" class="form-select">
+                            <option value="">All customers</option>
+                            {% for customer in customer_choices %}
+                            <option value="{{ customer.id }}" {% if selected_customer == customer.id|stringformat:"s" %}selected{% endif %}>
+                                {{ customer.name }}{% if customer.phone %} - {{ customer.phone }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-5 col-md-6">
+                        <label for="orderSearch" class="form-label fw-semibold">Order ID</label>
+                        <input
+                            id="orderSearch"
+                            type="text"
+                            name="order_id"
+                            class="form-control"
+                            placeholder="Search by order number"
+                            value="{{ order_query }}"
+                        >
+                    </div>
+                    <div class="col-lg-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">Search</button>
+                        <a href="{% url 'milk_agency:admin_orders_history' %}" class="btn btn-outline-secondary flex-fill">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if orders %}
+        <div class="history-grid">
+            {% for order in orders %}
+            <div class="card history-order-card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <div class="text-muted small">Order Number</div>
+                            <h5 class="mb-1">{{ order.order_number }}</h5>
+                            <div class="small text-muted">{{ order.order_date|date:"M d, Y" }}</div>
+                        </div>
+                        {% if order.status == "pending" or order.status == "payment_pending" %}
+                        <span class="badge bg-warning text-dark">{{ order.status|title }}</span>
+                        {% elif order.status == "confirmed" %}
+                        <span class="badge bg-success">Confirmed</span>
+                        {% elif order.status == "rejected" or order.status == "cancelled" %}
+                        <span class="badge bg-danger">{{ order.status|title }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ order.status|title }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="history-meta">
+                        <div class="history-meta-box">
+                            <div class="small text-muted">Customer</div>
+                            <div class="fw-semibold">{{ order.customer.name }}</div>
+                            <div class="small text-muted">{{ order.customer.phone }}</div>
+                        </div>
+                        <div class="history-meta-box">
+                            <div class="small text-muted">Delivery Date</div>
+                            <div class="fw-semibold">{{ order.delivery_date|date:"M d, Y" }}</div>
+                            <div class="small text-muted">{{ order.items_count }} item{{ order.items_count|pluralize }}</div>
+                        </div>
+                        <div class="history-meta-box">
+                            <div class="small text-muted">Items Total</div>
+                            <div class="fw-semibold">Rs.{{ order.approved_total_amount|default:order.total_amount|floatformat:2 }}</div>
+                        </div>
+                        <div class="history-meta-box">
+                            <div class="small text-muted">Final Total</div>
+                            <div class="fw-semibold">Rs.{{ order.display_total_amount|floatformat:2 }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                        <a href="{% url 'milk_agency:customer_order_history' order.customer.id %}" class="btn btn-outline-primary">Customer History</a>
+                        <a href="{% url 'milk_agency:admin_order_detail' order.id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info mb-0">No orders matched the selected customer or order number.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -9,6 +9,7 @@ from api.user_bill_pdf_utils import UserPDFGenerator
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Bill, BillItem, Customer, SubscriptionPlan
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE
+from milk_agency.push_notifications import notify_admin_profile_updated
 from users.helpers import dashboard_cards, latest_bills, minimum_prebook_date, subscription_context
 
 from .user_api_helpers import (
@@ -284,6 +285,7 @@ def user_profile_update(request):
     for field, value in updates.items():
         setattr(customer, field, value)
     customer.save(update_fields=list(updates.keys()))
+    notify_admin_profile_updated(customer)
 
     return Response({"status": "success", "customer": serialize_customer(customer)}, status=200)
 

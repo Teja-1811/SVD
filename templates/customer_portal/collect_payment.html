@@ -235,7 +235,7 @@
         <div class="payments-card payments-pay-card">
             <div class="payments-pay-top">
                 <div>
-                    <span class="payments-eyebrow">Manual Payment</span>
+                    <span class="payments-eyebrow">Paytm Gateway</span>
                     <div class="payments-due-label">Outstanding due</div>
                     <div class="payments-due-amount">Rs. {{ outstanding_due|floatformat:2 }}</div>
                 </div>
@@ -253,14 +253,16 @@
             </div>
 
             <div class="payments-actions">
-                <span class="payments-muted">Online order checkout now uses Paytm. This page remains for direct manual UPI due payments.</span>
+                <span class="payments-muted">Pay outstanding dues securely through Paytm. A successful payment updates your portal history automatically.</span>
             </div>
 
-            <div class="payments-form">
+            <form method="post" action="{% url 'customer_portal:start_collect_payment' %}" class="payments-form">
+                {% csrf_token %}
                 <div>
                     <label for="upiAmountInput">Amount to pay</label>
                     <input
                         id="upiAmountInput"
+                        name="amount"
                         type="number"
                         min="1"
                         step="0.01"
@@ -270,12 +272,15 @@
                     >
                 </div>
                 <div class="payments-actions">
-                    <a id="upiPayLink" href="#" class="payments-btn-primary">
-                        <i class="bi bi-phone"></i>
-                        <span>Open UPI app</span>
-                    </a>
+                    <button type="submit" class="payments-btn-primary">
+                        <i class="bi bi-credit-card"></i>
+                        <span>Pay with Paytm</span>
+                    </button>
+                    {% if latest_due_bill %}
+                    <span class="payments-muted">Latest open invoice: {{ latest_due_bill.invoice_number }}</span>
+                    {% endif %}
                 </div>
-            </div>
+            </form>
         </div>
 
         <div class="payments-card">
@@ -325,24 +330,4 @@
 
     </section>
 </div>
-
-<script>
-    (function () {
-        const upiLink = document.getElementById("upiPayLink");
-        const amountInput = document.getElementById("upiAmountInput");
-        const payeeAddress = "{{ manual_payment_upi_id|escapejs }}";
-        const payeeName = "{{ manual_payment_payee_name|escapejs }}";
-        const latestInvoice = "{% if latest_due_bill %}{{ latest_due_bill.invoice_number|escapejs }}{% endif %}";
-
-        function updateUpiLink() {
-            const rawValue = parseFloat(amountInput.value || "0");
-            const amount = rawValue > 0 ? rawValue.toFixed(2) : "0.00";
-            const note = latestInvoice ? `SVD dues for ${latestInvoice}` : "SVD dues payment";
-            upiLink.href = `upi://pay?pa=${encodeURIComponent(payeeAddress)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
-        }
-
-        amountInput.addEventListener("input", updateUpiLink);
-        updateUpiLink();
-    })();
-</script>
 {% endblock %}

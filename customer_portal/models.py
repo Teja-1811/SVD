@@ -70,3 +70,39 @@ class CustomerOrderItem(models.Model):
 
     def __str__(self):
         return f"{self.item.name} x {self.requested_quantity}"
+
+
+class CustomerGatewayPayment(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("success", "Success"),
+        ("failed", "Failed"),
+    ]
+
+    payment_order_id = models.CharField(max_length=64, unique=True)
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="customer_gateway_payments",
+    )
+    bill = models.ForeignKey(
+        "milk_agency.Bill",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="gateway_payments",
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    gateway = models.CharField(max_length=20, default="PAYTM")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    gateway_transaction_id = models.CharField(max_length=120, blank=True, default="")
+    callback_payload = models.JSONField(default=dict, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"{self.payment_order_id} - {self.customer}"

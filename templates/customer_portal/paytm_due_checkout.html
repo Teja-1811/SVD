@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Paytm</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(180deg, #fcfaf5 0%, #f4efe4 100%);
+            font-family: Outfit, sans-serif;
+            color: #16343d;
+        }
+
+        .paytm-redirect-card {
+            width: min(92vw, 520px);
+            padding: 2rem;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(22, 52, 61, 0.08);
+            box-shadow: 0 24px 60px rgba(22, 52, 61, 0.12);
+        }
+
+        .paytm-redirect-card h1 {
+            margin: 0 0 0.8rem;
+            font-size: 1.8rem;
+        }
+
+        .paytm-redirect-card p {
+            margin: 0.35rem 0;
+            color: #60787a;
+        }
+
+        .paytm-spinner {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: 4px solid rgba(24, 127, 98, 0.18);
+            border-top-color: #187f62;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        .paytm-actions {
+            margin-top: 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .paytm-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.88rem 1.2rem;
+            border-radius: 16px;
+            border: 0;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .paytm-button-primary {
+            background: #187f62;
+            color: #fff;
+        }
+
+        .paytm-button-secondary {
+            background: rgba(22, 52, 61, 0.08);
+            color: #16343d;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="paytm-redirect-card">
+        <div class="paytm-spinner"></div>
+        <h1>Redirecting to Paytm</h1>
+        <p>Payment reference <strong>{{ gateway_payment.payment_order_id }}</strong></p>
+        <p>Amount: <strong>Rs. {{ checkout.amount }}</strong></p>
+        <p>Your Paytm payment page should open automatically in a moment.</p>
+
+        <form id="paytmRedirectForm" method="post" action="{{ checkout.gateway_url }}">
+            <input type="hidden" name="mid" value="{{ checkout.mid }}">
+            <input type="hidden" name="orderId" value="{{ checkout.order_id }}">
+            <input type="hidden" name="txnToken" value="{{ checkout.txn_token }}">
+        </form>
+
+        <div class="paytm-actions">
+            <button type="submit" form="paytmRedirectForm" class="paytm-button paytm-button-primary">Continue to Paytm</button>
+            <a href="{% url 'customer_portal:collect_payment' %}" class="paytm-button paytm-button-secondary">Back to payments</a>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener("load", () => {
+            const form = document.getElementById("paytmRedirectForm");
+            if (form) {
+                form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

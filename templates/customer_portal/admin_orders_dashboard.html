@@ -98,6 +98,22 @@
     width: 100%;
 }
 
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.history-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* Title */
 .admin-title {
     font-size: 1.9rem;
@@ -134,6 +150,15 @@
         white-space: nowrap;
     }
 
+    .admin-header-actions {
+        gap: 8px;
+    }
+
+    .history-nav-btn {
+        padding: 5px 10px;
+        font-size: 0.95rem;
+    }
+
     .count-only {
         display: inline;
         font-size: 1rem;
@@ -156,10 +181,16 @@
 
                 <h1 class="text-primary mb-0 admin-title">Admin Orders Dashboard</h1>
 
-                <span class="pending-badge">
-                    <span class="count-only">{{ total_pending }}</span>
-                    <span class="count-text">{{ total_pending }} Pending Orders</span>
-                </span>
+                <div class="admin-header-actions">
+                    <a href="{% url 'milk_agency:admin_orders_history' %}" class="btn btn-outline-primary history-nav-btn">
+                        <i class="bi bi-clock-history"></i>
+                        <span>History</span>
+                    </a>
+                    <span class="pending-badge">
+                        <span class="count-only">{{ total_pending }}</span>
+                        <span class="count-text">{{ total_pending }} Pending Orders</span>
+                    </span>
+                </div>
 
             </div>
 

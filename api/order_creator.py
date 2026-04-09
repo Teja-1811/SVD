@@ -19,7 +19,11 @@ from rest_framework.response import Response
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Customer, Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
-from milk_agency.push_notifications import notify_admin_order_placed
+from milk_agency.push_notifications import (
+    notify_admin_order_deleted,
+    notify_admin_order_placed,
+    notify_admin_order_updated,
+)
 
 ACTIVE_ORDER_STATUSES = ("payment_pending", "pending", "confirmed", "processing", "ready")
 USER_COMPANY_NAME = "Dodla"
@@ -210,11 +214,15 @@ def edit_order(
         order.total_amount = total
         order.approved_total_amount = total
         order.save(update_fields=["delivery_date", "total_amount", "approved_total_amount", "delivery_charge"])
+        transaction.on_commit(lambda order_id=order.id: notify_admin_order_updated(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
         return order
 
 
 def delete_order(customer: Customer, order_id: int) -> bool:
+    existing = CustomerOrder.objects.filter(id=order_id, customer=customer).first()
     deleted, _ = CustomerOrder.objects.filter(id=order_id, customer=customer).delete()
+    if deleted and existing:
+        transaction.on_commit(lambda customer_id=customer.id, deleted_order_id=order_id: notify_admin_order_deleted(Customer.objects.get(pk=customer_id), deleted_order_id))
     return deleted > 0
 
 

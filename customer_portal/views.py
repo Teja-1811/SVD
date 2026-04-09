@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import OperationalError, ProgrammingError, transaction
+from django.db.models import DecimalField, Sum
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -23,9 +25,12 @@ from milk_agency.models import (
     SubscriptionOrder,
 )
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
-from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_profile_updated
+from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_payment_recorded, notify_admin_profile_updated
 
-from .models import CustomerOrder, CustomerOrderItem
+from api.paytm import PaytmConfigError, PaytmGatewayError, fetch_transaction_status, initiate_paytm_checkout, verify_callback_checksum
+from api.paytm_notifications import extract_paytm_params
+
+from .models import CustomerGatewayPayment, CustomerOrder, CustomerOrderItem
 
 
 def _find_linked_customer_order_for_bill(bill):
@@ -39,6 +44,84 @@ def _find_linked_customer_order_for_bill(bill):
         if Decimal(order.approved_total_amount or 0) == Decimal(bill.total_amount or 0):
             return order
     return orders.first()
+
+
+def _latest_due_bill_for_customer(customer):
+    bills = (
+        Bill.objects.filter(customer=customer, is_deleted=False)
+        .order_by("-invoice_date", "-id")
+    )
+    for bill in bills:
+        total_amount = Decimal(bill.total_amount or 0)
+        paid_amount = Decimal(bill.last_paid or 0)
+        if total_amount - paid_amount > 0:
+            return bill
+    return None
+
+
+def _recalculate_bill_last_paid(bill):
+    if not bill:
+        return
+
+    total_paid = CustomerPayment.objects.filter(
+        bill=bill,
+        status="SUCCESS",
+    ).aggregate(
+        total=Coalesce(
+            Sum("amount"),
+            Decimal("0.00"),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+    )["total"]
+    bill.last_paid = total_paid
+    bill.save(update_fields=["last_paid"])
+
+
+def _record_gateway_due_payment(gateway_payment, *, transaction_id, payment_method):
+    payment_method = payment_method or "PAYTM"
+
+    with transaction.atomic():
+        locked_gateway_payment = CustomerGatewayPayment.objects.select_for_update().select_related(
+            "customer",
+            "bill",
+        ).get(pk=gateway_payment.pk)
+        if locked_gateway_payment.status == "success":
+            existing_payment = CustomerPayment.objects.filter(
+                transaction_id=locked_gateway_payment.gateway_transaction_id
+            ).select_related("customer", "bill").first()
+            return existing_payment
+
+        payment, _ = CustomerPayment.objects.get_or_create(
+            transaction_id=transaction_id,
+            defaults={
+                "customer": locked_gateway_payment.customer,
+                "bill": locked_gateway_payment.bill,
+                "amount": locked_gateway_payment.amount,
+                "method": payment_method,
+                "status": "SUCCESS",
+            },
+        )
+        if payment.status != "SUCCESS":
+            payment.status = "SUCCESS"
+            payment.method = payment_method
+            payment.save(update_fields=["status", "method"])
+
+        if locked_gateway_payment.bill_id:
+            _recalculate_bill_last_paid(locked_gateway_payment.bill)
+
+        customer = locked_gateway_payment.customer
+        customer.due = customer.get_actual_due()
+        customer.save(update_fields=["due"])
+
+        locked_gateway_payment.status = "success"
+        locked_gateway_payment.gateway_transaction_id = transaction_id
+        locked_gateway_payment.completed_at = timezone.now()
+        locked_gateway_payment.save(
+            update_fields=["status", "gateway_transaction_id", "completed_at", "updated_at"]
+        )
+
+    transaction.on_commit(lambda payment_id=payment.id: notify_admin_payment_recorded(CustomerPayment.objects.select_related("customer").get(pk=payment_id)))
+    return payment
 
 
 def _safe_first(queryset):
@@ -586,8 +669,6 @@ def update_profile(request):
 @login_required
 def collect_payment(request):
     customer = request.user
-    manual_payment_upi_id = "9392890375@pthdfc"
-    manual_payment_payee_name = "Sri Vijaya Durga Milk Agencies"
     actual_due = Decimal(customer.get_actual_due() or 0)
     outstanding_due = actual_due if actual_due > 0 else Decimal("0.00")
     wallet_balance = abs(actual_due) if actual_due < 0 else Decimal("0.00")
@@ -636,8 +717,6 @@ def collect_payment(request):
         "actual_due": actual_due,
         "outstanding_due": outstanding_due,
         "wallet_balance": wallet_balance,
-        "manual_payment_upi_id": manual_payment_upi_id,
-        "manual_payment_payee_name": manual_payment_payee_name,
         "suggested_upi_amount": outstanding_due if outstanding_due > 0 else Decimal("0.00"),
         "latest_due_bill": latest_due_bill,
         "recent_payments": recent_payments,
@@ -647,6 +726,158 @@ def collect_payment(request):
         "recent_orders": recent_orders,
     }
     return render(request, "customer_portal/collect_payment.html", context)
+
+
+@login_required
+def start_collect_payment(request):
+    if request.method != "POST":
+        return redirect("customer_portal:collect_payment")
+
+    customer = request.user
+    raw_amount = (request.POST.get("amount") or "").strip()
+    try:
+        amount = Decimal(raw_amount)
+    except Exception:
+        messages.error(request, "Enter a valid amount to pay.")
+        return redirect("customer_portal:collect_payment")
+
+    if amount <= 0:
+        messages.error(request, "Amount must be greater than zero.")
+        return redirect("customer_portal:collect_payment")
+
+    payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
+    linked_bill = _latest_due_bill_for_customer(customer)
+    gateway_payment = CustomerGatewayPayment.objects.create(
+        payment_order_id=payment_order_id,
+        customer=customer,
+        bill=linked_bill,
+        amount=amount,
+        gateway="PAYTM",
+        status="pending",
+    )
+
+    try:
+        checkout = initiate_paytm_checkout(
+            request,
+            gateway_order_id=gateway_payment.payment_order_id,
+            amount=amount,
+            customer=customer,
+            callback_url=request.build_absolute_uri(reverse("customer_portal:paytm_due_callback")),
+        )
+    except (PaytmConfigError, PaytmGatewayError) as exc:
+        gateway_payment.status = "failed"
+        gateway_payment.callback_payload = {"error": str(exc)}
+        gateway_payment.save(update_fields=["status", "callback_payload", "updated_at"])
+        messages.error(request, str(exc))
+        return redirect("customer_portal:collect_payment")
+
+    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
+    paytm_checkout_map[str(gateway_payment.id)] = checkout
+    request.session["customer_paytm_due_checkout_map"] = paytm_checkout_map
+    request.session.modified = True
+    return redirect("customer_portal:paytm_due_checkout", payment_id=gateway_payment.id)
+
+
+@login_required
+def paytm_due_checkout(request, payment_id):
+    gateway_payment = get_object_or_404(
+        CustomerGatewayPayment.objects.select_related("bill"),
+        id=payment_id,
+        customer=request.user,
+    )
+    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
+    checkout = paytm_checkout_map.get(str(gateway_payment.id))
+    if not checkout:
+        messages.error(request, "The Paytm session expired. Please try the payment again.")
+        return redirect("customer_portal:collect_payment")
+
+    return render(
+        request,
+        "customer_portal/paytm_due_checkout.html",
+        {
+            "gateway_payment": gateway_payment,
+            "checkout": checkout,
+        },
+    )
+
+
+@csrf_exempt
+def paytm_due_callback(request):
+    params = extract_paytm_params(request)
+    if not params and request.method == "GET":
+        params = request.GET.dict()
+
+    payment_order_id = str(params.get("ORDERID") or params.get("orderId") or "").strip()
+    gateway_payment = CustomerGatewayPayment.objects.filter(
+        payment_order_id=payment_order_id
+    ).select_related("customer", "bill").first()
+
+    if not gateway_payment:
+        messages.error(request, "Payment record not found for the Paytm callback.")
+        return redirect("customer_portal:collect_payment")
+
+    try:
+        checksum_valid = verify_callback_checksum(params)
+        status_response = fetch_transaction_status(gateway_payment.payment_order_id)
+    except (PaytmConfigError, PaytmGatewayError) as exc:
+        messages.error(request, f"Could not verify the Paytm payment yet: {exc}")
+        return redirect("customer_portal:collect_payment")
+
+    status_body = status_response.get("body", {})
+    result_info = status_body.get("resultInfo", {})
+    txn_status = str(
+        status_body.get("resultStatus")
+        or status_body.get("STATUS")
+        or result_info.get("resultStatus")
+        or result_info.get("resultCode")
+        or ""
+    ).strip().upper()
+    payment_mode = str(status_body.get("paymentMode") or status_body.get("PAYMENTMODE") or "PAYTM").strip() or "PAYTM"
+    transaction_id = str(
+        status_body.get("txnId")
+        or status_body.get("TXNID")
+        or params.get("TXNID")
+        or params.get("txnId")
+        or gateway_payment.payment_order_id
+    ).strip()
+    result_message = str(
+        result_info.get("resultMsg")
+        or status_body.get("RESPMSG")
+        or "Payment status received from Paytm."
+    ).strip()
+
+    gateway_payment.callback_payload = {
+        "callback_params": params,
+        "status_response": status_response,
+        "checksum_valid": checksum_valid,
+    }
+
+    if txn_status in {"TXN_SUCCESS", "SUCCESS", "01"}:
+        payment = _record_gateway_due_payment(
+            gateway_payment,
+            transaction_id=transaction_id,
+            payment_method=payment_mode,
+        )
+        gateway_payment.callback_payload["customer_payment_id"] = payment.id
+        gateway_payment.save(update_fields=["callback_payload", "updated_at"])
+        messages.success(
+            request,
+            "Payment received successfully."
+            if checksum_valid
+            else "Payment verified with Paytm successfully.",
+        )
+    else:
+        gateway_payment.status = "failed"
+        gateway_payment.save(update_fields=["status", "callback_payload", "updated_at"])
+        messages.error(request, result_message or "Payment was not completed.")
+
+    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
+    if str(gateway_payment.id) in paytm_checkout_map:
+        paytm_checkout_map.pop(str(gateway_payment.id), None)
+        request.session["customer_paytm_due_checkout_map"] = paytm_checkout_map
+        request.session.modified = True
+
+    return redirect("customer_portal:collect_payment")
 
 
 # ======================================================
