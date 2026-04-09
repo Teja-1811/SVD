@@ -15,6 +15,7 @@ import json
 from milk_agency.models import (
     Bill,
     Customer,
+    CustomerPayment,
     CustomerSubscription,
     Item,
     Offers,
@@ -580,9 +581,68 @@ def update_profile(request):
 # ======================================================
 @login_required
 def collect_payment(request):
-    return render(request, "customer_portal/collect_payment.html", {
-        "due": request.user.get_actual_due()
-    })
+    customer = request.user
+    upi_id = "9392890375@pthdfc"
+    payee_name = "Sri Vijaya Durga Milk Agencies"
+    actual_due = Decimal(customer.get_actual_due() or 0)
+    outstanding_due = actual_due if actual_due > 0 else Decimal("0.00")
+    wallet_balance = abs(actual_due) if actual_due < 0 else Decimal("0.00")
+
+    payments = (
+        CustomerPayment.objects.select_related("bill")
+        .filter(customer=customer)
+        .order_by("-created_at")
+    )
+    recent_payments = list(payments[:8])
+    successful_payments = payments.filter(status="SUCCESS")
+    successful_total = sum(Decimal(payment.amount or 0) for payment in successful_payments)
+
+    bills = (
+        Bill.objects.filter(customer=customer, is_deleted=False)
+        .order_by("-invoice_date", "-id")
+    )
+    bill_rows = []
+    latest_due_bill = None
+    for bill in bills[:8]:
+        total_amount = Decimal(bill.total_amount or 0)
+        paid_amount = Decimal(bill.last_paid or 0)
+        due_amount = max(total_amount - paid_amount, Decimal("0.00"))
+        if not latest_due_bill and due_amount > 0:
+            latest_due_bill = bill
+        bill_rows.append(
+            {
+                "id": bill.id,
+                "invoice_number": bill.invoice_number,
+                "invoice_date": bill.invoice_date,
+                "total_amount": total_amount,
+                "paid_amount": paid_amount,
+                "due_amount": due_amount,
+                "is_settled": due_amount <= 0,
+            }
+        )
+
+    recent_orders = list(
+        CustomerOrder.objects.filter(customer=customer)
+        .order_by("-order_date", "-id")[:6]
+    )
+    for order in recent_orders:
+        order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
+
+    context = {
+        "actual_due": actual_due,
+        "outstanding_due": outstanding_due,
+        "wallet_balance": wallet_balance,
+        "upi_id": upi_id,
+        "payee_name": payee_name,
+        "suggested_upi_amount": outstanding_due if outstanding_due > 0 else Decimal("0.00"),
+        "latest_due_bill": latest_due_bill,
+        "recent_payments": recent_payments,
+        "payments_count": payments.count(),
+        "successful_payment_total": successful_total,
+        "bill_rows": bill_rows,
+        "recent_orders": recent_orders,
+    }
+    return render(request, "customer_portal/collect_payment.html", context)
 
 
 # ======================================================

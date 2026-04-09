@@ -1,125 +1,348 @@
 {% extends "customer_portal/base.html" %}
-{% block title %}Payment Gateway{% endblock %}
+{% block title %}Payments{% endblock %}
 
 {% block content %}
 <style>
-    .under-dev-shell {
-        min-height: calc(100vh - 180px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 3rem 1rem;
-    }
-
-    .under-dev-card {
-        width: min(100%, 760px);
-        position: relative;
-        overflow: hidden;
-        border-radius: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        background:
-            linear-gradient(135deg, rgba(19, 47, 76, 0.82), rgba(18, 18, 18, 0.64)),
-            radial-gradient(circle at top left, rgba(84, 180, 153, 0.35), transparent 42%);
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-    }
-
-    .under-dev-card::before,
-    .under-dev-card::after {
-        content: "";
-        position: absolute;
-        border-radius: 999px;
-        filter: blur(8px);
-        opacity: 0.55;
-    }
-
-    .under-dev-card::before {
-        width: 180px;
-        height: 180px;
-        top: -40px;
-        right: -30px;
-        background: rgba(255, 255, 255, 0.18);
-    }
-
-    .under-dev-card::after {
-        width: 140px;
-        height: 140px;
-        bottom: -32px;
-        left: -28px;
-        background: rgba(84, 180, 153, 0.22);
-    }
-
-    .under-dev-body {
-        position: relative;
-        z-index: 1;
-        padding: 3rem;
-        text-align: center;
-        color: #fff;
-    }
-
-    .under-dev-icon {
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 1.25rem;
-        border-radius: 20px;
+    .payments-shell {
         display: grid;
-        place-items: center;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        font-size: 2rem;
+        gap: 1.25rem;
+        padding-top: 1rem;
     }
 
-    .under-dev-title {
-        font-size: clamp(1.8rem, 3vw, 2.5rem);
-        font-weight: 700;
-        margin-bottom: 0.75rem;
+    .payments-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 28px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
     }
 
-    .under-dev-text {
-        max-width: 540px;
-        margin: 0 auto;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 1rem;
-        line-height: 1.7;
+    .payments-layout {
+        display: grid;
+        gap: 1rem;
     }
 
-    .under-dev-due {
-        margin-top: 1.75rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.85rem 1.15rem;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: #fff;
+    .payments-card {
+        padding: 1.25rem;
+    }
+
+    .payments-muted {
+        color: #64748b;
+    }
+
+    .payments-pay-card {
+        padding: 1.35rem;
+        background:
+            radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 28%),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(240, 248, 245, 0.96));
+    }
+
+    .payments-pay-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .payments-due-label {
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .payments-due-amount {
+        color: #0f172a;
+        font-size: clamp(2.2rem, 7vw, 3.4rem);
+        line-height: 0.95;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    .payments-side-metrics {
+        display: grid;
+        gap: 0.65rem;
+        min-width: 210px;
+    }
+
+    .payments-metric {
+        padding: 0.85rem 1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .payments-metric small {
+        display: block;
+        color: #64748b;
+        margin-bottom: 0.15rem;
         font-weight: 600;
     }
 
-    @media (max-width: 576px) {
-        .under-dev-body {
-            padding: 2.2rem 1.35rem;
+    .payments-metric strong {
+        color: #0f172a;
+        font-size: 1.15rem;
+    }
+
+    .payments-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .payments-btn-primary,
+    .payments-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        min-height: 48px;
+        padding: 0.85rem 1.15rem;
+        border-radius: 16px;
+        border: 0;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .payments-btn-primary {
+        background: #187f62;
+        color: #fff;
+        box-shadow: 0 16px 32px rgba(24, 127, 98, 0.22);
+    }
+
+    .payments-btn-secondary {
+        background: rgba(15, 23, 42, 0.08);
+        color: #0f172a;
+    }
+
+    .payments-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .payments-head h2,
+    .payments-head h3 {
+        margin: 0.18rem 0 0;
+        color: #0f172a;
+    }
+
+    .payments-eyebrow {
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #0f766e;
+    }
+
+    .payments-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .payments-item {
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.04);
+    }
+
+    .payments-item-top,
+    .payments-meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .payments-item-top strong,
+    .payments-meta-row strong {
+        color: #0f172a;
+    }
+
+    .payments-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.42rem 0.76rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .chip-success { background: rgba(16, 185, 129, 0.14); color: #166534; }
+    .chip-warning { background: rgba(245, 158, 11, 0.16); color: #a16207; }
+    .chip-danger { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+    .chip-neutral { background: rgba(15, 23, 42, 0.08); color: #334155; }
+
+    .payments-empty {
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.04);
+        color: #64748b;
+    }
+
+    .payments-form {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .payments-form label {
+        display: block;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.45rem;
+    }
+
+    .payments-input {
+        width: 100%;
+        min-height: 54px;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.88);
+        padding: 0.9rem 1rem;
+        font-size: 1rem;
+        color: #0f172a;
+        outline: none;
+    }
+
+    .payments-input:focus {
+        border-color: rgba(24, 127, 98, 0.45);
+        box-shadow: 0 0 0 3px rgba(24, 127, 98, 0.12);
+    }
+
+    @media (max-width: 767.98px) {
+        .payments-pay-top {
+            display: grid;
+        }
+
+        .payments-side-metrics {
+            min-width: 0;
+        }
+
+        .payments-btn-primary {
+            width: 100%;
         }
     }
 </style>
 
-<div class="container under-dev-shell portal-page-shell">
-    <div class="under-dev-card">
-        <div class="under-dev-body">
-            <div class="under-dev-icon">
-                <i class="bi bi-tools"></i>
+<div class="container-fluid portal-page-shell payments-shell">
+    <section class="payments-layout">
+        <div class="payments-card payments-pay-card">
+            <div class="payments-pay-top">
+                <div>
+                    <span class="payments-eyebrow">UPI</span>
+                    <div class="payments-due-label">Outstanding due</div>
+                    <div class="payments-due-amount">Rs. {{ outstanding_due|floatformat:2 }}</div>
+                </div>
+
+                <div class="payments-side-metrics">
+                    <div class="payments-metric">
+                        <small>Wallet credit</small>
+                        <strong>Rs. {{ wallet_balance|floatformat:2 }}</strong>
+                    </div>
+                    <div class="payments-metric">
+                        <small>Successful payments</small>
+                        <strong>{{ payments_count }}</strong>
+                    </div>
+                </div>
             </div>
-            <h1 class="under-dev-title">This page is under development</h1>
-            <p class="under-dev-text">
-                The online payment gateway has been temporarily removed while we rebuild this feature.
-                Please contact the admin team for payment assistance until this page is ready again.
-            </p>
-            <div class="under-dev-due">
-                <span>Current due:</span>
-                <span>Rs. {{ due|floatformat:2 }}</span>
+
+            <div class="payments-actions">
+                <span class="payments-muted">Choose how you want to pay this due.</span>
+            </div>
+
+            <div class="payments-form">
+                <div>
+                    <label for="upiAmountInput">Amount to pay</label>
+                    <input
+                        id="upiAmountInput"
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        class="payments-input"
+                        value="{{ suggested_upi_amount|floatformat:2 }}"
+                        placeholder="Enter amount"
+                    >
+                </div>
+                <div class="payments-actions">
+                    <a id="upiPayLink" href="#" class="payments-btn-primary">
+                        <i class="bi bi-phone"></i>
+                        <span>Pay using UPI</span>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="payments-card">
+            <div class="payments-head">
+                <div>
+                    <span class="payments-eyebrow">Transactions</span>
+                    <h2>Recent payment history</h2>
+                </div>
+            </div>
+
+            {% if recent_payments %}
+            <div class="payments-list">
+                {% for payment in recent_payments %}
+                <article class="payments-item">
+                    <div class="payments-item-top mb-2">
+                        <div>
+                            <strong>Rs. {{ payment.amount|floatformat:2 }}</strong>
+                            <div class="payments-muted">{{ payment.created_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                        {% if payment.status == "SUCCESS" %}
+                        <span class="payments-chip chip-success">Success</span>
+                        {% elif payment.status == "FAILED" %}
+                        <span class="payments-chip chip-danger">Failed</span>
+                        {% else %}
+                        <span class="payments-chip chip-warning">{{ payment.status|title }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="payments-meta-row">
+                        <span class="payments-muted">Method</span>
+                        <strong>{{ payment.method }}</strong>
+                    </div>
+                    <div class="payments-meta-row mt-2">
+                        <span class="payments-muted">Transaction ID</span>
+                        <strong>{{ payment.transaction_id }}</strong>
+                    </div>
+                    <div class="payments-meta-row mt-2">
+                        <span class="payments-muted">Linked invoice</span>
+                        <strong>{% if payment.bill %}{{ payment.bill.invoice_number }}{% else %}General payment{% endif %}</strong>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="payments-empty">No payment records yet.</div>
+            {% endif %}
+        </div>
+
+    </section>
 </div>
+
+<script>
+    (function () {
+        const upiLink = document.getElementById("upiPayLink");
+        const amountInput = document.getElementById("upiAmountInput");
+        const payeeAddress = "{{ upi_id|escapejs }}";
+        const payeeName = "{{ payee_name|escapejs }}";
+        const latestInvoice = "{% if latest_due_bill %}{{ latest_due_bill.invoice_number|escapejs }}{% endif %}";
+
+        function updateUpiLink() {
+            const rawValue = parseFloat(amountInput.value || "0");
+            const amount = rawValue > 0 ? rawValue.toFixed(2) : "0.00";
+            const note = latestInvoice ? `SVD dues for ${latestInvoice}` : "SVD dues payment";
+            upiLink.href = `upi://pay?pa=${encodeURIComponent(payeeAddress)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+        }
+
+        amountInput.addEventListener("input", updateUpiLink);
+        updateUpiLink();
+    })();
+</script>
 {% endblock %}
