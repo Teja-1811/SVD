@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from api.order_creator import ACTIVE_ORDER_STATUSES, create_or_replace_order
-from api.paytm import PaytmConfigError, PaytmGatewayError, initiate_paytm_transaction
+from api.paytm import PaytmConfigError, PaytmGatewayError, build_paytm_form_checkout
 from api.user_api_helpers import get_active_offers, get_latest_subscription
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Bill, Item, SubscriptionItem
@@ -235,14 +235,9 @@ def prepare_user_payment_order_response(request):
             order.gateway_order_id = gateway_order_id
             order.save(update_fields=["gateway_order_id", "updated_at"])
         try:
-            checkout = initiate_paytm_transaction(request, order, amount=grand_total)
-        except (PaytmConfigError, PaytmGatewayError) as exc:
+            checkout = build_paytm_form_checkout(request, order, amount=grand_total)
+        except (PaytmConfigError, PaytmGatewayError, AttributeError) as exc:
             return JsonResponse({"success": False, "message": str(exc)}, status=400)
-
-        paytm_checkout_map = request.session.get("paytm_checkout_map", {})
-        paytm_checkout_map[str(order.id)] = checkout
-        request.session["paytm_checkout_map"] = paytm_checkout_map
-        request.session.modified = True
 
     return JsonResponse(
         {
@@ -255,15 +250,7 @@ def prepare_user_payment_order_response(request):
             "delivery_charge": float(order.delivery_charge),
             "grand_total": float(grand_total),
             "paytm_url": checkout.get("gateway_url", "") if payment_method == "PAYTM" else "",
-            "paytm_params": (
-                {
-                    "mid": checkout.get("mid", ""),
-                    "orderId": checkout.get("order_id", ""),
-                    "txnToken": checkout.get("txn_token", ""),
-                }
-                if payment_method == "PAYTM"
-                else {}
-            ),
+            "paytm_params": checkout.get("params", {}) if payment_method == "PAYTM" else {},
             "paytm_redirect_url": (
                 reverse("users:paytm_checkout", kwargs={"order_id": order.id}) if payment_method == "PAYTM" else ""
             ),

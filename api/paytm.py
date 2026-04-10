@@ -65,6 +65,10 @@ class PaytmConfig:
         return f"{self.base_url}/theia/api/v1/showPaymentPage"
 
     @property
+    def order_process_url(self):
+        return f"{self.base_url}/order/process"
+
+    @property
     def transaction_status_url(self):
         return f"{self.base_url}/v3/order/status"
 
@@ -221,6 +225,31 @@ def initiate_paytm_transaction(request, order, *, amount):
         customer=order.customer,
         callback_url=build_callback_url(request, "users:paytm_callback"),
     )
+
+
+def build_paytm_form_checkout(request, order, *, amount):
+    config = get_paytm_config()
+    gateway_order_id = getattr(order, "gateway_order_id", "") or order.order_number
+    callback_url = build_callback_url(request, "users:paytm_callback")
+    param_dict = {
+        "MID": config.mid,
+        "ORDER_ID": gateway_order_id,
+        "CUST_ID": str(getattr(order.customer, "id", "") or ""),
+        "TXN_AMOUNT": _normalized_amount(amount),
+        "CHANNEL_ID": "WEB",
+        "WEBSITE": config.website,
+        "INDUSTRY_TYPE_ID": "Retail",
+        "CALLBACK_URL": callback_url,
+    }
+    checksum = PaytmChecksum.generateSignature(param_dict, config.merchant_key)
+    param_dict["CHECKSUMHASH"] = checksum
+    return {
+        "gateway_url": config.order_process_url,
+        "params": param_dict,
+        "order_id": gateway_order_id,
+        "amount": _normalized_amount(amount),
+        "callback_url": callback_url,
+    }
 
 
 def verify_callback_checksum(params):
