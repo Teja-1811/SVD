@@ -119,8 +119,10 @@ def paytm_checkout(request, order_id):
 @csrf_exempt
 def paytm_callback(request):
     params = extract_paytm_params(request)
+    print("CALLBACK PARAMS:", params)
     if not params and request.method == "GET":
         params = request.GET.dict()
+
 
     result = process_paytm_notification(params)
     order = result.get("order")

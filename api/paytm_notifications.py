@@ -59,7 +59,10 @@ def process_paytm_notification(params):
 
     try:
         status_response = fetch_transaction_status(order.gateway_order_id or payment_order_id or order.order_number)
+        print("STATUS BODY:", status_response.get("body", {}))
+        print("RESULT:", status_response.get("body", {}).get("resultInfo", {}))
     except (PaytmConfigError, PaytmGatewayError) as exc:
+
         return {
             "success": False,
             "code": 502,

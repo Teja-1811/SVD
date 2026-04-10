@@ -205,7 +205,9 @@ def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None,
     }
     query = parse.urlencode({"mid": config.mid, "orderId": gateway_order_id})
     response = _call_paytm_api(f"{config.initiate_transaction_url}?{query}", payload)
+    print("Paytm INIT response:", response)
     result_info = response.get("body", {}).get("resultInfo", {})
+
     result_status = str(result_info.get("resultStatus") or "").strip()
     result_code = str(result_info.get("resultCode") or "").strip()
     txn_token = str(response.get("body", {}).get("txnToken") or "").strip()
@@ -214,8 +216,10 @@ def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None,
         status_prefix = f"{result_status} " if result_status else ""
         code_prefix = f"{result_code}: " if result_code else ""
         raise PaytmGatewayError(f"Paytm {status_prefix}{code_prefix}{message}".strip())
+    print("SENT ORDER ID:", gateway_order_id)
     return {
         "mid": config.mid,
+
         "order_id": gateway_order_id,
         "txn_token": txn_token,
         "amount": _normalized_amount(amount),
