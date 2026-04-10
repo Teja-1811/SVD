@@ -924,9 +924,19 @@ def paytm_due_callback(request):
             else "Payment verified with Paytm successfully.",
         )
     else:
+        resp_msg = str(
+            result_info.get("resultMsg") or status_body.get("RESPMSG") or params.get("RESPMSG", "") or ""
+        ).lower()
+        if "cancel" in resp_msg:
+            user_message = "Payment cancelled by user."
+        elif "fail" in resp_msg or "failure" in resp_msg:
+            user_message = "Payment failed."
+        else:
+            user_message = f"Payment not completed: {result_message or 'Unknown status'}"
+            
         gateway_payment.status = "failed"
         gateway_payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        messages.error(request, result_message or "Payment was not completed.")
+        messages.error(request, user_message)
 
     paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
     if str(gateway_payment.id) in paytm_checkout_map:

@@ -113,15 +113,16 @@ def process_paytm_notification(params):
         }
 
     _apply_failed_payment_state(order)
-    detail_parts = []
-    if result_status:
-        detail_parts.append(result_status)
-    if result_code:
-        detail_parts.append(result_code)
-    detail_prefix = f"Paytm {' / '.join(detail_parts)}: " if detail_parts else "Paytm: "
+    resp_msg = str(params.get("RESPMSG", "") or result_message or "").lower()
+    if "cancel" in resp_msg:
+        message = "Payment cancelled by user"
+    elif "fail" in resp_msg or "failure" in resp_msg:
+        message = "Payment failed"
+    else:
+        message = f"Payment not completed (Paytm: {result_message or 'Unknown status'})"
     return {
         "success": False,
         "code": 400,
-        "message": f"{detail_prefix}{result_message or f'Payment was not completed for {order.order_number}.'}",
+        "message": message,
         "order": order,
     }

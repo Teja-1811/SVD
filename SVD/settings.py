@@ -47,6 +47,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://svdagencies.shop",
     "https://www.svdagencies.shop",
     "https://svd-dqw3.onrender.com",
+    "https://*.paytm.in",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 
