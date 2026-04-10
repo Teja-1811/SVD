@@ -299,6 +299,7 @@ from django.conf import settings
 import uuid
 from .utils import generate_checksum
 from paytmchecksum import PaytmChecksum
+import requests
 
 def payment_page(request):
     return render(request, "payments_form.html")
