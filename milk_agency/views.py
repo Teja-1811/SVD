@@ -342,7 +342,13 @@ def initiate_payment(request):
         response = requests.post(url, json=paytmParams)
         response_data = response.json()
 
-        txnToken = response_data["body"]["txnToken"]
+        print("PAYTM RESPONSE:", response_data)
+
+        # SAFE ACCESS
+        if "body" in response_data and "txnToken" in response_data["body"]:
+            txnToken = response_data["body"]["txnToken"]
+        else:
+            return HttpResponse(f"Paytm Error: {response_data}")
 
         return render(request, "paytm_checkout.html", {
             "txnToken": txnToken,
