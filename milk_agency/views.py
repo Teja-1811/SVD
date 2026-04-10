@@ -303,30 +303,51 @@ from paytmchecksum import PaytmChecksum
 def payment_page(request):
     return render(request, "payments_form.html")
 
-
 def initiate_payment(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        amount = request.POST.get("amount")
+        import uuid
 
         order_id = str(uuid.uuid4()).replace("-", "")[:20]
+        amount = "1.00"
 
-        param_dict = {
-            "MID": settings.PAYTM_MID,
-            "ORDER_ID": order_id,
-            "TXN_AMOUNT": amount,
-            "CUST_ID": email,
-            "INDUSTRY_TYPE_ID": settings.PAYTM_INDUSTRY_TYPE_ID,
-            "WEBSITE": settings.PAYTM_WEBSITE,
-            "CHANNEL_ID": settings.PAYTM_CHANNEL_ID,
-            "CALLBACK_URL": settings.PAYTM_CALLBACK_URL,
+        paytmParams = {
+            "body": {
+                "requestType": "Payment",
+                "mid": settings.PAYTM_MID,
+                "websiteName": "DEFAULT",
+                "orderId": order_id,
+                "callbackUrl": settings.PAYTM_CALLBACK_URL,
+                "txnAmount": {
+                    "value": amount,
+                    "currency": "INR",
+                },
+                "userInfo": {
+                    "custId": "CUST_001",
+                },
+            }
         }
 
-        checksum = PaytmChecksum.generateSignature(param_dict, settings.PAYTM_MERCHANT_KEY)
-        param_dict["CHECKSUMHASH"] = checksum
+        checksum = PaytmChecksum.generateSignature(
+            json.dumps(paytmParams["body"]),
+            settings.PAYTM_MERCHANT_KEY
+        )
 
-        return render(request, "paytm_redirect.html", {"param_dict": param_dict})
+        paytmParams["head"] = {
+            "signature": checksum
+        }
+
+        url = f"https://securegw.paytm.in/theia/api/v1/initiateTransaction?mid={settings.PAYTM_MID}&orderId={order_id}"
+
+        response = requests.post(url, json=paytmParams)
+        response_data = response.json()
+
+        txnToken = response_data["body"]["txnToken"]
+
+        return render(request, "paytm_checkout.html", {
+            "txnToken": txnToken,
+            "order_id": order_id,
+            "mid": settings.PAYTM_MID
+        })
     
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
