@@ -328,13 +328,17 @@ def initiate_payment(request):
         return render(request, "paytm_redirect.html", {"param_dict": param_dict})
     
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def payment_callback(request):
-    data = request.POST.dict()
+    if request.method == "POST":
+        data = request.POST.dict()
+        print("PAYTM RESPONSE:", data)
 
-    print("PAYMENT RESPONSE:", data)
+        if data.get("STATUS") == "TXN_SUCCESS":
+            return HttpResponse("Payment Success")
+        else:
+            return HttpResponse("Payment Failed")
 
-    if data.get("STATUS") == "TXN_SUCCESS":
-        return HttpResponse("✅ Payment Successful")
-    else:
-        return HttpResponse("❌ Payment Failed")
+    return HttpResponse("Invalid request")
