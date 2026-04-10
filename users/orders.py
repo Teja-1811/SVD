@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
 
+from api.paytm import get_paytm_diagnostics
 from customer_portal.models import CustomerOrder
 from api.paytm_notifications import extract_paytm_params, process_paytm_notification
 from .helpers import (
@@ -18,14 +20,32 @@ from .helpers import (
 
 @user_required
 def orders_page(request):
+    orders = active_orders(request.user)
+    latest_gateway_attempt = (
+        CustomerOrder.objects.filter(
+            customer=request.user,
+            payment_method__iexact="PAYTM",
+        )
+        .exclude(payment_method="")
+        .order_by("-updated_at", "-id")
+        .first()
+    )
+    paytm_diagnostics = get_paytm_diagnostics(
+        request,
+        callback_url_name="users:paytm_callback",
+    )
+    paytm_diagnostics["webhook_url"] = request.build_absolute_uri(reverse("paytm_payment_webhook"))
+
     return render(
         request,
         "user_portal/orders.html",
         {
             "available_items_by_category": grouped_catalog(request.user, include_out_of_stock=False),
             "prebook_items_by_category": grouped_catalog(request.user, include_out_of_stock=True),
-            "active_orders": active_orders(request.user),
+            "active_orders": orders,
             "min_prebooking_date": minimum_prebook_date(),
+            "latest_gateway_attempt": latest_gateway_attempt,
+            "paytm_diagnostics": paytm_diagnostics,
         },
     )
 

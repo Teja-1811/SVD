@@ -329,6 +329,33 @@
         color: #b91c1c;
     }
 
+    .up-diagnostics-grid {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .up-diagnostics-row {
+        display: grid;
+        grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+        gap: 0.85rem;
+        align-items: start;
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        background: rgba(22, 52, 61, 0.04);
+    }
+
+    .up-diagnostics-row small {
+        color: #60787a;
+        font-weight: 700;
+    }
+
+    .up-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
     @media (max-width: 1199.98px) {
         .up-orders-page .up-page-header,
         .up-orders-page .up-content {
@@ -373,6 +400,10 @@
         .up-stock-note {
             justify-items: start;
             text-align: left;
+        }
+
+        .up-diagnostics-row {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -507,6 +538,73 @@
                         </div>
                     </div>
                     {% endfor %}
+                </div>
+            </article>
+
+            <article class="up-card">
+                <div class="up-section-head">
+                    <div>
+                        <span class="up-eyebrow">Diagnostics</span>
+                        <h2>Paytm integration check</h2>
+                    </div>
+                </div>
+
+                <div class="up-diagnostics-grid">
+                    <div class="up-diagnostics-row">
+                        <small>Checksum package</small>
+                        <strong>{% if paytm_diagnostics.package_loaded %}Loaded{% else %}Missing{% endif %}</strong>
+                    </div>
+                    {% if paytm_diagnostics.import_error %}
+                    <div class="up-diagnostics-row">
+                        <small>Import detail</small>
+                        <div class="up-code">{{ paytm_diagnostics.import_error }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="up-diagnostics-row">
+                        <small>Merchant ID</small>
+                        <strong>{% if paytm_diagnostics.mid_present %}Present{% else %}Missing{% endif %}</strong>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Merchant key</small>
+                        <strong>{% if paytm_diagnostics.merchant_key_present %}Present{% else %}Missing{% endif %}</strong>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Environment</small>
+                        <strong>{{ paytm_diagnostics.environment|upper }}</strong>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Website name</small>
+                        <strong>{{ paytm_diagnostics.website }}</strong>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Gateway base URL</small>
+                        <div class="up-code">{{ paytm_diagnostics.base_url }}</div>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Callback URL</small>
+                        <div class="up-code">{{ paytm_diagnostics.callback_url|default:"Not available" }}</div>
+                    </div>
+                    <div class="up-diagnostics-row">
+                        <small>Webhook URL</small>
+                        <div class="up-code">{{ paytm_diagnostics.webhook_url }}</div>
+                    </div>
+                    {% if latest_gateway_attempt %}
+                    <div class="up-diagnostics-row">
+                        <small>Latest order attempt</small>
+                        <div>
+                            <div><strong>{{ latest_gateway_attempt.order_number }}</strong></div>
+                            <div class="up-muted">Status: {{ latest_gateway_attempt.status|title }} | Payment: {{ latest_gateway_attempt.payment_status|title }} | Amount: &#8377;{{ latest_gateway_attempt.total_amount|floatformat:2 }}</div>
+                            {% if latest_gateway_attempt.payment_reference %}
+                            <div class="up-muted">Reference: {{ latest_gateway_attempt.payment_reference }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="up-diagnostics-row">
+                        <small>Latest order attempt</small>
+                        <span class="up-muted">No Paytm order attempt yet.</span>
+                    </div>
+                    {% endif %}
                 </div>
             </article>
         </div>
