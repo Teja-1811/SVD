@@ -30,6 +30,7 @@ class CustomerOrder(models.Model):
     approved_total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Admin approved total amount')
     payment_method = models.CharField(max_length=20, blank=True, default='', help_text='Payment method selected by customer')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    gateway_order_id = models.CharField(max_length=64, blank=True, default='', help_text='Gateway-specific order id used for payment initiation')
     payment_reference = models.CharField(max_length=120, blank=True, default='', help_text='Gateway payment reference / transaction id')
     payment_confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -313,6 +313,11 @@
                     <span class="payments-muted">You can collect any payment amount through Paytm, even without an outstanding due.</span>
                     {% endif %}
                 </div>
+                {% if latest_order %}
+                <div class="payments-actions">
+                    <span class="payments-muted">Payment reference will use latest order: {{ latest_order.order_number }}</span>
+                </div>
+                {% endif %}
             </form>
         </div>
 

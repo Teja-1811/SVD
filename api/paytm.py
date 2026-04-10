@@ -155,7 +155,16 @@ def _normalized_amount(value):
 
 
 def build_callback_url(request, url_name="users:paytm_callback", *, kwargs=None):
-    return request.build_absolute_uri(reverse(url_name, kwargs=kwargs))
+    url = request.build_absolute_uri(reverse(url_name, kwargs=kwargs))
+    parsed = parse.urlsplit(url)
+    environment = _env("PAYTM_ENV", "staging").lower()
+    host = (parsed.hostname or "").lower()
+
+    # Production Paytm callbacks should always use HTTPS on public hosts,
+    # even when Django sits behind a proxy that forwards the original scheme.
+    if environment == "production" and host not in {"localhost", "127.0.0.1"} and parsed.scheme != "https":
+        url = parse.urlunsplit(("https", parsed.netloc, parsed.path, parsed.query, parsed.fragment))
+    return url
 
 
 def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None, callback_url=None):
@@ -207,7 +216,7 @@ def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None,
 def initiate_paytm_transaction(request, order, *, amount):
     return initiate_paytm_checkout(
         request,
-        gateway_order_id=order.order_number,
+        gateway_order_id=getattr(order, "gateway_order_id", "") or order.order_number,
         amount=amount,
         customer=order.customer,
         callback_url=build_callback_url(request, "users:paytm_callback"),

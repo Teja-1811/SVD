@@ -41,6 +41,14 @@ ALLOWED_HOSTS = [
     'svd-dqw3.onrender.com',
 ]
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    "https://svdagencies.shop",
+    "https://www.svdagencies.shop",
+    "https://svd-dqw3.onrender.com",
+]
+
 
 # Application definition
 

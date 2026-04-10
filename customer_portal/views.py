@@ -68,6 +68,14 @@ def _latest_due_bill_for_customer(customer):
     return None
 
 
+def _latest_order_for_customer(customer):
+    return (
+        CustomerOrder.objects.filter(customer=customer)
+        .order_by("-order_date", "-id")
+        .first()
+    )
+
+
 def _recalculate_bill_last_paid(bill):
     if not bill:
         return
@@ -710,6 +718,7 @@ def collect_payment(request):
     recent_payments = list(payments[:8])
     successful_payments = payments.filter(status="SUCCESS")
     successful_total = sum(Decimal(payment.amount or 0) for payment in successful_payments)
+    latest_order = _latest_order_for_customer(customer)
 
     bills = (
         Bill.objects.filter(customer=customer, is_deleted=False)
@@ -760,6 +769,7 @@ def collect_payment(request):
         "wallet_balance": wallet_balance,
         "suggested_upi_amount": outstanding_due if outstanding_due > 0 else Decimal("0.00"),
         "latest_due_bill": latest_due_bill,
+        "latest_order": latest_order,
         "recent_payments": recent_payments,
         "payments_count": payments.count(),
         "successful_payment_total": successful_total,
@@ -788,7 +798,11 @@ def start_collect_payment(request):
         messages.error(request, "Amount must be greater than zero.")
         return redirect("customer_portal:collect_payment")
 
-    payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
+    latest_order = _latest_order_for_customer(customer)
+    if latest_order and latest_order.order_number:
+        payment_order_id = f"{latest_order.order_number}-DUE-{timezone.now().strftime('%H%M%S%f')}"[:64]
+    else:
+        payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
     linked_bill = _latest_due_bill_for_customer(customer)
     gateway_payment = CustomerGatewayPayment.objects.create(
         payment_order_id=payment_order_id,

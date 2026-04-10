@@ -1,5 +1,7 @@
 import json
 
+from django.db.models import Q
+
 from customer_portal.models import CustomerOrder
 from customer_portal.order_workflow import finalize_order_after_payment
 from api.paytm import PaytmConfigError, PaytmGatewayError, fetch_transaction_status, verify_callback_checksum
@@ -28,22 +30,26 @@ def extract_paytm_params(request):
 
 
 def process_paytm_notification(params):
-    order_number = str(params.get("ORDERID") or params.get("orderId") or "").strip()
+    payment_order_id = str(params.get("ORDERID") or params.get("orderId") or "").strip()
     txn_id = str(params.get("TXNID") or params.get("txnId") or "").strip()
 
-    if not order_number:
+    if not payment_order_id:
         return {
             "success": False,
             "code": 400,
             "message": "Paytm notification did not include an order reference.",
         }
 
-    order = CustomerOrder.objects.filter(order_number=order_number).select_related("customer").first()
+    order = (
+        CustomerOrder.objects.filter(Q(order_number=payment_order_id) | Q(gateway_order_id=payment_order_id))
+        .select_related("customer")
+        .first()
+    )
     if not order:
         return {
             "success": False,
             "code": 404,
-            "message": f"Order {order_number} was not found.",
+            "message": f"Order {payment_order_id} was not found.",
         }
 
     try:
@@ -52,7 +58,7 @@ def process_paytm_notification(params):
         return {"success": False, "code": 500, "message": str(exc), "order": order}
 
     try:
-        status_response = fetch_transaction_status(order.order_number)
+        status_response = fetch_transaction_status(order.gateway_order_id or payment_order_id or order.order_number)
     except (PaytmConfigError, PaytmGatewayError) as exc:
         return {
             "success": False,
