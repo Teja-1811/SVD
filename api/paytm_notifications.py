@@ -69,6 +69,8 @@ def process_paytm_notification(params):
 
     status_body = status_response.get("body", {})
     result_info = status_body.get("resultInfo", {})
+    result_status = str(result_info.get("resultStatus") or status_body.get("STATUS") or "").strip()
+    result_code = str(result_info.get("resultCode") or "").strip()
     txn_status = str(
         status_body.get("resultStatus")
         or status_body.get("STATUS")
@@ -111,9 +113,15 @@ def process_paytm_notification(params):
         }
 
     _apply_failed_payment_state(order)
+    detail_parts = []
+    if result_status:
+        detail_parts.append(result_status)
+    if result_code:
+        detail_parts.append(result_code)
+    detail_prefix = f"Paytm {' / '.join(detail_parts)}: " if detail_parts else "Paytm: "
     return {
         "success": False,
         "code": 400,
-        "message": result_message or f"Payment was not completed for {order.order_number}.",
+        "message": f"{detail_prefix}{result_message or f'Payment was not completed for {order.order_number}.'}",
         "order": order,
     }

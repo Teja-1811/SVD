@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
@@ -6,6 +7,9 @@ from urllib import error, parse, request
 
 from django.conf import settings
 from django.urls import reverse
+
+
+logger = logging.getLogger(__name__)
 
 
 class _PaytmChecksumAdapter:
@@ -231,6 +235,7 @@ def build_paytm_form_checkout(request, order, *, amount):
     config = get_paytm_config()
     gateway_order_id = getattr(order, "gateway_order_id", "") or order.order_number
     callback_url = build_callback_url(request, "users:paytm_callback")
+    industry_type_id = _env("PAYTM_INDUSTRY_TYPE_ID", "Retail")
     param_dict = {
         "MID": config.mid,
         "ORDER_ID": gateway_order_id,
@@ -238,11 +243,19 @@ def build_paytm_form_checkout(request, order, *, amount):
         "TXN_AMOUNT": _normalized_amount(amount),
         "CHANNEL_ID": "WEB",
         "WEBSITE": config.website,
-        "INDUSTRY_TYPE_ID": "Retail",
+        "INDUSTRY_TYPE_ID": industry_type_id,
         "CALLBACK_URL": callback_url,
     }
     checksum = PaytmChecksum.generateSignature(param_dict, config.merchant_key)
     param_dict["CHECKSUMHASH"] = checksum
+    logger.info(
+        "Prepared Paytm form checkout for order %s with gateway order %s, amount %s, callback %s, industry %s",
+        getattr(order, "order_number", ""),
+        gateway_order_id,
+        param_dict["TXN_AMOUNT"],
+        callback_url,
+        industry_type_id,
+    )
     return {
         "gateway_url": config.order_process_url,
         "params": param_dict,

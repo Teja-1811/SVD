@@ -3,6 +3,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
+import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -230,7 +231,7 @@ def prepare_user_payment_order_response(request):
     grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
     payment_method = (order.payment_method or "").upper()
     if payment_method == "PAYTM":
-        gateway_order_id = f"{order.order_number}-{timezone.now().strftime('%H%M%S%f')}"[:64]
+        gateway_order_id = f"ORD{uuid.uuid4().hex[:20].upper()}"
         if order.gateway_order_id != gateway_order_id:
             order.gateway_order_id = gateway_order_id
             order.save(update_fields=["gateway_order_id", "updated_at"])

@@ -50,7 +50,7 @@
         <div class="up-detail-cell"><small class="up-muted">Delivery date</small><div><strong>{{ order.delivery_date|date:"M d, Y" }}</strong></div></div>
         <div class="up-detail-cell"><small class="up-muted">Payment method</small><div><strong>{{ order.payment_method|default:"Not set" }}</strong></div></div>
         <div class="up-detail-cell"><small class="up-muted">Payment status</small><div><strong>{{ order.payment_status|title }}</strong></div></div>
-        <div class="up-detail-cell"><small class="up-muted">Payment reference</small><div><strong>{{ order.payment_reference|default:"Not available" }}</strong></div></div>
+        <div class="up-detail-cell"><small class="up-muted">Payment reference</small><div><strong>{{ order.payment_reference|default:order.gateway_order_id|default:"Not available" }}</strong></div></div>
         <div class="up-detail-cell" style="grid-column: 1 / -1;"><small class="up-muted">Delivery address</small><div><strong>{{ order.delivery_address }}</strong></div></div>
     </div>
 
