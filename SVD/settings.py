@@ -25,7 +25,7 @@ PAYTM_INDUSTRY_TYPE_ID = "Retail"
 PAYTM_CHANNEL_ID = "WEB"
 PAYTM_CHANNEL_ID_MOBILE = "WAP"
 
-PAYTM_CALLBACK_URL = "https://www.svdagencies.shop/users/orders/paytm/callback/"
+PAYTM_CALLBACK_URL = "https://svdagencies.shop/milk_agency/users/orders/paytm/callback/"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
