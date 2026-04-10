@@ -163,6 +163,9 @@ def _normalized_amount(value):
 
 
 def build_callback_url(request, url_name="users:paytm_callback", *, kwargs=None):
+    callback_override = _env("PAYTM_CALLBACK_URL")
+    if callback_override:
+        return callback_override
     url = request.build_absolute_uri(reverse(url_name, kwargs=kwargs))
     parsed = parse.urlsplit(url)
     environment = _env("PAYTM_ENV", "staging").lower()
@@ -249,12 +252,18 @@ def build_paytm_form_checkout(request, order, *, amount):
     checksum = PaytmChecksum.generateSignature(param_dict, config.merchant_key)
     param_dict["CHECKSUMHASH"] = checksum
     logger.info(
-        "Prepared Paytm form checkout for order %s with gateway order %s, amount %s, callback %s, industry %s",
+        "Prepared Paytm form checkout for order %s with params %s",
         getattr(order, "order_number", ""),
-        gateway_order_id,
-        param_dict["TXN_AMOUNT"],
-        callback_url,
-        industry_type_id,
+        {
+            "MID": param_dict["MID"],
+            "ORDER_ID": param_dict["ORDER_ID"],
+            "CUST_ID": param_dict["CUST_ID"],
+            "TXN_AMOUNT": param_dict["TXN_AMOUNT"],
+            "CHANNEL_ID": param_dict["CHANNEL_ID"],
+            "WEBSITE": param_dict["WEBSITE"],
+            "INDUSTRY_TYPE_ID": param_dict["INDUSTRY_TYPE_ID"],
+            "CALLBACK_URL": param_dict["CALLBACK_URL"],
+        },
     )
     return {
         "gateway_url": config.order_process_url,
