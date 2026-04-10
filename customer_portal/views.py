@@ -29,15 +29,7 @@ from milk_agency.models import (
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_payment_recorded, notify_admin_profile_updated
 
-from api.paytm import (
-    PaytmConfigError,
-    PaytmGatewayError,
-    fetch_transaction_status,
-    get_paytm_diagnostics,
-    initiate_paytm_checkout,
-    verify_callback_checksum,
-)
-from api.paytm_notifications import extract_paytm_params
+
 
 from .models import CustomerGatewayPayment, CustomerOrder, CustomerOrderItem
 
@@ -751,17 +743,7 @@ def collect_payment(request):
     for order in recent_orders:
         order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
-    latest_gateway_payment = (
-        CustomerGatewayPayment.objects.filter(customer=customer, gateway="PAYTM")
-        .select_related("bill")
-        .order_by("-created_at", "-id")
-        .first()
-    )
-    paytm_diagnostics = get_paytm_diagnostics(
-        request,
-        callback_url_name="customer_portal:paytm_due_callback",
-    )
-    paytm_diagnostics["webhook_url"] = request.build_absolute_uri(reverse("paytm_payment_webhook"))
+
 
     context = {
         "actual_due": actual_due,
@@ -804,29 +786,9 @@ def start_collect_payment(request):
     else:
         payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
     linked_bill = _latest_due_bill_for_customer(customer)
-    gateway_payment = CustomerGatewayPayment.objects.create(
-        payment_order_id=payment_order_id,
-        customer=customer,
-        bill=linked_bill,
-        amount=amount,
-        gateway="PAYTM",
-        status="pending",
-    )
+    messages.error(request, "Payment gateway temporarily unavailable. Please pay via UPI or cash.")
+    return redirect("customer_portal:collect_payment")
 
-    try:
-        checkout = initiate_paytm_checkout(
-            request,
-            gateway_order_id=gateway_payment.payment_order_id,
-            amount=amount,
-            customer=customer,
-            callback_url=request.build_absolute_uri(reverse("customer_portal:paytm_due_callback")),
-        )
-    except (PaytmConfigError, PaytmGatewayError) as exc:
-        gateway_payment.status = "failed"
-        gateway_payment.callback_payload = {"error": str(exc)}
-        gateway_payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        messages.error(request, str(exc))
-        return redirect("customer_portal:collect_payment")
 
     paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
     paytm_checkout_map[str(gateway_payment.id)] = checkout
@@ -835,34 +797,7 @@ def start_collect_payment(request):
     return redirect("customer_portal:paytm_due_checkout", payment_id=gateway_payment.id)
 
 
-@login_required
-def paytm_due_checkout(request, payment_id):
-    gateway_payment = get_object_or_404(
-        CustomerGatewayPayment.objects.select_related("bill"),
-        id=payment_id,
-        customer=request.user,
-    )
-    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
-    checkout = paytm_checkout_map.get(str(gateway_payment.id))
-    if not checkout:
-        messages.error(request, "The Paytm session expired. Please try the payment again.")
-        return redirect("customer_portal:collect_payment")
 
-    return render(
-        request,
-        "customer_portal/paytm_due_checkout.html",
-        {
-            "gateway_payment": gateway_payment,
-            "checkout": checkout,
-        },
-    )
-
-
-@csrf_exempt
-def paytm_due_callback(request):
-    params = extract_paytm_params(request)
-    if not params and request.method == "GET":
-        params = request.GET.dict()
 
     payment_order_id = str(params.get("ORDERID") or params.get("orderId") or "").strip()
     gateway_payment = CustomerGatewayPayment.objects.filter(

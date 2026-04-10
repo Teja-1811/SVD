@@ -94,8 +94,9 @@ class CustomerGatewayPayment(models.Model):
         related_name="gateway_payments",
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    gateway = models.CharField(max_length=20, default="PAYTM")
+    gateway = models.CharField(max_length=20, default="", blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
     gateway_transaction_id = models.CharField(max_length=120, blank=True, default="")
     callback_payload = models.JSONField(default=dict, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)

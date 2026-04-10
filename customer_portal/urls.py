@@ -18,9 +18,8 @@ urlpatterns = [
     path('bill-details/<int:bill_id>/', views.bill_details, name='bill_details'),
     path("collect-payment/", views.collect_payment, name="collect_payment"),
     path("collect-payment/start/", views.start_collect_payment, name="start_collect_payment"),
-    path("collect-payment/paytm/<int:payment_id>/", views.paytm_due_checkout, name="paytm_due_checkout"),
-    path("collect-payment/paytm/callback/", views.paytm_due_callback, name="paytm_due_callback"),
     path('update-profile/', views.update_profile, name='update_profile'),
+
     path("notifications/push/register/", register_push_device, name="push_device_register"),
     path("notifications/push/unregister/", unregister_push_device, name="push_device_unregister"),
     path('logout/', views.logout_user, name='logout'),

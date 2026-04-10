@@ -12,7 +12,11 @@ from django.urls import reverse
 from django.utils import timezone
 
 from api.order_creator import ACTIVE_ORDER_STATUSES, create_or_replace_order
-from api.paytm import PaytmConfigError, PaytmGatewayError, build_paytm_form_checkout
+from api.user_api_helpers import get_active_offers, get_latest_subscription
+
+from milk_agency.models import Bill, Item, SubscriptionItem
+from milk_agency.order_pricing import get_customer_unit_price
+
 from api.user_api_helpers import get_active_offers, get_latest_subscription
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Bill, Item, SubscriptionItem
@@ -161,22 +165,8 @@ def save_user_order(customer, raw_items, raw_delivery_date):
     )
 
 
-def prepare_user_payment_order(customer, raw_items, raw_delivery_date, *, payment_method="PAYTM"):
-    delivery_date, is_prebooking = parse_delivery_date(raw_delivery_date)
-    if is_prebooking and delivery_date < minimum_prebook_date():
-        raise ValueError("Pre-booking is allowed only from 2 days ahead.")
-
-    normalized_items = validate_order_payload(raw_items, is_prebooking=is_prebooking)
-    return create_or_replace_order(
-        customer=customer,
-        items=normalized_items,
-        delivery_date_str=raw_delivery_date or None,
-        initial_status="payment_pending",
-        payment_method=payment_method,
-    )
-
-
 def save_user_order_response(request):
+
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
 
@@ -207,7 +197,7 @@ def save_user_order_response(request):
     )
 
 
-def prepare_user_payment_order_response(request):
+def save_user_order_response(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
 
@@ -217,47 +207,26 @@ def prepare_user_payment_order_response(request):
         return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
 
     try:
-        order = prepare_user_payment_order(
+        order = save_user_order(
             customer=request.user,
             raw_items=payload.get("items", []),
             raw_delivery_date=str(payload.get("delivery_date") or "").strip(),
-            payment_method=str(payload.get("payment_method") or "PAYTM").strip() or "PAYTM",
         )
     except ValueError as exc:
         return JsonResponse({"success": False, "message": str(exc)}, status=400)
     except Exception as exc:
         return JsonResponse({"success": False, "message": str(exc)}, status=500)
 
-    grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
-    payment_method = (order.payment_method or "").upper()
-    if payment_method == "PAYTM":
-        gateway_order_id = f"ORD{uuid.uuid4().hex[:20].upper()}"
-        if order.gateway_order_id != gateway_order_id:
-            order.gateway_order_id = gateway_order_id
-            order.save(update_fields=["gateway_order_id", "updated_at"])
-        try:
-            checkout = build_paytm_form_checkout(request, order, amount=grand_total)
-        except (PaytmConfigError, PaytmGatewayError, AttributeError) as exc:
-            return JsonResponse({"success": False, "message": str(exc)}, status=400)
-
     return JsonResponse(
         {
             "success": True,
-            "order_id": order.id,
             "order_number": order.order_number,
             "delivery_date": str(order.delivery_date),
-            "payment_method": order.payment_method,
-            "items_total": float(order.total_amount),
-            "delivery_charge": float(order.delivery_charge),
-            "grand_total": float(grand_total),
-            "paytm_url": checkout.get("gateway_url", "") if payment_method == "PAYTM" else "",
-            "paytm_params": checkout.get("params", {}) if payment_method == "PAYTM" else {},
-            "paytm_redirect_url": (
-                reverse("users:paytm_checkout", kwargs={"order_id": order.id}) if payment_method == "PAYTM" else ""
-            ),
-            "message": "Payment order prepared successfully.",
+            "is_prebooking": order.delivery_date > timezone.localdate(),
+            "message": "Order saved successfully.",
         }
     )
+
 
 
 def dashboard_cards(customer):
