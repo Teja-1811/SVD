@@ -6,6 +6,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import signing
+from django.core.signing import BadSignature
+from django.urls import reverse
 
 from .models import Bill, BillItem, Item, Customer
 from .order_pricing import DELIVERY_ITEM_CODE
@@ -54,32 +57,66 @@ def _find_linked_customer_order(bill):
     return candidates.first()
 
 
-# =========================================================
-# VIEW BILL
-# =========================================================
-@login_required
-def view_bill(request, bill_id):
-    bill = get_object_or_404(Bill.objects.select_related('customer').filter(is_deleted=False), id=bill_id)
-    bill_items = BillItem.objects.filter(bill=bill).select_related('item')
+def _build_public_invoice_token(bill):
+    return signing.dumps({"bill_id": bill.id}, salt="public-invoice")
+
+
+def _get_public_invoice_context(bill):
+    bill_items = BillItem.objects.filter(bill=bill).select_related("item")
     linked_order = _find_linked_customer_order(bill)
     delivery_charge_item = bill_items.filter(item__code=DELIVERY_ITEM_CODE).first()
     delivery_charge = Decimal(delivery_charge_item.total_amount if delivery_charge_item else 0)
     if delivery_charge == 0 and linked_order:
         delivery_charge = Decimal(linked_order.delivery_charge or 0)
     display_items = bill_items.exclude(item__code=DELIVERY_ITEM_CODE)
-
     bill_due = Decimal(bill.op_due_amount or 0) + Decimal(bill.total_amount or 0) - Decimal(bill.last_paid or 0)
     current_due = bill.customer.get_actual_due() if bill.customer_id else bill_due
 
-    return render(request, 'milk_agency/bills/view_bill.html', {
-        'bill': bill,
-        'bill_items': display_items,
-        'bill_due': bill_due,
-        'current_due': current_due,
-        'linked_order': linked_order,
-        'delivery_charge': delivery_charge,
-        'items_subtotal': Decimal(bill.total_amount or 0) - delivery_charge,
-    })
+    return {
+        "bill": bill,
+        "bill_items": display_items,
+        "bill_due": bill_due,
+        "current_due": current_due,
+        "linked_order": linked_order,
+        "delivery_charge": delivery_charge,
+        "items_subtotal": Decimal(bill.total_amount or 0) - delivery_charge,
+    }
+
+
+# =========================================================
+# VIEW BILL
+# =========================================================
+@login_required
+def view_bill(request, bill_id):
+    bill = get_object_or_404(Bill.objects.select_related('customer').filter(is_deleted=False), id=bill_id)
+    context = _get_public_invoice_context(bill)
+    public_invoice_url = request.build_absolute_uri(
+        reverse(
+            "milk_agency:public_invoice_detail",
+            args=[bill.id, _build_public_invoice_token(bill)],
+        )
+    )
+    context["public_invoice_url"] = public_invoice_url
+    return render(request, 'milk_agency/bills/view_bill.html', context)
+
+
+def public_invoice_detail(request, bill_id, token):
+    try:
+        payload = signing.loads(token, salt="public-invoice")
+    except BadSignature:
+        messages.error(request, "This invoice link is invalid.")
+        return redirect("customer_portal:login")
+
+    if str(payload.get("bill_id")) != str(bill_id):
+        messages.error(request, "This invoice link does not match the requested bill.")
+        return redirect("customer_portal:login")
+
+    bill = get_object_or_404(
+        Bill.objects.select_related("customer").filter(is_deleted=False),
+        id=bill_id,
+    )
+    context = _get_public_invoice_context(bill)
+    return render(request, "milk_agency/bills/public_invoice_detail.html", context)
 
 
 # =========================================================

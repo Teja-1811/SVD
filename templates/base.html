@@ -343,11 +343,13 @@
                                 <div class="row justify-content-center">
                                     <div class="col-md-12 col-lg-12">
                                         {% for message in messages %}
-                                            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show text-center" role="alert">
-                                                <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
-                                                <strong>{% if message.tags == 'error' %}{% endif %}</strong>{{ message }}
-                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                            </div>
+                                            {% if 'login' in message.tags %}
+                                                <div class="alert {% if 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show text-center" role="alert">
+                                                    <i class="bi {% if 'error' in message.tags %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
+                                                    {{ message }}
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                </div>
+                                            {% endif %}
                                         {% endfor %}
                                     </div>
                                 </div>

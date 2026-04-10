@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.messages import get_messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import OperationalError, ProgrammingError, transaction
@@ -27,7 +28,14 @@ from milk_agency.models import (
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_payment_recorded, notify_admin_profile_updated
 
-from api.paytm import PaytmConfigError, PaytmGatewayError, fetch_transaction_status, initiate_paytm_checkout, verify_callback_checksum
+from api.paytm import (
+    PaytmConfigError,
+    PaytmGatewayError,
+    fetch_transaction_status,
+    get_paytm_diagnostics,
+    initiate_paytm_checkout,
+    verify_callback_checksum,
+)
 from api.paytm_notifications import extract_paytm_params
 
 from .models import CustomerGatewayPayment, CustomerOrder, CustomerOrderItem
@@ -234,7 +242,7 @@ def login_view(request):
         password = request.POST.get('password')
 
         if not username or not password:
-            messages.error(request, 'Username and password are required.')
+            messages.error(request, 'Username and password are required.', extra_tags='login')
             return redirect('customer_portal:login')
 
         user = authenticate(request, username=username, password=password)
@@ -252,7 +260,7 @@ def login_view(request):
                 login(request, user)
                 return redirect('milk_agency:home')
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Invalid username or password.', extra_tags='login')
             return redirect('/')
 
     return render(request, 'index.html')
@@ -713,6 +721,18 @@ def collect_payment(request):
     for order in recent_orders:
         order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
+    latest_gateway_payment = (
+        CustomerGatewayPayment.objects.filter(customer=customer, gateway="PAYTM")
+        .select_related("bill")
+        .order_by("-created_at", "-id")
+        .first()
+    )
+    paytm_diagnostics = get_paytm_diagnostics(
+        request,
+        callback_url_name="customer_portal:paytm_due_callback",
+    )
+    paytm_diagnostics["webhook_url"] = request.build_absolute_uri(reverse("paytm_payment_webhook"))
+
     context = {
         "actual_due": actual_due,
         "outstanding_due": outstanding_due,
@@ -724,6 +744,8 @@ def collect_payment(request):
         "successful_payment_total": successful_total,
         "bill_rows": bill_rows,
         "recent_orders": recent_orders,
+        "latest_gateway_payment": latest_gateway_payment,
+        "paytm_diagnostics": paytm_diagnostics,
     }
     return render(request, "customer_portal/collect_payment.html", context)
 
@@ -885,5 +907,8 @@ def paytm_due_callback(request):
 # ======================================================
 @never_cache
 def logout_user(request):
+    storage = get_messages(request)
+    for _ in storage:
+        pass
     logout(request)
     return redirect('/')

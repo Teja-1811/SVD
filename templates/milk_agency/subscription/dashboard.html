@@ -184,6 +184,31 @@
     vertical-align: middle;
   }
 
+  .sub-inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sub-inline-actions .btn {
+    min-width: 88px;
+  }
+
+  .sub-modal .modal-content {
+    border: 0;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .sub-modal .modal-header,
+  .sub-modal .modal-footer {
+    padding: 1rem 1.15rem;
+  }
+
+  .sub-modal .modal-body {
+    padding: 1rem 1.15rem 1.15rem;
+  }
+
   .sub-mobile-table thead { display: table-header-group; }
 
   @media (max-width: 991.98px) {
@@ -202,10 +227,6 @@
       width: 100%;
     }
 
-    .sub-actions > :last-child:nth-child(odd) {
-      grid-column: 1 / -1;
-    }
-
     .sub-kpis,
     .sub-plan-meta {
       grid-template-columns: 1fr;
@@ -222,9 +243,59 @@
 
     .sub-mobile-table thead { display: none; }
     .sub-mobile-table tbody tr { display: block; border: 1px solid #dee2e6; border-radius: 1rem; margin: 0.85rem; background: #fff; }
-    .sub-mobile-table tbody td { display: flex; justify-content: space-between; gap: 0.75rem; border: 0; border-bottom: 1px solid #f1f3f5; padding: 0.75rem 0.9rem; text-align: right; }
+    .sub-mobile-table tbody td { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; border: 0; border-bottom: 1px solid #f1f3f5; padding: 0.75rem 0.9rem; text-align: right; }
     .sub-mobile-table tbody td:last-child { border-bottom: 0; }
-    .sub-mobile-table tbody td::before { content: attr(data-label); font-weight: 700; color: #495057; text-align: left; }
+    .sub-mobile-table tbody td::before { content: attr(data-label); font-weight: 700; color: #495057; text-align: left; flex: 0 0 86px; }
+    .sub-mobile-table tbody td > * { min-width: 0; }
+    .sub-mobile-table tbody td .sub-inline-actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+    .sub-mobile-table tbody td .sub-inline-actions .btn {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .sub-plan-body .d-flex.flex-column.flex-sm-row.gap-2 {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .sub-plan-body .d-flex.flex-column.flex-sm-row.gap-2 .btn {
+      width: 100%;
+    }
+
+    .sub-modal .modal-dialog {
+      margin: 1rem auto;
+      width: calc(100vw - 1rem);
+      max-width: 520px;
+    }
+
+    .sub-modal .modal-content {
+      min-height: auto;
+      max-height: calc(100dvh - 2rem);
+      border-radius: 24px;
+    }
+
+    .sub-modal .modal-body {
+      padding-bottom: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .sub-modal .modal-footer {
+      background: #fff;
+      border-top: 1px solid #dee2e6;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .sub-modal .modal-footer .btn {
+      width: 100%;
+    }
   }
 </style>
 
@@ -264,12 +335,14 @@
                   <td data-label="Per">{{ item.get_per_display }}</td>
                   <td data-label="Price">&#8377;{{ item.price }}</td>
                   <td data-label="Actions">
-                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItemModal-{{ item.id }}">Edit</button>
-                    <a href="{% url 'milk_agency:delete_plan_item' item.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    <div class="sub-inline-actions">
+                      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItemModal-{{ item.id }}">Edit</button>
+                      <a href="{% url 'milk_agency:delete_plan_item' item.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
                   </td>
                 </tr>
 
-                <div class="modal fade" id="editItemModal-{{ item.id }}" tabindex="-1">
+                <div class="modal fade sub-modal" id="editItemModal-{{ item.id }}" tabindex="-1">
                   <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
                     <div class="modal-content">
                       <form method="post" action="{% url 'milk_agency:update_plan_item' item.id %}">
@@ -304,7 +377,7 @@
         </div>
       </article>
 
-      <div class="modal fade" id="editPlanModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal fade sub-modal" id="editPlanModal-{{ plan.id }}" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
           <div class="modal-content">
             <form method="post" action="{% url 'milk_agency:edit_subscription_plan' plan.id %}">
@@ -324,7 +397,7 @@
         </div>
       </div>
 
-      <div class="modal fade" id="addItemModal-{{ plan.id }}" tabindex="-1">
+      <div class="modal fade sub-modal" id="addItemModal-{{ plan.id }}" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
           <div class="modal-content">
             <form method="post" action="{% url 'milk_agency:add_plan_item' plan.id %}">
@@ -370,12 +443,14 @@
               <td data-label="Start">{{ sub.start_date }}</td>
               <td data-label="End">{{ sub.end_date }}</td>
               <td data-label="Actions">
-                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#recordPaymentModal-{{ sub.id }}">Pay</button>
-                <a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-warning">Deactivate</a>
+                <div class="sub-inline-actions">
+                  <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#recordPaymentModal-{{ sub.id }}">Pay</button>
+                  <a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-warning">Deactivate</a>
+                </div>
               </td>
             </tr>
 
-            <div class="modal fade" id="recordPaymentModal-{{ sub.id }}" tabindex="-1">
+            <div class="modal fade sub-modal" id="recordPaymentModal-{{ sub.id }}" tabindex="-1">
               <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
                 <div class="modal-content">
                   <form method="post" action="{% url 'milk_agency:record_subscription_payment' sub.id %}">
@@ -411,7 +486,11 @@
               <td data-label="Plan">{{ sub.subscription_plan.name }}</td>
               <td data-label="Start">{{ sub.start_date }}</td>
               <td data-label="End">{{ sub.end_date }}</td>
-              <td data-label="Actions"><a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-success">Activate</a></td>
+              <td data-label="Actions">
+                <div class="sub-inline-actions">
+                  <a href="{% url 'milk_agency:toggle_subscription' sub.id %}" class="btn btn-sm btn-success">Activate</a>
+                </div>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -455,7 +534,7 @@
       </div>
     </section>
 
-    <div class="modal fade" id="createPlanModal" tabindex="-1">
+    <div class="modal fade sub-modal" id="createPlanModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
           <form method="post" action="{% url 'milk_agency:create_subscription_plan' %}">
@@ -472,7 +551,7 @@
       </div>
     </div>
 
-    <div class="modal fade" id="assignSubscriptionModal" tabindex="-1">
+    <div class="modal fade sub-modal" id="assignSubscriptionModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
           <form method="post" action="{% url 'milk_agency:assign_subscription' %}">

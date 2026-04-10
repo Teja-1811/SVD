@@ -55,6 +55,7 @@ urlpatterns = [
 
     # Bills Modification URLs
     path('view-bill/<int:bill_id>/', views_bill_operations.view_bill, name='view_bill'),
+    path('public-invoice/<int:bill_id>/<str:token>/', views_bill_operations.public_invoice_detail, name='public_invoice_detail'),
     path('edit-bill/<int:bill_id>/', views_bill_operations.edit_bill, name='edit_bill'),
     path('delete-bill/<int:bill_id>/', views_bill_operations.delete_bill, name='delete_bill'),
     path('get-bill-details/<int:bill_id>/', views_bill_operations.get_bill_details_ajax, name='get_bill_details_ajax'),

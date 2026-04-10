@@ -8,13 +8,33 @@ from django.conf import settings
 from django.urls import reverse
 
 
+class _PaytmChecksumAdapter:
+    def __init__(self, generate_signature, verify_signature):
+        self.generateSignature = generate_signature
+        self.verifySignature = verify_signature
+
+
+PAYTM_IMPORT_ERROR = ""
+
+
 try:
-    import paytmchecksum as PaytmChecksum
-except ImportError:  # pragma: no cover - depends on deployment environment
+    from paytmchecksum import generateSignature, verifySignature
+    PaytmChecksum = _PaytmChecksumAdapter(generateSignature, verifySignature)
+except Exception as exc:  # pragma: no cover - depends on deployment environment
+    PAYTM_IMPORT_ERROR = str(exc)
     try:
-        import PaytmChecksum  # type: ignore
-    except ImportError:  # pragma: no cover - depends on deployment environment
-        PaytmChecksum = None
+        import paytmchecksum as paytmchecksum_module  # type: ignore
+        PaytmChecksum = _PaytmChecksumAdapter(
+            paytmchecksum_module.generateSignature,
+            paytmchecksum_module.verifySignature,
+        )
+    except Exception as exc:  # pragma: no cover - depends on deployment environment
+        PAYTM_IMPORT_ERROR = str(exc)
+        try:
+            import PaytmChecksum as PaytmChecksum  # type: ignore
+        except Exception as exc:  # pragma: no cover - depends on deployment environment
+            PAYTM_IMPORT_ERROR = str(exc)
+            PaytmChecksum = None
 
 
 class PaytmConfigError(Exception):
@@ -72,10 +92,35 @@ def get_paytm_config():
     if not config.merchant_key:
         missing.append("PAYTM_MERCHANT_KEY")
     if PaytmChecksum is None:
-        missing.append("paytmchecksum package")
+        missing.append("paytmchecksum import")
     if missing:
-        raise PaytmConfigError("Paytm is not configured yet. Missing: " + ", ".join(missing))
+        detail = f" ({PAYTM_IMPORT_ERROR})" if PAYTM_IMPORT_ERROR and PaytmChecksum is None else ""
+        raise PaytmConfigError("Paytm is not configured yet. Missing: " + ", ".join(missing) + detail)
     return config
+
+
+def get_paytm_diagnostics(request=None, *, callback_url_name=None, callback_kwargs=None):
+    environment = _env("PAYTM_ENV", "staging").lower() or "staging"
+    if environment not in {"staging", "production"}:
+        environment = "staging"
+
+    diagnostics = {
+        "package_loaded": PaytmChecksum is not None,
+        "mid_present": bool(_env("PAYTM_MID")),
+        "merchant_key_present": bool(_env("PAYTM_MERCHANT_KEY")),
+        "website": _env("PAYTM_WEBSITE", "DEFAULT" if environment == "production" else "WEBSTAGING") or "-",
+        "environment": environment,
+        "base_url": "https://securegw.paytm.in" if environment == "production" else "https://securegw-stage.paytm.in",
+        "callback_url": "",
+        "import_error": PAYTM_IMPORT_ERROR,
+    }
+    if request and callback_url_name:
+        diagnostics["callback_url"] = build_callback_url(
+            request,
+            callback_url_name,
+            kwargs=callback_kwargs,
+        )
+    return diagnostics
 
 
 def _json_body(payload):

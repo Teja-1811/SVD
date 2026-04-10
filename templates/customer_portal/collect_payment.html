@@ -215,6 +215,33 @@
         box-shadow: 0 0 0 3px rgba(24, 127, 98, 0.12);
     }
 
+    .payments-diagnostics-grid {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .payments-diagnostics-row {
+        display: grid;
+        grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+        gap: 0.85rem;
+        align-items: start;
+        padding: 0.9rem 1rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.04);
+    }
+
+    .payments-diagnostics-row small {
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .payments-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
     @media (max-width: 767.98px) {
         .payments-pay-top {
             display: grid;
@@ -226,6 +253,10 @@
 
         .payments-btn-primary {
             width: 100%;
+        }
+
+        .payments-diagnostics-row {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -264,10 +295,10 @@
                         id="upiAmountInput"
                         name="amount"
                         type="number"
-                        min="1"
+                        min="0.01"
                         step="0.01"
                         class="payments-input"
-                        value="{{ suggested_upi_amount|floatformat:2 }}"
+                        value="{% if suggested_upi_amount > 0 %}{{ suggested_upi_amount|floatformat:2 }}{% endif %}"
                         placeholder="Enter amount"
                     >
                 </div>
@@ -278,6 +309,8 @@
                     </button>
                     {% if latest_due_bill %}
                     <span class="payments-muted">Latest open invoice: {{ latest_due_bill.invoice_number }}</span>
+                    {% else %}
+                    <span class="payments-muted">You can collect any payment amount through Paytm, even without an outstanding due.</span>
                     {% endif %}
                 </div>
             </form>
@@ -326,6 +359,76 @@
             {% else %}
             <div class="payments-empty">No payment records yet.</div>
             {% endif %}
+        </div>
+
+        <div class="payments-card">
+            <div class="payments-head">
+                <div>
+                    <span class="payments-eyebrow">Diagnostics</span>
+                    <h2>Paytm integration check</h2>
+                </div>
+            </div>
+
+            <div class="payments-diagnostics-grid">
+                <div class="payments-diagnostics-row">
+                    <small>Checksum package</small>
+                    <strong>{% if paytm_diagnostics.package_loaded %}Loaded{% else %}Missing{% endif %}</strong>
+                </div>
+                {% if paytm_diagnostics.import_error %}
+                <div class="payments-diagnostics-row">
+                    <small>Import detail</small>
+                    <div class="payments-code">{{ paytm_diagnostics.import_error }}</div>
+                </div>
+                {% endif %}
+                <div class="payments-diagnostics-row">
+                    <small>Merchant ID</small>
+                    <strong>{% if paytm_diagnostics.mid_present %}Present{% else %}Missing{% endif %}</strong>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Merchant key</small>
+                    <strong>{% if paytm_diagnostics.merchant_key_present %}Present{% else %}Missing{% endif %}</strong>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Environment</small>
+                    <strong>{{ paytm_diagnostics.environment|upper }}</strong>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Website name</small>
+                    <strong>{{ paytm_diagnostics.website }}</strong>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Gateway base URL</small>
+                    <div class="payments-code">{{ paytm_diagnostics.base_url }}</div>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Callback URL</small>
+                    <div class="payments-code">{{ paytm_diagnostics.callback_url|default:"Not available" }}</div>
+                </div>
+                <div class="payments-diagnostics-row">
+                    <small>Webhook URL</small>
+                    <div class="payments-code">{{ paytm_diagnostics.webhook_url }}</div>
+                </div>
+                {% if latest_gateway_payment %}
+                <div class="payments-diagnostics-row">
+                    <small>Latest gateway attempt</small>
+                    <div>
+                        <div><strong>{{ latest_gateway_payment.payment_order_id }}</strong></div>
+                        <div class="payments-muted">Status: {{ latest_gateway_payment.status|title }} | Amount: Rs. {{ latest_gateway_payment.amount|floatformat:2 }}</div>
+                        {% if latest_gateway_payment.gateway_transaction_id %}
+                        <div class="payments-muted">Gateway transaction: {{ latest_gateway_payment.gateway_transaction_id }}</div>
+                        {% endif %}
+                        {% if latest_gateway_payment.callback_payload.error %}
+                        <div class="payments-code mt-2">{{ latest_gateway_payment.callback_payload.error }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="payments-diagnostics-row">
+                    <small>Latest gateway attempt</small>
+                    <span class="payments-muted">No Paytm attempt yet.</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
     </section>

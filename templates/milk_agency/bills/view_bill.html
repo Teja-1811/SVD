@@ -299,13 +299,14 @@ function getCookie(name) {
 }
 
 function shareBillOnWhatsApp() {
-    let customerName = "{{ bill.customer.name|default:'' }}";
-    let agencyName = "{{ bill.customer.shop_name|default:'' }}";
-    let customerPhone = "{{ bill.customer.phone|default:'' }}";
+    let customerName = "{{ bill.customer.name|default:''|escapejs }}";
+    let agencyName = "{{ bill.customer.shop_name|default:''|escapejs }}";
+    let customerPhone = "{{ bill.customer.phone|default:''|escapejs }}";
 
-    const invoiceNumber = "{{ bill.invoice_number }}";
-    const invoiceDate = "{{ bill.invoice_date|date:'d-M-Y' }}";
+    const invoiceNumber = "{{ bill.invoice_number|escapejs }}";
+    const invoiceDate = "{{ bill.invoice_date|date:'d-M-Y'|escapejs }}";
     const currentDue = parseFloat("{{ current_due|floatformat:2 }}") || 0;
+    const invoiceLink = "{{ public_invoice_url|escapejs }}";
 
     if (customerPhone.length === 10) {
         customerPhone = "91" + customerPhone;
@@ -322,14 +323,13 @@ Please find your invoice details below:
 
 Invoice No: ${invoiceNumber}
 Invoice Date: ${invoiceDate}
+Invoice Link: ${invoiceLink}
 
 ${balanceLine}
 
 Thank you for your continued business with
 Sri Vijaya Durga Milk Agencies.
-
-Place your orders at:
-svdagencies.shop`;
+`;
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappURL = `https://api.whatsapp.com/send/?phone=${customerPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;

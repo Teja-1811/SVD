@@ -251,8 +251,29 @@ body {
 
     /* Group action buttons */
     .cb-actions {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
+    }
+
+    .cb-filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
+
+    .cb-filters .cb-select {
+        grid-column: auto;
+    }
+
+    .cb-filters .cb-btn {
+        grid-column: auto;
+        height: 40px;
+    }
+
+    .cb-actions .cb-btn {
+        height: 40px;
     }
 
     /* Disable hover animation on mobile */
