@@ -22,16 +22,24 @@ def _firebase_components():
         app = firebase_admin.get_app("svd-push")
     except ValueError:
         credential = None
-        if getattr(settings, "FIREBASE_SERVICE_ACCOUNT_INFO", None):
-            credential = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT_INFO)
-        elif getattr(settings, "FIREBASE_SERVICE_ACCOUNT_PATH", ""):
-            credential = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT_PATH)
+        try:
+            if getattr(settings, "FIREBASE_SERVICE_ACCOUNT_INFO", None):
+                credential = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT_INFO)
+            elif getattr(settings, "FIREBASE_SERVICE_ACCOUNT_PATH", ""):
+                credential = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT_PATH)
+        except Exception as exc:
+            logger.warning("Firebase credentials could not be loaded; push notifications are disabled. %s", exc)
+            return None, None, None
 
         if credential is None:
             logger.warning("Firebase service account credentials are missing; push notifications are disabled.")
             return None, None, None
 
-        app = firebase_admin.initialize_app(credential, name="svd-push")
+        try:
+            app = firebase_admin.initialize_app(credential, name="svd-push")
+        except Exception as exc:
+            logger.warning("Firebase app could not be initialized; push notifications are disabled. %s", exc)
+            return None, None, None
 
     return app, messaging, firebase_admin
 
