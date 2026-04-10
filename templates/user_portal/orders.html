@@ -985,6 +985,29 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
     }
 
+    function submitPaytmForm(actionUrl, params) {
+        if (!actionUrl || !params || !Object.keys(params).length) {
+            return false;
+        }
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = actionUrl;
+        form.style.display = "none";
+
+        Object.entries(params).forEach(([key, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = value ?? "";
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        return true;
+    }
+
     confirmPaymentBtn.addEventListener("click", async () => {
         if (paymentStarted) {
             return;
@@ -1009,8 +1032,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         preparedPaymentOrder = paymentOrder;
-        const redirectUrl = paymentOrder.paytm_redirect_url;
-        if (!redirectUrl) {
+        const paytmUrl = paymentOrder.paytm_url;
+        const paytmParams = paymentOrder.paytm_params || {};
+        if (!paytmUrl || !Object.keys(paytmParams).length) {
             alert("Could not start the Paytm payment flow.");
             resetPaymentStep();
             return;
@@ -1021,7 +1045,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (paymentStepNote) {
             paymentStepNote.textContent = `Redirecting you to Paytm for order ${paymentOrder.order_number}. We will confirm the order after Paytm verification.`;
         }
-        window.location.href = redirectUrl;
+        if (!submitPaytmForm(paytmUrl, paytmParams)) {
+            alert("Could not submit the Paytm payment form.");
+            resetPaymentStep();
+        }
     });
 
     if (paymentModalElement) {

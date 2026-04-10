@@ -254,6 +254,16 @@ def prepare_user_payment_order_response(request):
             "items_total": float(order.total_amount),
             "delivery_charge": float(order.delivery_charge),
             "grand_total": float(grand_total),
+            "paytm_url": checkout.get("gateway_url", "") if payment_method == "PAYTM" else "",
+            "paytm_params": (
+                {
+                    "mid": checkout.get("mid", ""),
+                    "orderId": checkout.get("order_id", ""),
+                    "txnToken": checkout.get("txn_token", ""),
+                }
+                if payment_method == "PAYTM"
+                else {}
+            ),
             "paytm_redirect_url": (
                 reverse("users:paytm_checkout", kwargs={"order_id": order.id}) if payment_method == "PAYTM" else ""
             ),
