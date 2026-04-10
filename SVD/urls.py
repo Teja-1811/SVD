@@ -73,6 +73,18 @@ urlpatterns = [
         'favicon.ico',
         RedirectView.as_view(url='/static/favicon.ico', permanent=True)
     ),
+    path(
+        'android-chrome-192x192.png',
+        RedirectView.as_view(url='/static/android-chrome-192x192.png', permanent=True)
+    ),
+    path(
+        'android-chrome-512x512.png',
+        RedirectView.as_view(url='/static/android-chrome-512x512.png', permanent=True)
+    ),
+    path(
+        'apple-touch-icon.png',
+        RedirectView.as_view(url='/static/apple-touch-icon.png', permanent=True)
+    ),
 
     # Public website
     path('', index_view, name='index'),

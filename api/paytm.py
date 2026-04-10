@@ -186,11 +186,14 @@ def initiate_paytm_checkout(request, *, gateway_order_id, amount, customer=None,
     query = parse.urlencode({"mid": config.mid, "orderId": gateway_order_id})
     response = _call_paytm_api(f"{config.initiate_transaction_url}?{query}", payload)
     result_info = response.get("body", {}).get("resultInfo", {})
+    result_status = str(result_info.get("resultStatus") or "").strip()
     result_code = str(result_info.get("resultCode") or "").strip()
     txn_token = str(response.get("body", {}).get("txnToken") or "").strip()
     if result_code not in {"0000", "0002", "00000900"} or not txn_token:
         message = result_info.get("resultMsg") or "Could not start Paytm payment."
-        raise PaytmGatewayError(str(message))
+        status_prefix = f"{result_status} " if result_status else ""
+        code_prefix = f"{result_code}: " if result_code else ""
+        raise PaytmGatewayError(f"Paytm {status_prefix}{code_prefix}{message}".strip())
     return {
         "mid": config.mid,
         "order_id": gateway_order_id,
