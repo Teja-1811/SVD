@@ -17,6 +17,16 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
+PAYTM_MID = "NHkqHt03905433553952"
+PAYTM_MERCHANT_KEY = "B867_pKg8Rd7IJkM"
+PAYTM_WEBSITE = "DEFAULT"
+
+PAYTM_INDUSTRY_TYPE_ID = "Retail"
+PAYTM_CHANNEL_ID = "WEB"
+PAYTM_CHANNEL_ID_MOBILE = "WAP"
+
+PAYTM_CALLBACK_URL = "https://www.svdagencies.shop/users/orders/paytm/callback/"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +41,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',

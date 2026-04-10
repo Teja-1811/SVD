@@ -381,3 +381,10 @@ def calculate_curd_commission(volume):
         return Decimal('20') * Decimal('0.25') + (volume - Decimal('20')) * Decimal('0.35')
     else:
         return Decimal('20') * Decimal('0.25') + Decimal('15') * Decimal('0.35') + (volume - Decimal('35')) * Decimal('0.5')
+
+import hashlib
+import json
+
+def generate_checksum(params, key):
+    data = json.dumps(params, separators=(',', ':'), sort_keys=True)
+    return hashlib.sha256((data + key).encode()).hexdigest()

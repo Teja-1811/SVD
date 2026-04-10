@@ -31,7 +31,8 @@ from milk_agency.push_notifications import notify_admin_order_placed, notify_adm
 
 
 
-from .models import CustomerGatewayPayment, CustomerOrder, CustomerOrderItem
+from .models import CustomerOrder, CustomerOrderItem
+from milk_agency.models import CustomerPayment
 
 
 def _find_linked_customer_order_for_bill(bill):
@@ -86,48 +87,41 @@ def _recalculate_bill_last_paid(bill):
     bill.save(update_fields=["last_paid"])
 
 
-def _record_gateway_due_payment(gateway_payment, *, transaction_id, payment_method):
-    payment_method = payment_method or "PAYTM"
+def _record_gateway_due_payment(customer, bill, amount, *, transaction_id, payment_method="gateway", gateway_transaction_id=None, payment_order_id=None):
+    """
+    Records gateway payment using unified CustomerPayment model.
+    """
+    payment_method = payment_method or "UPI"
 
     with transaction.atomic():
-        locked_gateway_payment = CustomerGatewayPayment.objects.select_for_update().select_related(
-            "customer",
-            "bill",
-        ).get(pk=gateway_payment.pk)
-        if locked_gateway_payment.status == "success":
-            existing_payment = CustomerPayment.objects.filter(
-                transaction_id=locked_gateway_payment.gateway_transaction_id
-            ).select_related("customer", "bill").first()
-            return existing_payment
-
-        payment, _ = CustomerPayment.objects.get_or_create(
+        payment, created = CustomerPayment.objects.get_or_create(
             transaction_id=transaction_id,
             defaults={
-                "customer": locked_gateway_payment.customer,
-                "bill": locked_gateway_payment.bill,
-                "amount": locked_gateway_payment.amount,
+                "customer": customer,
+                "bill": bill,
+                "amount": amount,
                 "method": payment_method,
-                "status": "SUCCESS",
+                "status": "success",
+                "gateway_transaction_id": gateway_transaction_id or "",
+                "payment_order_id": payment_order_id or "",
             },
         )
-        if payment.status != "SUCCESS":
-            payment.status = "SUCCESS"
+        if not created:
+            payment.amount = amount
             payment.method = payment_method
-            payment.save(update_fields=["status", "method"])
+            payment.status = "success"
+            if gateway_transaction_id:
+                payment.gateway_transaction_id = gateway_transaction_id
+            if payment_order_id:
+                payment.payment_order_id = payment_order_id
+            payment.completed_at = timezone.now()
+            payment.save(update_fields=["amount", "method", "status", "gateway_transaction_id", "payment_order_id", "completed_at"])
 
-        if locked_gateway_payment.bill_id:
-            _recalculate_bill_last_paid(locked_gateway_payment.bill)
+        if bill:
+            _recalculate_bill_last_paid(bill)
 
-        customer = locked_gateway_payment.customer
         customer.due = customer.get_actual_due()
         customer.save(update_fields=["due"])
-
-        locked_gateway_payment.status = "success"
-        locked_gateway_payment.gateway_transaction_id = transaction_id
-        locked_gateway_payment.completed_at = timezone.now()
-        locked_gateway_payment.save(
-            update_fields=["status", "gateway_transaction_id", "completed_at", "updated_at"]
-        )
 
     transaction.on_commit(lambda payment_id=payment.id: notify_admin_payment_recorded(CustomerPayment.objects.select_related("customer").get(pk=payment_id)))
     return payment
@@ -474,7 +468,7 @@ def place_order(request):
         if not items:
             return JsonResponse({"success": False, "message": "No items selected"}, status=400)
 
-        order_number = f"ORD-{now.strftime('%Y%m%d%H%M%S')}"
+        order_number = f"ORD{now.strftime('%Y%m%d%H%M%S')}"
         customer = request.user
 
         order = CustomerOrder.objects.create(
@@ -757,8 +751,6 @@ def collect_payment(request):
         "successful_payment_total": successful_total,
         "bill_rows": bill_rows,
         "recent_orders": recent_orders,
-        "latest_gateway_payment": latest_gateway_payment,
-        "paytm_diagnostics": paytm_diagnostics,
     }
     return render(request, "customer_portal/collect_payment.html", context)
 
@@ -786,99 +778,17 @@ def start_collect_payment(request):
     else:
         payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
     linked_bill = _latest_due_bill_for_customer(customer)
-    messages.error(request, "Payment gateway temporarily unavailable. Please pay via UPI or cash.")
-    return redirect("customer_portal:collect_payment")
-
-
-    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
-    paytm_checkout_map[str(gateway_payment.id)] = checkout
-    request.session["customer_paytm_due_checkout_map"] = paytm_checkout_map
-    request.session.modified = True
-    return redirect("customer_portal:paytm_due_checkout", payment_id=gateway_payment.id)
-
-
-
-
-    payment_order_id = str(params.get("ORDERID") or params.get("orderId") or "").strip()
-    gateway_payment = CustomerGatewayPayment.objects.filter(
-        payment_order_id=payment_order_id
-    ).select_related("customer", "bill").first()
-
-    if not gateway_payment:
-        messages.error(request, "Payment record not found for the Paytm callback.")
-        return redirect("customer_portal:collect_payment")
-
-    try:
-        checksum_valid = verify_callback_checksum(params)
-        status_response = fetch_transaction_status(gateway_payment.payment_order_id)
-    except (PaytmConfigError, PaytmGatewayError) as exc:
-        messages.error(request, f"Could not verify the Paytm payment yet: {exc}")
-        return redirect("customer_portal:collect_payment")
-
-    status_body = status_response.get("body", {})
-    result_info = status_body.get("resultInfo", {})
-    txn_status = str(
-        status_body.get("resultStatus")
-        or status_body.get("STATUS")
-        or result_info.get("resultStatus")
-        or result_info.get("resultCode")
-        or ""
-    ).strip().upper()
-    payment_mode = str(status_body.get("paymentMode") or status_body.get("PAYMENTMODE") or "PAYTM").strip() or "PAYTM"
-    transaction_id = str(
-        status_body.get("txnId")
-        or status_body.get("TXNID")
-        or params.get("TXNID")
-        or params.get("txnId")
-        or gateway_payment.payment_order_id
-    ).strip()
-    result_message = str(
-        result_info.get("resultMsg")
-        or status_body.get("RESPMSG")
-        or "Payment status received from Paytm."
-    ).strip()
-
-    gateway_payment.callback_payload = {
-        "callback_params": params,
-        "status_response": status_response,
-        "checksum_valid": checksum_valid,
-    }
-
-    if txn_status in {"TXN_SUCCESS", "SUCCESS", "01"}:
-        payment = _record_gateway_due_payment(
-            gateway_payment,
-            transaction_id=transaction_id,
-            payment_method=payment_mode,
-        )
-        gateway_payment.callback_payload["customer_payment_id"] = payment.id
-        gateway_payment.save(update_fields=["callback_payload", "updated_at"])
-        messages.success(
-            request,
-            "Payment received successfully."
-            if checksum_valid
-            else "Payment verified with Paytm successfully.",
-        )
-    else:
-        resp_msg = str(
-            result_info.get("resultMsg") or status_body.get("RESPMSG") or params.get("RESPMSG", "") or ""
-        ).lower()
-        if "cancel" in resp_msg:
-            user_message = "Payment cancelled by user."
-        elif "fail" in resp_msg or "failure" in resp_msg:
-            user_message = "Payment failed."
-        else:
-            user_message = f"Payment not completed: {result_message or 'Unknown status'}"
-            
-        gateway_payment.status = "failed"
-        gateway_payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        messages.error(request, user_message)
-
-    paytm_checkout_map = request.session.get("customer_paytm_due_checkout_map", {})
-    if str(gateway_payment.id) in paytm_checkout_map:
-        paytm_checkout_map.pop(str(gateway_payment.id), None)
-        request.session["customer_paytm_due_checkout_map"] = paytm_checkout_map
-        request.session.modified = True
-
+    # Gateway integration point - create CustomerPayment with gateway fields
+    # payment_order_id = f"CPD-{customer.phone}-{timezone.now().strftime('%Y%m%d%H%M%S%f')[:10]}"
+    # payment = CustomerPayment.objects.create(
+    #     customer=customer,
+    #     amount=amount,
+    #     transaction_id=f"GATEWAY-{payment_order_id}",
+    #     method="gateway",
+    #     status="pending",
+    #     payment_order_id=payment_order_id,
+    # )
+    messages.success(request, f"UPI Payment link ready for Rs. {amount}. Complete payment and note transaction ID.")
     return redirect("customer_portal:collect_payment")
 
 

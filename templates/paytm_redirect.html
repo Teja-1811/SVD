@@ -1,0 +1,17 @@
+<!-- templates/paytm_redirect.html -->
+
+<html>
+<body>
+    <h3>Redirecting to Paytm...</h3>
+
+    <form method="post" action="https://securegw.paytm.in/order/process/" name="paytm_form">
+        {% for key, value in param_dict.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+    </form>
+
+    <script>
+        document.paytm_form.submit();
+    </script>
+</body>
+</html>

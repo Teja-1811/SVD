@@ -178,7 +178,6 @@
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
                         <div class="d-flex gap-2 flex-wrap">
-                            <a href="{% url 'milk_agency:customer_order_history' order.customer.id %}" class="btn btn-outline-primary">Customer History</a>
                             {% if order.status == "payment_pending" %}
                             <form method="post" action="{% url 'milk_agency:delete_order_history_entry' order.id %}" onsubmit="return confirm('Delete this payment pending order?');">
                                 {% csrf_token %}

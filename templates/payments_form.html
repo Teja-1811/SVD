@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Payment</title>
+</head>
+<body>
+
+<h2>Pay ₹1 Test</h2>
+
+<form method="post" action="{% url 'milk_agency:initiate_payment' %}">
+    {% csrf_token %}
+    
+    <label>Name:</label>
+    <input type="text" name="name" required><br><br>
+
+    <label>Email:</label>
+    <input type="email" name="email" required><br><br>
+
+    <label>Amount:</label>
+    <input type="text" name="amount" value="1.00" required><br><br>
+
+    <button type="submit">Pay Now</button>
+</form>
+
+</body>
+</html>

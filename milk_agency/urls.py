@@ -152,4 +152,9 @@ urlpatterns = [
     # Contact Form URL
     path('contact/submit/', views.contact_form_submit, name='contact_form_submit'),
     
+    #Payment Gateway Callback URL
+    path('users/orders/paytm/callback/', views.payment_callback, name='paytm_callback'),
+    path('payment-page/', views.payment_page, name='payment_page'),
+    path('payment/initiate/', views.initiate_payment, name='initiate_payment'),
+    
 ]

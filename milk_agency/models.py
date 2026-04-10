@@ -497,12 +497,35 @@ class Contact(models.Model):
         return f"{self.name} - {self.subject}"
 
 class CustomerPayment(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("success", "Success"),
+        ("failed", "Failed"),
+    ]
+    METHOD_CHOICES = [
+        ("UPI", "UPI"),
+        ("CASH", "Cash"),
+        ("EXPENCES", "Expences"),
+    ]
+    
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     bill = models.ForeignKey('Bill', null=True, blank=True, on_delete=models.SET_NULL, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_id = models.CharField(max_length=100, unique=True)
-    method = models.CharField(max_length=20)  # UPI / CASH
-    status = models.CharField(max_length=20)  # SUCCESS / FAILED
+    method = models.CharField(
+        max_length=20, 
+        choices=METHOD_CHOICES,
+        default="CASH"
+    )
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES
+    )
+    gateway = models.CharField(max_length=20, blank=True, default="")
+    payment_order_id = models.CharField(max_length=64, blank=True)
+    gateway_transaction_id = models.CharField(max_length=120, blank=True, default="")
+    callback_payload = models.JSONField(default=dict, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -117,8 +117,8 @@ def generate_bill(request):
         # ---------- SAFE UNIQUE INVOICE ----------
         now = timezone.now()
         prefix = now.strftime('%Y%m%d%H%M%S')
-        last_bill = Bill.objects.filter(invoice_number__startswith=f"INV-{prefix}").order_by('-invoice_number').first()
-        invoice_number = f"INV-{prefix}"
+        last_bill = Bill.objects.filter(invoice_number__startswith=f"INV{prefix}").order_by('-invoice_number').first()
+        invoice_number = f"INV{prefix}"
 
         updated_items = []
 
@@ -230,7 +230,7 @@ def generate_bill_from_order(order):
 
         now = timezone.now()
         prefix = now.strftime('%Y%m%d%H%M%S')
-        invoice_number = f"INV-{prefix}"
+        invoice_number = f"INV{prefix}"
 
         bill = Bill.objects.create(
             customer=customer,

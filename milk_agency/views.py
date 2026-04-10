@@ -290,3 +290,51 @@ def admin_enquiries(request):
             "unresolved_queries_count": active_enquiries.count(),
         },
     )
+
+
+# views.py
+
+from django.shortcuts import render
+from django.conf import settings
+import uuid
+from .utils import generate_checksum
+
+def payment_page(request):
+    return render(request, "payments_form.html")
+
+
+def initiate_payment(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        amount = request.POST.get("amount")
+
+        order_id = str(uuid.uuid4()).replace("-", "")[:20]
+
+        param_dict = {
+            "MID": settings.PAYTM_MID,
+            "ORDER_ID": order_id,
+            "TXN_AMOUNT": amount,
+            "CUST_ID": email,
+            "INDUSTRY_TYPE_ID": settings.PAYTM_INDUSTRY_TYPE_ID,
+            "WEBSITE": settings.PAYTM_WEBSITE,
+            "CHANNEL_ID": settings.PAYTM_CHANNEL_ID,
+            "CALLBACK_URL": settings.PAYTM_CALLBACK_URL,
+        }
+
+        checksum = generate_checksum(param_dict, settings.PAYTM_MERCHANT_KEY)
+        param_dict["CHECKSUMHASH"] = checksum
+
+        return render(request, "paytm_redirect.html", {"param_dict": param_dict})
+    
+from django.http import HttpResponse
+
+def payment_callback(request):
+    data = request.POST.dict()
+
+    print("PAYMENT RESPONSE:", data)
+
+    if data.get("STATUS") == "TXN_SUCCESS":
+        return HttpResponse("✅ Payment Successful")
+    else:
+        return HttpResponse("❌ Payment Failed")
