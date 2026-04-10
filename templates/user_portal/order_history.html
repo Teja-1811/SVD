@@ -25,7 +25,15 @@
 }
 .up-history-cell small { display:block; color:#60787a; margin-bottom:0.2rem; }
 .up-history-actions { margin-top: 1rem; display:flex; justify-content:flex-end; }
+.up-history-actions form { margin: 0; }
+.up-history-actions { gap: 0.75rem; flex-wrap: wrap; }
 .chip-neutral { background: rgba(22,52,61,0.08); color:#16343d; }
+.up-btn-danger {
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    background: rgba(254, 226, 226, 0.8);
+    color: #b91c1c;
+}
+.up-btn-danger:hover { background: #fee2e2; color: #991b1b; }
 @media (max-width: 767.98px) { .up-history-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
@@ -35,8 +43,6 @@
     <div class="up-section-head">
         <div>
             <span class="up-eyebrow">History</span>
-            <h2>Complete order history</h2>
-            <p class="up-muted mb-0">Every order is listed here, including cancelled and rejected ones.</p>
         </div>
     </div>
 
@@ -86,6 +92,12 @@
             </div>
 
             <div class="up-history-actions">
+                {% if order.status == "payment_pending" %}
+                <form method="post" action="{% url 'users:delete_order' order.id %}" onsubmit="return confirm('Delete this payment pending order?');">
+                    {% csrf_token %}
+                    <button type="submit" class="up-btn-secondary up-btn-danger">Delete</button>
+                </form>
+                {% endif %}
                 <a href="{% url 'users:order_detail' order.id %}" class="up-btn-primary">View</a>
             </div>
         </article>

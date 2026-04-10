@@ -5,6 +5,7 @@ from django.urls import reverse
 from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
 
+from api.order_creator import can_delete_order, delete_order
 from api.paytm import get_paytm_diagnostics
 from customer_portal.models import CustomerOrder
 from api.paytm_notifications import extract_paytm_params, process_paytm_notification
@@ -158,3 +159,22 @@ def cancel_order(request, order_id):
     else:
         order.save(update_fields=["status", "updated_at"])
     return JsonResponse({"success": True, "message": "Order cancelled successfully."})
+
+
+@user_required
+def delete_order_page(request, order_id):
+    if request.method != "POST":
+        messages.error(request, "Invalid request.")
+        return redirect("users:order_history")
+
+    order = get_object_or_404(CustomerOrder.objects.filter(customer=request.user), id=order_id)
+    if not can_delete_order(order):
+        messages.error(request, "Only payment pending orders can be deleted.")
+        return redirect("users:order_detail", order_id=order_id)
+
+    if delete_order(request.user, order_id):
+        messages.success(request, f"Order {order.order_number} deleted successfully.")
+        return redirect("users:order_history")
+
+    messages.error(request, "Unable to delete this order.")
+    return redirect("users:order_detail", order_id=order_id)

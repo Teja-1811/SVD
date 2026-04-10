@@ -133,6 +133,7 @@ urlpatterns = [
     path('admin-orders-dashboard/history/', views_orders_dashboard.admin_orders_history, name='admin_orders_history'),
     path('admin-orders-dashboard/customer/<int:customer_id>/history/', views_orders_dashboard.customer_order_history, name='customer_order_history'),
     path('admin-orders-dashboard/orders/<int:order_id>/', views_orders_dashboard.admin_order_detail, name='admin_order_detail'),
+    path('admin-orders-dashboard/orders/<int:order_id>/delete/', views_orders_dashboard.delete_order_history_entry, name='delete_order_history_entry'),
     path('admin-delivery-dashboard/', views_orders_dashboard.admin_delivery_dashboard, name='admin_delivery_dashboard'),
     path('confirm-order/<int:order_id>/', views_orders_dashboard.confirm_order, name='confirm_order'),
     path('reject-order/<int:order_id>/', views_orders_dashboard.reject_order, name='reject_order'),

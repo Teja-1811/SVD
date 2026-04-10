@@ -26,7 +26,8 @@
 }
 .history-cell small { display:block; color:#64748b; margin-bottom:0.22rem; }
 .history-cell strong { color:#0f172a; }
-.history-actions { margin-top: 1rem; display:flex; justify-content:flex-end; }
+.history-actions { margin-top: 1rem; display:flex; justify-content:flex-end; gap:0.75rem; flex-wrap:wrap; }
+.history-actions form { margin: 0; }
 .status-pill {
     display:inline-flex; align-items:center; padding:0.45rem 0.8rem; border-radius:999px; font-weight:700; font-size:0.82rem;
 }
@@ -78,6 +79,12 @@
             </div>
 
             <div class="history-actions">
+                {% if order.status == "payment_pending" %}
+                <form method="post" action="{% url 'customer_portal:delete_order' order.id %}" onsubmit="return confirm('Delete this payment pending order?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+                {% endif %}
                 <a href="{% url 'customer_portal:order_detail' order.id %}" class="btn btn-soft-primary">View details</a>
             </div>
         </article>

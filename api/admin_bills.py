@@ -10,10 +10,9 @@ from decimal import Decimal
 from datetime import datetime
 
 from api.user_bill_pdf_utils import UserPDFGenerator, DELIVERY_ITEM_CODE
+from milk_agency.order_pricing import DELIVERY_CHARGE_AMOUNT
 from milk_agency.models import Bill, BillItem, Customer, Item
 from customer_portal.models import CustomerOrder
-
-DELIVERY_CHARGE_AMOUNT = Decimal("10")
 
 
 def _unit_price(item, customer):

@@ -9,6 +9,13 @@
             <p class="text-muted mb-0">{{ order.customer.name }} • {{ order.customer.user_type|title }} • {{ order.customer.phone }}</p>
         </div>
         <div class="d-flex gap-2">
+            {% if order.status == "payment_pending" %}
+            <form method="post" action="{% url 'milk_agency:delete_order_history_entry' order.id %}" onsubmit="return confirm('Delete this payment pending order?');">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="customer">
+                <button type="submit" class="btn btn-outline-danger">Delete</button>
+            </form>
+            {% endif %}
             <a href="{% url 'milk_agency:customer_order_history' order.customer.id %}" class="btn btn-outline-primary">Back to history</a>
             <a href="{% url 'milk_agency:admin_orders_dashboard' %}" class="btn btn-outline-secondary">Dashboard</a>
         </div>

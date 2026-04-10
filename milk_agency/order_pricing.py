@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from milk_agency.models import Item
 
-DELIVERY_CHARGE_AMOUNT = Decimal("10.00")
+DELIVERY_CHARGE_AMOUNT = Decimal("5.00")
 DELIVERY_ITEM_CODE = "DELIVERY_CHARGE"
 TAKEAWAY_ALIASES = ("takeaway", "take away", "pickup", "pick up", "self pickup", "self-pickup")
 

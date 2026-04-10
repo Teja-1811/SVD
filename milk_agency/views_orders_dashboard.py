@@ -3,7 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 from django.db import connection, transaction
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
@@ -13,6 +14,7 @@ from milk_agency.push_notifications import notify_order_rejected
 from milk_agency.order_pricing import get_customer_unit_price
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from customer_portal.order_workflow import finalize_order_after_payment
+from api.order_creator import can_delete_order
 from api.user_api_helpers import find_linked_order_for_bill, get_delivery_charge_for_bill
 from milk_agency.models import Bill
 
@@ -258,6 +260,33 @@ def admin_order_detail(request, order_id):
     )
     context = _admin_order_detail_context(order)
     return render(request, "milk_agency/orders/admin_order_detail.html", context)
+
+
+@never_cache
+@login_required
+def delete_order_history_entry(request, order_id):
+    if request.method != "POST":
+        messages.error(request, "Invalid request.")
+        return redirect("milk_agency:admin_orders_history")
+
+    order = get_object_or_404(
+        CustomerOrder.objects.select_related("customer").prefetch_related("items"),
+        id=order_id,
+    )
+    customer_id = order.customer_id
+
+    if not can_delete_order(order):
+        messages.error(request, "Only payment pending orders can be deleted.")
+        return redirect("milk_agency:admin_order_detail", order_id=order_id)
+
+    order_number = order.order_number
+    order.delete()
+    messages.success(request, f"Order {order_number} deleted successfully.")
+
+    next_page = (request.POST.get("next") or "").strip().lower()
+    if next_page == "customer" and customer_id:
+        return redirect("milk_agency:customer_order_history", customer_id=customer_id)
+    return redirect("milk_agency:admin_orders_history")
 
 
 @never_cache

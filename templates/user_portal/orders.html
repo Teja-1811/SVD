@@ -624,6 +624,8 @@
 
                 <div class="up-summary mt-3">
                     <div class="up-summary-item"><span>Items total</span><strong id="itemsTotal">&#8377;0.00</strong></div>
+                    <div class="up-summary-item"><span>Delivery charge</span><strong id="deliveryChargeTotal">&#8377;5.00</strong></div>
+                    <div class="up-summary-item"><span>Grand total</span><strong id="grandTotal">&#8377;5.00</strong></div>
                     <div class="up-summary-item"><span>Delivery date</span><strong id="summaryDate">Today</strong></div>
                 </div>
 
@@ -698,6 +700,14 @@
                     </div>
                 </div>
                 <div class="up-summary-item mb-3">
+                    <span>Items total</span>
+                    <strong id="paymentModalItemsTotal">&#8377;0.00</strong>
+                </div>
+                <div class="up-summary-item mb-3">
+                    <span>Delivery charge</span>
+                    <strong id="paymentModalDeliveryCharge">&#8377;5.00</strong>
+                </div>
+                <div class="up-summary-item mb-3">
                     <span>Total amount</span>
                     <strong id="paymentModalTotal">&#8377;0.00</strong>
                 </div>
@@ -728,15 +738,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const summaryTitle = document.getElementById("summaryTitle");
     const selectedItems = document.getElementById("selectedItems");
     const itemsTotal = document.getElementById("itemsTotal");
+    const deliveryChargeTotal = document.getElementById("deliveryChargeTotal");
+    const grandTotal = document.getElementById("grandTotal");
     const summaryDate = document.getElementById("summaryDate");
     const prebookDate = document.getElementById("prebookDate");
     const submitOrderBtn = document.getElementById("submitOrderBtn");
     const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
     const paymentModalItems = document.getElementById("paymentModalItems");
+    const paymentModalItemsTotal = document.getElementById("paymentModalItemsTotal");
+    const paymentModalDeliveryCharge = document.getElementById("paymentModalDeliveryCharge");
     const paymentModalTotal = document.getElementById("paymentModalTotal");
     const paymentStepNote = document.getElementById("paymentStepNote");
     const paymentModalElement = document.getElementById("paymentModal");
     const paymentModal = paymentModalElement ? new bootstrap.Modal(paymentModalElement) : null;
+    const deliveryChargeAmount = 5;
     let paymentStarted = false;
     let preparedPaymentOrder = null;
 
@@ -790,13 +805,28 @@ document.addEventListener("DOMContentLoaded", () => {
             `);
         });
 
+        const deliveryCharge = rows.length ? deliveryChargeAmount : 0;
+        const orderTotal = total + deliveryCharge;
+
         selectedItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
         itemsTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
+        if (deliveryChargeTotal) {
+            deliveryChargeTotal.innerHTML = `&#8377;${deliveryCharge.toFixed(2)}`;
+        }
+        if (grandTotal) {
+            grandTotal.innerHTML = `&#8377;${orderTotal.toFixed(2)}`;
+        }
         if (paymentModalItems) {
             paymentModalItems.innerHTML = rows.length ? rows.join("") : '<div class="up-empty">No items selected yet.</div>';
         }
+        if (paymentModalItemsTotal) {
+            paymentModalItemsTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
+        }
+        if (paymentModalDeliveryCharge) {
+            paymentModalDeliveryCharge.innerHTML = `&#8377;${deliveryCharge.toFixed(2)}`;
+        }
         if (paymentModalTotal) {
-            paymentModalTotal.innerHTML = `&#8377;${total.toFixed(2)}`;
+            paymentModalTotal.innerHTML = `&#8377;${orderTotal.toFixed(2)}`;
         }
         summaryDate.textContent = currentMode === "prebook" ? (prebookDate.value || minPrebookDate) : "Today";
     }
@@ -951,7 +981,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (paymentModalItems) {
                 paymentModalItems.innerHTML = selectedItems.innerHTML;
             }
-            paymentModalTotal.innerHTML = itemsTotal.innerHTML;
+            if (paymentModalItemsTotal) {
+                paymentModalItemsTotal.innerHTML = itemsTotal.innerHTML;
+            }
+            if (paymentModalDeliveryCharge && deliveryChargeTotal) {
+                paymentModalDeliveryCharge.innerHTML = deliveryChargeTotal.innerHTML;
+            }
+            paymentModalTotal.innerHTML = grandTotal.innerHTML;
             resetPaymentStep();
             paymentModal.show();
         }

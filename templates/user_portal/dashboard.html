@@ -159,18 +159,8 @@
         <div class="up-hero up-hero-compact">
             <div>
                 <span class="up-eyebrow">User Dashboard</span>
-                <h1 class="up-title">Orders, invoices, and delivery details.</h1>
-                <p class="up-subtitle">Keep the dashboard focused on what you need most day to day.</p>
-            </div>
-            <div class="up-actions">
-                <a href="{% url 'users:orders' %}" class="up-btn-primary"><i class="bi bi-bag-plus"></i><span>Orders</span></a>
-                <a href="{% url 'users:invoices' %}" class="up-btn-secondary"><i class="bi bi-receipt"></i><span>Invoices</span></a>
             </div>
             <div class="up-hero-metrics">
-                <div class="up-mini-stat">
-                    <span>Available today</span>
-                    <strong>{{ available_item_count }}</strong>
-                </div>
                 <div class="up-mini-stat">
                     <span>Today's orders</span>
                     <strong>{{ today_order_count }}</strong>
@@ -181,33 +171,6 @@
                 </div>
             </div>
         </div>
-
-        <aside class="up-spotlight">
-            <div class="up-section-head" style="margin-bottom:0.9rem;">
-                <div>
-                    <span class="up-eyebrow">Quick Snapshot</span>
-                    <h2 style="color:#fff;">Live status</h2>
-                </div>
-            </div>
-            <div class="up-spotlight-grid compact">
-                <div>
-                    <small>Pre-bookings</small>
-                    <strong>{{ prebook_order_count }}</strong>
-                </div>
-                <div>
-                    <small>Profile completion</small>
-                    <strong>{{ profile_completion }}%</strong>
-                </div>
-                <div>
-                    <small>Address status</small>
-                    <strong>{% if primary_address %}Ready{% else %}Update needed{% endif %}</strong>
-                </div>
-                <div>
-                    <small>Billing</small>
-                    <strong>{% if actual_due %}Pending{% else %}Clear{% endif %}</strong>
-                </div>
-            </div>
-        </aside>
     </section>
 
     <section class="up-content">

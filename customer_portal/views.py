@@ -15,6 +15,7 @@ from datetime import time
 from decimal import Decimal
 import json
 
+from api.order_creator import can_delete_order, delete_order as delete_customer_order
 from milk_agency.models import (
     Bill,
     Customer,
@@ -607,6 +608,26 @@ def order_detail(request, order_id):
     )
     context = _build_order_detail_payload(order_obj)
     return render(request, "customer_portal/order_detail.html", context)
+
+
+@never_cache
+@login_required
+def delete_order(request, order_id):
+    if request.method != "POST":
+        messages.error(request, "Invalid request.")
+        return redirect("customer_portal:order_history")
+
+    order = get_object_or_404(CustomerOrder.objects.filter(customer=request.user), id=order_id)
+    if not can_delete_order(order):
+        messages.error(request, "Only payment pending orders can be deleted.")
+        return redirect("customer_portal:order_detail", order_id=order_id)
+
+    if delete_customer_order(request.user, order_id):
+        messages.success(request, f"Order {order.order_number} deleted successfully.")
+        return redirect("customer_portal:order_history")
+
+    messages.error(request, "Unable to delete this order.")
+    return redirect("customer_portal:order_detail", order_id=order_id)
 
 
 # ======================================================

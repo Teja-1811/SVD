@@ -136,6 +136,10 @@ def _create_line(order: CustomerOrder, entry: Mapping) -> Decimal:
     return line_total
 
 
+def can_delete_order(order: Optional[CustomerOrder]) -> bool:
+    return bool(order and order.status == "payment_pending")
+
+
 # -------------------------------------------------------------------
 # Core operations
 # -------------------------------------------------------------------
@@ -220,6 +224,8 @@ def edit_order(
 
 def delete_order(customer: Customer, order_id: int) -> bool:
     existing = CustomerOrder.objects.filter(id=order_id, customer=customer).first()
+    if not can_delete_order(existing):
+        return False
     deleted, _ = CustomerOrder.objects.filter(id=order_id, customer=customer).delete()
     if deleted and existing:
         transaction.on_commit(lambda customer_id=customer.id, deleted_order_id=order_id: notify_admin_order_deleted(Customer.objects.get(pk=customer_id), deleted_order_id))
@@ -281,6 +287,9 @@ def user_edit_order(request, order_id: int):
 def user_delete_order(request, order_id: int):
     if not request.user or not request.user.is_authenticated:
         return Response({"detail": "Authentication credentials were not provided."}, status=401)
+    existing = CustomerOrder.objects.filter(id=order_id, customer=request.user).first()
+    if existing and not can_delete_order(existing):
+        return Response({"success": False, "message": "Only payment pending orders can be deleted."}, status=400)
     if delete_order(request.user, order_id):
         return Response({"success": True, "message": "Order deleted"})
     return Response({"success": False, "message": "Order not found"}, status=404)

@@ -6,30 +6,8 @@
 <section class="up-page-header">
     <div class="up-hero">
         <span class="up-eyebrow">Invoices</span>
-        <h1 class="up-title">Billing history.</h1>
         <p class="up-subtitle">Review invoices, open billing details, and download PDF copies.</p>
     </div>
-    <aside class="up-spotlight">
-        <span class="up-eyebrow">Billing Snapshot</span>
-        <div class="up-spotlight-grid">
-            <div>
-                <small>Total invoices</small>
-                <strong>{{ bills|length }}</strong>
-            </div>
-            <div>
-                <small>Total billed</small>
-                <strong>&#8377;{{ total_amount|floatformat:2 }}</strong>
-            </div>
-            <div>
-                <small>Average invoice</small>
-                <strong>&#8377;{{ average_amount|floatformat:2 }}</strong>
-            </div>
-            <div>
-                <small>Month</small>
-                <strong>{{ current_month }}/{{ current_year }}</strong>
-            </div>
-        </div>
-    </aside>
 </section>
 
 <section class="up-card">

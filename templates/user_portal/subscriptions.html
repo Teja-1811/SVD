@@ -6,34 +6,7 @@
 <section class="up-page-header">
     <div class="up-hero">
         <span class="up-eyebrow">Subscriptions</span>
-        <h1 class="up-title">Subscription details.</h1>
-        <p class="up-subtitle">Review the current plan, delivery cycle, and included items.</p>
     </div>
-    <aside class="up-spotlight">
-        <span class="up-eyebrow">Plan Snapshot</span>
-        {% if subscription %}
-        <div class="up-spotlight-grid">
-            <div>
-                <small>Status</small>
-                <strong>{% if subscription.is_active %}Active{% else %}Inactive{% endif %}</strong>
-            </div>
-            <div>
-                <small>Ends</small>
-                <strong>{{ subscription.end_date|date:"M d" }}</strong>
-            </div>
-            <div>
-                <small>Price</small>
-                <strong>&#8377;{{ subscription.subscription_plan.price|floatformat:2 }}</strong>
-            </div>
-            <div>
-                <small>Items</small>
-                <strong>{{ subscription_items|length }}</strong>
-            </div>
-        </div>
-        {% else %}
-        <div class="up-empty mt-3">No active subscription is available for this account.</div>
-        {% endif %}
-    </aside>
 </section>
 
 <section class="up-card-split">
