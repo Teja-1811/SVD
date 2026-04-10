@@ -298,6 +298,7 @@ from django.shortcuts import render
 from django.conf import settings
 import uuid
 from .utils import generate_checksum
+from paytmchecksum import PaytmChecksum
 
 def payment_page(request):
     return render(request, "payments_form.html")
@@ -322,7 +323,7 @@ def initiate_payment(request):
             "CALLBACK_URL": settings.PAYTM_CALLBACK_URL,
         }
 
-        checksum = generate_checksum(param_dict, settings.PAYTM_MERCHANT_KEY)
+        checksum = PaytmChecksum.generateSignature(param_dict, settings.PAYTM_MERCHANT_KEY)
         param_dict["CHECKSUMHASH"] = checksum
 
         return render(request, "paytm_redirect.html", {"param_dict": param_dict})
