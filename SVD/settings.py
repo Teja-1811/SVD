@@ -23,7 +23,7 @@ PAYTM_WEBSITE = os.environ.get("PAYTM_WEBSITE", "WEBSTAGING")
 PAYTM_ENV = os.environ.get("PAYTM_ENV", "staging")
 PAYTM_BASE_URL = os.environ.get(
     "PAYTM_BASE_URL",
-    "https://securestage.paytmpayments.com"
+    "https://securegw-stage.paytm.in"
     if PAYTM_WEBSITE.upper() == "WEBSTAGING" or PAYTM_ENV.lower() == "staging"
     else "https://securegw.paytm.in",
 )

@@ -7,6 +7,7 @@ import json
 
 from api.order_creator import can_delete_order, delete_order
 from customer_portal.models import CustomerOrder
+from milk_agency.models import CustomerPayment
 from .helpers import (
     active_orders,
     grouped_catalog,
@@ -42,6 +43,13 @@ def _paytm_diagnostics(request):
         .order_by("-updated_at", "-id")
         .first()
     )
+    latest_payment_attempt = None
+    if latest_gateway_attempt and latest_gateway_attempt.gateway_order_id:
+        latest_payment_attempt = (
+            CustomerPayment.objects.filter(payment_order_id=latest_gateway_attempt.gateway_order_id)
+            .order_by("-created_at", "-id")
+            .first()
+        )
 
     return {
         "package_loaded": package_loaded,
@@ -54,6 +62,12 @@ def _paytm_diagnostics(request):
         "callback_url": callback_url,
         "webhook_url": "Not configured",
         "latest_gateway_attempt": latest_gateway_attempt,
+        "latest_payment_attempt": latest_payment_attempt,
+        "latest_paytm_response": (
+            latest_payment_attempt.callback_payload
+            if latest_payment_attempt and latest_payment_attempt.callback_payload
+            else None
+        ),
         "checkout_js_url": (
             f"{checkout_host}/merchantpgpui/checkoutjs/merchants/{settings.PAYTM_MID}.js"
             if str(getattr(settings, "PAYTM_MID", "") or "").strip()

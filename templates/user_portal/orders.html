@@ -571,6 +571,21 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% if paytm_diagnostics.latest_payment_attempt %}
+                    <div class="up-diagnostics-row">
+                        <small>Latest payment record</small>
+                        <div>
+                            <div><strong>{{ paytm_diagnostics.latest_payment_attempt.payment_order_id }}</strong></div>
+                            <div class="up-muted">Status: {{ paytm_diagnostics.latest_payment_attempt.status|title }} | Method: {{ paytm_diagnostics.latest_payment_attempt.method }} | Gateway txn: {{ paytm_diagnostics.latest_payment_attempt.gateway_transaction_id|default:"-" }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if paytm_diagnostics.latest_paytm_response %}
+                    <div class="up-diagnostics-row">
+                        <small>Latest Paytm response</small>
+                        <div class="up-code">{{ paytm_diagnostics.latest_paytm_response }}</div>
+                    </div>
+                    {% endif %}
                     {% else %}
                     <div class="up-diagnostics-row">
                         <small>Latest order attempt</small>

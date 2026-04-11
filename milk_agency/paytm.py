@@ -38,7 +38,7 @@ def _paytm_base_url():
     website = str(getattr(settings, "PAYTM_WEBSITE", "") or "").upper()
     environment = str(getattr(settings, "PAYTM_ENV", "") or "").lower()
     if website == "WEBSTAGING" or environment == "staging":
-        return "https://securestage.paytmpayments.com"
+        return "https://securegw-stage.paytm.in"
     return "https://securegw.paytm.in"
 
 
@@ -187,6 +187,7 @@ def initiate_paytm_transaction(*, payment_order_id, amount, customer, callback_u
     response = requests.post(url, json=payload, timeout=30)
     response.raise_for_status()
     response_data = response.json()
+    print("PAYTM INITIATE TRANSACTION RESPONSE:", response_data)
     result = response_data.get("body", {})
     return {
         "success": bool(result.get("txnToken")),
