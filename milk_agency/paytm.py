@@ -1,4 +1,5 @@
 import json
+import re
 from decimal import Decimal, InvalidOperation
 
 import requests
@@ -39,6 +40,16 @@ def _paytm_base_url():
     if website == "WEBSTAGING" or environment == "staging":
         return "https://securestage.paytmpayments.com"
     return "https://securegw.paytm.in"
+
+
+def _sanitize_paytm_order_id(value, *, prefix="ORD"):
+    raw = str(value or "").strip()
+    cleaned = re.sub(r"[^A-Za-z0-9_]", "", raw)
+    if not cleaned:
+        cleaned = f"{prefix}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"
+    if not cleaned[0].isalnum():
+        cleaned = f"{prefix}{cleaned}"
+    return cleaned[:50]
 
 
 def _serialize_payload(payload):
@@ -192,7 +203,7 @@ def initiate_paytm_payment(order_id, amount, customer_id):
 
 def initiate_order_transaction(order):
     grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
-    payment_order_id = order.gateway_order_id or f"ORDER-{order.id}"
+    payment_order_id = _sanitize_paytm_order_id(order.gateway_order_id or f"ORDER{order.id}", prefix="ORD")
     payment = _save_pending_payment(
         customer=order.customer,
         amount=grand_total,
@@ -234,7 +245,10 @@ def initiate_invoice_transaction(*, customer, amount):
     if not bill:
         raise ValueError("No invoice found for this customer.")
 
-    payment_order_id = f"{bill.invoice_number}-{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
+    payment_order_id = _sanitize_paytm_order_id(
+        f"{bill.invoice_number}{timezone.now().strftime('%Y%m%d%H%M%S%f')}",
+        prefix="INV",
+    )
     payment = _save_pending_payment(
         customer=customer,
         amount=amount,
