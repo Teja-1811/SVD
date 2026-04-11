@@ -1,10 +1,33 @@
 <html>
-<body>
+<head>
+    <script src="https://securegw.paytm.in/merchantpgpui/checkoutjs/merchants/{{ mid }}.js"></script>
+</head>
 
-<h2>Redirecting to Paytm...</h2>
+<body onload="onScriptLoad()">
 
-<script type="application/javascript">
-    window.location.href = "https://securegw.paytm.in/theia/api/v1/showPaymentPage?mid={{ mid }}&orderId={{ order_id }}";
+<h2>Opening Paytm...</h2>
+
+<script>
+function onScriptLoad() {
+    var config = {
+        "root": "",
+        "flow": "DEFAULT",
+        "data": {
+            "orderId": "{{ order_id }}",
+            "token": "{{ txnToken }}",
+            "tokenType": "TXN_TOKEN",
+            "amount": "1.00"
+        },
+        "merchant": {
+            "mid": "{{ mid }}",
+            "redirect": true
+        }
+    };
+
+    window.Paytm.CheckoutJS.init(config).then(function () {
+        window.Paytm.CheckoutJS.invoke();
+    });
+}
 </script>
 
 </body>

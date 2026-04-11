@@ -300,6 +300,7 @@ import uuid
 from .utils import generate_checksum
 from paytmchecksum import PaytmChecksum
 import requests
+from django.http import HttpResponse
 
 def payment_page(request):
     return render(request, "payments_form.html")
@@ -350,7 +351,7 @@ def initiate_payment(request):
         else:
             return HttpResponse(f"Paytm Error: {response_data}")
 
-        return render(request, "paytm_checkout.html", {
+        return render(request, "paytm_redirect.html", {
             "txnToken": txnToken,
             "order_id": order_id,
             "mid": settings.PAYTM_MID
