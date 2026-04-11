@@ -1020,7 +1020,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function startPaytmCheckout(paymentOrder) {
         const scriptUrl = paymentOrder.checkout_js_url;
-        const checkoutJs = await loadPaytmCheckoutScript(scriptUrl);
+        await loadPaytmCheckoutScript(scriptUrl);
+        const checkoutJs = window.Paytm && window.Paytm.CheckoutJS;
+        if (!checkoutJs) {
+            throw new Error("CheckoutJS unavailable on window.Paytm");
+        }
 
         const config = {
             root: "",
@@ -1042,9 +1046,19 @@ document.addEventListener("DOMContentLoaded", () => {
             },
         };
 
-        await checkoutJs.init(config);
-        checkoutJs.invoke();
-        return true;
+        return new Promise((resolve, reject) => {
+            checkoutJs.onLoad(function() {
+                checkoutJs
+                    .init(config)
+                    .then(function() {
+                        checkoutJs.invoke();
+                        resolve(true);
+                    })
+                    .catch(function(error) {
+                        reject(error || new Error("CheckoutJS init failed"));
+                    });
+            });
+        });
     }
 
     confirmPaymentBtn.addEventListener("click", async () => {
@@ -1086,7 +1100,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await startPaytmCheckout(paymentOrder);
         } catch (error) {
             console.error(error);
-            alert("Could not launch Paytm Checkout.");
+            alert(`Could not launch Paytm Checkout. ${error && error.message ? error.message : ""}`.trim());
             resetPaymentStep();
         }
     });

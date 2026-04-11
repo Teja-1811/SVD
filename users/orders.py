@@ -19,9 +19,53 @@ from .helpers import (
 from milk_agency.paytm import _paytm_base_url, initiate_order_transaction
 
 
+def _paytm_diagnostics(request):
+    try:
+        from paytmchecksum import PaytmChecksum  # noqa: F401
+        package_loaded = True
+        import_error = ""
+    except Exception as exc:
+        package_loaded = False
+        import_error = str(exc)
+
+    callback_url = getattr(settings, "PAYTM_CALLBACK_URL", "").strip()
+    if callback_url.startswith("/"):
+        callback_url = request.build_absolute_uri(callback_url)
+
+    website = str(getattr(settings, "PAYTM_WEBSITE", "") or "").strip()
+    environment = str(getattr(settings, "PAYTM_ENV", "") or "").strip()
+    checkout_host = _paytm_base_url()
+
+    latest_gateway_attempt = (
+        CustomerOrder.objects.filter(customer=request.user)
+        .exclude(gateway_order_id="")
+        .order_by("-updated_at", "-id")
+        .first()
+    )
+
+    return {
+        "package_loaded": package_loaded,
+        "import_error": import_error,
+        "mid_present": bool(str(getattr(settings, "PAYTM_MID", "") or "").strip()),
+        "merchant_key_present": bool(str(getattr(settings, "PAYTM_MERCHANT_KEY", "") or "").strip()),
+        "environment": environment or ("staging" if website.upper() == "WEBSTAGING" else "production"),
+        "website": website or "Not configured",
+        "base_url": checkout_host,
+        "callback_url": callback_url,
+        "webhook_url": "Not configured",
+        "latest_gateway_attempt": latest_gateway_attempt,
+        "checkout_js_url": (
+            f"{checkout_host}/merchantpgpui/checkoutjs/merchants/{settings.PAYTM_MID}.js"
+            if str(getattr(settings, "PAYTM_MID", "") or "").strip()
+            else ""
+        ),
+    }
+
+
 @user_required
 def orders_page(request):
     orders = active_orders(request.user)
+    diagnostics = _paytm_diagnostics(request)
 
     return render(
         request,
@@ -31,6 +75,8 @@ def orders_page(request):
             "prebook_items_by_category": grouped_catalog(request.user, include_out_of_stock=True),
             "active_orders": orders,
             "min_prebooking_date": minimum_prebook_date(),
+            "paytm_diagnostics": diagnostics,
+            "latest_gateway_attempt": diagnostics["latest_gateway_attempt"],
         },
     )
 
