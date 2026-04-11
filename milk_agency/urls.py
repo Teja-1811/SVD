@@ -17,6 +17,7 @@ from .monthly_sales_summary import monthly_sales_summary, update_remaining_due, 
 from . import views_users
 from . import subscriptions
 from . import views_offers
+from . import paytm
 
 
 
@@ -152,9 +153,8 @@ urlpatterns = [
     # Contact Form URL
     path('contact/submit/', views.contact_form_submit, name='contact_form_submit'),
     
-    #Payment Gateway Callback URL
-    path('users/orders/paytm/callback/', views.payment_callback, name='paytm_callback'),
-    path('payment-page/', views.payment_page, name='payment_page'),
-    path('payment/initiate/', views.initiate_payment, name='initiate_payment'),
-    
+    # Payment Gateway Callback URLs
+    path('users/orders/paytm/callback/', paytm.verify_paytm_callback, name='paytm_callback'),
+    path('payments/paytm/callback/', paytm.verify_paytm_callback, name='paytm_callback_alt'),
+
 ]

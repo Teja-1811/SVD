@@ -9,13 +9,15 @@ from django.db.models.functions import Coalesce
 from django.db import transaction
 
 from .models import CustomerPayment
+from .paytm import successful_payments_q
 
 
 def _recalculate_payment_effects(payment):
     if payment.bill_id:
         total_paid = CustomerPayment.objects.filter(
             bill_id=payment.bill_id,
-            status="SUCCESS",
+        ).filter(
+            successful_payments_q()
         ).aggregate(
             total=Coalesce(
                 Sum("amount"),
@@ -103,7 +105,8 @@ def delete_customer_payment(request, pk):
             if bill:
                 total_paid = CustomerPayment.objects.filter(
                     bill=bill,
-                    status="SUCCESS",
+                ).filter(
+                    successful_payments_q()
                 ).aggregate(
                     total=Coalesce(
                         Sum("amount"),

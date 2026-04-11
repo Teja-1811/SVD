@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
 from django.templatetags.static import static
 from django.contrib.auth.models import (
@@ -158,7 +158,9 @@ class Customer(AbstractBaseUser, PermissionsMixin):
             active_bills.aggregate(total=Sum('total_amount'))['total'] or 0
         )
         total_paid = Decimal(
-            self.customerpayment_set.filter(status="SUCCESS").aggregate(total=Sum('amount'))['total'] or 0
+            self.customerpayment_set.filter(
+                Q(status="success") | Q(status="SUCCESS")
+            ).aggregate(total=Sum('amount'))['total'] or 0
         )
 
         return opening_due + total_billed - total_paid

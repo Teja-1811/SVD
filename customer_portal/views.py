@@ -27,12 +27,15 @@ from milk_agency.models import (
     SubscriptionOrder,
 )
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
+from milk_agency.paytm import (
+    initiate_invoice_transaction,
+    successful_payments_q,
+)
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_payment_recorded, notify_admin_profile_updated
 
 
 
 from .models import CustomerOrder, CustomerOrderItem
-from milk_agency.models import CustomerPayment
 
 
 def _find_linked_customer_order_for_bill(bill):
@@ -75,7 +78,8 @@ def _recalculate_bill_last_paid(bill):
 
     total_paid = CustomerPayment.objects.filter(
         bill=bill,
-        status="SUCCESS",
+    ).filter(
+        successful_payments_q()
     ).aggregate(
         total=Coalesce(
             Sum("amount"),
@@ -702,7 +706,7 @@ def collect_payment(request):
         .order_by("-created_at")
     )
     recent_payments = list(payments[:8])
-    successful_payments = payments.filter(status="SUCCESS")
+    successful_payments = payments.filter(successful_payments_q())
     successful_total = sum(Decimal(payment.amount or 0) for payment in successful_payments)
     latest_order = _latest_order_for_customer(customer)
 
@@ -751,6 +755,7 @@ def collect_payment(request):
         "successful_payment_total": successful_total,
         "bill_rows": bill_rows,
         "recent_orders": recent_orders,
+        "last_paytm_collect_payment": request.session.get("last_paytm_collect_payment"),
     }
     return render(request, "customer_portal/collect_payment.html", context)
 
@@ -772,23 +777,23 @@ def start_collect_payment(request):
         messages.error(request, "Amount must be greater than zero.")
         return redirect("customer_portal:collect_payment")
 
-    latest_order = _latest_order_for_customer(customer)
-    if latest_order and latest_order.order_number:
-        payment_order_id = f"{latest_order.order_number}-DUE-{timezone.now().strftime('%H%M%S%f')}"[:64]
-    else:
-        payment_order_id = f"CPD{customer.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}"[:64]
-    linked_bill = _latest_due_bill_for_customer(customer)
-    # Gateway integration point - create CustomerPayment with gateway fields
-    # payment_order_id = f"CPD-{customer.phone}-{timezone.now().strftime('%Y%m%d%H%M%S%f')[:10]}"
-    # payment = CustomerPayment.objects.create(
-    #     customer=customer,
-    #     amount=amount,
-    #     transaction_id=f"GATEWAY-{payment_order_id}",
-    #     method="gateway",
-    #     status="pending",
-    #     payment_order_id=payment_order_id,
-    # )
-    messages.success(request, f"UPI Payment link ready for Rs. {amount}. Complete payment and note transaction ID.")
+    try:
+        result = initiate_invoice_transaction(customer=customer, amount=amount)
+    except Exception as exc:
+        messages.error(request, f"Unable to initiate Paytm payment: {exc}")
+        return redirect("customer_portal:collect_payment")
+
+    request.session["last_paytm_collect_payment"] = {
+        "payment_order_id": result["payment_order_id"],
+        "invoice_number": result["bill"].invoice_number,
+        "amount": f"{Decimal(result['amount']):.2f}",
+        "txnToken": result["txnToken"],
+    }
+    messages.success(
+        request,
+        f"Paytm payment initiated for invoice {result['bill'].invoice_number}. "
+        f"Order id: {result['payment_order_id']}.",
+    )
     return redirect("customer_portal:collect_payment")
 
 

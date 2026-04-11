@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
+from milk_agency.paytm import initiate_order_transaction
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_order_updated
 
 
@@ -94,10 +95,32 @@ def place_order_api(request):
             )
             order.total_amount = total_amount
             order.approved_total_amount = total_amount
-            order.status = "payment_pending" if payment_method not in ("COD", "CASH") else "pending"
+            requires_online_payment = (
+                str(getattr(customer, "user_type", "") or "").lower() == "user"
+                and payment_method not in ("COD", "CASH")
+            )
+            order.status = "payment_pending" if requires_online_payment else "pending"
             order.save()
             notifier = notify_admin_order_placed if created_new else notify_admin_order_updated
             transaction.on_commit(lambda order_id=order.id, notify_func=notifier: notify_func(CustomerOrder.objects.select_related("customer").get(pk=order_id)))
+
+            payment_payload = None
+            if requires_online_payment:
+                try:
+                    payment_payload = initiate_order_transaction(order)
+                except Exception as exc:
+                    order.payment_status = "failed"
+                    order.status = "rejected"
+                    order.save(update_fields=["payment_status", "status", "updated_at"])
+                    return Response(
+                        {
+                            "success": False,
+                            "message": f"Unable to initiate payment: {exc}",
+                            "order_id": order.id,
+                            "order_number": order_number,
+                        },
+                        status=502,
+                    )
 
             return Response(
                 {
@@ -108,6 +131,10 @@ def place_order_api(request):
                     "delivery_charge": float(order.delivery_charge or 0),
                     "grand_total": float((order.total_amount or 0) + (order.delivery_charge or 0)),
                     "status": order.status,
+                    "payment_status": order.payment_status,
+                    "payment_order_id": payment_payload["payment_order_id"] if payment_payload else order.gateway_order_id,
+                    "txnToken": payment_payload["txnToken"] if payment_payload else "",
+                    "gateway": "PAYTM" if payment_payload else "",
                     "message": "Order updated successfully",
                 }
             )

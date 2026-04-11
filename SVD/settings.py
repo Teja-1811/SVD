@@ -17,15 +17,25 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
-PAYTM_MID = "NHkqHt03905433553952"
-PAYTM_MERCHANT_KEY = "B867_pKg8Rd7IJkM"
-PAYTM_WEBSITE = "DEFAULT"
+PAYTM_MID = os.environ.get("PAYTM_MID", "Resell00448005757124")
+PAYTM_MERCHANT_KEY = os.environ.get("PAYTM_MERCHANT_KEY", "KXHUJH8Ywq9pUkkr")
+PAYTM_WEBSITE = os.environ.get("PAYTM_WEBSITE", "WEBSTAGING")
+PAYTM_ENV = os.environ.get("PAYTM_ENV", "staging")
+PAYTM_BASE_URL = os.environ.get(
+    "PAYTM_BASE_URL",
+    "https://securestage.paytmpayments.com"
+    if PAYTM_WEBSITE.upper() == "WEBSTAGING" or PAYTM_ENV.lower() == "staging"
+    else "https://securegw.paytm.in",
+)
 
-PAYTM_INDUSTRY_TYPE_ID = "Retail"
-PAYTM_CHANNEL_ID = "WEB"
-PAYTM_CHANNEL_ID_MOBILE = "WAP"
+PAYTM_INDUSTRY_TYPE_ID = os.environ.get("PAYTM_INDUSTRY_TYPE_ID", "Retail")
+PAYTM_CHANNEL_ID = os.environ.get("PAYTM_CHANNEL_ID", "WEB")
+PAYTM_CHANNEL_ID_MOBILE = os.environ.get("PAYTM_CHANNEL_ID_MOBILE", "WAP")
 
-PAYTM_CALLBACK_URL = "https://svdagencies.shop/milk_agency/users/orders/paytm/callback/"
+PAYTM_CALLBACK_URL = os.environ.get(
+    "PAYTM_CALLBACK_URL",
+    "https://svdagencies.shop/milk_agency/users/orders/paytm/callback/",
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

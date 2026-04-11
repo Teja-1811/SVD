@@ -7,7 +7,11 @@ from .customer_place_order import *
 from .admin_dashboard import *
 from .customer_dashboard import *
 from .customer_invoice_data import *
-from .customer_payment import record_customer_payment
+from .customer_payment import (
+    initiate_customer_gateway_payment,
+    paytm_payment_result_api,
+    record_customer_payment,
+)
 from .customer_contact import (
     api_support_ticket_summary,
     customer_contact_api,
@@ -179,6 +183,8 @@ urlpatterns = [
     path('customer/invoice/details/', customer_invoice_details_api, name='customer_invoice_details_api'),
     # Customer Payment API
     path('customer/payment/record/', record_customer_payment, name='record_customer_payment'),
+    path('customer/payment/initiate/', initiate_customer_gateway_payment, name='initiate_customer_gateway_payment'),
+    path('customer/payment/paytm/result/', paytm_payment_result_api, name='paytm_payment_result_api'),
     path('contact/', customer_contact_api, name='customer_contact_api'),
     path('enquiries/summary/', api_support_ticket_summary, name='api_support_ticket_summary'),
     path('enquiries/my/', customer_raised_queries_api, name='customer_raised_queries_api'),
