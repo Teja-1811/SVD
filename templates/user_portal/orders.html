@@ -1079,7 +1079,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!paymentOrder || !paymentOrder.success) {
-            alert((paymentOrder && paymentOrder.message) || "Could not prepare the payment order.");
+            const paytmDetails = [
+                paymentOrder && paymentOrder.paytm_result_status ? `Status: ${paymentOrder.paytm_result_status}` : "",
+                paymentOrder && paymentOrder.paytm_result_code ? `Code: ${paymentOrder.paytm_result_code}` : "",
+            ].filter(Boolean).join(" | ");
+            const message = (paymentOrder && paymentOrder.message) || "Could not prepare the payment order.";
+            alert(paytmDetails ? `${message}\n${paytmDetails}` : message);
             resetPaymentStep();
             return;
         }

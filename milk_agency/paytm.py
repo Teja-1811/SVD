@@ -60,6 +60,17 @@ def _serialize_payload(payload):
     return {"raw": str(payload)}
 
 
+def _paytm_error_message(response_data):
+    body = response_data.get("body", {}) if isinstance(response_data, dict) else {}
+    result_info = body.get("resultInfo", {}) if isinstance(body, dict) else {}
+    return (
+        result_info.get("resultMsg")
+        or result_info.get("resultStatus")
+        or body.get("respMsg")
+        or "Paytm did not return a transaction token."
+    )
+
+
 def _extract_callback_payload(request):
     if request.POST:
         return request.POST.dict()
@@ -182,6 +193,7 @@ def initiate_paytm_transaction(*, payment_order_id, amount, customer, callback_u
         "payment_order_id": payment_order_id,
         "txnToken": result.get("txnToken", ""),
         "paytm_response": response_data,
+        "message": _paytm_error_message(response_data),
     }
 
 

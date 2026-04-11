@@ -149,6 +149,21 @@ def prepare_payment_order(request):
     except Exception as exc:
         return JsonResponse({"success": False, "message": f"Unable to prepare payment: {exc}"}, status=502)
 
+    if not payment_result.get("success") or not payment_result.get("txnToken"):
+        paytm_response = payment_result.get("paytm_response") or {}
+        message = payment_result.get("message") or "Paytm did not return a transaction token."
+        result_info = ((paytm_response.get("body") or {}).get("resultInfo") or {}) if isinstance(paytm_response, dict) else {}
+        return JsonResponse(
+            {
+                "success": False,
+                "message": message,
+                "payment_order_id": payment_result.get("payment_order_id", ""),
+                "paytm_result_status": result_info.get("resultStatus", ""),
+                "paytm_result_code": result_info.get("resultCode", ""),
+            },
+            status=502,
+        )
+
     checkout_host = _paytm_base_url()
     return JsonResponse(
         {
