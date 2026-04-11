@@ -103,11 +103,7 @@ def prepare_payment_order(request):
     except Exception as exc:
         return JsonResponse({"success": False, "message": f"Unable to prepare payment: {exc}"}, status=502)
 
-    paytm_url = (
-        f"{_paytm_base_url()}/theia/api/v1/showPaymentPage"
-        f"?mid={settings.PAYTM_MID}"
-        f"&orderId={payment_result['payment_order_id']}"
-    )
+    checkout_host = _paytm_base_url()
     return JsonResponse(
         {
             "success": True,
@@ -115,12 +111,10 @@ def prepare_payment_order(request):
             "order_number": order.order_number,
             "payment_order_id": payment_result["payment_order_id"],
             "txnToken": payment_result["txnToken"],
-            "paytm_url": paytm_url,
-            "paytm_params": {
-                "mid": settings.PAYTM_MID,
-                "orderId": payment_result["payment_order_id"],
-                "txnToken": payment_result["txnToken"],
-            },
+            "mid": settings.PAYTM_MID,
+            "amount": f"{Decimal(payment_result['amount']):.2f}",
+            "checkout_host": checkout_host,
+            "checkout_js_url": f"{checkout_host}/merchantpgpui/checkoutjs/merchants/{settings.PAYTM_MID}.js",
         }
     )
 

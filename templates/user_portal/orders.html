@@ -985,26 +985,65 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
     }
 
-    function submitPaytmForm(actionUrl, params) {
-        if (!actionUrl || !params || !Object.keys(params).length) {
-            return false;
+    function loadPaytmCheckoutScript(scriptUrl) {
+        if (!scriptUrl) {
+            return Promise.reject(new Error("Missing CheckoutJS URL"));
         }
 
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = actionUrl;
-        form.style.display = "none";
+        if (window.Paytm && window.Paytm.CheckoutJS) {
+            return Promise.resolve(window.Paytm.CheckoutJS);
+        }
 
-        Object.entries(params).forEach(([key, value]) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = key;
-            input.value = value ?? "";
-            form.appendChild(input);
+        return new Promise((resolve, reject) => {
+            const existingScript = document.querySelector(`script[data-paytm-checkout="${scriptUrl}"]`);
+            if (existingScript) {
+                existingScript.addEventListener("load", () => resolve(window.Paytm && window.Paytm.CheckoutJS));
+                existingScript.addEventListener("error", () => reject(new Error("Failed to load CheckoutJS")));
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = scriptUrl;
+            script.async = true;
+            script.dataset.paytmCheckout = scriptUrl;
+            script.onload = () => {
+                if (window.Paytm && window.Paytm.CheckoutJS) {
+                    resolve(window.Paytm.CheckoutJS);
+                } else {
+                    reject(new Error("CheckoutJS unavailable after script load"));
+                }
+            };
+            script.onerror = () => reject(new Error("Failed to load CheckoutJS"));
+            document.head.appendChild(script);
         });
+    }
 
-        document.body.appendChild(form);
-        form.submit();
+    async function startPaytmCheckout(paymentOrder) {
+        const scriptUrl = paymentOrder.checkout_js_url;
+        const checkoutJs = await loadPaytmCheckoutScript(scriptUrl);
+
+        const config = {
+            root: "",
+            flow: "DEFAULT",
+            data: {
+                orderId: paymentOrder.payment_order_id,
+                token: paymentOrder.txnToken,
+                tokenType: "TXN_TOKEN",
+                amount: paymentOrder.amount,
+            },
+            merchant: {
+                mid: paymentOrder.mid,
+                redirect: true,
+            },
+            handler: {
+                notifyMerchant: function(eventName, data) {
+                    console.log("Paytm notifyMerchant", eventName, data);
+                },
+            },
+        };
+
+        await checkoutJs.init(config);
+        checkoutJs.invoke();
         return true;
     }
 
@@ -1032,21 +1071,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         preparedPaymentOrder = paymentOrder;
-        const paytmUrl = paymentOrder.paytm_url;
-        const paytmParams = paymentOrder.paytm_params || {};
-        if (!paytmUrl || !Object.keys(paytmParams).length) {
+        if (!paymentOrder.txnToken || !paymentOrder.payment_order_id || !paymentOrder.amount || !paymentOrder.mid) {
             alert("Could not start the Paytm payment flow.");
             resetPaymentStep();
             return;
         }
         paymentStarted = true;
-        confirmPaymentBtn.textContent = "Redirecting to Paytm...";
+        confirmPaymentBtn.textContent = "Opening Paytm...";
         confirmPaymentBtn.disabled = true;
         if (paymentStepNote) {
-            paymentStepNote.textContent = `Redirecting you to Paytm for order ${paymentOrder.order_number}. We will confirm the order after Paytm verification.`;
+            paymentStepNote.textContent = `Opening Paytm for order ${paymentOrder.order_number}. We will confirm the order after Paytm verification.`;
         }
-        if (!submitPaytmForm(paytmUrl, paytmParams)) {
-            alert("Could not submit the Paytm payment form.");
+        try {
+            await startPaytmCheckout(paymentOrder);
+        } catch (error) {
+            console.error(error);
+            alert("Could not launch Paytm Checkout.");
             resetPaymentStep();
         }
     });
