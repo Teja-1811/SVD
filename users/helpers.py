@@ -152,7 +152,7 @@ def validate_order_payload(raw_items, *, is_prebooking):
     return list(normalized.values())
 
 
-def save_user_order(customer, raw_items, raw_delivery_date):
+def save_user_order(customer, raw_items, raw_delivery_date, *, payment_method="", initial_status="pending"):
     delivery_date, is_prebooking = parse_delivery_date(raw_delivery_date)
     if is_prebooking and delivery_date < minimum_prebook_date():
         raise ValueError("Pre-booking is allowed only from 2 days ahead.")
@@ -162,6 +162,8 @@ def save_user_order(customer, raw_items, raw_delivery_date):
         customer=customer,
         items=normalized_items,
         delivery_date_str=raw_delivery_date or None,
+        initial_status=initial_status,
+        payment_method=payment_method,
     )
 
 

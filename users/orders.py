@@ -1,9 +1,9 @@
 from django.contrib import messages
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from decimal import Decimal
-from django.views.decorators.csrf import csrf_exempt
+import json
 
 from api.order_creator import can_delete_order, delete_order
 from customer_portal.models import CustomerOrder
@@ -11,11 +11,12 @@ from .helpers import (
     active_orders,
     grouped_catalog,
     minimum_prebook_date,
+    save_user_order,
     save_user_order_response,
     user_required,
 )
 
-from milk_agency.paytm import initiate_paytm_payment, verify_paytm_callback
+from milk_agency.paytm import _paytm_base_url, initiate_order_transaction
 
 
 @user_required
@@ -76,6 +77,52 @@ def order_detail_page(request, order_id):
 @user_required
 def place_order(request):
     return save_user_order_response(request)
+
+
+@user_required
+def prepare_payment_order(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
+
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+    try:
+        order = save_user_order(
+            customer=request.user,
+            raw_items=payload.get("items", []),
+            raw_delivery_date=str(payload.get("delivery_date") or "").strip(),
+            payment_method="PAYTM",
+            initial_status="payment_pending",
+        )
+        payment_result = initiate_order_transaction(order)
+    except ValueError as exc:
+        return JsonResponse({"success": False, "message": str(exc)}, status=400)
+    except Exception as exc:
+        return JsonResponse({"success": False, "message": f"Unable to prepare payment: {exc}"}, status=502)
+
+    paytm_url = (
+        f"{_paytm_base_url()}/theia/api/v1/showPaymentPage"
+        f"?mid={settings.PAYTM_MID}"
+        f"&orderId={payment_result['payment_order_id']}"
+    )
+    return JsonResponse(
+        {
+            "success": True,
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "payment_order_id": payment_result["payment_order_id"],
+            "txnToken": payment_result["txnToken"],
+            "paytm_url": paytm_url,
+            "paytm_params": {
+                "mid": settings.PAYTM_MID,
+                "orderId": payment_result["payment_order_id"],
+                "txnToken": payment_result["txnToken"],
+            },
+        }
+    )
 
 
 @user_required

@@ -10,6 +10,7 @@ from .orders import (
     order_history_page,
     orders_page,
     place_order,
+    prepare_payment_order,
 )
 from .subscriptions import subscriptions_page
 
@@ -23,6 +24,7 @@ urlpatterns = [
     path("orders/history/", order_history_page, name="order_history"),
     path("orders/<int:order_id>/", order_detail_page, name="order_detail"),
     path("orders/place/", place_order, name="place_order"),
+    path("orders/prepare-payment/", prepare_payment_order, name="prepare_payment_order"),
     path("orders/<int:order_id>/cancel/", cancel_order, name="cancel_order"),
 
     path("orders/<int:order_id>/delete/", delete_order_page, name="delete_order"),
