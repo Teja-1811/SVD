@@ -9,6 +9,7 @@ from django.http import FileResponse, Http404
 from milk_agency.models import Item, Company
 from pathlib import Path
 from .firebase_views import firebase_messaging_sw
+from milk_agency import paytm as paytm_views
 
 
 # ======================================================
@@ -67,6 +68,9 @@ handler404 = "SVD.urls.custom_404_view"
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('firebase-messaging-sw.js', firebase_messaging_sw, name='firebase_messaging_sw'),
+    path('users/orders/paytm/callback/', paytm_views.user_orders_paytm_callback, name='users_paytm_callback'),
+    path('customer/paytm/callback/', paytm_views.customer_portal_paytm_callback, name='customer_portal_paytm_callback'),
+    path('users/subscriptions/paytm/callback/', paytm_views.subscription_paytm_callback, name='subscription_paytm_callback'),
 
     # favicon
     path(

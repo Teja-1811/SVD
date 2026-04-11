@@ -657,6 +657,11 @@ class UserPayment(models.Model):
     method = models.CharField(max_length=20, choices=METHOD_CHOICES)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    gateway = models.CharField(max_length=20, blank=True, default="")
+    payment_order_id = models.CharField(max_length=64, blank=True, default="")
+    gateway_transaction_id = models.CharField(max_length=120, blank=True, default="")
+    callback_payload = models.JSONField(default=dict, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     

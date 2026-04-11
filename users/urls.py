@@ -1,4 +1,5 @@
 from django.urls import path
+from milk_agency import paytm as paytm_views
 
 from .dashboard import dashboard
 from .invoices import invoice_detail, invoices_page
@@ -12,7 +13,7 @@ from .orders import (
     place_order,
     prepare_payment_order,
 )
-from .subscriptions import subscriptions_page
+from .subscriptions import prepare_subscription_payment, subscriptions_page
 
 
 
@@ -21,6 +22,7 @@ app_name = "users"
 urlpatterns = [
     path("", dashboard, name="dashboard"),
     path("orders/", orders_page, name="orders"),
+    path("orders/paytm/callback/", paytm_views.user_orders_paytm_callback, name="paytm_order_callback"),
     path("orders/history/", order_history_page, name="order_history"),
     path("orders/<int:order_id>/", order_detail_page, name="order_detail"),
     path("orders/place/", place_order, name="place_order"),
@@ -30,6 +32,8 @@ urlpatterns = [
     path("orders/<int:order_id>/delete/", delete_order_page, name="delete_order"),
     path("offers/", offers_page, name="offers"),
     path("subscriptions/", subscriptions_page, name="subscriptions"),
+    path("subscriptions/prepare-payment/", prepare_subscription_payment, name="prepare_subscription_payment"),
+    path("subscriptions/paytm/callback/", paytm_views.subscription_paytm_callback, name="paytm_subscription_callback"),
     path("invoices/", invoices_page, name="invoices"),
     path("invoices/<int:bill_id>/", invoice_detail, name="invoice_detail"),
 ]

@@ -17,7 +17,7 @@ from .helpers import (
     user_required,
 )
 
-from milk_agency.paytm import _paytm_base_url, initiate_order_transaction
+from milk_agency.paytm import _paytm_base_url, build_paytm_callback_url, initiate_order_transaction
 
 
 def _paytm_diagnostics(request):
@@ -28,10 +28,6 @@ def _paytm_diagnostics(request):
     except Exception as exc:
         package_loaded = False
         import_error = str(exc)
-
-    callback_url = getattr(settings, "PAYTM_CALLBACK_URL", "").strip()
-    if callback_url.startswith("/"):
-        callback_url = request.build_absolute_uri(callback_url)
 
     website = str(getattr(settings, "PAYTM_WEBSITE", "") or "").strip()
     environment = str(getattr(settings, "PAYTM_ENV", "") or "").strip()
@@ -59,7 +55,7 @@ def _paytm_diagnostics(request):
         "environment": environment or ("staging" if website.upper() == "WEBSTAGING" else "production"),
         "website": website or "Not configured",
         "base_url": checkout_host,
-        "callback_url": callback_url,
+        "callback_url": build_paytm_callback_url("user_order", request=request),
         "webhook_url": "Not configured",
         "latest_gateway_attempt": latest_gateway_attempt,
         "latest_payment_attempt": latest_payment_attempt,
@@ -157,7 +153,7 @@ def prepare_payment_order(request):
             payment_method="PAYTM",
             initial_status="payment_pending",
         )
-        payment_result = initiate_order_transaction(order)
+        payment_result = initiate_order_transaction(order, request=request)
     except ValueError as exc:
         return JsonResponse({"success": False, "message": str(exc)}, status=400)
     except Exception as exc:

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from paytmchecksum import PaytmChecksum
@@ -16,10 +17,13 @@ from customer_portal.models import CustomerOrder
 from customer_portal.order_workflow import finalize_order_after_payment
 from milk_agency.push_notifications import notify_admin_payment_recorded, notify_order_rejected
 
-from .models import Bill, CustomerPayment
+from .models import Bill, CustomerPayment, CustomerSubscription, UserPayment
 
 
 SUCCESS_PAYMENT_STATUSES = ("success", "SUCCESS")
+PAYTM_SOURCE_USER_ORDER = "user_order"
+PAYTM_SOURCE_CUSTOMER_PORTAL = "customer_portal"
+PAYTM_SOURCE_SUBSCRIPTION = "subscription"
 
 
 def successful_payments_q():
@@ -40,6 +44,30 @@ def _paytm_base_url():
     if website == "WEBSTAGING" or environment == "staging":
         return "https://securegw-stage.paytm.in"
     return "https://securegw.paytm.in"
+
+
+def _paytm_public_base_url():
+    return str(getattr(settings, "PAYTM_PUBLIC_BASE_URL", "") or "").rstrip("/")
+
+
+def build_paytm_callback_url(source, request=None):
+    route_name = {
+        PAYTM_SOURCE_USER_ORDER: "users_paytm_callback",
+        PAYTM_SOURCE_CUSTOMER_PORTAL: "customer_portal_paytm_callback",
+        PAYTM_SOURCE_SUBSCRIPTION: "subscription_paytm_callback",
+    }.get(source, "users_paytm_callback")
+    path = reverse(route_name)
+    if request is not None:
+        return request.build_absolute_uri(path)
+    return f"{_paytm_public_base_url()}{path}"
+
+
+def redirect_after_paytm_callback(source):
+    return {
+        PAYTM_SOURCE_USER_ORDER: "users:orders",
+        PAYTM_SOURCE_CUSTOMER_PORTAL: "customer_portal:collect_payment",
+        PAYTM_SOURCE_SUBSCRIPTION: "users:subscriptions",
+    }.get(source, "users:orders")
 
 
 def _sanitize_paytm_order_id(value, *, prefix="ORD"):
@@ -154,21 +182,61 @@ def _save_pending_payment(*, customer, amount, payment_order_id, bill=None, call
     return payment
 
 
-def initiate_paytm_transaction(*, payment_order_id, amount, customer, callback_url=None):
+def _save_pending_subscription_payment(*, subscription, amount, payment_order_id, callback_payload=None):
+    amount = Decimal(amount or 0)
+    payment, created = UserPayment.objects.get_or_create(
+        payment_order_id=payment_order_id,
+        defaults={
+            "subscription": subscription,
+            "user": subscription.customer,
+            "amount": amount,
+            "transaction_id": _next_transaction_id(payment_order_id),
+            "method": "UPI",
+            "status": "PENDING",
+            "gateway": "PAYTM",
+            "callback_payload": callback_payload or {},
+        },
+    )
+
+    if not created:
+        payment.subscription = subscription
+        payment.user = subscription.customer
+        payment.amount = amount
+        payment.method = payment.method or "UPI"
+        payment.status = "PENDING" if str(payment.status or "").upper() != "SUCCESS" else payment.status
+        payment.gateway = "PAYTM"
+        if callback_payload:
+            payment.callback_payload = callback_payload
+        payment.save(
+            update_fields=[
+                "subscription",
+                "user",
+                "amount",
+                "method",
+                "status",
+                "gateway",
+                "callback_payload",
+            ]
+        )
+    return payment
+
+
+def initiate_paytm_transaction(*, payment_order_id, amount, customer, callback_url=None, callback_source=None, request=None):
     body = {
         "requestType": "Payment",
         "mid": settings.PAYTM_MID,
         "websiteName": settings.PAYTM_WEBSITE,
+        "industryTypeId": settings.PAYTM_INDUSTRY_TYPE_ID,
         "orderId": payment_order_id,
-        "callbackUrl": callback_url or settings.PAYTM_CALLBACK_URL,
+        "callbackUrl": callback_url or build_paytm_callback_url(callback_source or PAYTM_SOURCE_USER_ORDER, request=request),
         "txnAmount": {
             "value": f"{Decimal(amount):.2f}",
             "currency": "INR",
         },
         "userInfo": {
             "custId": str(customer.id),
-            "mobile": str(customer.phone or ""),
-            "email": "",
+            "mobile": str(customer.phone or "9999999999"),
+            "email": getattr(customer, "email", "") or "test@example.com",
         },
     }
     body_json = json.dumps(body, separators=(",", ":"))
@@ -206,6 +274,7 @@ def initiate_paytm_payment(order_id, amount, customer_id):
         payment_order_id=str(order_id),
         amount=amount,
         customer=customer,
+        callback_source=PAYTM_SOURCE_USER_ORDER,
     )
     return {
         "success": result["success"],
@@ -214,7 +283,7 @@ def initiate_paytm_payment(order_id, amount, customer_id):
     }
 
 
-def initiate_order_transaction(order):
+def initiate_order_transaction(order, *, request=None, callback_source=PAYTM_SOURCE_USER_ORDER):
     grand_total = Decimal(order.total_amount or 0) + Decimal(order.delivery_charge or 0)
     payment_order_id = _sanitize_paytm_order_id(order.gateway_order_id or f"ORDER{order.id}", prefix="ORD")
     payment = _save_pending_payment(
@@ -234,6 +303,8 @@ def initiate_order_transaction(order):
         payment_order_id=payment_order_id,
         amount=grand_total,
         customer=order.customer,
+        callback_source=callback_source,
+        request=request,
     )
     payment.callback_payload = _serialize_payload(init_result.get("paytm_response"))
     payment.save(update_fields=["callback_payload"])
@@ -253,7 +324,7 @@ def latest_invoice_for_payment(customer):
     )
 
 
-def initiate_invoice_transaction(*, customer, amount):
+def initiate_invoice_transaction(*, customer, amount, request=None, callback_source=PAYTM_SOURCE_CUSTOMER_PORTAL):
     bill = latest_invoice_for_payment(customer)
     if not bill:
         raise ValueError("No invoice found for this customer.")
@@ -272,6 +343,8 @@ def initiate_invoice_transaction(*, customer, amount):
         payment_order_id=payment_order_id,
         amount=amount,
         customer=customer,
+        callback_source=callback_source,
+        request=request,
     )
     payment.callback_payload = _serialize_payload(init_result.get("paytm_response"))
     payment.save(update_fields=["callback_payload"])
@@ -284,6 +357,35 @@ def initiate_invoice_transaction(*, customer, amount):
     }
 
 
+def initiate_subscription_transaction(*, subscription, amount=None, request=None, callback_source=PAYTM_SOURCE_SUBSCRIPTION):
+    amount = Decimal(amount or subscription.subscription_plan.price or 0)
+    payment_order_id = _sanitize_paytm_order_id(
+        f"SUB{subscription.id}{timezone.now().strftime('%Y%m%d%H%M%S%f')}",
+        prefix="SUB",
+    )
+    payment = _save_pending_subscription_payment(
+        subscription=subscription,
+        amount=amount,
+        payment_order_id=payment_order_id,
+    )
+    init_result = initiate_paytm_transaction(
+        payment_order_id=payment_order_id,
+        amount=amount,
+        customer=subscription.customer,
+        callback_source=callback_source,
+        request=request,
+    )
+    payment.callback_payload = _serialize_payload(init_result.get("paytm_response"))
+    payment.save(update_fields=["callback_payload"])
+    return {
+        "payment": payment,
+        "subscription": subscription,
+        "payment_order_id": payment_order_id,
+        "amount": amount,
+        **init_result,
+    }
+
+
 def _safe_transaction_id(payment, gateway_transaction_id):
     gateway_transaction_id = str(gateway_transaction_id or "").strip()
     if not gateway_transaction_id:
@@ -291,6 +393,21 @@ def _safe_transaction_id(payment, gateway_transaction_id):
 
     duplicate = (
         CustomerPayment.objects.exclude(pk=payment.pk)
+        .filter(transaction_id=gateway_transaction_id)
+        .exists()
+    )
+    if duplicate:
+        return payment.transaction_id
+    return gateway_transaction_id[:100]
+
+
+def _safe_user_payment_transaction_id(payment, gateway_transaction_id):
+    gateway_transaction_id = str(gateway_transaction_id or "").strip()
+    if not gateway_transaction_id:
+        return payment.transaction_id
+
+    duplicate = (
+        UserPayment.objects.exclude(pk=payment.pk)
         .filter(transaction_id=gateway_transaction_id)
         .exists()
     )
@@ -351,46 +468,63 @@ def record_paytm_result(payload):
             .filter(payment_order_id=payment_order_id)
             .first()
         )
-        if not payment:
-            raise ValueError("Payment record not found for this order id.")
+        if payment:
+            linked_order = (
+                CustomerOrder.objects.select_for_update()
+                .filter(gateway_order_id=payment_order_id)
+                .select_related("customer", "bill")
+                .first()
+            )
 
-        linked_order = (
-            CustomerOrder.objects.select_for_update()
-            .filter(gateway_order_id=payment_order_id)
-            .select_related("customer", "bill")
-            .first()
-        )
+            payment.gateway = "PAYTM"
+            payment.method = "UPI"
+            payment.status = completed_status
+            payment.gateway_transaction_id = gateway_transaction_id
+            payment.transaction_id = _safe_transaction_id(payment, gateway_transaction_id)
+            payment.callback_payload = payload
+            payment.completed_at = timezone.now()
 
-        payment.gateway = "PAYTM"
-        payment.method = "UPI"
-        payment.status = completed_status
-        payment.gateway_transaction_id = gateway_transaction_id
-        payment.transaction_id = _safe_transaction_id(payment, gateway_transaction_id)
-        payment.callback_payload = payload
-        payment.completed_at = timezone.now()
+            if is_success:
+                if linked_order:
+                    payment.save(
+                        update_fields=[
+                            "gateway",
+                            "method",
+                            "status",
+                            "gateway_transaction_id",
+                            "transaction_id",
+                            "callback_payload",
+                            "completed_at",
+                        ]
+                    )
+                    finalized_order, bill, _ = finalize_order_after_payment(
+                        linked_order,
+                        payment_reference=payment.transaction_id,
+                        payment_method="PAYTM",
+                        mark_paid=True,
+                    )
+                    payment.bill = bill
+                    payment.amount = Decimal(bill.total_amount or payment.amount or 0)
+                    payment.save(
+                        update_fields=[
+                            "bill",
+                            "amount",
+                        ]
+                    )
+                    transaction.on_commit(
+                        lambda payment_id=payment.id: notify_admin_payment_recorded(
+                            CustomerPayment.objects.select_related("customer").get(pk=payment_id)
+                        )
+                    )
+                    return {
+                        "success": True,
+                        "source": PAYTM_SOURCE_USER_ORDER,
+                        "payment": payment,
+                        "order": finalized_order,
+                        "bill": bill,
+                        "status": completed_status,
+                    }
 
-        if is_success:
-            if linked_order:
-                payment.transaction_id = _safe_transaction_id(payment, gateway_transaction_id)
-                payment.gateway_transaction_id = gateway_transaction_id
-                payment.callback_payload = payload
-                payment.completed_at = timezone.now()
-                payment.save(
-                    update_fields=[
-                        "transaction_id",
-                        "gateway_transaction_id",
-                        "callback_payload",
-                        "completed_at",
-                    ]
-                )
-                finalized_order, bill, _ = finalize_order_after_payment(
-                    linked_order,
-                    payment_reference=payment.transaction_id,
-                    payment_method="PAYTM",
-                    mark_paid=True,
-                )
-                payment.bill = bill
-                payment.amount = Decimal(bill.total_amount or payment.amount or 0)
                 payment.save(
                     update_fields=[
                         "gateway",
@@ -400,60 +534,71 @@ def record_paytm_result(payload):
                         "transaction_id",
                         "callback_payload",
                         "completed_at",
-                        "bill",
-                        "amount",
                     ]
                 )
+                _update_bill_and_customer(payment)
                 transaction.on_commit(
                     lambda payment_id=payment.id: notify_admin_payment_recorded(
                         CustomerPayment.objects.select_related("customer").get(pk=payment_id)
                     )
                 )
-                return {
-                    "success": True,
-                    "payment": payment,
-                    "order": finalized_order,
-                    "bill": bill,
-                    "status": completed_status,
-                }
-
-            payment.save(
-                update_fields=[
-                    "gateway",
-                    "method",
-                    "status",
-                    "gateway_transaction_id",
-                    "transaction_id",
-                    "callback_payload",
-                    "completed_at",
-                ]
-            )
-            _update_bill_and_customer(payment)
-            transaction.on_commit(
-                lambda payment_id=payment.id: notify_admin_payment_recorded(
-                    CustomerPayment.objects.select_related("customer").get(pk=payment_id)
+            else:
+                payment.save(
+                    update_fields=[
+                        "gateway",
+                        "method",
+                        "status",
+                        "gateway_transaction_id",
+                        "transaction_id",
+                        "callback_payload",
+                        "completed_at",
+                    ]
                 )
-            )
-        else:
-            payment.save(
-                update_fields=[
-                    "gateway",
-                    "method",
-                    "status",
-                    "gateway_transaction_id",
-                    "transaction_id",
-                    "callback_payload",
-                    "completed_at",
-                ]
-            )
-            if linked_order:
-                _mark_order_payment_failed(linked_order, payment.transaction_id)
+                if linked_order:
+                    _mark_order_payment_failed(linked_order, payment.transaction_id)
+
+            return {
+                "success": is_success,
+                "source": PAYTM_SOURCE_USER_ORDER if linked_order else PAYTM_SOURCE_CUSTOMER_PORTAL,
+                "payment": payment,
+                "order": linked_order,
+                "bill": payment.bill,
+                "status": completed_status,
+            }
+
+        subscription_payment = (
+            UserPayment.objects.select_for_update()
+            .select_related("user", "subscription", "subscription__subscription_plan")
+            .filter(payment_order_id=payment_order_id)
+            .first()
+        )
+        if not subscription_payment:
+            raise ValueError("Payment record not found for this order id.")
+
+        subscription_payment.gateway = "PAYTM"
+        subscription_payment.method = "UPI"
+        subscription_payment.status = "SUCCESS" if is_success else "FAILED"
+        subscription_payment.gateway_transaction_id = gateway_transaction_id
+        subscription_payment.transaction_id = _safe_user_payment_transaction_id(subscription_payment, gateway_transaction_id)
+        subscription_payment.callback_payload = payload
+        subscription_payment.completed_at = timezone.now()
+        subscription_payment.save(
+            update_fields=[
+                "gateway",
+                "method",
+                "status",
+                "gateway_transaction_id",
+                "transaction_id",
+                "callback_payload",
+                "completed_at",
+            ]
+        )
 
         return {
             "success": is_success,
-            "payment": payment,
-            "order": linked_order,
-            "bill": payment.bill,
+            "source": PAYTM_SOURCE_SUBSCRIPTION,
+            "payment": subscription_payment,
+            "subscription": subscription_payment.subscription,
             "status": completed_status,
         }
 
@@ -486,12 +631,25 @@ def verify_paytm_callback(request):
             "payment_order_id": result["payment"].payment_order_id,
             "transaction_id": result["payment"].transaction_id,
             "status": result["status"],
+            "source": result.get("source", ""),
         }
     )
 
 
-def paytm_callback_redirect(request):
+def _callback_response(request, source):
     response = verify_paytm_callback(request)
     if request.method == "POST" and response.status_code == 200:
-        return redirect("customer_portal:collect_payment")
+        return redirect(redirect_after_paytm_callback(source))
     return response
+
+
+def user_orders_paytm_callback(request):
+    return _callback_response(request, PAYTM_SOURCE_USER_ORDER)
+
+
+def customer_portal_paytm_callback(request):
+    return _callback_response(request, PAYTM_SOURCE_CUSTOMER_PORTAL)
+
+
+def subscription_paytm_callback(request):
+    return _callback_response(request, PAYTM_SOURCE_SUBSCRIPTION)

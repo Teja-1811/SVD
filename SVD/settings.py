@@ -28,7 +28,7 @@ PAYTM_BASE_URL = os.environ.get(
     else "https://securegw.paytm.in",
 )
 
-PAYTM_INDUSTRY_TYPE_ID = os.environ.get("PAYTM_INDUSTRY_TYPE_ID", "Retail")
+PAYTM_INDUSTRY_TYPE_ID = os.environ.get("PAYTM_INDUSTRY_TYPE_ID", "Retail109")
 PAYTM_CHANNEL_ID = os.environ.get("PAYTM_CHANNEL_ID", "WEB")
 PAYTM_CHANNEL_ID_MOBILE = os.environ.get("PAYTM_CHANNEL_ID_MOBILE", "WAP")
 
@@ -36,6 +36,7 @@ PAYTM_CALLBACK_URL = os.environ.get(
     "PAYTM_CALLBACK_URL",
     "https://svdagencies.shop/milk_agency/users/orders/paytm/callback/",
 )
+PAYTM_PUBLIC_BASE_URL = os.environ.get("PAYTM_PUBLIC_BASE_URL", "https://svdagencies.shop")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

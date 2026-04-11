@@ -778,7 +778,7 @@ def start_collect_payment(request):
         return redirect("customer_portal:collect_payment")
 
     try:
-        result = initiate_invoice_transaction(customer=customer, amount=amount)
+        result = initiate_invoice_transaction(customer=customer, amount=amount, request=request)
     except Exception as exc:
         messages.error(request, f"Unable to initiate Paytm payment: {exc}")
         return redirect("customer_portal:collect_payment")

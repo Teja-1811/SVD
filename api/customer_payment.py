@@ -80,7 +80,7 @@ def initiate_customer_gateway_payment(request):
         return Response({"error": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        result = initiate_invoice_transaction(customer=customer, amount=amount)
+        result = initiate_invoice_transaction(customer=customer, amount=amount, request=request)
     except ValueError as exc:
         return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as exc:

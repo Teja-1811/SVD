@@ -107,7 +107,7 @@ def place_order_api(request):
             payment_payload = None
             if requires_online_payment:
                 try:
-                    payment_payload = initiate_order_transaction(order)
+                    payment_payload = initiate_order_transaction(order, request=request)
                 except Exception as exc:
                     order.payment_status = "failed"
                     order.status = "rejected"
