@@ -358,14 +358,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const prepareUrl = "{% url 'customer_portal:start_collect_payment' %}";
     let paymentStarted = false;
 
-    // Format amount input
+    // Raw input validation only (no formatting during typing)
     amountInput.addEventListener('input', () => {
-        let val = parseFloat(amountInput.value) || 0;
-        amountInput.value = val.toLocaleString('en-IN', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-        });
+        let val = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
         startPaytmBtn.disabled = val <= 0;
+    });
+
+    // Format only on blur
+    amountInput.addEventListener('blur', () => {
+        let val = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
+        if (val > 0) {
+            amountInput.value = val.toLocaleString('en-IN', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
     });
 
     // Suggested amounts
