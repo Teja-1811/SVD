@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("PAYTM DATA:", data);
 
             paymentData = data;
-            
+
             if (!data.txnToken) {
                 alert("Token missing");
                 resetUI();
@@ -403,6 +403,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             confirmAmount.textContent = `₹${data.amount}`;
+
+            // ✅ RESET UI BEFORE MODAL
+            resetUI();
+
             paymentModal.show();
 
 
@@ -421,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
     let paymentData = null;
 
-    confirmPaytmBtn.addEventListener('click', async () => {
+        confirmPaytmBtn.addEventListener('click', async () => {
 
         if (!paymentData) {
             alert("Payment not ready");
@@ -430,6 +434,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         paymentStepNote.style.display = "block";
         paymentStepNote.innerText = "Opening Paytm...";
+
+        // 🔥 FIX FREEZE
+        paymentModal.hide();
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
 
         await startPaytmCheckout(paymentData);
     });
