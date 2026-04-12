@@ -17,16 +17,16 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
-PAYTM_MID = os.environ.get("PAYTM_MID", "Resell00448005757124")
-PAYTM_MERCHANT_KEY = os.environ.get("PAYTM_MERCHANT_KEY", "KXHUJH8Ywq9pUkkr")
-PAYTM_WEBSITE = os.environ.get("PAYTM_WEBSITE", "WEBSTAGING")
-PAYTM_ENV = os.environ.get("PAYTM_ENV", "staging")
-PAYTM_BASE_URL = os.environ.get(
-    "PAYTM_BASE_URL",
-    "https://securegw-stage.paytm.in"
-    if PAYTM_WEBSITE.upper() == "WEBSTAGING" or PAYTM_ENV.lower() == "staging"
-    else "https://securegw.paytm.in",
-)
+PAYTM_MID = os.environ.get("PAYTM_MID")
+PAYTM_MERCHANT_KEY = os.environ.get("PAYTM_MERCHANT_KEY")
+
+PAYTM_ENV = "staging"          # or "production"
+PAYTM_WEBSITE = "WEBSTAGING"   # or "DEFAULT"
+
+PAYTM_INDUSTRY_TYPE_ID = "Retail"
+PAYTM_CHANNEL_ID = "WEB"
+
+PAYTM_PUBLIC_BASE_URL = "https://svdagencies.shop"
 
 PAYTM_INDUSTRY_TYPE_ID = os.environ.get("PAYTM_INDUSTRY_TYPE_ID", "Retail109")
 PAYTM_CHANNEL_ID = os.environ.get("PAYTM_CHANNEL_ID", "WEB")

@@ -613,6 +613,7 @@ class SubscriptionItem(models.Model):
 # CUSTOMER SUBSCRIPTION
 # -------------------------------------------------------
 class CustomerSubscription(models.Model):
+    s_number = models.CharField(max_length=64, unique=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='subscriptions')
     subscription_plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscriptions')
     start_date = models.DateField(default=timezone.now, help_text="Start date of the subscription")

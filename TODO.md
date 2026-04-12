@@ -1,18 +1,10 @@
-# TODO: Unify CustomerPayment for Gateway Transactions
+# Paytm Integration Fix TODO
+Status: In Progress
 
-## Status: In Progress
-
-**Breakdown of approved plan:**
-
-1. **[DONE]** ✅ Extend CustomerPayment in `milk_agency/models.py` with gateway-specific fields (gateway, payment_order_id, gateway_transaction_id, callback_payload, STATUS_CHOICES, METHOD_CHOICES).
-2. **[DONE]** ✅ Remove `CustomerGatewayPayment` class from `customer_portal/models.py`.
-3. **[DONE]** ✅ Update dependent files - customer_portal/views.py to use CustomerPayment for gateway transactions.
-4. **[DONE]** ✅ Generate and run Django migrations - milk_agency 0057 applied successfully. CustomerGatewayPayment migration 0013 remains (data migration needed before removal).
-5. **[DONE]** ✅ Check data migration - verify if CustomerGatewayPayment table has records before final cleanup.
-6. **[DONE]** Test gateway transactions in both apps.
-7. **[DONE]** ✅ Create TODO.md for progress tracking.
-
-**Next step:** Generate migrations.
-
-**Instructions:** Mark steps as [DONE] when completed. Use tools to edit files step-by-step.
-
+## Steps:
+- [ ] Step 1: Edit milk_agency/paytm.py (all 6 changes: imports, 3 order_id replacements, channelId, customer info, add verify_transaction)
+- [ ] Step 2: Edit milk_agency/views.py (add users_paytm_callback view)
+- [ ] Step 3: Verify settings.py (no change needed)
+- [ ] Step 4: Test Paytm initiation (e.g., print order_id in initiate_order_transaction)
+- [ ] Step 5: Test callback flow
+- [ ] Complete: attempt_completion
