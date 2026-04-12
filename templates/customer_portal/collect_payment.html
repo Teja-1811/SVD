@@ -467,13 +467,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     orderId: paymentOrder.payment_order_id,
                     token: paymentOrder.txnToken,
                     tokenType: "TXN_TOKEN",
-                    amount: paymentOrder.amount
+                    amount: String(paymentOrder.amount)
                 },
                 handler: {
                     notifyMerchant: (eventName, data) => {
                         console.log("Paytm notify:", eventName, data);
                         if (data.STATUS === "TXN_SUCCESS") {
-                            location.reload(); // Refresh to show updated balance
+                            location.reload();
                         } else if (data.STATUS === "TXN_FAILURE") {
                             alert("Payment failed");
                         }
@@ -482,19 +482,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 merchant: { mid: paymentOrder.mid, redirect: false }
             };
 
-            paymentStepNote.style.display = 'block';
-            paymentStepNote.textContent = 'Opening secure Paytm checkout...';
-
-            CheckoutJS.onLoad(() => {
-                CheckoutJS.init(config).then(() => {
+            CheckoutJS.init(config)
+                .then(() => {
                     CheckoutJS.invoke();
-                }).catch((error) => {
-                    console.error("Paytm init error:", error);
-                    alert("Paytm checkout failed to initialize");
-                    resetPaymentUI();
-                });
-            });
-
+                })
+    .catch((error) => {
+        console.error("Paytm init error:", error);
+        alert("Paytm checkout failed to initialize");
+        resetPaymentUI();
+    });
         } catch (error) {
             console.error("Paytm checkout error:", error);
             alert(`Paytm error: ${error.message}`);

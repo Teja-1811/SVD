@@ -51,7 +51,13 @@ def verify_transaction(order_id):
         "head": {"signature": checksum}
     }
 
-    response = requests.post(url, json=payload)
+    payload_json = json.dumps(payload, separators=(",", ":"))
+
+    response = requests.post(
+        url,
+        data=payload_json,
+        headers={"Content-Type": "application/json"}
+    )
     return response.json()
 
 
@@ -62,7 +68,7 @@ def verify_transaction(order_id):
 def initiate_paytm_transaction(order_id, amount, customer, request):
 
     # ✅ Unique order ID
-    payment_order_id = f"ORD{order_id}{int(time.time())}"
+    payment_order_id = f"ORD{order_id}"
 
     body = {
         "requestType": "Payment",
@@ -165,7 +171,7 @@ def paytm_callback(request):
 
     status = verify_res.get("body", {}).get("resultInfo", {}).get("resultStatus")
 
-    if status == "TXN_SUCCESS":
+    if status == "S":
         print("PAYMENT SUCCESS")
         # 👉 update your order/payment here
     else:
