@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       console.log("PAYTM DATA:", data);
 
-      if (!data.txnToken || !data.order_id || !data.mid) {
+      if (!data.txnToken || !data.payment_order_id || !data.mid) {
         alert("Failed to initiate payment");
         reset();
         return;
