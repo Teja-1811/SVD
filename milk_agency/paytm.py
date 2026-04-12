@@ -93,7 +93,13 @@ def initiate_paytm_transaction(order_id, amount, customer, request):
 
     url = f"{_paytm_base_url()}/theia/api/v1/initiateTransaction?mid={settings.PAYTM_MID}&orderId={payment_order_id}"
 
-    response = requests.post(url, json=payload)
+    payload_json = json.dumps(payload, separators=(",", ":"))
+
+    response = requests.post(
+        url,
+        data=payload_json,
+        headers={"Content-Type": "application/json"}
+)
     response_data = response.json()
 
     print("=== PAYTM DEBUG ===")
