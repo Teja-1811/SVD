@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
-PAYTM_MID = os.environ.get("PAYTM_MID")
-PAYTM_MERCHANT_KEY = os.environ.get("PAYTM_MERCHANT_KEY")
+PAYTM_MID = "Resell00448805757124"
+PAYTM_MERCHANT_KEY = "KXHUJH&Ywq9pUkkr"
 
 PAYTM_ENV = "staging"          # or "production"
 PAYTM_WEBSITE = "WEBSTAGING"   # or "DEFAULT"
