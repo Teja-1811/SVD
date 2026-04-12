@@ -425,23 +425,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
     let paymentData = null;
 
-        confirmPaytmBtn.addEventListener('click', async () => {
+    confirmPaytmBtn.addEventListener('click', async () => {
 
-        if (!paymentData) {
-            alert("Payment not ready");
-            return;
-        }
+            if (!paymentData) {
+                alert("Payment not ready");
+                return;
+            }
 
-        paymentStepNote.style.display = "block";
-        paymentStepNote.innerText = "Opening Paytm...";
+            paymentStepNote.style.display = "block";
+            paymentStepNote.innerText = "Opening Paytm...";
 
-        // 🔥 FIX FREEZE
-        paymentModal.hide();
-        document.body.classList.remove('modal-open');
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            // Proper modal close
+            paymentModal.hide();
 
-        await startPaytmCheckout(paymentData);
-    });
+            setTimeout(() => {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = 'auto';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            }, 200);
+
+            // Delay Paytm init (CRITICAL FIX)
+            setTimeout(async () => {
+                await startPaytmCheckout(paymentData);
+            }, 300);
+
+        });
 
     // ===============================
     // LOAD PAYTM SCRIPT
