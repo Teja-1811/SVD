@@ -6,39 +6,50 @@
 {% block extra_css %}
 <style>
 .cp-payment-hero {
-    text-align: center;
-    padding: 2.5rem 1.5rem;
-    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-    border-radius: 24px;
-    color: white;
-    margin-bottom: 2rem;
+    text-align:center;
+    padding:2rem;
+    background:linear-gradient(135deg,#187f62,#16664d);
+    border-radius:20px;
+    color:white;
+    margin-bottom:2rem;
 }
 
-.cp-hero-amount {
-    font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 800;
-}
-
-.cp-amount-section {
-    background: #f8fafc;
-    border-radius: 24px;
-    padding: 2rem;
-    text-align: center;
+.cp-amount-box {
+    background:#f8fafc;
+    padding:2rem;
+    border-radius:20px;
+    text-align:center;
 }
 
 .cp-pay-btn {
-    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-    border-radius: 16px;
-    padding: 1.25rem;
-    color: white;
-    font-weight: 700;
+    background:#187f62;
+    color:white;
+    padding:1rem;
+    border:none;
+    border-radius:10px;
+    width:100%;
+    font-weight:bold;
 }
 
-.modal-backdrop {
-    z-index: 1040 !important;
+/* 🔥 CUSTOM POPUP */
+#paymentPopup {
+    display:none;
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
 }
-.modal {
-    z-index: 1050 !important;
+
+#paymentPopup .box {
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    width:90%;
+    max-width:400px;
+    text-align:center;
 }
 </style>
 {% endblock %}
@@ -49,75 +60,71 @@
     <!-- HERO -->
     <div class="cp-payment-hero">
         <h2>Outstanding Balance</h2>
-        <div class="cp-hero-amount">₹{{ outstanding_due }}</div>
+        <h1>₹{{ outstanding_due }}</h1>
     </div>
 
-    <!-- AMOUNT -->
-    <div class="cp-amount-section">
+    <!-- INPUT -->
+    <div class="cp-amount-box">
 
-        <input type="hidden" value="{{ csrf_token }}" id="csrfToken">
+        <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 
-        <input type="number" id="paymentAmount"
-            class="form-control mb-3"
-            placeholder="Enter amount"
-            value="{{ suggested_upi_amount }}">
+        <input type="number"
+               id="paymentAmount"
+               class="form-control mb-3"
+               placeholder="Enter amount"
+               value="{{ suggested_upi_amount }}">
 
-        <button id="startPaytmBtn" class="cp-pay-btn w-100" disabled>
+        <button id="startPaytmBtn" class="cp-pay-btn" disabled>
             Continue to Paytm
         </button>
 
     </div>
-
 </div>
 
-<!-- MODAL -->
-<div class="modal fade" id="paymentConfirmModal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-3">
+<!-- 🔥 CUSTOM POPUP -->
+<div id="paymentPopup">
+    <div class="box">
+        <h4>Confirm Payment</h4>
+        <h2 id="popupAmount" style="color:green;">₹0</h2>
 
-            <h4 class="text-center">Confirm Payment</h4>
+        <p id="popupNote" style="display:none;color:blue;">
+            Opening Paytm...
+        </p>
 
-            <h3 id="confirmAmount" class="text-center text-success">₹0</h3>
+        <button onclick="closePopup()" class="btn btn-secondary mt-2">
+            Cancel
+        </button>
 
-            <div id="paymentStepNote" class="alert alert-info" style="display:none;"></div>
-
-            <div class="text-center mt-3">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="confirmPaytmBtn" class="btn btn-success">
-                    Pay with Paytm
-                </button>
-            </div>
-
-        </div>
+        <button id="payNowBtn" class="btn btn-success mt-2">
+            Pay with Paytm
+        </button>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-    const amountInput = document.getElementById('paymentAmount');
-    const startBtn = document.getElementById('startPaytmBtn');
-    const confirmAmount = document.getElementById('confirmAmount');
-    const paymentNote = document.getElementById('paymentStepNote');
-    const modalEl = document.getElementById('paymentConfirmModal');
-    const modal = new bootstrap.Modal(modalEl);
-
-    const csrf = document.getElementById('csrfToken').value;
+    const amountInput = document.getElementById("paymentAmount");
+    const startBtn = document.getElementById("startPaytmBtn");
+    const csrf = document.getElementById("csrfToken").value;
 
     let paymentData = null;
-    let readyToLaunch = false;
 
     // ENABLE BUTTON
-    amountInput.addEventListener('input', () => {
+    amountInput.addEventListener("input", () => {
         startBtn.disabled = !(parseFloat(amountInput.value) > 0);
     });
 
-    // STEP 1: PREPARE PAYMENT
-    startBtn.addEventListener('click', async () => {
+    // =========================
+    // START PAYMENT
+    // =========================
+    startBtn.addEventListener("click", async () => {
 
         const amount = parseFloat(amountInput.value);
+
+        if (!amount) return alert("Enter valid amount");
 
         startBtn.innerText = "Preparing...";
         startBtn.disabled = true;
@@ -133,63 +140,85 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
+            console.log("PAYTM:", data);
 
             if (!data.txnToken) {
                 alert("Token missing");
-                reset();
+                resetBtn();
                 return;
             }
 
             paymentData = data;
-            confirmAmount.innerText = "₹" + data.amount;
 
-            modal.show();
+            document.getElementById("popupAmount").innerText =
+                "₹" + data.amount;
+
+            openPopup();
 
         } catch (e) {
-            alert("Error");
-            reset();
+            alert("Server error");
+            resetBtn();
         }
     });
 
-    function reset() {
+    function resetBtn() {
         startBtn.innerText = "Continue to Paytm";
         startBtn.disabled = false;
     }
 
-    // STEP 2: CONFIRM
-    document.getElementById('confirmPaytmBtn').addEventListener('click', () => {
+    // =========================
+    // POPUP CONTROL
+    // =========================
+    window.openPopup = function() {
+        document.getElementById("paymentPopup").style.display = "flex";
+    };
 
-        if (!paymentData) return alert("Not ready");
+    window.closePopup = function() {
+        document.getElementById("paymentPopup").style.display = "none";
+    };
 
-        paymentNote.style.display = "block";
-        paymentNote.innerText = "Opening Paytm...";
+    // =========================
+    // CONFIRM PAYMENT
+    // =========================
+    document.getElementById("payNowBtn").addEventListener("click", async () => {
 
-        readyToLaunch = true;
-        modal.hide();
+        if (!paymentData) return;
+
+        document.getElementById("popupNote").style.display = "block";
+
+        closePopup();
+
+        // 🔥 WAIT BEFORE START (IMPORTANT)
+        setTimeout(async () => {
+            await startPaytm(paymentData);
+        }, 300);
     });
 
-    // STEP 3: AFTER MODAL CLOSE → OPEN PAYTM
-    modalEl.addEventListener('hidden.bs.modal', async () => {
-
-        if (!readyToLaunch) return;
-        readyToLaunch = false;
-
-        await startPaytm(paymentData);
-    });
-
-    async function loadScript(url) {
+    // =========================
+    // LOAD PAYTM SCRIPT
+    // =========================
+    function loadScript(url) {
         return new Promise((resolve, reject) => {
 
-            if (window.Paytm) return resolve();
+            if (window.Paytm && window.Paytm.CheckoutJS) {
+                resolve();
+                return;
+            }
 
             const s = document.createElement("script");
             s.src = url;
+            s.async = true;
+
             s.onload = resolve;
             s.onerror = reject;
+
             document.body.appendChild(s);
         });
     }
 
+    // =========================
+    // START PAYTM
+    // =========================
     async function startPaytm(data) {
 
         try {
@@ -202,16 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     orderId: data.order_id,
                     token: data.txnToken,
                     tokenType: "TXN_TOKEN",
-                    amount: data.amount
+                    amount: String(data.amount)
                 },
                 handler: {
-                    notifyMerchant: function (e, res) {
+                    notifyMerchant: function (event, res) {
+
+                        console.log("PAYMENT:", res);
 
                         if (res.STATUS === "TXN_SUCCESS") {
-                            alert("Success");
+                            alert("Payment Successful");
                             location.reload();
                         } else {
-                            alert("Failed");
+                            alert("Payment Failed");
+                            resetBtn();
                         }
                     }
                 },
@@ -222,11 +254,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             window.Paytm.CheckoutJS.init(config)
-                .then(() => window.Paytm.CheckoutJS.invoke());
+                .then(() => {
+                    window.Paytm.CheckoutJS.invoke();
+                });
 
-        } catch (e) {
+        } catch (err) {
+            console.error(err);
             alert("Paytm failed");
-            reset();
+            resetBtn();
         }
     }
 
