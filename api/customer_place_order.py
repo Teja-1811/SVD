@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from customer_portal.models import CustomerOrder, CustomerOrderItem
 from milk_agency.models import Item
 from milk_agency.order_pricing import get_customer_unit_price, get_delivery_charge_amount
-from milk_agency.paytm import initiate_order_transaction
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_order_updated
 
 

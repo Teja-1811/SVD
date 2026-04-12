@@ -6,13 +6,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from milk_agency.models import Bill, Customer, CustomerPayment
-from milk_agency.paytm import (
-    initiate_invoice_transaction,
-    is_success_status,
-    record_paytm_result,
-)
 from milk_agency.push_notifications import notify_admin_payment_recorded
 
 

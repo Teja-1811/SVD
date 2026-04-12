@@ -9,7 +9,12 @@ from django.db.models.functions import Coalesce
 from django.db import transaction
 
 from .models import CustomerPayment
-from .paytm import successful_payments_q
+# from .paytm import successful_payments_q  # moved to utils or inline
+
+def successful_payments_q():
+    """Q object for successful payments (status success/SUCCESS)"""
+    from django.db.models import Q
+    return Q(status__in=["success", "SUCCESS"])
 
 
 def _recalculate_payment_effects(payment):

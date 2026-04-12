@@ -28,9 +28,14 @@ from milk_agency.models import (
 )
 from milk_agency.order_pricing import DELIVERY_ITEM_CODE, get_customer_unit_price, get_delivery_charge_amount
 from milk_agency.paytm import (
-    initiate_invoice_transaction,
-    successful_payments_q,
+    initiate_paytm_transaction,
+    _paytm_base_url,
+    build_paytm_callback_url,
 )
+from milk_agency.customer_payments_views import successful_payments_q
+import time
+from django.conf import settings
+from milk_agency.models import CustomerPayment
 from milk_agency.push_notifications import notify_admin_order_placed, notify_admin_payment_recorded, notify_admin_profile_updated
 
 
@@ -694,6 +699,54 @@ def update_profile(request):
 # COLLECT PAYMENT
 # ======================================================
 @login_required
+def _paytm_diagnostics(request):
+    try:
+        from paytmchecksum import PaytmChecksum  # noqa: F401
+        package_loaded = True
+        import_error = ""
+    except Exception as exc:
+        package_loaded = False
+        import_error = str(exc)
+
+    website = str(getattr(settings, "PAYTM_WEBSITE", "") or "").strip()
+    environment = str(getattr(settings, "PAYTM_ENV", "") or "").strip()
+    checkout_host = _paytm_base_url()
+
+    customer = request.user
+    latest_gateway_attempt = (
+        CustomerPayment.objects.filter(
+            customer=customer,
+            gateway_transaction_id__isnull=False
+        ).order_by("-created_at", "-id").first()
+    )
+    latest_payment_attempt = None
+    if latest_gateway_attempt:
+        latest_payment_attempt = latest_gateway_attempt
+
+    return {
+        "package_loaded": package_loaded,
+        "import_error": import_error,
+        "mid_present": bool(str(getattr(settings, "PAYTM_MID", "") or "").strip()),
+        "merchant_key_present": bool(str(getattr(settings, "PAYTM_MERCHANT_KEY", "") or "").strip()),
+        "environment": environment or ("staging" if website.upper() == "WEBSTAGING" else "production"),
+        "website": website or "Not configured",
+        "base_url": checkout_host,
+        "callback_url": build_paytm_callback_url(request=request),
+        "webhook_url": "Not configured",
+        "latest_gateway_attempt": latest_gateway_attempt,
+        "latest_payment_attempt": latest_payment_attempt,
+        "latest_paytm_response": (
+            getattr(latest_payment_attempt, 'callback_payload', None)
+            if latest_payment_attempt else None
+        ),
+        "checkout_js_url": (
+            f"{checkout_host}/merchantpgpui/checkoutjs/merchants/{settings.PAYTM_MID}.js"
+            if str(getattr(settings, "PAYTM_MID", "") or "").strip()
+            else ""
+        ),
+    }
+
+
 def collect_payment(request):
     customer = request.user
     actual_due = Decimal(customer.get_actual_due() or 0)
@@ -741,7 +794,7 @@ def collect_payment(request):
     for order in recent_orders:
         order.display_total_amount = Decimal(order.approved_total_amount or order.total_amount or 0) + Decimal(order.delivery_charge or 0)
 
-
+    paytm_diagnostics = _paytm_diagnostics(request)
 
     context = {
         "actual_due": actual_due,
@@ -755,7 +808,8 @@ def collect_payment(request):
         "successful_payment_total": successful_total,
         "bill_rows": bill_rows,
         "recent_orders": recent_orders,
-        "last_paytm_collect_payment": request.session.get("last_paytm_collect_payment"),
+        "paytm_diagnostics": paytm_diagnostics,
+        "latest_gateway_attempt": paytm_diagnostics["latest_gateway_attempt"],
     }
     return render(request, "customer_portal/collect_payment.html", context)
 
@@ -763,38 +817,59 @@ def collect_payment(request):
 @login_required
 def start_collect_payment(request):
     if request.method != "POST":
-        return redirect("customer_portal:collect_payment")
+        return JsonResponse({"success": False, "message": "POST required"}, status=405)
 
     customer = request.user
-    raw_amount = (request.POST.get("amount") or "").strip()
     try:
+        raw_data = json.loads(request.body)
+        raw_amount = str(raw_data.get("amount", "0") or "0").strip()
         amount = Decimal(raw_amount)
-    except Exception:
-        messages.error(request, "Enter a valid amount to pay.")
-        return redirect("customer_portal:collect_payment")
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return JsonResponse({"success": False, "message": "Invalid amount"}, status=400)
 
     if amount <= 0:
-        messages.error(request, "Amount must be greater than zero.")
-        return redirect("customer_portal:collect_payment")
+        return JsonResponse({"success": False, "message": "Amount must be positive"}, status=400)
+
+    # Generate unique payment order ID
+    import time
+    payment_order_id = f"PMT{int(time.time())}"
 
     try:
-        result = initiate_invoice_transaction(customer=customer, amount=amount, request=request)
+        result = initiate_paytm_transaction(
+            order_id=payment_order_id,
+            amount=amount,
+            customer=customer,
+            request=request
+        )
     except Exception as exc:
-        messages.error(request, f"Unable to initiate Paytm payment: {exc}")
-        return redirect("customer_portal:collect_payment")
+        return JsonResponse({
+            "success": False,
+            "message": f"Payment initiation failed: {str(exc)}"
+        }, status=502)
 
-    request.session["last_paytm_collect_payment"] = {
-        "payment_order_id": result["payment_order_id"],
-        "invoice_number": result["bill"].invoice_number,
-        "amount": f"{Decimal(result['amount']):.2f}",
-        "txnToken": result["txnToken"],
-    }
-    messages.success(
-        request,
-        f"Paytm payment initiated for invoice {result['bill'].invoice_number}. "
-        f"Order id: {result['payment_order_id']}.",
-    )
-    return redirect("customer_portal:collect_payment")
+    # Parse result like users/orders.py
+    txn_token = result.get("txnToken")
+    if not txn_token:
+        paytm_response = result.get("response", {})
+        result_info = ((paytm_response.get("body", {}) or {}).get("resultInfo", {}) or {})
+        return JsonResponse({
+            "success": False,
+            "message": result.get("message", "No transaction token"),
+            "payment_order_id": payment_order_id,
+            "paytm_result_status": result_info.get("resultStatus", ""),
+            "paytm_result_code": result_info.get("resultCode", ""),
+        }, status=502)
+
+    checkout_host = _paytm_base_url()
+    return JsonResponse({
+        "success": True,
+        "payment_order_id": payment_order_id,
+        "txnToken": txn_token,
+        "mid": settings.PAYTM_MID,
+        "amount": f"{amount:.2f}",
+        "checkout_host": checkout_host,
+        "checkout_js_url": f"{checkout_host}/merchantpgpui/checkoutjs/merchants/{settings.PAYTM_MID}.js",
+    })
 
 
 # ======================================================

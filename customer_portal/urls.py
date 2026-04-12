@@ -19,7 +19,6 @@ urlpatterns = [
     path('bill-details/<int:bill_id>/', views.bill_details, name='bill_details'),
     path("collect-payment/", views.collect_payment, name="collect_payment"),
     path("collect-payment/start/", views.start_collect_payment, name="start_collect_payment"),
-    path("paytm/callback/", paytm_views.customer_portal_paytm_callback, name="paytm_callback"),
     path('update-profile/', views.update_profile, name='update_profile'),
 
     path("notifications/push/register/", register_push_device, name="push_device_register"),

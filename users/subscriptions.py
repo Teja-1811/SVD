@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from .helpers import subscription_context, user_required
-from milk_agency.paytm import _paytm_base_url, initiate_subscription_transaction
+from milk_agency.paytm import _paytm_base_url
 
 
 @user_required

@@ -17,7 +17,7 @@ from .helpers import (
     user_required,
 )
 
-from milk_agency.paytm import _paytm_base_url, build_paytm_callback_url, initiate_order_transaction
+from milk_agency.paytm import _paytm_base_url, build_paytm_callback_url
 
 
 def _paytm_diagnostics(request):
