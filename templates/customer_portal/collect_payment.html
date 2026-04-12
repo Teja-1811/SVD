@@ -182,7 +182,7 @@
         <div class="col-lg-7">
             <article class="cp-amount-section">
                 <h3 class="mb-4">Enter payment amount</h3>
-                
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div class="cp-amount-input-group mb-4">
                     <span class="cp-rupee-prefix">₹</span>
                     <input 
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    "X-CSRFToken": "{{ csrf_token }}"
                 },
                 body: JSON.stringify({ amount })
             });
@@ -403,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmAmount.textContent = `₹${data.amount}`;
             paymentModal.show();
 
-            await startPaytmCheckout(data);
 
         } catch (err) {
             console.error(err);
