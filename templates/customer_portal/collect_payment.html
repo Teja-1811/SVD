@@ -4,243 +4,183 @@
 {% block title %}Pay Outstanding Due{% endblock %}
 
 {% block extra_css %}
+
 <style>
 .cp-payment-hero {
     text-align: center;
-    padding: 2.5rem 1.5rem;
-    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-    border-radius: 24px;
+    padding: 2rem;
+    background: linear-gradient(135deg, #187f62, #145a46);
+    border-radius: 20px;
     color: white;
-    margin-bottom: 2rem;
+    margin-bottom: 20px;
 }
-
-.cp-due-badge {
-    display: inline-block;
-    background: rgba(255,255,255,0.2);
-    padding: 0.75rem 1.5rem;
-    border-radius: 999px;
-    font-weight: 700;
-}
-
 .cp-hero-amount {
-    font-size: 3rem;
-    font-weight: 800;
+    font-size: 2.5rem;
+    font-weight: bold;
 }
-
 .cp-amount-section {
     background: #f8fafc;
-    border-radius: 24px;
-    padding: 2rem;
-    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
 }
-
-.cp-amount-input {
-    font-size: 1.5rem;
-    text-align: center;
-    border-radius: 16px;
-    padding: 1rem;
-}
-
 .cp-pay-btn {
-    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-    border-radius: 16px;
-    padding: 1.25rem;
-    font-weight: 700;
+    background: #187f62;
     color: white;
+    border-radius: 12px;
+    padding: 12px;
     border: none;
+    width: 100%;
+    font-weight: bold;
 }
 </style>
+
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
 
-    <!-- HERO -->
-    <section class="cp-payment-hero">
-        <div class="cp-due-badge">Outstanding Balance</div>
-        <div class="cp-hero-amount">₹{{ outstanding_due|floatformat:2 }}</div>
-        <div>Pay any amount towards your account due.</div>
-    </section>
+<div class="container mt-4">
 
-    <div class="row g-4">
+<!-- Outstanding -->
+<div class="cp-payment-hero">
+    <h4>Outstanding Balance</h4>
+    <div class="cp-hero-amount">₹{{ outstanding_due|floatformat:2 }}</div>
+    <p>Pay any amount towards your due</p>
+</div>
 
-        <!-- LEFT -->
-        <div class="col-lg-7">
-            <div class="cp-amount-section">
+<!-- Payment Box -->
+<div class="cp-amount-section">
 
-                <h3 class="mb-4">Enter payment amount</h3>
+    <label>Enter amount</label>
+    <input 
+        type="number" 
+        id="paymentAmount"
+        class="form-control mt-2"
+        min="1"
+        step="0.01"
+        value="{{ suggested_upi_amount|floatformat:2 }}"
+    >
 
-                <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+    <button id="startPaytmBtn" class="cp-pay-btn mt-3" disabled>
+        Continue to Paytm
+    </button>
 
-                <input 
-                    type="number" 
-                    id="paymentAmount"
-                    class="form-control cp-amount-input mb-4"
-                    placeholder="0.00"
-                    value="{{ suggested_upi_amount|floatformat:2 }}"
-                >
-
-                <button id="startPaytmBtn" class="cp-pay-btn w-100" disabled>
-                    Continue to Paytm
-                </button>
-
-            </div>
-        </div>
-
-        <!-- RIGHT -->
-        <div class="col-lg-5">
-            <div class="card p-4">
-                <h5>Recent Payments</h5>
-
-                {% for payment in recent_payments|slice:":4" %}
-                <div class="d-flex justify-content-between mt-2">
-                    <span>{{ payment.created_at|date:"MMM d" }}</span>
-                    <strong>₹{{ payment.amount }}</strong>
-                </div>
-                {% endfor %}
-
-            </div>
-        </div>
-
-    </div>
-
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
+    const btn = document.getElementById('startPaytmBtn');
     const amountInput = document.getElementById('paymentAmount');
-    const payBtn = document.getElementById('startPaytmBtn');
-    const csrf = document.getElementById('csrfToken').value;
 
-    const prepareUrl = "/customer/collect-payment/start/";
-
-    // ENABLE BUTTON
+    // Enable button
     amountInput.addEventListener('input', () => {
-        payBtn.disabled = !(parseFloat(amountInput.value) > 0);
+        btn.disabled = !(parseFloat(amountInput.value) > 0);
     });
 
-    // CLICK → DIRECT PAYTM
-    payBtn.addEventListener('click', async () => {
+    btn.addEventListener('click', async () => {
 
         const amount = parseFloat(amountInput.value);
 
-        if (!amount) {
+        if (!amount || amount <= 0) {
             alert("Enter valid amount");
             return;
         }
 
-        payBtn.innerText = "Opening Paytm...";
-        payBtn.disabled = true;
+        btn.disabled = true;
+        btn.innerText = "Opening Paytm...";
 
         try {
-            const res = await fetch(prepareUrl, {
+            // STEP 1: Backend call
+            const res = await fetch("/customer/collect-payment/start/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": csrf
+                    "X-CSRFToken": "{{ csrf_token }}"
                 },
                 body: JSON.stringify({ amount })
             });
 
             const data = await res.json();
-            console.log("PAYTM:", data);
+            console.log("PAYTM DATA:", data);
 
             if (!data.txnToken) {
-                alert("Token missing");
-                resetBtn();
+                alert("Token generation failed");
+                reset();
                 return;
             }
 
-            // 🔥 DIRECT PAYTM OPEN
-            await startPaytm(data);
+            // STEP 2: Load Paytm script
+            const script = document.createElement("script");
+            script.src = `https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${data.mid}.js`;
+            script.onload = () => startPaytm(data);
+            script.onerror = () => {
+                alert("Paytm script failed");
+                reset();
+            };
+            document.body.appendChild(script);
 
         } catch (err) {
             console.error(err);
             alert("Payment error");
-            resetBtn();
+            reset();
         }
     });
 
-    function resetBtn() {
-        payBtn.innerText = "Continue to Paytm";
-        payBtn.disabled = false;
-    }
+    function startPaytm(data) {
 
-    // LOAD PAYTM SCRIPT
-    function loadScript(url) {
-        return new Promise((resolve, reject) => {
-
-            if (window.Paytm && window.Paytm.CheckoutJS) {
-                resolve();
-                return;
-            }
-
-            const s = document.createElement("script");
-            s.src = url;
-            s.async = true;
-
-            s.onload = resolve;
-            s.onerror = reject;
-
-            document.body.appendChild(s);
-        });
-    }
-
-    // START PAYTM
-    async function startPaytm(data) {
-
-        try {
-            await loadScript(
-                `https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${data.mid}.js`
-            );
-
-            const config = {
-                root: "",
-                flow: "DEFAULT",
-                data: {
-                    orderId: data.order_id,
-                    token: data.txnToken,
-                    tokenType: "TXN_TOKEN",
-                    amount: String(data.amount)
-                },
-                handler: {
-                    notifyMerchant: function (event, res) {
-
-                        console.log("PAYMENT:", res);
-
-                        if (res.STATUS === "TXN_SUCCESS") {
-                            alert("Payment Successful");
-                            location.reload();
-                        } else {
-                            alert("Payment Failed");
-                            resetBtn();
-                        }
-                    }
-                },
-                merchant: {
-                    mid: data.mid,
-                    redirect: false
-                }
-            };
-
-            window.Paytm.CheckoutJS.init(config)
-                .then(() => window.Paytm.CheckoutJS.invoke())
-                .catch(err => {
-                    console.error(err);
-                    alert("Checkout failed");
-                    resetBtn();
-                });
-
-        } catch (err) {
-            console.error(err);
-            alert("Paytm failed");
-            resetBtn();
+        if (!window.Paytm || !window.Paytm.CheckoutJS) {
+            alert("Paytm not loaded");
+            reset();
+            return;
         }
+
+        const config = {
+            root: "",
+            flow: "DEFAULT",
+            data: {
+                orderId: data.order_id,
+                token: data.txnToken,
+                tokenType: "TXN_TOKEN",
+                amount: String(data.amount)
+            },
+            merchant: {
+                mid: data.mid,
+                redirect: false
+            },
+            handler: {
+                notifyMerchant: function (eventName, res) {
+                    console.log(res);
+
+                    if (res.STATUS === "TXN_SUCCESS") {
+                        alert("Payment Successful");
+                        window.location.reload();
+                    } else {
+                        alert("Payment Failed");
+                        reset();
+                    }
+                }
+            }
+        };
+
+        window.Paytm.CheckoutJS.init(config)
+            .then(() => window.Paytm.CheckoutJS.invoke())
+            .catch(err => {
+                console.error(err);
+                alert("Checkout failed");
+                reset();
+            });
+    }
+
+    function reset() {
+        btn.disabled = false;
+        btn.innerText = "Continue to Paytm";
     }
 
 });
 </script>
+
 {% endblock %}
