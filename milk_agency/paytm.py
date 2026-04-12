@@ -100,14 +100,26 @@ def initiate_paytm_transaction(order_id, amount, customer, request):
     response = requests.post(url, json=payload)
     response_data = response.json()
 
-    print("PAYTM INIT RESPONSE:", response_data)
-
+    print("=== PAYTM DEBUG ===")
+    print("BODY:", json.dumps(body, indent=2))
+    print("CHECKSUM:", checksum)
+    print("PAYTM INIT RESPONSE:", json.dumps(response_data, indent=2))
+    print("===================")
+    
+    result_status = response_data.get("body", {}).get("resultInfo", {}).get("resultStatus")
+    result_code = response_data.get("body", {}).get("resultInfo", {}).get("resultCode")
+    
+    if result_status != "S":
+        print(f"PAYTM FAILED: {result_code} - {response_data}")
+    
     txn_token = response_data.get("body", {}).get("txnToken")
 
     return {
         "order_id": payment_order_id,
         "txnToken": txn_token,
-        "response": response_data
+        "response": response_data,
+        "result_status": result_status,
+        "result_code": result_code
     }
 
 
