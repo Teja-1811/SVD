@@ -394,6 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             console.log("PAYTM DATA:", data);
 
+            paymentData = data;
+            
             if (!data.txnToken) {
                 alert("Token missing");
                 resetUI();
@@ -415,6 +417,22 @@ document.addEventListener('DOMContentLoaded', () => {
         startPaytmBtn.disabled = false;
         startPaytmBtn.innerHTML = "Continue to Paytm";
     }
+
+    const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
+    let paymentData = null;
+
+    confirmPaytmBtn.addEventListener('click', async () => {
+
+        if (!paymentData) {
+            alert("Payment not ready");
+            return;
+        }
+
+        paymentStepNote.style.display = "block";
+        paymentStepNote.innerText = "Opening Paytm...";
+
+        await startPaytmCheckout(paymentData);
+    });
 
     // ===============================
     // LOAD PAYTM SCRIPT
