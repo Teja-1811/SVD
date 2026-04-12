@@ -349,157 +349,160 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
     const amountInput = document.getElementById('paymentAmount');
     const startPaytmBtn = document.getElementById('startPaytmBtn');
-    const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
     const confirmAmount = document.getElementById('confirmAmount');
     const paymentStepNote = document.getElementById('paymentStepNote');
     const paymentModal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
-    const prepareUrl = "{% url 'customer_portal:start_collect_payment' %}";
-    let paymentStarted = false;
 
-    // Raw input validation only (no formatting during typing)
+    const prepareUrl = "/customer/collect-payment/start/";
+
+    // ===============================
+    // INPUT VALIDATION
+    // ===============================
     amountInput.addEventListener('input', () => {
         let val = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
         startPaytmBtn.disabled = val <= 0;
     });
 
-    // Format only on blur
-    amountInput.addEventListener('blur', () => {
-        let val = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
-        if (val > 0) {
-            amountInput.value = val.toLocaleString('en-IN', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
-        }
-    });
-
-    // Suggested amounts
-    window.setSuggestedAmount = (amount) => {
-        amountInput.value = parseFloat(amount).toLocaleString('en-IN', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-        });
-        amountInput.dispatchEvent(new Event('input'));
-    };
-
-    // Start Paytm flow
+    // ===============================
+    // START PAYMENT
+    // ===============================
     startPaytmBtn.addEventListener('click', async () => {
-        const amountStr = amountInput.value.replace(/,/g, '');
-        const amount = parseFloat(amountStr);
-        if (amount <= 0 || isNaN(amount)) {
-            alert('Enter a valid amount');
+
+        const amount = parseFloat(amountInput.value.replace(/,/g, ''));
+
+        if (!amount || amount <= 0) {
+            alert("Enter valid amount");
             return;
         }
 
         startPaytmBtn.disabled = true;
-        startPaytmBtn.innerHTML = '<i class="bi bi-hourglass-split spinner"></i> Preparing...';
+        startPaytmBtn.innerHTML = "Preparing...";
 
         try {
-            const response = await fetch(prepareUrl, {
-                method: 'POST',
+            const res = await fetch(prepareUrl, {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
-                body: JSON.stringify({ amount: amount })
+                body: JSON.stringify({ amount })
             });
-            const data = await response.json();
 
-            if (!data.success) {
-                alert(data.message || 'Payment preparation failed');
-                resetPaymentUI();
+            const data = await res.json();
+            console.log("PAYTM DATA:", data);
+
+            if (!data.txnToken) {
+                alert("Token missing");
+                resetUI();
                 return;
             }
 
-            // Show confirmation modal
-            confirmAmount.textContent = `₹${parseFloat(data.amount).toLocaleString('en-IN', {minimumFractionDigits:2,maximumFractionDigits:2})}`;
+            confirmAmount.textContent = `₹${data.amount}`;
             paymentModal.show();
+
             await startPaytmCheckout(data);
 
-        } catch (error) {
-            console.error(error);
-            alert('Connection error. Please try again.');
-            resetPaymentUI();
+        } catch (err) {
+            console.error(err);
+            alert("Payment error");
+            resetUI();
         }
     });
 
-    // Reset UI
-    function resetPaymentUI() {
-        startPaytmBtn.disabled = parseFloat(amountInput.value.replace(/,/g, '')) <= 0;
-        startPaytmBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Continue to Paytm';
+    function resetUI() {
+        startPaytmBtn.disabled = false;
+        startPaytmBtn.innerHTML = "Continue to Paytm";
     }
 
-    // Paytm JS functions (copied from orders.html)
-    async function loadPaytmCheckoutScript(scriptUrl) {
-        if (!scriptUrl) return Promise.reject(new Error("Missing CheckoutJS URL"));
-        if (window.Paytm?.CheckoutJS) return Promise.resolve(window.Paytm.CheckoutJS);
-
+    // ===============================
+    // LOAD PAYTM SCRIPT
+    // ===============================
+    function loadPaytmScript(url) {
         return new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[data-paytm="${scriptUrl}"]`);
-            if (existing) {
-                existing.onload = () => resolve(window.Paytm?.CheckoutJS);
-                existing.onerror = () => reject(new Error("CheckoutJS load failed"));
+
+            if (window.Paytm && window.Paytm.CheckoutJS) {
+                resolve();
                 return;
             }
 
-            const script = document.createElement('script');
-            script.src = scriptUrl;
+            const script = document.createElement("script");
+            script.src = url;
             script.async = true;
-            script.dataset.paytm = scriptUrl;
-            script.onload = () => resolve(window.Paytm?.CheckoutJS || Promise.reject(new Error("CheckoutJS unavailable")));
-            script.onerror = () => reject(new Error("Failed to load Paytm script"));
-            document.head.appendChild(script);
+
+            script.onload = () => {
+                if (window.Paytm && window.Paytm.CheckoutJS) {
+                    resolve();
+                } else {
+                    reject("Paytm SDK not available");
+                }
+            };
+
+            script.onerror = () => reject("Script load failed");
+
+            document.body.appendChild(script);
         });
     }
 
-    async function startPaytmCheckout(paymentOrder) {
+    // ===============================
+    // START PAYTM CHECKOUT
+    // ===============================
+    async function startPaytmCheckout(data) {
+
         try {
-            await loadPaytmCheckoutScript(paymentOrder.checkout_js_url);
-            const CheckoutJS = window.Paytm?.CheckoutJS;
-            if (!CheckoutJS) throw new Error("Paytm.CheckoutJS not available");
+            await loadPaytmScript(data.checkout_js_url);
+
+            if (!window.Paytm || !window.Paytm.CheckoutJS) {
+                throw new Error("Paytm not loaded");
+            }
 
             const config = {
                 root: "",
                 flow: "DEFAULT",
                 data: {
-                    orderId: paymentOrder.payment_order_id,
-                    token: paymentOrder.txnToken,
+                    orderId: data.order_id,
+                    token: data.txnToken,
                     tokenType: "TXN_TOKEN",
-                    amount: String(paymentOrder.amount)
+                    amount: String(data.amount)
                 },
                 handler: {
-                    notifyMerchant: (eventName, data) => {
-                        console.log("Paytm notify:", eventName, data);
-                        if (data.STATUS === "TXN_SUCCESS") {
+                    notifyMerchant: function (eventName, res) {
+                        console.log("EVENT:", eventName, res);
+
+                        if (res.STATUS === "TXN_SUCCESS") {
+                            alert("Payment Successful");
                             location.reload();
-                        } else if (data.STATUS === "TXN_FAILURE") {
-                            alert("Payment failed");
+                        } else if (res.STATUS === "TXN_FAILURE") {
+                            alert("Payment Failed");
                         }
                     }
                 },
-                merchant: { mid: paymentOrder.mid, redirect: false }
+                merchant: {
+                    mid: data.mid,
+                    redirect: false
+                }
             };
 
-            CheckoutJS.init(config)
+            // 🔥 FINAL FIX — USE DIRECT OBJECT
+            window.Paytm.CheckoutJS.init(config)
                 .then(() => {
-                    CheckoutJS.invoke();
+                    window.Paytm.CheckoutJS.invoke();
                 })
-    .catch((error) => {
-        console.error("Paytm init error:", error);
-        alert("Paytm checkout failed to initialize");
-        resetPaymentUI();
-    });
-        } catch (error) {
-            console.error("Paytm checkout error:", error);
-            alert(`Paytm error: ${error.message}`);
-            resetPaymentUI();
+                .catch(err => {
+                    console.error("INIT ERROR:", err);
+                    alert("Checkout init failed");
+                    resetUI();
+                });
+
+        } catch (err) {
+            console.error("PAYTM ERROR:", err);
+            alert("Paytm failed: " + err);
+            resetUI();
         }
     }
 
-    // Close modal reset
-    document.getElementById('paymentConfirmModal').addEventListener('hidden.bs.modal', resetPaymentUI);
 });
 </script>
 {% endblock %}
