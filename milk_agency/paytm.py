@@ -26,7 +26,7 @@ def _paytm_base_url():
 # ============================================
 
 def build_paytm_callback_url(request):
-    return request.build_absolute_uri(reverse("users_paytm_callback"))
+    return request.build_absolute_uri(reverse("milk_agency:users_paytm_callback"))
 
 
 # ============================================
