@@ -16,9 +16,7 @@ from paytmchecksum import PaytmChecksum
 # ============================================
 
 def _paytm_base_url():
-    if settings.PAYTM_ENV == "staging":
-        return "https://securegw-stage.paytm.in"
-    return "https://securegw.paytm.in"
+    return "https://securegw-stage.paytm.in" if settings.PAYTM_ENV == "staging" else "https://securegw.paytm.in"
 
 
 # ============================================
@@ -30,7 +28,7 @@ def build_paytm_callback_url(request):
 
 
 # ============================================
-# VERIFY TRANSACTION (MANDATORY)
+# VERIFY TRANSACTION
 # ============================================
 
 def verify_transaction(order_id):
@@ -51,13 +49,7 @@ def verify_transaction(order_id):
         "head": {"signature": checksum}
     }
 
-    payload_json = json.dumps(payload, separators=(",", ":"))
-
-    response = requests.post(
-        url,
-        data=payload_json,
-        headers={"Content-Type": "application/json"}
-    )
+    response = requests.post(url, json=payload)
     return response.json()
 
 
@@ -67,8 +59,8 @@ def verify_transaction(order_id):
 
 def initiate_paytm_transaction(order_id, amount, customer, request):
 
-    # ✅ Unique order ID
-    payment_order_id = f"ORD{order_id}"
+    # ✅ UNIQUE ORDER ID (VERY IMPORTANT)
+    payment_order_id = f"ORD{order_id}{int(time.time())}"
 
     body = {
         "requestType": "Payment",
@@ -99,52 +91,66 @@ def initiate_paytm_transaction(order_id, amount, customer, request):
 
     url = f"{_paytm_base_url()}/theia/api/v1/initiateTransaction?mid={settings.PAYTM_MID}&orderId={payment_order_id}"
 
-    payload_json = json.dumps(payload, separators=(",", ":"))
-
     response = requests.post(
         url,
-        data=payload_json,
+        data=json.dumps(payload, separators=(",", ":")),
         headers={"Content-Type": "application/json"}
-)
+    )
+
     response_data = response.json()
 
     print("=== PAYTM DEBUG ===")
-    print("BODY:", json.dumps(body, indent=2))
-    print("CHECKSUM:", checksum)
-    print("PAYTM INIT RESPONSE:", json.dumps(response_data, indent=2))
+    print(json.dumps(response_data, indent=2))
     print("===================")
-    
-    result_status = response_data.get("body", {}).get("resultInfo", {}).get("resultStatus")
-    result_code = response_data.get("body", {}).get("resultInfo", {}).get("resultCode")
-    
-    if result_status != "S":
-        print(f"PAYTM FAILED: {result_code} - {response_data}")
-    
+
     txn_token = response_data.get("body", {}).get("txnToken")
 
+    if not txn_token:
+        return {
+            "error": True,
+            "response": response_data
+        }
+
     return {
+        "error": False,
         "order_id": payment_order_id,
-        "txnToken": txn_token,
-        "response": response_data,
-        "result_status": result_status,
-        "result_code": result_code
+        "txnToken": txn_token
     }
 
 
 # ============================================
-# CHECKSUM VERIFY
+# START PAYMENT API (🔥 THIS IS WHAT FRONTEND CALLS)
 # ============================================
 
-def verify_checksum(payload):
-    checksum = payload.get("CHECKSUMHASH")
+@csrf_exempt
+def start_payment(request):
+    try:
+        data = json.loads(request.body)
+        amount = data.get("amount")
 
-    data = {k: v for k, v in payload.items() if k != "CHECKSUMHASH"}
+        if not amount:
+            return JsonResponse({"error": "Invalid amount"}, status=400)
 
-    return PaytmChecksum.verifySignature(
-        data,
-        settings.PAYTM_MERCHANT_KEY,
-        checksum
-    )
+        customer = request.user  # adjust if needed
+        order_id = f"PMT{int(time.time())}"
+
+        result = initiate_paytm_transaction(order_id, amount, customer, request)
+
+        if result.get("error"):
+            return JsonResponse({
+                "error": "Paytm failed",
+                "details": result.get("response")
+            }, status=500)
+
+        # ✅ FINAL RESPONSE (IMPORTANT)
+        return JsonResponse({
+            "order_id": result["order_id"],
+            "txnToken": result["txnToken"],
+            "mid": settings.PAYTM_MID,   # 🔥 REQUIRED
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 # ============================================
@@ -155,25 +161,25 @@ def verify_checksum(payload):
 def paytm_callback(request):
 
     payload = request.POST.dict()
+    print("CALLBACK:", payload)
 
-    print("CALLBACK DATA:", payload)
+    checksum = payload.get("CHECKSUMHASH")
 
-    # Step 1: checksum verify
-    if not verify_checksum(payload):
+    data = {k: v for k, v in payload.items() if k != "CHECKSUMHASH"}
+
+    if not PaytmChecksum.verifySignature(data, settings.PAYTM_MERCHANT_KEY, checksum):
         return JsonResponse({"status": "checksum failed"})
 
     order_id = payload.get("ORDERID")
 
-    # Step 2: server verification
     verify_res = verify_transaction(order_id)
-
-    print("VERIFY RESPONSE:", verify_res)
+    print("VERIFY:", verify_res)
 
     status = verify_res.get("body", {}).get("resultInfo", {}).get("resultStatus")
 
-    if status == "S":
+    if status == "TXN_SUCCESS":
         print("PAYMENT SUCCESS")
-        # 👉 update your order/payment here
+        # update DB here
     else:
         print("PAYMENT FAILED")
 
