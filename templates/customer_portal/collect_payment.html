@@ -1,37 +1,94 @@
 {% extends "customer_portal/base.html" %}
 {% load static %}
 
-{% block title %}Pay Outstanding Due{% endblock %}
+{% block title %}Pay Due{% endblock %}
 
 {% block extra_css %}
 
 <style>
-.cp-payment-hero {
+
+/* ===== PAGE ===== */
+body {
+    background: #f3f6f9;
+}
+
+/* ===== HERO CARD ===== */
+.cp-hero {
+    background: linear-gradient(135deg, #0f9d76, #0b7a5c);
+    color: white;
+    border-radius: 20px;
+    padding: 30px;
     text-align: center;
-    padding: 2rem;
-    background: linear-gradient(135deg, #187f62, #145a46);
-    border-radius: 20px;
-    color: white;
     margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
-.cp-hero-amount {
-    font-size: 2.5rem;
+
+.cp-hero h2 {
+    font-weight: 700;
+}
+
+.cp-amount {
+    font-size: 36px;
     font-weight: bold;
+    margin-top: 10px;
 }
-.cp-amount-section {
-    background: #f8fafc;
-    padding: 20px;
+
+/* ===== CARD ===== */
+.cp-card {
+    background: white;
     border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
 }
-.cp-pay-btn {
-    background: #187f62;
-    color: white;
+
+/* ===== INPUT ===== */
+.cp-input {
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 18px;
+    text-align: center;
+}
+
+/* ===== QUICK BUTTONS ===== */
+.quick-btn {
     border-radius: 12px;
-    padding: 12px;
-    border: none;
-    width: 100%;
-    font-weight: bold;
+    padding: 10px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 600;
+    transition: 0.2s;
 }
+
+.quick-btn:hover {
+    background: #f1f5f9;
+}
+
+/* ===== PAY BUTTON ===== */
+.pay-btn {
+    background: linear-gradient(135deg, #0f9d76, #0b7a5c);
+    color: white;
+    border-radius: 14px;
+    padding: 15px;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.pay-btn:disabled {
+    background: #ccc;
+}
+
+/* ===== STATUS TEXT ===== */
+.status-text {
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin-top: 10px;
+}
+
 </style>
 
 {% endblock %}
@@ -40,31 +97,54 @@
 
 <div class="container mt-4">
 
-<!-- Outstanding -->
-<div class="cp-payment-hero">
-    <h4>Outstanding Balance</h4>
-    <div class="cp-hero-amount">₹{{ outstanding_due|floatformat:2 }}</div>
-    <p>Pay any amount towards your due</p>
+```
+<!-- HERO -->
+<div class="cp-hero">
+    <h2>Outstanding Balance</h2>
+    <div class="cp-amount">₹{{ outstanding_due|floatformat:2 }}</div>
+    <p>Pay securely using Paytm</p>
 </div>
 
-<!-- Payment Box -->
-<div class="cp-amount-section">
+<!-- PAYMENT CARD -->
+<div class="cp-card">
 
-    <label>Enter amount</label>
+    <h5 class="text-center mb-3">Enter Payment Amount</h5>
+
+    <!-- INPUT -->
     <input 
-        type="number" 
+        type="number"
         id="paymentAmount"
-        class="form-control mt-2"
+        class="form-control cp-input"
+        value="{{ suggested_upi_amount|floatformat:2 }}"
         min="1"
         step="0.01"
-        value="{{ suggested_upi_amount|floatformat:2 }}"
     >
 
-    <button id="startPaytmBtn" class="cp-pay-btn mt-3" disabled>
-        Continue to Paytm
+    <!-- QUICK OPTIONS -->
+    <div class="row mt-3 text-center">
+        <div class="col-4">
+            <div class="quick-btn" onclick="setAmount(100)">₹100</div>
+        </div>
+        <div class="col-4">
+            <div class="quick-btn" onclick="setAmount(500)">₹500</div>
+        </div>
+        <div class="col-4">
+            <div class="quick-btn" onclick="setAmount({{ outstanding_due|floatformat:0 }})">
+                Full
+            </div>
+        </div>
+    </div>
+
+    <!-- BUTTON -->
+    <button id="startPaytmBtn" class="pay-btn" disabled>
+        Pay with Paytm
     </button>
 
+    <div id="statusText" class="status-text"></div>
+
 </div>
+```
+
 </div>
 {% endblock %}
 
@@ -74,16 +154,24 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const btn = document.getElementById('startPaytmBtn');
-    const amountInput = document.getElementById('paymentAmount');
+    const input = document.getElementById('paymentAmount');
+    const statusText = document.getElementById('statusText');
 
     // Enable button
-    amountInput.addEventListener('input', () => {
-        btn.disabled = !(parseFloat(amountInput.value) > 0);
+    input.addEventListener('input', () => {
+        btn.disabled = !(parseFloat(input.value) > 0);
     });
 
+    // Quick buttons
+    window.setAmount = function(val) {
+        input.value = val;
+        btn.disabled = false;
+    }
+
+    // CLICK
     btn.addEventListener('click', async () => {
 
-        const amount = parseFloat(amountInput.value);
+        const amount = parseFloat(input.value);
 
         if (!amount || amount <= 0) {
             alert("Enter valid amount");
@@ -92,9 +180,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btn.disabled = true;
         btn.innerText = "Opening Paytm...";
+        statusText.innerText = "Preparing secure payment...";
 
         try {
-            // STEP 1: Backend call
             const res = await fetch("/customer/collect-payment/start/", {
                 method: "POST",
                 headers: {
@@ -105,27 +193,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-            console.log("PAYTM DATA:", data);
 
             if (!data.txnToken) {
-                alert("Token generation failed");
+                alert("Failed to initiate payment");
                 reset();
                 return;
             }
 
-            // STEP 2: Load Paytm script
+            // Load Paytm
             const script = document.createElement("script");
             script.src = `https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${data.mid}.js`;
             script.onload = () => startPaytm(data);
-            script.onerror = () => {
-                alert("Paytm script failed");
-                reset();
-            };
             document.body.appendChild(script);
 
-        } catch (err) {
-            console.error(err);
-            alert("Payment error");
+        } catch (e) {
+            console.error(e);
+            alert("Error occurred");
             reset();
         }
     });
@@ -133,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startPaytm(data) {
 
         if (!window.Paytm || !window.Paytm.CheckoutJS) {
-            alert("Paytm not loaded");
+            alert("Payment system failed");
             reset();
             return;
         }
@@ -153,13 +236,12 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             handler: {
                 notifyMerchant: function (eventName, res) {
-                    console.log(res);
 
                     if (res.STATUS === "TXN_SUCCESS") {
-                        alert("Payment Successful");
-                        window.location.reload();
+                        statusText.innerText = "Payment successful!";
+                        setTimeout(() => location.reload(), 1500);
                     } else {
-                        alert("Payment Failed");
+                        statusText.innerText = "Payment failed";
                         reset();
                     }
                 }
@@ -170,14 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(() => window.Paytm.CheckoutJS.invoke())
             .catch(err => {
                 console.error(err);
-                alert("Checkout failed");
                 reset();
             });
     }
 
     function reset() {
         btn.disabled = false;
-        btn.innerText = "Continue to Paytm";
+        btn.innerText = "Pay with Paytm";
+        statusText.innerText = "";
     }
 
 });
