@@ -60,7 +60,7 @@ def verify_transaction(order_id):
 def initiate_paytm_transaction(order_id, amount, customer, request):
 
     # ✅ UNIQUE ORDER ID (VERY IMPORTANT)
-    payment_order_id = f"ORD{order_id}{int(time.time())}"
+    payment_order_id = f"{order_id}"
 
     body = {
         "requestType": "Payment",
