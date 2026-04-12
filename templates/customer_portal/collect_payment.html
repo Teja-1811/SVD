@@ -5,342 +5,89 @@
 
 {% block extra_css %}
 <style>
-    .cp-payment-hero {
-        text-align: center;
-        padding: 2.5rem 1.5rem;
-        background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-        border-radius: 24px;
-        color: white;
-        margin-bottom: 2rem;
-    }
+.cp-payment-hero {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
+    border-radius: 24px;
+    color: white;
+    margin-bottom: 2rem;
+}
 
-    .cp-due-badge {
-        display: inline-block;
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(12px);
-        padding: 0.75rem 1.5rem;
-        border-radius: 999px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
+.cp-hero-amount {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 800;
+}
 
-    .cp-hero-amount {
-        font-size: clamp(2rem, 5vw, 4rem);
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: 0.25rem;
-    }
+.cp-amount-section {
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+}
 
-    .cp-payment-section {
-        display: grid;
-        gap: 2rem;
-    }
+.cp-pay-btn {
+    background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
+    border-radius: 16px;
+    padding: 1.25rem;
+    color: white;
+    font-weight: 700;
+}
 
-    .cp-amount-section {
-        background: #f8fafc;
-        border-radius: 24px;
-        padding: 2rem;
-        text-align: center;
-    }
-
-    .cp-amount-input-group {
-        position: relative;
-        margin-bottom: 1.5rem;
-    }
-
-    .cp-amount-input {
-        background: white;
-        border: 2px solid rgba(24,127,98,0.2);
-        border-radius: 16px;
-        padding: 1.25rem 1rem 1.25rem 3.5rem;
-        font-size: 1.5rem;
-        font-weight: 700;
-        text-align: center;
-        transition: all 0.2s;
-    }
-
-    .cp-amount-input:focus {
-        outline: none;
-        border-color: #187f62;
-        box-shadow: 0 0 0 4px rgba(24,127,98,0.1);
-    }
-
-    .cp-rupee-prefix {
-        position: absolute;
-        left: 1.25rem;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #64748b;
-        pointer-events: none;
-    }
-
-    .cp-suggested-amount {
-        background: rgba(24,127,98,0.08);
-        border: 1px solid rgba(24,127,98,0.2);
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .cp-suggested-amount:hover {
-        background: rgba(24,127,98,0.12);
-    }
-
-    .cp-pay-btn {
-        background: linear-gradient(135deg, #187f62 0%, #16664d 100%);
-        border: none;
-        border-radius: 16px;
-        padding: 1.25rem 2.5rem;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: white;
-        transition: all 0.2s;
-        box-shadow: 0 8px 24px rgba(24,127,98,0.3);
-    }
-
-    .cp-pay-btn:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 32px rgba(24,127,98,0.4);
-    }
-
-    .cp-pay-btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .cp-sidebar-card {
-        position: sticky;
-        top: 2rem;
-        background: white;
-        border-radius: 20px;
-        border: 1px solid rgba(22,52,61,0.08);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-
-    .cp-diagnostics-grid {
-        display: grid;
-        gap: 0.75rem;
-        padding: 1rem 0;
-    }
-
-    .cp-diagnostics-row {
-        display: grid;
-        grid-template-columns: minmax(140px, 1fr) 1fr;
-        gap: 1rem;
-        align-items: start;
-        padding: 0.95rem 1.25rem;
-        border-radius: 16px;
-        background: rgba(248,250,252,0.8);
-    }
-
-    .cp-diagnostics-row small {
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .cp-diagnostics-row strong {
-        color: #16343d;
-        font-weight: 700;
-    }
-
-    .cp-code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.85rem;
-        line-height: 1.45;
-        word-break: break-word;
-        background: rgba(22,52,61,0.06);
-        padding: 0.4rem 0.6rem;
-        border-radius: 6px;
-    }
-
-    @media (max-width: 991.98px) {
-        .cp-payment-section {
-            grid-template-columns: 1fr;
-        }
-        .cp-diagnostics-row {
-            grid-template-columns: 1fr;
-        }
-    }
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+.modal {
+    z-index: 1050 !important;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <section class="cp-payment-hero">
-        <div class="cp-due-badge">Outstanding Balance</div>
-        <div class="cp-hero-amount">₹{{ outstanding_due|floatformat:2 }}</div>
-        <div>Pay any amount towards your account due.</div>
-    </section>
+<div class="container">
 
-    <div class="row g-4 cp-payment-section">
-        <div class="col-lg-7">
-            <article class="cp-amount-section">
-                <h3 class="mb-4">Enter payment amount</h3>
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                <div class="cp-amount-input-group mb-4">
-                    <span class="cp-rupee-prefix">₹</span>
-                    <input 
-                        type="number" 
-                        id="paymentAmount" 
-                        class="form-control cp-amount-input" 
-                        min="1" 
-                        step="0.01"
-                        placeholder="0.00"
-                        value="{{ suggested_upi_amount|floatformat:2 }}"
-                    >
-                </div>
-
-                {% if latest_due_bill %}
-                <div class="cp-suggested-amount mb-4" onclick="setSuggestedAmount('{{ latest_due_bill.due_amount|floatformat:2 }}')">
-                    💳 Pay bill {{ latest_due_bill.invoice_number }} due: ₹{{ latest_due_bill.due_amount|floatformat:2 }}
-                </div>
-                {% endif %}
-
-                <div class="cp-suggested-amount" onclick="setSuggestedAmount('{{ outstanding_due|floatformat:2 }}')">
-                    🎯 Pay full outstanding: ₹{{ outstanding_due|floatformat:2 }}
-                </div>
-
-                <button id="startPaytmBtn" class="cp-pay-btn w-100 mt-4" disabled>
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Continue to Paytm
-                </button>
-            </article>
-
-            <div class="row g-3 mb-5">
-                {% for payment in recent_payments|slice:":4" %}
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <small class="text-muted">{{ payment.created_at|date:"MMM d" }}</small>
-                                <span class="badge bg-success">₹{{ payment.amount|floatformat:2 }}</span>
-                            </div>
-                            <h6 class="mb-1">{{ payment.method }}</h6>
-                            {% if payment.bill %}
-                            <small class="text-muted">Bill {{ payment.bill.invoice_number }}</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="col-lg-5">
-            <article class="cp-sidebar-card p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <small class="text-muted">Paytm Diagnostics</small>
-                        <h5>Integration Status</h5>
-                    </div>
-                </div>
-
-                <div class="cp-diagnostics-grid">
-                    <div class="cp-diagnostics-row">
-                        <small>Checksum package</small>
-                        <strong>{% if paytm_diagnostics.package_loaded %}✅ Loaded{% else %}❌ Missing{% endif %}</strong>
-                    </div>
-                    {% if paytm_diagnostics.import_error %}
-                    <div class="cp-diagnostics-row">
-                        <small>Import error</small>
-                        <div class="cp-code">{{ paytm_diagnostics.import_error }}</div>
-                    </div>
-                    {% endif %}
-                    <div class="cp-diagnostics-row">
-                        <small>Merchant ID</small>
-                        <strong>{% if paytm_diagnostics.mid_present %}✅ Present{% else %}⚠️ Missing{% endif %}</strong>
-                    </div>
-                    <div class="cp-diagnostics-row">
-                        <small>Merchant Key</small>
-                        <strong>{% if paytm_diagnostics.merchant_key_present %}✅ Present{% else %}⚠️ Missing{% endif %}</strong>
-                    </div>
-                    <div class="cp-diagnostics-row">
-                        <small>Environment</small>
-                        <strong class="{% if paytm_diagnostics.environment == 'staging' %}text-warning{% else %}text-success{% endif %}">
-                            {{ paytm_diagnostics.environment|upper }}
-                        </strong>
-                    </div>
-                    <div class="cp-diagnostics-row">
-                        <small>Gateway URL</small>
-                        <div class="cp-code">{{ paytm_diagnostics.base_url }}</div>
-                    </div>
-                    <div class="cp-diagnostics-row">
-                        <small>Callback URL</small>
-                        <div class="cp-code">{{ paytm_diagnostics.callback_url|default:"Not set" }}</div>
-                    </div>
-                    {% if paytm_diagnostics.latest_payment_attempt %}
-                    <div class="cp-diagnostics-row">
-                        <small>Last payment</small>
-                        <div>
-                            <div><strong>{{ paytm_diagnostics.latest_payment_attempt.payment_order_id }}</strong></div>
-                            <small class="text-muted">₹{{ paytm_diagnostics.latest_payment_attempt.amount|floatformat:2 }} - {{ paytm_diagnostics.latest_payment_attempt.status|title }}</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </article>
-
-            {% if bill_rows %}
-            <article class="cp-sidebar-card p-4">
-                <div class="mb-3">
-                    <h5 class="mb-1">Recent Bills</h5>
-                    <small class="text-muted">{{ bill_rows|length }} outstanding</small>
-                </div>
-                {% for bill_row in bill_rows %}
-                <div class="d-flex justify-content-between align-items-center py-2 border-bottom {% if not forloop.last %}border-bottom{% endif %}">
-                    <div>
-                        <strong>{{ bill_row.invoice_number }}</strong>
-                        <small class="d-block text-muted">{{ bill_row.invoice_date|date:"MMM d" }}</small>
-                    </div>
-                    {% if bill_row.due_amount > 0 %}
-                    <span class="badge bg-danger fs-6">₹{{ bill_row.due_amount|floatformat:2 }}</span>
-                    {% else %}
-                    <span class="badge bg-success fs-6">Paid</span>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </article>
-            {% endif %}
-        </div>
+    <!-- HERO -->
+    <div class="cp-payment-hero">
+        <h2>Outstanding Balance</h2>
+        <div class="cp-hero-amount">₹{{ outstanding_due }}</div>
     </div>
+
+    <!-- AMOUNT -->
+    <div class="cp-amount-section">
+
+        <input type="hidden" value="{{ csrf_token }}" id="csrfToken">
+
+        <input type="number" id="paymentAmount"
+            class="form-control mb-3"
+            placeholder="Enter amount"
+            value="{{ suggested_upi_amount }}">
+
+        <button id="startPaytmBtn" class="cp-pay-btn w-100" disabled>
+            Continue to Paytm
+        </button>
+
+    </div>
+
 </div>
 
-<!-- Payment Confirmation Modal -->
-<div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-hidden="true">
+<!-- MODAL -->
+<div class="modal fade" id="paymentConfirmModal">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:24px;border:1px solid rgba(22,52,61,0.08);">
-            <div class="modal-header border-0 pb-0">
-                <h4 class="mb-0 mt-2">Confirm Payment</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-3">
-                <div class="text-center mb-4">
-                    <i class="bi bi-credit-card-2-front-fill text-success" style="font-size:4rem;"></i>
-                </div>
-                <div class="text-center mb-4">
-                    <h3 id="confirmAmount" class="text-success mb-1">₹0.00</h3>
-                    <p class="text-muted mb-0">This amount will be applied to your account balance.</p>
-                </div>
-                <div class="alert alert-info">
-                    <strong>Paytm Payment</strong>
-                    <p class="mb-0">You'll be securely redirected to Paytm. Complete payment there - we'll verify automatically.</p>
-                </div>
-                <div class="alert alert-warning" id="paymentStepNote" style="display:none;">
-                    Preparing Paytm...
-                </div>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmPaytmBtn" class="btn btn-success">
-                    <i class="bi bi-lock-fill"></i> Pay with Paytm
+        <div class="modal-content p-3">
+
+            <h4 class="text-center">Confirm Payment</h4>
+
+            <h3 id="confirmAmount" class="text-center text-success">₹0</h3>
+
+            <div id="paymentStepNote" class="alert alert-info" style="display:none;"></div>
+
+            <div class="text-center mt-3">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmPaytmBtn" class="btn btn-success">
+                    Pay with Paytm
                 </button>
             </div>
+
         </div>
     </div>
 </div>
@@ -351,151 +98,102 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const amountInput = document.getElementById('paymentAmount');
-    const startPaytmBtn = document.getElementById('startPaytmBtn');
+    const startBtn = document.getElementById('startPaytmBtn');
     const confirmAmount = document.getElementById('confirmAmount');
-    const paymentStepNote = document.getElementById('paymentStepNote');
-    const paymentModal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
+    const paymentNote = document.getElementById('paymentStepNote');
+    const modalEl = document.getElementById('paymentConfirmModal');
+    const modal = new bootstrap.Modal(modalEl);
 
-    const prepareUrl = "/customer/collect-payment/start/";
+    const csrf = document.getElementById('csrfToken').value;
 
-    // ===============================
-    // INPUT VALIDATION
-    // ===============================
+    let paymentData = null;
+    let readyToLaunch = false;
+
+    // ENABLE BUTTON
     amountInput.addEventListener('input', () => {
-        let val = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
-        startPaytmBtn.disabled = val <= 0;
+        startBtn.disabled = !(parseFloat(amountInput.value) > 0);
     });
 
-    // ===============================
-    // START PAYMENT
-    // ===============================
-    startPaytmBtn.addEventListener('click', async () => {
+    // STEP 1: PREPARE PAYMENT
+    startBtn.addEventListener('click', async () => {
 
-        const amount = parseFloat(amountInput.value.replace(/,/g, ''));
+        const amount = parseFloat(amountInput.value);
 
-        if (!amount || amount <= 0) {
-            alert("Enter valid amount");
-            return;
-        }
-
-        startPaytmBtn.disabled = true;
-        startPaytmBtn.innerHTML = "Preparing...";
+        startBtn.innerText = "Preparing...";
+        startBtn.disabled = true;
 
         try {
-            const res = await fetch(prepareUrl, {
+            const res = await fetch("/customer/collect-payment/start/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
+                    "X-CSRFToken": csrf
                 },
                 body: JSON.stringify({ amount })
             });
 
             const data = await res.json();
-            console.log("PAYTM DATA:", data);
-
-            paymentData = data;
 
             if (!data.txnToken) {
                 alert("Token missing");
-                resetUI();
+                reset();
                 return;
             }
 
-            confirmAmount.textContent = `₹${data.amount}`;
+            paymentData = data;
+            confirmAmount.innerText = "₹" + data.amount;
 
-            // ✅ RESET UI BEFORE MODAL
-            resetUI();
+            modal.show();
 
-            paymentModal.show();
-
-
-        } catch (err) {
-            console.error(err);
-            alert("Payment error");
-            resetUI();
+        } catch (e) {
+            alert("Error");
+            reset();
         }
     });
 
-    function resetUI() {
-        startPaytmBtn.disabled = false;
-        startPaytmBtn.innerHTML = "Continue to Paytm";
+    function reset() {
+        startBtn.innerText = "Continue to Paytm";
+        startBtn.disabled = false;
     }
 
-    const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
-    let paymentData = null;
+    // STEP 2: CONFIRM
+    document.getElementById('confirmPaytmBtn').addEventListener('click', () => {
 
-    confirmPaytmBtn.addEventListener('click', () => {
+        if (!paymentData) return alert("Not ready");
 
-    if (!paymentData) {
-        alert("Payment not ready");
-        return;
-    }
+        paymentNote.style.display = "block";
+        paymentNote.innerText = "Opening Paytm...";
 
-    paymentStepNote.style.display = "block";
-    paymentStepNote.innerText = "Opening Paytm...";
-
-    // 🔥 Listen for modal fully hidden
-    const modalEl = document.getElementById('paymentConfirmModal');
-
-    modalEl.addEventListener('hidden.bs.modal', async function handler() {
-
-        // remove listener (important)
-        modalEl.removeEventListener('hidden.bs.modal', handler);
-
-        // clean leftovers (safe)
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = 'auto';
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-
-        // 🔥 NOW start Paytm (no freeze)
-        await startPaytmCheckout(paymentData);
+        readyToLaunch = true;
+        modal.hide();
     });
 
-    // close modal (this triggers event above)
-    paymentModal.hide();
-});
+    // STEP 3: AFTER MODAL CLOSE → OPEN PAYTM
+    modalEl.addEventListener('hidden.bs.modal', async () => {
 
-    // ===============================
-    // LOAD PAYTM SCRIPT
-    // ===============================
-    function loadPaytmScript(url) {
+        if (!readyToLaunch) return;
+        readyToLaunch = false;
+
+        await startPaytm(paymentData);
+    });
+
+    async function loadScript(url) {
         return new Promise((resolve, reject) => {
 
-            if (window.Paytm && window.Paytm.CheckoutJS) {
-                resolve();
-                return;
-            }
+            if (window.Paytm) return resolve();
 
-            const script = document.createElement("script");
-            script.src = url;
-            script.async = true;
-
-            script.onload = () => {
-                if (window.Paytm && window.Paytm.CheckoutJS) {
-                    resolve();
-                } else {
-                    reject("Paytm SDK not available");
-                }
-            };
-
-            script.onerror = () => reject("Script load failed");
-
-            document.body.appendChild(script);
+            const s = document.createElement("script");
+            s.src = url;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.body.appendChild(s);
         });
     }
 
-    // ===============================
-    // START PAYTM CHECKOUT
-    // ===============================
-    async function startPaytmCheckout(data) {
+    async function startPaytm(data) {
 
         try {
-            await loadPaytmScript(data.checkout_js_url);
-
-            if (!window.Paytm || !window.Paytm.CheckoutJS) {
-                throw new Error("Paytm not loaded");
-            }
+            await loadScript(data.checkout_js_url);
 
             const config = {
                 root: "",
@@ -504,17 +202,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     orderId: data.order_id,
                     token: data.txnToken,
                     tokenType: "TXN_TOKEN",
-                    amount: String(data.amount)
+                    amount: data.amount
                 },
                 handler: {
-                    notifyMerchant: function (eventName, res) {
-                        console.log("EVENT:", eventName, res);
+                    notifyMerchant: function (e, res) {
 
                         if (res.STATUS === "TXN_SUCCESS") {
-                            alert("Payment Successful");
+                            alert("Success");
                             location.reload();
-                        } else if (res.STATUS === "TXN_FAILURE") {
-                            alert("Payment Failed");
+                        } else {
+                            alert("Failed");
                         }
                     }
                 },
@@ -524,21 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // 🔥 FINAL FIX — USE DIRECT OBJECT
             window.Paytm.CheckoutJS.init(config)
-                .then(() => {
-                    window.Paytm.CheckoutJS.invoke();
-                })
-                .catch(err => {
-                    console.error("INIT ERROR:", err);
-                    alert("Checkout init failed");
-                    resetUI();
-                });
+                .then(() => window.Paytm.CheckoutJS.invoke());
 
-        } catch (err) {
-            console.error("PAYTM ERROR:", err);
-            alert("Paytm failed: " + err);
-            resetUI();
+        } catch (e) {
+            alert("Paytm failed");
+            reset();
         }
     }
 
