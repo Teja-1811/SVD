@@ -68,8 +68,6 @@ def initiate_paytm_transaction(order_id, amount, customer, request):
         "requestType": "Payment",
         "mid": settings.PAYTM_MID,
         "websiteName": settings.PAYTM_WEBSITE,
-        "industryTypeId": "Retail109",
-        "channelId": "WEB",
         "orderId": payment_order_id,
         "callbackUrl": build_paytm_callback_url(request),
         "txnAmount": {
@@ -78,8 +76,6 @@ def initiate_paytm_transaction(order_id, amount, customer, request):
         },
         "userInfo": {
             "custId": str(customer.id),
-            "mobile": customer.phone if customer.phone else "7777777777",
-            "email": getattr(customer, 'email', None) if hasattr(customer, 'email') else "no-reply@svdagencies.shop",
         },
     }
 
