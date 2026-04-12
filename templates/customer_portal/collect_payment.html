@@ -45,9 +45,9 @@ body { background:#f3f6f9; }
 
   </div>
 
-  <!-- Hidden form to submit to Paytm -->
+  <!-- Hidden Paytm Form -->
 
-  <form id="paytmForm" method="post" action="https://securegw-stage.paytm.in/theia/api/v1/showPaymentPage">
+  <form id="paytmForm" method="post">
     <input type="hidden" name="mid" id="mid">
     <input type="hidden" name="orderId" id="orderId">
     <input type="hidden" name="txnToken" id="txnToken">
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     status.innerText = "Preparing secure payment...";
 
     try {
-      // 1) Call your Django endpoint
+
       const res = await fetch("/customer/collect-payment/start/", {
         method: "POST",
         headers: {
@@ -101,13 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // 2) Fill form
+      // ✅ Fill form
       document.getElementById('mid').value = data.mid;
       document.getElementById('orderId').value = data.order_id;
       document.getElementById('txnToken').value = data.txnToken;
 
-      // 3) Submit → Paytm page
-      document.getElementById('paytmForm').submit();
+      // ✅ IMPORTANT: set action dynamically
+      const form = document.getElementById('paytmForm');
+      form.action = `https://securegw-stage.paytm.in/theia/api/v1/showPaymentPage?mid=${data.mid}&orderId=${data.order_id}`;
+
+      // ✅ Redirect to Paytm
+      form.submit();
 
     } catch (e) {
       console.error(e);
