@@ -425,31 +425,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPaytmBtn = document.getElementById('confirmPaytmBtn');
     let paymentData = null;
 
-    confirmPaytmBtn.addEventListener('click', async () => {
+    confirmPaytmBtn.addEventListener('click', () => {
 
-            if (!paymentData) {
-                alert("Payment not ready");
-                return;
-            }
+    if (!paymentData) {
+        alert("Payment not ready");
+        return;
+    }
 
-            paymentStepNote.style.display = "block";
-            paymentStepNote.innerText = "Opening Paytm...";
+    paymentStepNote.style.display = "block";
+    paymentStepNote.innerText = "Opening Paytm...";
 
-            // Proper modal close
-            paymentModal.hide();
+    // 🔥 Listen for modal fully hidden
+    const modalEl = document.getElementById('paymentConfirmModal');
 
-            setTimeout(() => {
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = 'auto';
-                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            }, 200);
+    modalEl.addEventListener('hidden.bs.modal', async function handler() {
 
-            // Delay Paytm init (CRITICAL FIX)
-            setTimeout(async () => {
-                await startPaytmCheckout(paymentData);
-            }, 300);
+        // remove listener (important)
+        modalEl.removeEventListener('hidden.bs.modal', handler);
 
-        });
+        // clean leftovers (safe)
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+        // 🔥 NOW start Paytm (no freeze)
+        await startPaytmCheckout(paymentData);
+    });
+
+    // close modal (this triggers event above)
+    paymentModal.hide();
+});
 
     // ===============================
     // LOAD PAYTM SCRIPT
